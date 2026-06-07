@@ -1,0 +1,104 @@
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { PassThrough } from 'node:stream';
+import { describe, expect, it } from 'vitest';
+import { main } from '../src/cli.js';
+
+const root = process.cwd();
+
+type CliResult = {
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+describe('sqldesc CLI', () => {
+  it('prints JSON output for inline SQL and bind types', async () => {
+    const result = await runCli(['--sql', 'select coalesce(?, 1) as n', '--binds', 'int', '--json']);
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.columns).toMatchObject([{ index: 1, name: 'n', type: 'int' }]);
+    expect(json.binds).toMatchObject({ mode: 'positional', binds: [{ index: 1, type: 'int' }] });
+  });
+
+  it('prefers a SQL file over inline SQL', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-'));
+    const sqlFile = path.join(dir, 'query.sql');
+    await writeFile(sqlFile, 'select 2 as file_value', 'utf8');
+
+    const result = await runCli([sqlFile, '--sql', 'select 1 as inline_value', '--json']);
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.columns[0]).toMatchObject({ name: 'file_value', type: 'integer' });
+  });
+
+  it('reads SQL from stdin when no file or inline SQL is provided', async () => {
+    const result = await runCli(['--json'], 'select 1 as stdin_value');
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.columns[0]).toMatchObject({ name: 'stdin_value', type: 'integer' });
+  });
+
+  it('loads schema SQL from glob patterns', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-schema-'));
+    await writeFile(path.join(dir, 'schema.sql'), 'create table users (id int primary key, name text not null);', 'utf8');
+
+    const result = await runCli([
+      '--sql',
+      'select id, name from users',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--json',
+    ]);
+
+    expect(result.code).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.columns).toMatchObject([
+      { name: 'id', type: 'int', source: 'users.id' },
+      { name: 'name', type: 'text', source: 'users.name' },
+    ]);
+  });
+
+  it('prints a text table by default', async () => {
+    const result = await runCli(['--sql', 'select 1 as one']);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('one');
+    expect(result.stdout).toContain('integer');
+  });
+
+  it('returns a clear error for mixed bind syntax', async () => {
+    const result = await runCli(['--sql', 'select :id as id', '--binds', 'id=int,text', '--json']);
+
+    expect(result.code).not.toBe(0);
+    expect(result.stderr).toMatch(/Mixed bind syntax/);
+  });
+});
+
+function runCli(args: string[], input?: string): Promise<CliResult> {
+  const stdin = new PassThrough() as PassThrough & { isTTY?: boolean };
+  stdin.isTTY = input === undefined;
+  stdin.end(input);
+  const stdout = new CaptureStream();
+  const stderr = new CaptureStream();
+
+  return main(args, {
+    cwd: root,
+    stdin: stdin as NodeJS.ReadStream,
+    stdout: stdout as unknown as NodeJS.WriteStream,
+    stderr: stderr as unknown as NodeJS.WriteStream,
+  }).then((code) => ({ code, stdout: stdout.content, stderr: stderr.content }));
+}
+
+class CaptureStream {
+  content = '';
+
+  write(chunk: string | Uint8Array): boolean {
+    this.content += typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf8');
+    return true;
+  }
+}

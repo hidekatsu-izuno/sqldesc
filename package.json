@@ -1,0 +1,40 @@
+{
+  "name": "sqldesc",
+  "version": "0.1.0",
+  "description": "Infer SQL result-set columns from SQL, bind types, and schema files.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "sqldesc": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@polyglot-sql/sdk": "^0.4.3",
+    "commander": "^14.0.2",
+    "glob": "^13.0.0",
+    "table": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
