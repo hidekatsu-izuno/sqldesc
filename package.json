@@ -20,21 +20,18 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run",
+    "test": "npm run build && node --test --experimental-strip-types 'test/**/*.test.ts'",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@polyglot-sql/sdk": "^0.4.3",
-    "commander": "^14.0.2",
-    "glob": "^13.0.0",
-    "table": "^6.9.0"
+    "easy-table": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }

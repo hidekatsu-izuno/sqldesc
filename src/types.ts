@@ -47,6 +47,7 @@ export interface DescribeInput {
   binds?: string | BindSpec;
   schema?: ValidationSchema;
   schemaPatterns?: string[];
+  schemaFiles?: string[];
   cwd?: string;
 }
 

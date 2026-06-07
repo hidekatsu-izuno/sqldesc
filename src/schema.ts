@@ -1,17 +1,23 @@
-import { readFile } from 'node:fs/promises';
+import { glob, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { glob } from 'glob';
 import { parse, annotateTypes, ast } from '@polyglot-sql/sdk';
 import type { SchemaColumn, SchemaLoadOptions, SchemaTable, ValidationSchema } from './types.js';
 
 const TABLE_CONSTRAINT_RE = /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check)\b/i;
 
+export async function resolveSchemaGlobPatterns(patterns: string[], cwd = process.cwd()): Promise<string[]> {
+  return (
+    await Promise.all(patterns.map((pattern) => globFiles(pattern, cwd)))
+  ).flat().sort();
+}
+
 export async function loadSchema(patterns: string[], options: SchemaLoadOptions = {}): Promise<ValidationSchema> {
   const cwd = options.cwd ?? process.cwd();
-  const files = (
-    await Promise.all(patterns.map((pattern) => glob(pattern, { cwd, absolute: true, nodir: true })))
-  ).flat().sort();
+  const files = await resolveSchemaGlobPatterns(patterns, cwd);
+  return loadSchemaFiles(files, options);
+}
 
+export async function loadSchemaFiles(files: string[], options: SchemaLoadOptions = {}): Promise<ValidationSchema> {
   const tables: SchemaTable[] = [];
   const sqlFiles: string[] = [];
   for (const file of files) {
@@ -35,6 +41,16 @@ export async function loadSchema(patterns: string[], options: SchemaLoadOptions 
   }
 
   return schema;
+}
+
+async function globFiles(pattern: string, cwd: string): Promise<string[]> {
+  const files: string[] = [];
+  for await (const entry of glob(pattern, { cwd, withFileTypes: true })) {
+    if (entry.isFile()) {
+      files.push(path.join(entry.parentPath, entry.name));
+    }
+  }
+  return files;
 }
 
 export function parseCreateTables(sql: string, dialect = 'generic'): SchemaTable[] {

@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'vitest';
-import { parseBinds } from '../src/binds.js';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { parseBinds } from '../dist/binds.js';
 
 describe('parseBinds', () => {
   it('parses positional comma-separated types', () => {
-    expect(parseBinds('int,text')).toEqual({
+    assert.deepStrictEqual(parseBinds('int,text'), {
       mode: 'positional',
       binds: [
         { index: 1, type: 'int' },
@@ -13,7 +14,7 @@ describe('parseBinds', () => {
   });
 
   it('parses named comma-separated key/value types', () => {
-    expect(parseBinds('id=int,name=text')).toEqual({
+    assert.deepStrictEqual(parseBinds('id=int,name=text'), {
       mode: 'named',
       binds: [
         { name: 'id', type: 'int' },
@@ -23,6 +24,6 @@ describe('parseBinds', () => {
   });
 
   it('rejects mixed bind syntax', () => {
-    expect(() => parseBinds('id=int,text')).toThrow(/Mixed bind syntax/);
+    assert.throws(() => parseBinds('id=int,text'), /Mixed bind syntax/);
   });
 });

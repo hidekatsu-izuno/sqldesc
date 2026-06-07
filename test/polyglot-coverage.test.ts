@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'vitest';
-import { describeQuery } from '../src/describe.js';
-import type { DescribeResult, ValidationSchema } from '../src/types.js';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { describeQuery } from '../dist/describe.js';
+
+import type { DescribeResult, ValidationSchema } from '../dist/types.js';
 
 const coverageSchema: ValidationSchema = {
   tables: [
@@ -153,22 +155,26 @@ const noResultCases = [
 ] as const;
 
 describe('polyglot representative SQL coverage', () => {
-  it.each(staticResultCases)('statically describes %s: %s', async (dialect, sql) => {
-    const result = await describeQuery({ dialect, sql, schema: coverageSchema });
+  for (const [dialect, sql] of staticResultCases) {
+    it(`statically describes ${dialect}: ${sql}`, async () => {
+      const result = await describeQuery({ dialect, sql, schema: coverageSchema });
 
-    expect(result.statements[0]?.resultKind).toBe('static');
-    expect(result.columns.length).toBeGreaterThan(0);
-    expect(result.columns.length).toBeLessThan(80);
-    expect(unresolvedColumnCount(result)).toBe(0);
-    expect(result.warnings).toEqual([]);
-  });
+      assert.strictEqual(result.statements[0]?.resultKind, 'static');
+      assert.ok(result.columns.length > 0);
+      assert.ok(result.columns.length < 80);
+      assert.strictEqual(unresolvedColumnCount(result), 0);
+      assert.deepStrictEqual(result.warnings, []);
+    });
+  }
 
-  it.each(noResultCases)('classifies no-result %s: %s', async (dialect, sql) => {
-    const result = await describeQuery({ dialect, sql, schema: coverageSchema });
+  for (const [dialect, sql] of noResultCases) {
+    it(`classifies no-result ${dialect}: ${sql}`, async () => {
+      const result = await describeQuery({ dialect, sql, schema: coverageSchema });
 
-    expect(result.columns).toEqual([]);
-    expect(result.statements[0]?.resultKind).toBe('none');
-  });
+      assert.deepStrictEqual(result.columns, []);
+      assert.strictEqual(result.statements[0]?.resultKind, 'none');
+    });
+  }
 });
 
 function unresolvedColumnCount(result: DescribeResult): number {

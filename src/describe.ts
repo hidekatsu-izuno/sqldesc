@@ -1,6 +1,6 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
-import { loadSchema, mergeSchemas, splitTopLevel, cleanIdentifier } from './schema.js';
+import { loadSchema, loadSchemaFiles, mergeSchemas, splitTopLevel, cleanIdentifier } from './schema.js';
 import type {
   BindSpec,
   DescribeColumn,
@@ -17,7 +17,11 @@ import type {
 export async function describeQuery(input: DescribeInput): Promise<DescribeResult> {
   const dialect = input.dialect ?? 'generic';
   const binds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
-  const loadedSchema = input.schemaPatterns?.length ? await loadSchema(input.schemaPatterns, { cwd: input.cwd, dialect }) : { tables: [] };
+  const loadedSchema = input.schemaFiles?.length
+    ? await loadSchemaFiles(input.schemaFiles, { dialect })
+    : input.schemaPatterns?.length
+      ? await loadSchema(input.schemaPatterns, { cwd: input.cwd, dialect })
+      : { tables: [] };
   const schema = mergeSchemas(input.schema, loadedSchema);
   const effectiveSchema = mergeSchemas(schema, builtinMetadataSchema());
   const warnings: string[] = [];

@@ -1,19 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 import { mkdir, writeFile } from 'node:fs/promises';
+
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { loadSchema, parseCreateAsTables, parseCreateSynonyms, parseCreateTables, parseCreateViews } from '../src/schema.js';
+import { loadSchema, parseCreateAsTables, parseCreateSynonyms, parseCreateTables, parseCreateViews } from '../dist/schema.js';
 
 describe('parseCreateTables', () => {
   it('extracts ordinary create table columns', () => {
-    expect(parseCreateTables(`
+    assert.deepStrictEqual(parseCreateTables(`
       CREATE TABLE public.users (
         id integer primary key,
         name varchar(255) not null,
         age int,
         constraint users_name_unique unique (name)
       );
-    `)).toEqual([
+    `), [
       {
         name: 'users',
         schema: 'public',
@@ -30,7 +32,7 @@ describe('parseCreateTables', () => {
   });
 
   it('extracts table-level keys and foreign keys from AST constraints', () => {
-    expect(parseCreateTables(`
+    assert.deepStrictEqual(parseCreateTables(`
       create table orders (
         id int,
         user_id int,
@@ -39,7 +41,7 @@ describe('parseCreateTables', () => {
         foreign key(user_id) references users(id),
         unique(user_id,total)
       )
-    `)).toEqual([
+    `), [
       {
         name: 'orders',
         columns: [
@@ -63,10 +65,10 @@ describe('parseCreateTables', () => {
   });
 
   it('passes dialect to create table AST parsing', () => {
-    expect(parseCreateTables(
+    assert.deepStrictEqual(parseCreateTables(
       'create table dbo.t ([id] int identity(1,1) primary key, [name] nvarchar(20) not null)',
       'tsql',
-    )).toEqual([
+    ), [
       {
         name: 't',
         schema: 'dbo',
@@ -82,10 +84,10 @@ describe('parseCreateTables', () => {
   });
 
   it('preserves nested struct and array type shapes', () => {
-    expect(parseCreateTables(
+    assert.deepStrictEqual(parseCreateTables(
       'create table users (profile struct<name text, age int>, addresses array<struct<city text>>, scores int[])',
       'bigquery',
-    )[0]?.columns.map((column) => [column.name, column.type])).toEqual([
+    )[0]?.columns.map((column) => [column.name, column.type]), [
       ['profile', 'struct<name text, age int>'],
       ['addresses', 'array<struct<city text>>'],
       ['scores', 'array<int>'],
@@ -106,7 +108,7 @@ describe('parseCreateViews', () => {
         },
       ],
     };
-    expect(parseCreateViews('create view active_users as select id, name from users', baseSchema)).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view active_users as select id, name from users', baseSchema), [
       {
         name: 'active_users',
         columns: [
@@ -118,7 +120,7 @@ describe('parseCreateViews', () => {
   });
 
   it('uses explicit view columns and set operation output shape', () => {
-    expect(parseCreateViews('create view numbers(n) as select 1 union select 2')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view numbers(n) as select 1 union select 2'), [
       {
         name: 'numbers',
         columns: [
@@ -129,7 +131,7 @@ describe('parseCreateViews', () => {
   });
 
   it('resolves CTE-backed view projection types', () => {
-    expect(parseCreateViews('create view cte_view as with q as (select 1 as id) select id from q', undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view cte_view as with q as (select 1 as id) select id from q', undefined, 'postgres'), [
       {
         name: 'cte_view',
         columns: [
@@ -140,7 +142,7 @@ describe('parseCreateViews', () => {
   });
 
   it('resolves derived table and table function view projection types', () => {
-    expect(parseCreateViews('create view derived_view as select x.id from (select 1 as id) x', undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view derived_view as select x.id from (select 1 as id) x', undefined, 'postgres'), [
       {
         name: 'derived_view',
         columns: [
@@ -149,7 +151,7 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews("create view derived_star_view as select * from (select 1 as id, 'a' as name) x", undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews("create view derived_star_view as select * from (select 1 as id, 'a' as name) x", undefined, 'postgres'), [
       {
         name: 'derived_star_view',
         columns: [
@@ -159,7 +161,7 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews('create view series_view as select g.n from generate_series(1,3) as g(n)', undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view series_view as select g.n from generate_series(1,3) as g(n)', undefined, 'postgres'), [
       {
         name: 'series_view',
         columns: [
@@ -168,11 +170,11 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews('create view json_each_view as select j.* from json_each(\'{"a":1}\') as j', undefined, 'sqlite')[0]?.columns.slice(0, 4)).toEqual([
-      { name: 'key', type: 'text' },
-      { name: 'value', type: 'json' },
-      { name: 'type', type: 'text' },
-      { name: 'atom', type: 'json' },
+    assert.deepStrictEqual(parseCreateViews('create view json_each_view as select j.* from json_each(\'{"a":1}\') as j', undefined, 'sqlite')[0]?.columns.slice(0, 4), [
+      { name: 'key', type: 'text', nullable: undefined },
+      { name: 'value', type: 'json', nullable: undefined },
+      { name: 'type', type: 'text', nullable: undefined },
+      { name: 'atom', type: 'json', nullable: undefined },
     ]);
   });
 
@@ -196,7 +198,7 @@ describe('parseCreateViews', () => {
       ],
     };
 
-    expect(parseCreateViews('create view joined_view as select * from users join orders using(id)', joinSchema, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view joined_view as select * from users join orders using(id)', joinSchema, 'postgres'), [
       {
         name: 'joined_view',
         columns: [
@@ -207,7 +209,7 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews('create view natural_view as select * from users natural join orders', joinSchema, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view natural_view as select * from users natural join orders', joinSchema, 'postgres'), [
       {
         name: 'natural_view',
         columns: [
@@ -218,7 +220,7 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews('create view left_join_view as select users.id, orders.total from users left join orders on users.id = orders.id', joinSchema, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view left_join_view as select users.id, orders.total from users left join orders on users.id = orders.id', joinSchema, 'postgres'), [
       {
         name: 'left_join_view',
         columns: [
@@ -228,7 +230,7 @@ describe('parseCreateViews', () => {
       },
     ]);
 
-    expect(parseCreateViews('create view full_join_view as select * from users full join orders on users.id = orders.id', joinSchema, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create view full_join_view as select * from users full join orders on users.id = orders.id', joinSchema, 'postgres'), [
       {
         name: 'full_join_view',
         columns: [
@@ -242,7 +244,7 @@ describe('parseCreateViews', () => {
   });
 
   it('preserves schema-qualified materialized view names', () => {
-    expect(parseCreateViews('create materialized view public.user_ids as select 1 as id')).toEqual([
+    assert.deepStrictEqual(parseCreateViews('create materialized view public.user_ids as select 1 as id'), [
       {
         name: 'user_ids',
         schema: 'public',
@@ -256,7 +258,7 @@ describe('parseCreateViews', () => {
 
 describe('parseCreateAsTables', () => {
   it('extracts create table as select columns', () => {
-    expect(parseCreateAsTables("create table generated_users as select 1 as id, 'a' as name")).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables("create table generated_users as select 1 as id, 'a' as name"), [
       {
         name: 'generated_users',
         columns: [
@@ -268,7 +270,7 @@ describe('parseCreateAsTables', () => {
   });
 
   it('prefers explicit create table column definitions', () => {
-    expect(parseCreateAsTables('create table generated_users (id int) as select 1')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table generated_users (id int) as select 1'), [
       {
         name: 'generated_users',
         columns: [
@@ -290,7 +292,7 @@ describe('parseCreateAsTables', () => {
         },
       ],
     };
-    expect(parseCreateAsTables('create table new_users (like users)', baseSchema, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table new_users (like users)', baseSchema, 'postgres'), [
       {
         name: 'new_users',
         columns: [
@@ -299,7 +301,7 @@ describe('parseCreateAsTables', () => {
         ],
       },
     ]);
-    expect(parseCreateAsTables('create table cloned_users clone users', baseSchema, 'snowflake')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table cloned_users clone users', baseSchema, 'snowflake'), [
       {
         name: 'cloned_users',
         columns: [
@@ -311,7 +313,7 @@ describe('parseCreateAsTables', () => {
   });
 
   it('preserves schema-qualified create table as names', () => {
-    expect(parseCreateAsTables('create table public.generated_users as select 1 as id')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table public.generated_users as select 1 as id'), [
       {
         name: 'generated_users',
         schema: 'public',
@@ -323,7 +325,7 @@ describe('parseCreateAsTables', () => {
   });
 
   it('resolves CTE-backed create table as projection types', () => {
-    expect(parseCreateAsTables('create table cte_table as with q as (select 1 as id) select id from q', undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table cte_table as with q as (select 1 as id) select id from q', undefined, 'postgres'), [
       {
         name: 'cte_table',
         columns: [
@@ -334,7 +336,7 @@ describe('parseCreateAsTables', () => {
   });
 
   it('resolves derived table create table as projection types', () => {
-    expect(parseCreateAsTables('create table derived_table as select x.id from (select 1 as id) x', undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables('create table derived_table as select x.id from (select 1 as id) x', undefined, 'postgres'), [
       {
         name: 'derived_table',
         columns: [
@@ -343,7 +345,7 @@ describe('parseCreateAsTables', () => {
       },
     ]);
 
-    expect(parseCreateAsTables("create table derived_star_table as select * from (select 1 as id, 'a' as name) x", undefined, 'postgres')).toEqual([
+    assert.deepStrictEqual(parseCreateAsTables("create table derived_star_table as select * from (select 1 as id, 'a' as name) x", undefined, 'postgres'), [
       {
         name: 'derived_star_table',
         columns: [
@@ -369,7 +371,7 @@ describe('parseCreateSynonyms', () => {
         },
       ],
     };
-    expect(parseCreateSynonyms('create synonym user_syn for users', baseSchema)).toEqual([
+    assert.deepStrictEqual(parseCreateSynonyms('create synonym user_syn for users', baseSchema), [
       {
         name: 'user_syn',
         columns: [
@@ -393,7 +395,7 @@ describe('parseCreateSynonyms', () => {
         },
       ],
     };
-    expect(parseCreateSynonyms('create synonym app.user_syn for public.users', baseSchema)).toEqual([
+    assert.deepStrictEqual(parseCreateSynonyms('create synonym app.user_syn for public.users', baseSchema), [
       {
         schema: 'app',
         name: 'user_syn',
@@ -415,7 +417,7 @@ describe('loadSchema', () => {
     `);
 
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd });
-    expect(schema.tables.find((table) => table.name === 'user_syn')?.columns).toEqual([
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_syn')?.columns, [
       { name: 'id', type: 'int', nullable: undefined, primaryKey: false, unique: false },
       { name: 'name', type: 'text', nullable: undefined, primaryKey: false, unique: false },
     ]);
@@ -435,13 +437,13 @@ describe('loadSchema', () => {
     `);
 
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
-    expect(schema.tables.find((table) => table.name === 'users')?.columns).toEqual([
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users')?.columns, [
       { name: 'id', type: 'int', nullable: false, primaryKey: true, unique: false },
       { name: 'age', type: 'big_int', nullable: undefined, primaryKey: false, unique: false },
       { name: 'full_name', type: 'text', nullable: undefined, primaryKey: false, unique: false },
       { name: 'email', type: 'text', nullable: undefined, primaryKey: false, unique: false },
     ]);
-    expect(schema.tables.find((table) => table.name === 'user_view')?.columns.map((column) => [column.name, column.type])).toEqual([
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_view')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'int'],
       ['age', 'big_int'],
       ['full_name', 'text'],
@@ -463,10 +465,10 @@ describe('loadSchema', () => {
     `);
 
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
-    expect(schema.tables.some((table) => table.name === 'stale')).toBe(false);
-    expect(schema.tables.some((table) => table.name === 'stale_view')).toBe(false);
-    expect(schema.tables.find((table) => table.name === 'events')).toMatchObject({ schema: 'archive' });
-    expect(schema.tables.find((table) => table.name === 'event_ids')?.columns.map((column) => [column.name, column.type])).toEqual([
+    assert.strictEqual(schema.tables.some((table) => table.name === 'stale'), false);
+    assert.strictEqual(schema.tables.some((table) => table.name === 'stale_view'), false);
+    assert.partialDeepStrictEqual(schema.tables.find((table) => table.name === 'events'), { schema: 'archive' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'event_ids')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'int'],
     ]);
   });

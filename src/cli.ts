@@ -3,9 +3,10 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { pathToFileURL } from 'node:url';
-import { Command } from 'commander';
-import { table } from 'table';
+import { parseArgs } from 'node:util';
+import Table from 'easy-table';
 import { describeQuery } from './describe.js';
+import { resolveSchemaGlobPatterns } from './schema.js';
 
 type CliIo = {
   cwd: string;
@@ -14,25 +15,43 @@ type CliIo = {
   stderr: NodeJS.WriteStream;
 };
 
+const CLI_OPTIONS = {
+  sql: { type: 'string' as const },
+  schema: { type: 'string' as const, multiple: true },
+  binds: { type: 'string' as const },
+  dialect: { type: 'string' as const, default: 'generic' },
+  json: { type: 'boolean' as const },
+  help: { type: 'boolean' as const, short: 'h' },
+};
+
+type ParsedCliOptions = {
+  sql?: string;
+  schema?: string[];
+  binds?: string;
+  dialect: string;
+  json?: boolean;
+  help?: boolean;
+};
+
 export async function main(argv = process.argv.slice(2), io: CliIo = {
   cwd: process.cwd(),
   stdin: process.stdin,
   stdout: process.stdout,
   stderr: process.stderr,
 }): Promise<number> {
-  const program = createProgram();
-  program.configureOutput({
-    writeOut: (text) => {
-      io.stdout.write(text);
-    },
-    writeErr: (text) => {
-      io.stderr.write(text);
-    },
-  });
-  program.exitOverride();
-
+  let values: ParsedCliOptions;
+  let file: string | undefined;
   try {
-    program.parse(argv, { from: 'user' });
+    const parsed = parseArgs({
+      args: argv,
+      options: CLI_OPTIONS,
+      allowPositionals: true,
+    });
+    values = {
+      ...parsed.values,
+      schema: schemaPatternsFromOption(parsed.values.schema),
+    };
+    file = parsed.positionals[0];
   } catch (error) {
     if (error instanceof Error) {
       io.stderr.write(`${error.message}\n`);
@@ -42,26 +61,25 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
     return 1;
   }
 
-  const options = program.opts<{
-    sql?: string;
-    schema?: string[];
-    binds?: string;
-    dialect: string;
-    json?: boolean;
-  }>();
-  const [file] = program.args;
+  if (values.help) {
+    io.stdout.write(formatUsage());
+    return 0;
+  }
 
   try {
-    const sql = await readSql(file, options.sql, io.stdin);
+    const sql = await readSql(file, values.sql, io.stdin);
+    const schemaFiles = values.schema?.length
+      ? await resolveSchemaGlobPatterns(values.schema, io.cwd)
+      : undefined;
     const result = await describeQuery({
       sql,
-      dialect: options.dialect,
-      binds: options.binds,
-      schemaPatterns: options.schema,
+      dialect: values.dialect,
+      binds: values.binds,
+      schemaFiles,
       cwd: io.cwd,
     });
 
-    if (options.json) {
+    if (values.json) {
       io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     } else {
       io.stdout.write(`${formatResultSets(result.resultSets)}\n`);
@@ -80,16 +98,27 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
   }
 }
 
-function createProgram(): Command {
-  return new Command()
-    .name('sqldesc')
-    .description('Infer SQL result-set columns from SQL, bind types, and schema files.')
-    .argument('[file]', 'SQL file to describe')
-    .option('--sql <sql>', 'SQL text to describe')
-    .option('--schema <pattern...>', 'Schema SQL glob pattern(s)')
-    .option('--binds <spec>', 'Bind types, e.g. "int,text" or "id=int,name=text"')
-    .option('--dialect <dialect>', 'SQL dialect', 'generic')
-    .option('--json', 'Print JSON output');
+function schemaPatternsFromOption(schema: string | string[] | undefined): string[] | undefined {
+  if (schema === undefined) return undefined;
+  return Array.isArray(schema) ? schema : [schema];
+}
+
+function formatUsage(): string {
+  return `Usage: sqldesc [options] [file]
+
+Infer SQL result-set columns from SQL, bind types, and schema files.
+
+Arguments:
+  file                  SQL file to describe
+
+Options:
+  --sql <sql>           SQL text to describe
+  --schema <pattern>    Schema SQL glob pattern (repeatable)
+  --binds <spec>        Bind types, e.g. "int,text" or "id=int,name=text"
+  --dialect <dialect>   SQL dialect (default: "generic")
+  --json                Print JSON output
+  -h, --help            Show this help message
+`;
 }
 
 async function readSql(file?: string, inlineSql?: string, stdin: NodeJS.ReadStream = process.stdin): Promise<string> {
@@ -116,18 +145,15 @@ function formatResultSets(resultSets: Array<{ index: number; columns: Array<{ in
 }
 
 function formatTable(columns: Array<{ index: number; name: string; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }>): string {
-  return table([
-    ['index', 'name', 'type', 'nullable', 'confidence', 'source', 'note'],
-    ...columns.map((column) => [
-      String(column.index),
-      column.name,
-      column.type,
-      column.nullable === undefined ? '' : String(column.nullable),
-      column.confidence,
-      column.source ?? '',
-      column.note ?? '',
-    ]),
-  ]);
+  return Table.print(columns.map((column) => ({
+    index: String(column.index),
+    name: column.name,
+    type: column.type,
+    nullable: column.nullable === undefined ? '' : String(column.nullable),
+    confidence: column.confidence,
+    source: column.source ?? '',
+    note: column.note ?? '',
+  })));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
