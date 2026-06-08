@@ -737,7 +737,7 @@ function inferredType(expression: unknown): string | undefined {
     const dataType = ast.getInferredType(expression as never) as unknown;
     if (!isRecord(dataType)) return undefined;
     const value = dataType.data_type ?? dataType.type ?? dataType.name;
-    return typeof value === 'string' ? value : undefined;
+    return typeof value === 'string' ? normalizeDataTypeName(value) : undefined;
   } catch {
     return undefined;
   }
@@ -764,11 +764,25 @@ function dataTypeToString(dataType: unknown): string | undefined {
 }
 
 function normalizeDataTypeName(value: string): string {
-  const lower = value.toLowerCase();
-  if (lower === 'serial' || lower === 'serial4') return 'integer';
-  if (lower === 'bigserial' || lower === 'serial8') return 'big_int';
-  if (lower === 'smallserial' || lower === 'serial2') return 'small_int';
-  return value;
+  const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
+  const compact = unparameterized.replace(/\s+/g, '');
+  if (compact === 'serial' || compact === 'serial4') return 'integer';
+  if (compact === 'bigserial' || compact === 'serial8') return 'bigint';
+  if (compact === 'smallserial' || compact === 'serial2') return 'integer';
+  if (['int', 'int2', 'int4', 'int16', 'int32', 'integer', 'smallint', 'tinyint', 'small_int', 'tiny_int', 'uint8', 'uint16', 'uint32'].includes(compact)) return 'integer';
+  if (['int8', 'int64', 'bigint', 'big_int', 'uint64'].includes(compact)) return 'bigint';
+  if (['decimal', 'dec', 'numeric', 'number'].includes(compact)) return 'decimal';
+  if (['float', 'float4', 'float8', 'double', 'doubleprecision', 'real'].includes(compact)) return 'decimal';
+  if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
+  if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
+  if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
+  if (compact === 'json_b') return 'jsonb';
+  if (compact === 'datetime2') return 'datetime';
+  if (compact === 'timestampntz' || compact === 'timestampltz' || compact === 'timestamptz' || compact.startsWith('timestamp')) return 'timestamp';
+  if (compact === 'array') return 'array<variant>';
+  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
+  return unparameterized;
 }
 
 function literalType(expression: unknown): string | undefined {
@@ -846,7 +860,7 @@ function toPolyglotSchema(schema: ValidationSchema): unknown {
 
 function findCreateTableStatements(sql: string): Array<{ name: string; body: string }> {
   const statements: Array<{ name: string; body: string }> = [];
-  const re = /create\s+(?:temporary\s+|temp\s+)?table\s+(?:if\s+not\s+exists\s+)?([`"[\]\w.]+)\s*\(/gi;
+  const re = /create\s+(?:(?:global\s+)?temporary\s+|(?:global\s+)?temp\s+)?table\s+(?:if\s+not\s+exists\s+)?([`"[\]\w.]+)\s*\(/gi;
   for (const match of sql.matchAll(re)) {
     const bodyStart = (match.index ?? 0) + match[0].length;
     const bodyEnd = findMatchingParen(sql, bodyStart - 1);
@@ -901,7 +915,7 @@ function parseColumn(definition: string): SchemaColumn | null {
   }
   return {
     name,
-    type,
+    type: normalizeDataTypeName(type),
     nullable: !/\bnot\s+null\b/i.test(rest) && !/\bprimary\s+key\b/i.test(rest),
     primaryKey: /\bprimary\s+key\b/i.test(rest),
     unique: /\bunique\b/i.test(rest),

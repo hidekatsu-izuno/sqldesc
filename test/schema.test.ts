@@ -20,9 +20,9 @@ describe('parseCreateTables', () => {
         name: 'users',
         schema: 'public',
         columns: [
-          { name: 'id', type: 'int', nullable: false, primaryKey: true, unique: false },
-          { name: 'name', type: 'var_char', nullable: false, primaryKey: false, unique: true },
-          { name: 'age', type: 'int', nullable: undefined, primaryKey: false, unique: false },
+          { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
+          { name: 'name', type: 'text', nullable: false, primaryKey: false, unique: true },
+          { name: 'age', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
         uniqueKeys: [['name']],
@@ -45,8 +45,8 @@ describe('parseCreateTables', () => {
       {
         name: 'orders',
         columns: [
-          { name: 'id', type: 'int', nullable: undefined, primaryKey: true, unique: false },
-          { name: 'user_id', type: 'int', nullable: undefined, primaryKey: false, unique: false },
+          { name: 'id', type: 'integer', nullable: undefined, primaryKey: true, unique: false },
+          { name: 'user_id', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
           { name: 'total', type: 'decimal', nullable: undefined, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
@@ -73,10 +73,27 @@ describe('parseCreateTables', () => {
         name: 't',
         schema: 'dbo',
         columns: [
-          { name: 'id', type: 'int', nullable: false, primaryKey: true, unique: false },
-          { name: 'name', type: 'NVARCHAR(20)', nullable: false, primaryKey: false, unique: false },
+          { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
+          { name: 'name', type: 'text', nullable: false, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
+        uniqueKeys: [],
+        foreignKeys: [],
+      },
+    ]);
+  });
+
+  it('extracts Oracle global temporary table fallback columns', () => {
+    assert.deepStrictEqual(parseCreateTables(
+      'create global temporary table t(id number, name varchar2(20)) on commit preserve rows',
+      'oracle',
+    ), [
+      {
+        name: 't',
+        columns: [
+          { name: 'id', type: 'decimal', nullable: true, primaryKey: false, unique: false },
+          { name: 'name', type: 'text', nullable: true, primaryKey: false, unique: false },
+        ],
         uniqueKeys: [],
         foreignKeys: [],
       },
@@ -88,9 +105,9 @@ describe('parseCreateTables', () => {
       'create table users (profile struct<name text, age int>, addresses array<struct<city text>>, scores int[])',
       'bigquery',
     )[0]?.columns.map((column) => [column.name, column.type]), [
-      ['profile', 'struct<name text, age int>'],
+      ['profile', 'struct<name text, age integer>'],
       ['addresses', 'array<struct<city text>>'],
-      ['scores', 'array<int>'],
+      ['scores', 'array<integer>'],
     ]);
   });
 });
@@ -274,7 +291,7 @@ describe('parseCreateAsTables', () => {
       {
         name: 'generated_users',
         columns: [
-          { name: 'id', type: 'int', nullable: undefined, primaryKey: false, unique: false },
+          { name: 'id', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
         ],
       },
     ]);
@@ -418,7 +435,7 @@ describe('loadSchema', () => {
 
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_syn')?.columns, [
-      { name: 'id', type: 'int', nullable: undefined, primaryKey: false, unique: false },
+      { name: 'id', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
       { name: 'name', type: 'text', nullable: undefined, primaryKey: false, unique: false },
     ]);
   });
@@ -438,14 +455,14 @@ describe('loadSchema', () => {
 
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users')?.columns, [
-      { name: 'id', type: 'int', nullable: false, primaryKey: true, unique: false },
-      { name: 'age', type: 'big_int', nullable: undefined, primaryKey: false, unique: false },
+      { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
+      { name: 'age', type: 'bigint', nullable: undefined, primaryKey: false, unique: false },
       { name: 'full_name', type: 'text', nullable: undefined, primaryKey: false, unique: false },
       { name: 'email', type: 'text', nullable: undefined, primaryKey: false, unique: false },
     ]);
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_view')?.columns.map((column) => [column.name, column.type]), [
-      ['id', 'int'],
-      ['age', 'big_int'],
+      ['id', 'integer'],
+      ['age', 'bigint'],
       ['full_name', 'text'],
       ['email', 'text'],
     ]);
@@ -469,7 +486,7 @@ describe('loadSchema', () => {
     assert.strictEqual(schema.tables.some((table) => table.name === 'stale_view'), false);
     assert.partialDeepStrictEqual(schema.tables.find((table) => table.name === 'events'), { schema: 'archive' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'event_ids')?.columns.map((column) => [column.name, column.type]), [
-      ['id', 'int'],
+      ['id', 'integer'],
     ]);
   });
 });

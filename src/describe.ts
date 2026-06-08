@@ -1,6 +1,6 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
-import { loadSchema, loadSchemaFiles, mergeSchemas, splitTopLevel, cleanIdentifier } from './schema.js';
+import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import type {
   BindSpec,
   DescribeColumn,
@@ -57,30 +57,24 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   diagnostics.push(...statementDiagnostics);
 
   const columns = resultSets[0]?.columns ?? [];
-  const returnedDiagnostics = suppressResolvedPreparedDiagnostics(
-    suppressRuntimeOnlyDiagnostics(
-      suppressStaticStatementDiagnostics(
-        suppressKnownSchemaDiagnostics(
-          suppressResolvedInsertValueDiagnostics(
-            suppressResolvedSourceDiagnostics(
-              suppressResolvedColumnDiagnostics(
-                suppressResolvedNestedDiagnostics(diagnostics, resultSets.flatMap((resultSet) => resultSet.columns)),
-                resultSets.flatMap((resultSet) => resultSet.columns),
-              ),
-              resultSets.flatMap((resultSet) => resultSet.columns),
-            ),
-            annotatedAst,
-          ),
-          effectiveSchema,
-        ),
-        annotatedAst,
-        resultSets,
-      ),
-      statements,
-    ),
-    annotatedAst,
-    resultSets,
-  );
+  const allColumns = resultSets.flatMap((resultSet) => resultSet.columns);
+  let returnedDiagnostics = suppressResolvedNestedDiagnostics(diagnostics, allColumns);
+  returnedDiagnostics = suppressOracleCurrentUserDiagnostics(returnedDiagnostics, annotatedAst, dialect);
+  returnedDiagnostics = suppressWholeRowFunctionDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressNamedFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
+  returnedDiagnostics = suppressKnownTableFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
+  returnedDiagnostics = suppressResolvedColumnDiagnostics(returnedDiagnostics, allColumns);
+  returnedDiagnostics = suppressResolvedSourceDiagnostics(returnedDiagnostics, allColumns);
+  returnedDiagnostics = suppressCompatibleComparisonDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressResolvedOrderingDiagnostics(returnedDiagnostics, resultSets);
+  returnedDiagnostics = suppressSetOperationTypeDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressResolvedInsertValueDiagnostics(returnedDiagnostics, annotatedAst);
+  returnedDiagnostics = suppressKnownSchemaDiagnostics(returnedDiagnostics, effectiveSchema);
+  returnedDiagnostics = suppressStaticStatementDiagnostics(returnedDiagnostics, annotatedAst, resultSets);
+  returnedDiagnostics = suppressRuntimeOnlyDiagnostics(returnedDiagnostics, statements);
+  returnedDiagnostics = suppressResolvedPreparedDiagnostics(returnedDiagnostics, annotatedAst, resultSets);
+  returnedDiagnostics = suppressNoResultParseDiagnostics(returnedDiagnostics, statements);
+  returnedDiagnostics = suppressExpandedStarDiagnostics(returnedDiagnostics, resultSets);
 
   return { columns, resultSets, statements, warnings: unique(warnings), diagnostics: returnedDiagnostics, binds, schema };
 }
@@ -109,10 +103,15 @@ function inferColumn(
   name: string,
   schema: ValidationSchema,
   binds: BindSpec,
-  _dialect: string,
+  dialect: string,
   explicitSource?: string,
   tableAliases?: TableAliasMap,
 ): Omit<DescribeColumn, 'index' | 'name'> {
+  const specialIdentifierType = inferSpecialIdentifierType(expression, dialect);
+  if (specialIdentifierType) {
+    return { type: specialIdentifierType, confidence: 'medium', source: 'expression' };
+  }
+
   const constructorType = inferConstructorType(expression, schema, binds);
   if (constructorType) {
     return { type: constructorType, confidence: 'medium', source: 'expression' };
@@ -156,6 +155,11 @@ function inferColumn(
   const bindSensitiveType = inferBindSensitiveFunctionType(expression, binds);
   if (bindSensitiveType) {
     return { type: bindSensitiveType, confidence: 'medium', source: 'expression' };
+  }
+
+  const conditionalType = inferConditionalType(expression, schema, binds);
+  if (conditionalType) {
+    return { type: conditionalType, confidence: 'medium', source: 'expression' };
   }
 
   const annotatedType = dataTypeToString(ast.getInferredType(expression as never));
@@ -214,6 +218,22 @@ function inferColumn(
   };
 }
 
+function inferSpecialIdentifierType(expression: AstExpression, dialect: string): string | undefined {
+  const parameter = getAst(expression, 'parameter');
+  if (isRecord(parameter) && String(parameter.style ?? '').toLowerCase() === 'doubleat') {
+    const name = String(parameter.name ?? '').toLowerCase();
+    if (['spid', 'rowcount', 'fetch_status', 'nestlevel', 'trancount'].includes(name)) return 'integer';
+    if (['servername', 'servicename', 'version', 'language', 'lock_timeout'].includes(name)) return 'text';
+  }
+
+  const column = getAst(expression, 'column');
+  if (dialect === 'oracle' && isRecord(column) && !identifierName(column.table) && identifierName(column.name)?.toLowerCase() === 'user') {
+    return 'text';
+  }
+
+  return undefined;
+}
+
 function annotateSqlTypes(sql: string, dialect: string, schema: ValidationSchema): unknown[] | undefined {
   try {
     const result = annotateTypes(sql, dialect as never, toPolyglotSchema(schema) as never) as PolyglotAnnotateResult;
@@ -226,6 +246,7 @@ function annotateSqlTypes(sql: string, dialect: string, schema: ValidationSchema
 function builtinMetadataSchema(): ValidationSchema {
   const text = (name: string): SchemaColumn => ({ name, type: 'text' });
   const integer = (name: string): SchemaColumn => ({ name, type: 'integer' });
+  const decimal = (name: string): SchemaColumn => ({ name, type: 'decimal' });
   const boolean = (name: string): SchemaColumn => ({ name, type: 'boolean' });
   const timestamp = (name: string): SchemaColumn => ({ name, type: 'timestamp' });
   return {
@@ -237,6 +258,7 @@ function builtinMetadataSchema(): ValidationSchema {
           text('table_catalog'),
           text('table_schema'),
           text('table_name'),
+          text('name'),
           text('table_type'),
           text('self_referencing_column_name'),
           text('reference_generation'),
@@ -412,6 +434,21 @@ function builtinMetadataSchema(): ValidationSchema {
           text('routine_definition'),
           text('external_name'),
           text('external_language'),
+          timestamp('created'),
+          timestamp('last_altered'),
+        ],
+      },
+      {
+        schema: 'information_schema',
+        name: 'functions',
+        columns: [
+          text('function_catalog'),
+          text('function_schema'),
+          text('function_name'),
+          text('function_owner'),
+          text('argument_signature'),
+          text('data_type'),
+          text('function_definition'),
           timestamp('created'),
           timestamp('last_altered'),
         ],
@@ -670,6 +707,89 @@ function builtinMetadataSchema(): ValidationSchema {
       },
       {
         schema: 'pg_catalog',
+        name: 'pg_roles',
+        columns: [
+          text('rolname'),
+          boolean('rolsuper'),
+          boolean('rolinherit'),
+          boolean('rolcreaterole'),
+          boolean('rolcreatedb'),
+          boolean('rolcanlogin'),
+          boolean('rolreplication'),
+          integer('rolconnlimit'),
+          text('rolpassword'),
+          timestamp('rolvaliduntil'),
+          text('rolconfig'),
+          integer('oid'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_user',
+        columns: [
+          text('usename'),
+          integer('usesysid'),
+          boolean('usecreatedb'),
+          boolean('usesuper'),
+          boolean('userepl'),
+          boolean('usebypassrls'),
+          timestamp('valuntil'),
+          text('useconfig'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_indexes',
+        columns: [
+          text('schemaname'),
+          text('tablename'),
+          text('indexname'),
+          text('tablespace'),
+          text('indexdef'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_locks',
+        columns: [
+          text('locktype'),
+          integer('database'),
+          integer('relation'),
+          integer('page'),
+          integer('tuple'),
+          text('virtualxid'),
+          text('transactionid'),
+          integer('classid'),
+          integer('objid'),
+          integer('objsubid'),
+          text('virtualtransaction'),
+          integer('pid'),
+          text('mode'),
+          boolean('granted'),
+          boolean('fastpath'),
+          timestamp('waitstart'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_class',
+        columns: [
+          text('relname'),
+          integer('relnamespace'),
+          text('relkind'),
+          integer('relowner'),
+          integer('relam'),
+          integer('relfilenode'),
+          integer('reltablespace'),
+          integer('relpages'),
+          integer('reltuples'),
+          boolean('relhasindex'),
+          boolean('relisshared'),
+          text('relpersistence'),
+          boolean('relrowsecurity'),
+        ],
+      },
+      {
         name: 'pg_class',
         columns: [
           text('relname'),
@@ -698,12 +818,207 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        name: 'pg_namespace',
+        columns: [
+          integer('oid'),
+          text('nspname'),
+          integer('nspowner'),
+          text('nspacl'),
+        ],
+      },
+      {
         name: 'pg_available_extensions',
         columns: [
           text('name'),
           text('default_version'),
           text('installed_version'),
           text('comment'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_extension',
+        columns: [
+          integer('oid'),
+          text('extname'),
+          integer('extowner'),
+          integer('extnamespace'),
+          boolean('extrelocatable'),
+          text('extversion'),
+          text('extconfig'),
+          text('extcondition'),
+        ],
+      },
+      {
+        name: 'pg_extension',
+        columns: [
+          integer('oid'),
+          text('extname'),
+          integer('extowner'),
+          integer('extnamespace'),
+          boolean('extrelocatable'),
+          text('extversion'),
+          text('extconfig'),
+          text('extcondition'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_type',
+        columns: [
+          integer('oid'),
+          text('typname'),
+          integer('typnamespace'),
+          integer('typowner'),
+          integer('typlen'),
+          boolean('typbyval'),
+          text('typtype'),
+          text('typcategory'),
+          boolean('typispreferred'),
+          boolean('typnotnull'),
+          integer('typbasetype'),
+        ],
+      },
+      {
+        name: 'pg_type',
+        columns: [
+          integer('oid'),
+          text('typname'),
+          integer('typnamespace'),
+          integer('typowner'),
+          integer('typlen'),
+          boolean('typbyval'),
+          text('typtype'),
+          text('typcategory'),
+          boolean('typispreferred'),
+          boolean('typnotnull'),
+          integer('typbasetype'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_proc',
+        columns: [
+          integer('oid'),
+          text('proname'),
+          integer('pronamespace'),
+          integer('proowner'),
+          text('prolang'),
+          decimal('procost'),
+          decimal('prorows'),
+          text('provariadic'),
+          text('prokind'),
+          boolean('prosecdef'),
+          boolean('proleakproof'),
+          boolean('proisstrict'),
+          boolean('proretset'),
+        ],
+      },
+      {
+        name: 'pg_proc',
+        columns: [
+          integer('oid'),
+          text('proname'),
+          integer('pronamespace'),
+          integer('proowner'),
+          text('prolang'),
+          decimal('procost'),
+          decimal('prorows'),
+          text('provariadic'),
+          text('prokind'),
+          boolean('prosecdef'),
+          boolean('proleakproof'),
+          boolean('proisstrict'),
+          boolean('proretset'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_constraint',
+        columns: [
+          integer('oid'),
+          text('conname'),
+          integer('connamespace'),
+          text('contype'),
+          boolean('condeferrable'),
+          boolean('condeferred'),
+          boolean('convalidated'),
+          integer('conrelid'),
+          integer('confrelid'),
+          text('conkey'),
+        ],
+      },
+      {
+        name: 'pg_constraint',
+        columns: [
+          integer('oid'),
+          text('conname'),
+          integer('connamespace'),
+          text('contype'),
+          boolean('condeferrable'),
+          boolean('condeferred'),
+          boolean('convalidated'),
+          integer('conrelid'),
+          integer('confrelid'),
+          text('conkey'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_attribute',
+        columns: [
+          integer('attrelid'),
+          text('attname'),
+          integer('atttypid'),
+          integer('attlen'),
+          integer('attnum'),
+          integer('attndims'),
+          boolean('attnotnull'),
+          boolean('atthasdef'),
+          boolean('attisdropped'),
+          boolean('attislocal'),
+        ],
+      },
+      {
+        name: 'pg_attribute',
+        columns: [
+          integer('attrelid'),
+          text('attname'),
+          integer('atttypid'),
+          integer('attlen'),
+          integer('attnum'),
+          integer('attndims'),
+          boolean('attnotnull'),
+          boolean('atthasdef'),
+          boolean('attisdropped'),
+          boolean('attislocal'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_stat_user_indexes',
+        columns: [
+          integer('relid'),
+          integer('indexrelid'),
+          text('schemaname'),
+          text('relname'),
+          text('indexrelname'),
+          integer('idx_scan'),
+          integer('idx_tup_read'),
+          integer('idx_tup_fetch'),
+        ],
+      },
+      {
+        name: 'pg_stat_user_indexes',
+        columns: [
+          integer('relid'),
+          integer('indexrelid'),
+          text('schemaname'),
+          text('relname'),
+          text('indexrelname'),
+          integer('idx_scan'),
+          integer('idx_tup_read'),
+          integer('idx_tup_fetch'),
         ],
       },
       {
@@ -735,6 +1050,35 @@ function builtinMetadataSchema(): ValidationSchema {
           text('state'),
           text('query'),
           timestamp('query_start'),
+        ],
+      },
+      {
+        name: 'pg_stat_user_tables',
+        columns: [
+          integer('relid'),
+          text('schemaname'),
+          text('relname'),
+          integer('seq_scan'),
+          integer('seq_tup_read'),
+          integer('idx_scan'),
+          integer('idx_tup_fetch'),
+          integer('n_tup_ins'),
+          integer('n_tup_upd'),
+          integer('n_tup_del'),
+        ],
+      },
+      {
+        name: 'pg_stat_database',
+        columns: [
+          integer('datid'),
+          text('datname'),
+          integer('numbackends'),
+          integer('xact_commit'),
+          integer('xact_rollback'),
+          integer('blks_read'),
+          integer('blks_hit'),
+          integer('tup_returned'),
+          integer('tup_fetched'),
         ],
       },
       {
@@ -784,6 +1128,28 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        schema: 'pg_catalog',
+        name: 'pg_views',
+        columns: [
+          text('schemaname'),
+          text('viewname'),
+          text('viewowner'),
+          text('definition'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_matviews',
+        columns: [
+          text('schemaname'),
+          text('matviewname'),
+          text('matviewowner'),
+          text('tablespace'),
+          boolean('ispopulated'),
+          text('definition'),
+        ],
+      },
+      {
         name: 'pg_views',
         columns: [
           text('schemaname'),
@@ -801,6 +1167,20 @@ function builtinMetadataSchema(): ValidationSchema {
           text('tablespace'),
           boolean('ispopulated'),
           text('definition'),
+        ],
+      },
+      {
+        schema: 'information_schema',
+        name: 'processlist',
+        columns: [
+          integer('ID'),
+          text('USER'),
+          text('HOST'),
+          text('DB'),
+          text('COMMAND'),
+          integer('TIME'),
+          text('STATE'),
+          text('INFO'),
         ],
       },
       {
@@ -829,6 +1209,39 @@ function builtinMetadataSchema(): ValidationSchema {
           text('PROCESSLIST_HOST'),
           text('PROCESSLIST_DB'),
           text('PROCESSLIST_COMMAND'),
+        ],
+      },
+      {
+        schema: 'performance_schema',
+        name: 'global_variables',
+        columns: [
+          text('VARIABLE_NAME'),
+          text('VARIABLE_VALUE'),
+        ],
+      },
+      {
+        schema: 'performance_schema',
+        name: 'global_status',
+        columns: [
+          text('VARIABLE_NAME'),
+          text('VARIABLE_VALUE'),
+        ],
+      },
+      {
+        schema: 'information_schema',
+        name: 'events',
+        columns: [
+          text('EVENT_CATALOG'),
+          text('EVENT_SCHEMA'),
+          text('EVENT_NAME'),
+          text('DEFINER'),
+          text('TIME_ZONE'),
+          text('EVENT_BODY'),
+          text('EVENT_DEFINITION'),
+          text('EVENT_TYPE'),
+          text('STATUS'),
+          timestamp('CREATED'),
+          timestamp('LAST_ALTERED'),
         ],
       },
       {
@@ -1053,6 +1466,20 @@ function builtinMetadataSchema(): ValidationSchema {
       },
       {
         schema: 'system',
+        name: 'functions',
+        columns: [
+          text('name'),
+          boolean('is_aggregate'),
+          text('case_insensitive'),
+          text('alias_to'),
+          timestamp('create_query'),
+          text('origin'),
+          text('description'),
+          text('syntax'),
+        ],
+      },
+      {
+        schema: 'system',
         name: 'databases',
         columns: [
           text('name'),
@@ -1091,12 +1518,52 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        schema: 'system',
+        name: 'query_log',
+        columns: [
+          text('hostname'),
+          text('type'),
+          timestamp('event_time'),
+          integer('query_duration_ms'),
+          integer('read_rows'),
+          integer('read_bytes'),
+          integer('written_rows'),
+          integer('written_bytes'),
+          text('query'),
+          text('query_id'),
+          text('user'),
+          text('database'),
+        ],
+      },
+      {
         schema: 'svv',
         name: 'tables',
         columns: [
           text('table_catalog'),
           text('table_schema'),
           text('table_name'),
+          text('table_type'),
+          text('remarks'),
+        ],
+      },
+      {
+        name: 'svv_tables',
+        columns: [
+          text('database_name'),
+          text('schema_name'),
+          text('table_name'),
+          text('table_type'),
+          text('remarks'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'svv_tables',
+        columns: [
+          text('database_name'),
+          text('schema_name'),
+          text('table_name'),
+          text('tablename'),
           text('table_type'),
           text('remarks'),
         ],
@@ -1146,6 +1613,20 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        name: 'stl_query',
+        columns: [
+          integer('userid'),
+          integer('query'),
+          integer('pid'),
+          integer('xid'),
+          text('database'),
+          timestamp('starttime'),
+          timestamp('endtime'),
+          boolean('aborted'),
+          text('label'),
+        ],
+      },
+      {
         schema: 'all',
         name: 'tables',
         columns: [
@@ -1164,6 +1645,126 @@ function builtinMetadataSchema(): ValidationSchema {
           text('tablespace_name'),
           text('status'),
           integer('num_rows'),
+        ],
+      },
+      {
+        name: 'all_tab_columns',
+        columns: [
+          text('owner'),
+          text('table_name'),
+          text('column_name'),
+          text('data_type'),
+          integer('data_length'),
+          integer('data_precision'),
+          integer('data_scale'),
+          text('nullable'),
+          integer('column_id'),
+          text('data_default'),
+        ],
+      },
+      {
+        name: 'user_tables',
+        columns: [
+          text('table_name'),
+          text('tablespace_name'),
+          text('status'),
+          integer('num_rows'),
+          integer('blocks'),
+          integer('empty_blocks'),
+          integer('avg_space'),
+          timestamp('last_analyzed'),
+        ],
+      },
+      {
+        name: 'all_users',
+        columns: [
+          text('username'),
+          integer('user_id'),
+          timestamp('created'),
+          text('common'),
+          text('oracle_maintained'),
+          text('inherited'),
+          text('default_collation'),
+          text('implicit'),
+          text('all_shard'),
+        ],
+      },
+      {
+        name: 'all_objects',
+        columns: [
+          text('owner'),
+          text('object_name'),
+          text('subobject_name'),
+          integer('object_id'),
+          integer('data_object_id'),
+          text('object_type'),
+          timestamp('created'),
+          timestamp('last_ddl_time'),
+          text('status'),
+          boolean('temporary'),
+          boolean('generated'),
+        ],
+      },
+      {
+        name: 'all_views',
+        columns: [
+          text('owner'),
+          text('view_name'),
+          text('text'),
+          integer('text_length'),
+          text('type_text'),
+          integer('type_text_length'),
+          text('oid_text'),
+          integer('oid_text_length'),
+        ],
+      },
+      {
+        name: 'all_constraints',
+        columns: [
+          text('owner'),
+          text('constraint_name'),
+          text('constraint_type'),
+          text('table_name'),
+          text('search_condition'),
+          text('r_owner'),
+          text('r_constraint_name'),
+          text('delete_rule'),
+          text('status'),
+          boolean('deferrable'),
+          boolean('deferred'),
+          boolean('validated'),
+          timestamp('last_change'),
+        ],
+      },
+      {
+        name: 'user_constraints',
+        columns: [
+          text('constraint_name'),
+          text('constraint_type'),
+          text('table_name'),
+          text('search_condition'),
+          text('r_owner'),
+          text('r_constraint_name'),
+          text('delete_rule'),
+          text('status'),
+          boolean('deferrable'),
+          boolean('deferred'),
+          boolean('validated'),
+          timestamp('last_change'),
+        ],
+      },
+      {
+        name: 'user_objects',
+        columns: [
+          text('object_name'),
+          text('subobject_name'),
+          integer('object_id'),
+          text('object_type'),
+          timestamp('created'),
+          timestamp('last_ddl_time'),
+          text('status'),
+          boolean('temporary'),
+          boolean('generated'),
         ],
       },
       {
@@ -1217,6 +1818,19 @@ function builtinMetadataSchema(): ValidationSchema {
           timestamp('last_modified_time'),
           integer('row_count'),
           integer('size_bytes'),
+        ],
+      },
+      {
+        name: '__TABLES_SUMMARY__',
+        columns: [
+          integer('project_id'),
+          integer('dataset_id'),
+          integer('table_id'),
+          timestamp('creation_time'),
+          timestamp('last_modified_time'),
+          integer('row_count'),
+          integer('size_bytes'),
+          integer('type'),
         ],
       },
       {
@@ -1284,6 +1898,50 @@ function builtinMetadataSchema(): ValidationSchema {
           timestamp('last_altered'),
           integer('row_count'),
           integer('bytes'),
+        ],
+      },
+      {
+        schema: 'account_usage',
+        name: 'databases',
+        columns: [
+          text('database_id'),
+          text('database_name'),
+          text('database_owner'),
+          timestamp('created'),
+          timestamp('last_altered'),
+          boolean('deleted'),
+          text('comment'),
+        ],
+      },
+      {
+        schema: 'account_usage',
+        name: 'schemata',
+        columns: [
+          text('catalog_id'),
+          text('catalog_name'),
+          text('schema_id'),
+          text('schema_name'),
+          text('schema_owner'),
+          timestamp('created'),
+          timestamp('last_altered'),
+          boolean('deleted'),
+          text('comment'),
+        ],
+      },
+      {
+        schema: 'account_usage',
+        name: 'columns',
+        columns: [
+          text('table_catalog'),
+          text('table_schema'),
+          text('table_name'),
+          text('column_name'),
+          integer('ordinal_position'),
+          text('column_default'),
+          boolean('is_nullable'),
+          text('data_type'),
+          timestamp('created'),
+          timestamp('last_altered'),
         ],
       },
       {
@@ -1365,6 +2023,8 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   if (isRecord(paren) && isRecord(paren.this)) return inferColumn(paren.this, 'expression', schema, binds, 'generic').type;
   const neg = getAst(expression, 'neg');
   if (isRecord(neg) && isRecord(neg.this)) return inferColumn(neg.this, 'expression', schema, binds, 'generic').type;
+  const arraySlice = getAst(expression, 'array_slice');
+  if (isRecord(arraySlice) && isRecord(arraySlice.this)) return inferColumn(arraySlice.this, 'expression', schema, binds, 'generic').type;
 
   const windowType = inferWindowFunctionType(expression, schema, binds);
   if (windowType) return windowType;
@@ -1380,13 +2040,15 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   if (scalarSubqueryType) return scalarSubqueryType;
   const aggregateType = inferAggregateType(expression, schema, binds);
   if (aggregateType) return aggregateType;
+  const methodType = inferMethodCallType(expression, schema, binds);
+  if (methodType) return methodType;
   const scalarType = inferScalarFunctionType(expression, schema, binds);
   if (scalarType) return scalarType;
-  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'mod')
+  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'int_div') ?? getAst(expression, 'mod')
     ?? getAst(expression, 'bitwise_and') ?? getAst(expression, 'bitwise_or') ?? getAst(expression, 'bitwise_xor')
     ?? getAst(expression, 'bitwise_left_shift') ?? getAst(expression, 'bitwise_right_shift');
   if (isRecord(arithmetic)) {
-    const types = [arithmetic.left, arithmetic.right]
+    const types = [arithmetic.left, arithmetic.right, arithmetic.this, arithmetic.expression]
       .filter(isRecord)
       .map((part) => inferColumn(part, 'expression', schema, binds, 'generic').type);
     if (types.some((type) => /decimal|numeric|real|double|float/i.test(type))) return 'decimal';
@@ -1407,6 +2069,26 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   return undefined;
 }
 
+function inferMethodCallType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+  const methodCall = getAst(expression, 'method_call');
+  if (!isRecord(methodCall)) return undefined;
+  const name = identifierName(methodCall.method)?.toLowerCase();
+  if (!name) return undefined;
+  const receiver = isRecord(methodCall.this) ? methodCall.this : undefined;
+  if (['lower', 'upper', 'trim', 'ltrim', 'rtrim', 'substring', 'substr', 'replace', 'regexp_replace'].includes(name)) return 'text';
+  if (['length', 'char_length', 'character_length', 'array_length', 'array_size', 'cardinality', 'list_position', 'list_unique'].includes(name)) return 'integer';
+  if (['contains', 'list_contains', 'array_contains', 'has', 'list_has', 'list_has_all', 'list_has_any'].includes(name)) return 'boolean';
+  if (['array_join', 'array_to_string'].includes(name)) return 'text';
+  if (['array_distinct', 'array_compact', 'array_reverse', 'array_sort', 'array_remove', 'list_sort'].includes(name)) {
+    return receiver ? firstArrayArgumentType([receiver], schema, binds) : undefined;
+  }
+  if (['list_extract', 'array_extract'].includes(name)) {
+    const type = receiver ? firstArrayArgumentType([receiver], schema, binds) : undefined;
+    return type ? arrayElementType(type) ?? type : undefined;
+  }
+  return undefined;
+}
+
 function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
   if (isAst(expression, 'count')) return 'integer';
   if (isAst(expression, 'avg')) return 'decimal';
@@ -1416,8 +2098,14 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   const boolAggregate = getAst(expression, 'bool_and') ?? getAst(expression, 'bool_or') ?? getAst(expression, 'every') ?? getAst(expression, 'logical_and') ?? getAst(expression, 'logical_or');
   if (isRecord(boolAggregate)) return 'boolean';
 
-  const decimalAggregate = getAst(expression, 'stddev') ?? getAst(expression, 'variance');
+  const decimalAggregate = getAst(expression, 'stddev') ?? getAst(expression, 'variance') ?? getAst(expression, 'stddev_pop') ?? getAst(expression, 'stddev_samp') ?? getAst(expression, 'var_pop') ?? getAst(expression, 'var_samp');
   if (isRecord(decimalAggregate)) return 'decimal';
+
+  const bitwiseAggregate = getAst(expression, 'bitwise_and_agg') ?? getAst(expression, 'bitwise_or_agg') ?? getAst(expression, 'bitwise_xor_agg');
+  if (isRecord(bitwiseAggregate)) {
+    const inner = firstAggregateExpression(bitwiseAggregate);
+    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'integer';
+  }
 
   const textAggregate = getAst(expression, 'string_agg') ?? getAst(expression, 'group_concat') ?? getAst(expression, 'listagg');
   if (isRecord(textAggregate)) return 'text';
@@ -1427,6 +2115,12 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
     const inner = firstAggregateExpression(arrayAggregate);
     const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
     return `array<${type}>`;
+  }
+
+  const arrayConcatAggregate = getAst(expression, 'array_concat_agg');
+  if (isRecord(arrayConcatAggregate)) {
+    const inner = firstAggregateExpression(arrayConcatAggregate);
+    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'array<unknown>';
   }
 
   const jsonAggregate = getAst(expression, 'json_agg') ?? getAst(expression, 'json_object_agg') ?? getAst(expression, 'json_arrayagg') ?? getAst(expression, 'json_objectagg')
@@ -1469,14 +2163,61 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
 }
 
 function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec): string | undefined {
-  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct'].includes(name)) return 'integer';
-  if (['avg', 'corr', 'covar_pop', 'covar_samp', 'regr_slope', 'regr_intercept', 'regr_r2', 'stddev', 'variance', 'percentile_cont'].includes(name)) return 'decimal';
+  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count'].includes(name)) return 'integer';
+  if ([
+    'avg',
+    'corr',
+    'covar_pop',
+    'covar_samp',
+    'entropy',
+    'geometric_mean',
+    'product',
+    'regr_avgx',
+    'regr_avgy',
+    'regr_intercept',
+    'regr_r2',
+    'regr_slope',
+    'stddev',
+    'stddev_pop',
+    'stddev_samp',
+    'variance',
+    'var_pop',
+    'var_samp',
+    'percentile_approx',
+    'percentile_cont',
+    'quantile',
+    'quantile_cont',
+  ].includes(name)) return 'decimal';
   if (['bool_and', 'bool_or', 'every', 'logical_and', 'logical_or'].includes(name)) return 'boolean';
-  if (['string_agg', 'group_concat', 'listagg'].includes(name)) return 'text';
+  if (['string_agg', 'group_concat', 'listagg', 'ai_agg'].includes(name)) return 'text';
+  if (['bit_and', 'bit_or', 'bit_xor', 'checksum'].includes(name)) {
+    const inner = firstAggregateExpression(aggregate);
+    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'integer';
+  }
   if (['array_agg', 'list', 'collect_list', 'collect_set'].includes(name)) {
     const inner = firstAggregateExpression(aggregate);
     const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
     return `array<${type}>`;
+  }
+  if (name === 'array_concat_agg') {
+    const inner = firstAggregateExpression(aggregate);
+    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'array<unknown>';
+  }
+  if (name === 'approx_quantiles') {
+    const inner = firstAggregateExpression(aggregate);
+    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    return `array<${type}>`;
+  }
+  if (['histogram'].includes(name)) {
+    const inner = firstAggregateExpression(aggregate);
+    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    return `map<${type}, integer>`;
+  }
+  if (name === 'map_agg' || name === 'mapagg') {
+    const args = functionArguments(aggregate);
+    const keyType = isRecord(args[0]) ? inferColumn(args[0], 'map_key', schema, binds, 'generic').type : 'unknown';
+    const valueType = isRecord(args[1]) ? inferColumn(args[1], 'map_value', schema, binds, 'generic').type : 'unknown';
+    return `map<${keyType}, ${valueType}>`;
   }
   if (['json_agg', 'json_object_agg', 'json_arrayagg', 'json_objectagg', 'object_agg'].includes(name)) return 'json';
   if (['any_value', 'first', 'last', 'mode', 'percentile_disc'].includes(name)) {
@@ -1536,25 +2277,38 @@ function inferPredicateType(expression: AstExpression): string | undefined {
     'between',
     'exists',
     'regexp_like',
+    'starts_with',
+    'ends_with',
+    'contains',
+    'array_contains_all',
+    'array_contained_by',
+    'array_overlaps',
   ];
   return predicates.some((key) => isAst(expression, key)) ? 'boolean' : undefined;
 }
 
 function inferJsonType(expression: AstExpression): string | undefined {
   if (getAst(expression, 'json_object') || getAst(expression, 'j_s_o_n_array') || getAst(expression, 'json_extract')) return 'json';
+  if (getAst(expression, 'j_s_o_n_extract')) return 'json';
   if (getAst(expression, 'json_value')) return 'text';
   if (getAst(expression, 'to_json')) return 'json';
+  if (getAst(expression, 'json_keys')) return 'json';
   if (getAst(expression, 'json_array_length')) return 'integer';
-  if (getAst(expression, 'json_typeof') || getAst(expression, 'jsonb_typeof')) return 'text';
+  if (getAst(expression, 'json_typeof') || getAst(expression, 'jsonb_typeof') || getAst(expression, 'json_type')) return 'text';
 
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
-  if (['json_build_object', 'json_build_array', 'json_object', 'json_array', 'to_json'].includes(name)) return 'json';
+  if (['json_build_object', 'json_build_array', 'json_object', 'json_array', 'json_keys', 'to_json'].includes(name)) return 'json';
   if (['jsonb_build_object', 'jsonb_build_array', 'to_jsonb'].includes(name)) return 'jsonb';
-  if (['json_extract', 'json_query'].includes(name)) return 'json';
-  if (['json_extract_scalar', 'json_value'].includes(name)) return 'text';
+  if (['json_extract', 'json_query', 'json_set', 'json_insert', 'json_remove', 'json_merge_patch', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
+  if (['json_query_array'].includes(name)) return 'array<json>';
+  if (['json_value_array'].includes(name)) return 'array<text>';
+  if (['json_extract_scalar', 'json_value', 'json_search', 'get_json_object', 'json_tuple', 'jsonextractstring', 'jsonb_extract_path_text'].includes(name)) return 'text';
   if (['json_array_length', 'jsonb_array_length', 'json_length', 'json_size'].includes(name)) return 'integer';
+  if (['jsonextractint', 'jsonextractuint'].includes(name)) return 'integer';
+  if (['jsonextractfloat'].includes(name)) return 'decimal';
+  if (['jsonhas', 'json_valid', 'jsonb_path_exists', 'json_array_contains'].includes(name)) return 'boolean';
   if (['json_typeof', 'jsonb_typeof', 'json_type'].includes(name)) return 'text';
   return undefined;
 }
@@ -1573,21 +2327,27 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     }
   }
   if (getAst(expression, 'extract')) return 'integer';
+  if (getAst(expression, 'day') || getAst(expression, 'month') || getAst(expression, 'year')) return 'integer';
+  if (getAst(expression, 'date_diff')) return 'integer';
+  if (getAst(expression, 'last_day')) return 'date';
+  if (getAst(expression, 'add_months')) return 'date';
+  if (getAst(expression, 'months_between')) return 'decimal';
+  if (getAst(expression, 'epoch') || getAst(expression, 'epoch_ms') || getAst(expression, 'epoch_us') || getAst(expression, 'epoch_ns')) return 'integer';
 
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
-  if (['date_add', 'date_sub', 'timestamp_add', 'timestamp_sub', 'datetime_add', 'datetime_sub', 'add_months'].includes(name)) {
-    const value = firstExpression(functionArguments(fn));
-    if (value) {
-      const type = inferColumn(value, 'temporal', schema, binds, 'generic').type;
-      if (isTemporalType(type)) return type;
-    }
+  if (['date_add', 'date_sub', 'timestamp_add', 'timestamp_sub', 'datetime_add', 'datetime_sub', 'add_months', 'dateadd', 'timeadd', 'timestampadd', 'adddays', 'addmonths', 'addyears'].includes(name)) {
+    const valueType = functionArguments(fn)
+      .map((arg) => inferColumn(arg, 'temporal', schema, binds, 'generic').type)
+      .find(isTemporalType);
+    if (valueType) return valueType;
     if (name.startsWith('timestamp')) return 'timestamp';
     if (name.startsWith('datetime')) return 'datetime';
+    if (name.startsWith('time')) return 'time';
     return 'date';
   }
-  if (['date_trunc', 'timestamp_trunc', 'datetime_trunc'].includes(name)) {
+  if (['date_trunc', 'timestamp_trunc', 'datetime_trunc', 'datetrunc', 'tostartofday', 'tostartofhour', 'tostartofminute', 'tostartofmonth', 'tostartofyear'].includes(name)) {
     const args = functionArguments(fn);
     const value = args[1] ?? args[0];
     if (value) {
@@ -1597,12 +2357,25 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     }
     return name === 'date_trunc' || name === 'timestamp_trunc' ? 'timestamp' : 'datetime';
   }
-  if (name === 'date_part' || name === 'extract') return 'integer';
+  if (name === 'date_part' || name === 'extract' || /^to(?:year|month|day|hour|minute|second)/i.test(name)) return 'integer';
   if (['datediff', 'date_diff', 'timestampdiff', 'timestamp_diff'].includes(name)) return 'integer';
-  if (['make_date', 'date_from_parts', 'parse_date', 'to_date', 'str_to_date', 'ts_or_ds_to_date'].includes(name)) return 'date';
+  if (['unix_seconds', 'unix_millis', 'unix_micros', 'unix_timestamp'].includes(name)) return 'integer';
+  if (['epoch', 'epoch_ms', 'epoch_us', 'epoch_ns'].includes(name)) return 'integer';
+  if (['make_interval', 'justify_interval', 'justify_days', 'justify_hours'].includes(name)) return 'interval';
+  if (name === 'date_bin') {
+    const args = functionArguments(fn);
+    const value = args[1] ?? args[0];
+    if (value) {
+      const type = inferColumn(value, 'temporal', schema, binds, 'generic').type;
+      if (isTemporalType(type)) return type;
+    }
+    return 'timestamp';
+  }
+  if (['make_date', 'date_from_parts', 'parse_date', 'to_date', 'str_to_date', 'ts_or_ds_to_date', 'last_day', 'last_day_of_month'].includes(name)) return 'date';
   if (['make_time', 'time_from_parts', 'parse_time', 'to_time'].includes(name)) return 'time';
   if (['make_timestamp', 'timestamp_from_parts', 'datetime_from_parts', 'parse_timestamp', 'to_timestamp'].includes(name)) return 'timestamp';
   if (['parse_datetime', 'to_datetime'].includes(name)) return 'datetime';
+  if (['clock_timestamp', 'statement_timestamp', 'transaction_timestamp', 'current_timestamp', 'sysdate', 'systimestamp'].includes(name)) return 'timestamp';
   return undefined;
 }
 
@@ -1614,14 +2387,18 @@ function inferGeospatialFunctionType(expression: AstExpression): string | undefi
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
-  if (['st_geogpoint', 'st_geogfromtext', 'st_geogfromgeojson', 'st_geogfromwkb'].includes(name)) return 'geography';
+  if (['st_geogpoint', 'st_geogfromtext', 'st_geogfromgeojson', 'st_geogfromwkb', 'to_geography'].includes(name)) return 'geography';
   if ([
     'st_point',
     'st_makepoint',
+    'st_makeenvelope',
+    'to_geometry',
     'st_geomfromtext',
     'st_geometryfromtext',
     'st_geomfromgeojson',
     'st_geomfromwkb',
+    'st_setsrid',
+    'st_transform',
     'st_buffer',
     'st_centroid',
     'st_union',
@@ -1631,6 +2408,7 @@ function inferGeospatialFunctionType(expression: AstExpression): string | undefi
     'st_boundary',
   ].includes(name)) return 'geometry';
   if (['st_astext', 'st_aswkt', 'st_asgeojson', 'st_geohash'].includes(name)) return 'text';
+  if (['st_asbinary', 'st_aswkb'].includes(name)) return 'bytes';
   if ([
     'st_area',
     'st_distance',
@@ -1641,6 +2419,7 @@ function inferGeospatialFunctionType(expression: AstExpression): string | undefi
     'st_z',
     'st_azimuth',
   ].includes(name)) return 'decimal';
+  if (['st_srid', 'st_npoints', 'st_ndims', 'st_dimension'].includes(name)) return 'integer';
   if ([
     'st_contains',
     'st_coveredby',
@@ -1666,8 +2445,8 @@ function inferIdentifierHashRandomType(expression: AstExpression): string | unde
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
   if (['uuid', 'uuid_string', 'gen_random_uuid'].includes(name)) return 'uuid';
-  if (['md5', 'sha', 'sha1', 'hex', 'to_hex'].includes(name)) return 'text';
-  if (['sha224', 'sha256', 'sha384', 'sha512'].includes(name)) return 'bytes';
+  if (['encode', 'md5', 'password', 'sha', 'sha1', 'hex', 'to_hex'].includes(name)) return 'text';
+  if (['sha224', 'sha256', 'sha384', 'sha512', 'digest', 'gen_random_bytes', 'hmac'].includes(name)) return 'bytes';
   if (['random', 'rand'].includes(name)) return 'decimal';
   return undefined;
 }
@@ -1687,6 +2466,19 @@ function inferConditionalType(expression: AstExpression, schema: ValidationSchem
     return commonArgumentType(branches, schema, binds);
   }
 
+  const nvl2Expression = getAst(expression, 'nvl2');
+  if (isRecord(nvl2Expression)) {
+    const branches = [nvl2Expression.true_value, nvl2Expression.false_value].filter(isRecord);
+    return commonArgumentType(branches, schema, binds);
+  }
+
+  const genericFunction = getAst(expression, 'function');
+  if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'multiif') {
+    const args = functionArguments(genericFunction);
+    const branches = args.filter((_, index) => index % 2 === 1 || index === args.length - 1);
+    return commonArgumentType(branches, schema, binds);
+  }
+
   return undefined;
 }
 
@@ -1695,6 +2487,16 @@ function inferConstructorType(expression: AstExpression, schema: ValidationSchem
   if (isRecord(array) && Array.isArray(array.expressions)) {
     const type = commonArgumentType(array.expressions.filter(isRecord), schema, binds) ?? 'unknown';
     return `array<${type}>`;
+  }
+
+  const tuple = getAst(expression, 'tuple');
+  if (isRecord(tuple) && Array.isArray(tuple.expressions)) {
+    const fields = tuple.expressions.filter(isRecord).map((arg, index) => {
+      const name = inferNameFromAst(arg, index + 1);
+      const type = inferColumn(arg, name, schema, binds, 'generic').type;
+      return `${name} ${type}`;
+    });
+    return fields.length > 0 ? `record<${fields.join(', ')}>` : undefined;
   }
 
   const fn = getAst(expression, 'function');
@@ -1769,6 +2571,16 @@ function namedStructFields(args: AstExpression[], schema: ValidationSchema, bind
   return fields;
 }
 
+function structFieldsFromSchemaString(schema: string): string[] {
+  return splitTopLevel(schema, ',').flatMap((part) => {
+    const match = part.trim().match(/^([`"']?[\w$]+[`"']?)\s+(.+)$/);
+    if (!match) return [];
+    const name = cleanIdentifier(match[1]);
+    const type = dataTypeFromRawColumnSpec(match[2]) ?? 'unknown';
+    return name ? [`${name} ${type}`] : [];
+  });
+}
+
 function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string | undefined {
   if (![
     'transform',
@@ -1812,9 +2624,9 @@ function inferLambdaBodyType(expression: AstExpression, parameters: Map<string, 
   if (getAst(expression, 'array_contains')) return 'boolean';
   const predicate = inferPredicateType(expression);
   if (predicate) return predicate;
-  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'mod');
+  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'int_div') ?? getAst(expression, 'mod');
   if (isRecord(arithmetic)) {
-    const types = [arithmetic.left, arithmetic.right].filter(isRecord).map((part) => inferLambdaBodyType(part, parameters, schema, binds) ?? inferColumn(part, 'lambda_arg', schema, binds, 'generic').type);
+    const types = [arithmetic.left, arithmetic.right, arithmetic.this, arithmetic.expression].filter(isRecord).map((part) => inferLambdaBodyType(part, parameters, schema, binds) ?? inferColumn(part, 'lambda_arg', schema, binds, 'generic').type);
     if (types.some((type) => /decimal|numeric|real|double|float/i.test(type))) return 'decimal';
     if (types.some((type) => /int|number|bigint|smallint/i.test(type))) return 'integer';
   }
@@ -1835,11 +2647,20 @@ function namedArgumentStructFields(args: AstExpression[], schema: ValidationSche
 function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
   if (getAst(expression, 'lower') || getAst(expression, 'upper') || getAst(expression, 'trim') || getAst(expression, 'initcap')) return 'text';
   if (getAst(expression, 'substring') || getAst(expression, 'substr')) return 'text';
-  if (getAst(expression, 'length') || getAst(expression, 'char_length') || getAst(expression, 'bit_length') || getAst(expression, 'octet_length')) return 'integer';
+  if (getAst(expression, 'overlay')) return 'text';
+  if (getAst(expression, 'length') || getAst(expression, 'char_length') || getAst(expression, 'bit_length') || getAst(expression, 'octet_length') || getAst(expression, 'str_position')) return 'integer';
   if (isAst(expression, 'random') || isAst(expression, 'rand')) return 'decimal';
+  if (getAst(expression, 'degrees') || getAst(expression, 'radians')) return 'decimal';
   if (getAst(expression, 'cardinality')) return 'integer';
+  if (getAst(expression, 'array_length')) return 'integer';
+  if (getAst(expression, 'array_size')) return 'integer';
+  if (getAst(expression, 'array_position')) return 'integer';
   if (getAst(expression, 'array_contains')) return 'boolean';
   if (getAst(expression, 'to_number')) return 'decimal';
+  if (getAst(expression, 'json_query') || getAst(expression, 'parse_json')) return 'json';
+  if (getAst(expression, 'typeof')) return 'text';
+  const nvl = getAst(expression, 'nvl');
+  if (isRecord(nvl)) return commonArgumentType([nvl.this, nvl.expression].filter(isRecord), schema, binds);
 
   const mapType = inferMapFunctionType(expression, schema, binds);
   if (mapType) return mapType;
@@ -1847,6 +2668,38 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   const arrayAppend = getAst(expression, 'array_append');
   if (isRecord(arrayAppend)) {
     return firstArrayArgumentType([arrayAppend.this, arrayAppend.expression].filter(isRecord), schema, binds);
+  }
+  const arrayPrepend = getAst(expression, 'array_prepend');
+  if (isRecord(arrayPrepend)) {
+    return firstArrayArgumentType([arrayPrepend.this, arrayPrepend.expression].filter(isRecord), schema, binds);
+  }
+  const arrayDistinct = getAst(expression, 'array_distinct');
+  if (isRecord(arrayDistinct)) {
+    return firstArrayArgumentType([arrayDistinct.this].filter(isRecord), schema, binds);
+  }
+  const arrayRemove = getAst(expression, 'array_remove');
+  if (isRecord(arrayRemove)) {
+    return firstArrayArgumentType([arrayRemove.this, arrayRemove.expression].filter(isRecord), schema, binds);
+  }
+  const arrayReverse = getAst(expression, 'array_reverse');
+  if (isRecord(arrayReverse)) {
+    return firstArrayArgumentType([arrayReverse.this].filter(isRecord), schema, binds);
+  }
+  const arrayCompact = getAst(expression, 'array_compact');
+  if (isRecord(arrayCompact)) {
+    return firstArrayArgumentType([arrayCompact.this].filter(isRecord), schema, binds);
+  }
+  const arrayIntersect = getAst(expression, 'array_intersect');
+  if (isRecord(arrayIntersect)) {
+    return firstArrayArgumentType(functionArguments(arrayIntersect), schema, binds);
+  }
+  const arrayUnion = getAst(expression, 'array_union');
+  if (isRecord(arrayUnion)) {
+    return firstArrayArgumentType([arrayUnion.this, arrayUnion.expression].filter(isRecord), schema, binds);
+  }
+  const arrayExcept = getAst(expression, 'array_except');
+  if (isRecord(arrayExcept)) {
+    return firstArrayArgumentType([arrayExcept.this, arrayExcept.expression].filter(isRecord), schema, binds);
   }
 
   const numericValue = getAst(expression, 'abs') ?? getAst(expression, 'round') ?? getAst(expression, 'ceil') ?? getAst(expression, 'ceiling') ?? getAst(expression, 'floor');
@@ -1865,6 +2718,8 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   if ([
     'lower',
     'upper',
+    'lowerutf8',
+    'upperutf8',
     'reverse',
     'initcap',
     'trim',
@@ -1872,10 +2727,22 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'rtrim',
     'substring',
     'substr',
+    'substring_index',
+    'lpad',
+    'rpad',
+    'chr',
+    'code_points_to_string',
+    'elt',
+    'left',
+    'right',
+    'repeat',
+    'overlay',
     'replace',
     'regexp_replace',
     'regexp_extract',
     'regexp_substr',
+    'replaceregexpall',
+    'replaceregexpone',
     'split_part',
     'concat',
     'concat_ws',
@@ -1883,51 +2750,180 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'time_to_str',
     'date_format',
     'format_date',
-  ].includes(name)) return 'text';
-  if (['length', 'char_length', 'character_length', 'bit_length', 'octet_length', 'strpos', 'position', 'size', 'match_number'].includes(name)) return 'integer';
+    'pg_typeof',
+    'quote_ident',
+    'quote_literal',
+    'quote_nullable',
+    'inet_ntoa',
+    'to_json_string',
+    'json_value',
+    'json_extract_string',
+    'from_utf8',
+    'typeof',
+    'system$typeof',
+    'sha2',
+    'json_unquote',
+    'to_base64',
+    'check_json',
+    'tostring',
+    'format',
+    'bin',
+    'json_type',
+    'formatdatetime',
+    'soundex',
+    'space',
+    'to_varchar',
+    'inet6_ntoa',
+    'make_set',
+    'export_set',
+    'classifier',
+    'base64_encode',
+    'base64_decode_string',
+    'decompress_string',
+    'parse_url',
+	    'arraystringconcat',
+	    'current_schema',
+	    'inet_client_addr',
+	    'current_database',
+	    'current_user',
+	    'current_version',
+	    'current_account',
+	    'current_region',
+	    'current_role',
+	    'currentdatabase',
+	    'currentuser',
+	    'version',
+	    'db_name',
+	    'host_name',
+	    'app_name',
+	    'stats',
+	    'quote',
+	    'sqlite_version',
+	    'dump',
+	    'conv',
+	    'url_extract_host',
+	    'url_encode',
+	  ].includes(name)) return 'text';
+	  if (['length', 'char_length', 'character_length', 'bit_length', 'byte_length', 'octet_length', 'ascii', 'codepoint', 'instr', 'locate', 'strpos', 'position', 'charindex', 'size', 'match_number', 'array_position', 'array_size', 'array_ndims', 'field', 'find_in_set', 'inet_aton', 'width_bucket', 'num_nonnulls', 'num_nulls', 'crc32', 'farm_fingerprint', 'cityhash64', 'siphash64', 'checksum', 'levenshtein', 'editdistance', 'bit_count', 'bitcount', 'connection_id', 'last_insert_id', 'changes', 'total_changes', 'last_insert_rowid', 'pg_backend_pid', 'inet_server_port', 'txid_current', 'binary_checksum', 'patindex', 'day', 'dayofmonth', 'month', 'year', 'quarter', 'week', 'hour', 'minute', 'second'].includes(name)) return 'integer';
   if (['regexp_count'].includes(name)) return 'integer';
-  if (['regexp_instr'].includes(name)) return 'integer';
-  if (['regexp_full_match'].includes(name)) return 'boolean';
-  if (['regexp_matches', 'split', 'str_split', 'string_to_array', 'regexp_split', 'regexp_extract_all'].includes(name)) return 'array<text>';
+  if (['regexp_instr', 'regexp_position'].includes(name)) return 'integer';
+	  if (['regexp_full_match', 'regexp_contains', 'regexp_like', 'rlike', 'match', 'prefix', 'suffix', 'starts_with', 'ends_with', 'startswith', 'endswith', 'json_contains', 'json_valid', 'json_array_contains', 'is_null_value', 'is_inf', 'is_nan', 'is_ipv4', 'is_ipv6', 'contains', 'has', 'list_has', 'list_has_all', 'list_has_any', 'array_contains_all', 'array_contained_by', 'array_overlaps', 'empty', 'notempty'].includes(name)) return 'boolean';
+  if (['regexp_matches', 'regexp_match', 'split', 'str_split', 'string_to_array', 'regexp_split', 'regexp_extract_all', 'parse_ident'].includes(name)) return 'array<text>';
   if (['regexp_split_to_array'].includes(name)) return 'array<text>';
-  if (['uuid', 'uuid_string', 'gen_random_uuid'].includes(name)) return 'uuid';
+  if (name === 'regexp_split_to_table') return 'text';
+  if (name === 'array_dims') return 'text';
+  if (['to_tsvector', 'setweight'].includes(name)) return 'tsvector';
+  if (['to_tsquery', 'plainto_tsquery', 'phraseto_tsquery', 'websearch_to_tsquery'].includes(name)) return 'tsquery';
+  if (name === 'object_keys') return 'array<text>';
+  if (name === 'to_code_points') return 'array<integer>';
+  if (['uuid', 'uuid_string', 'gen_random_uuid', 'generate_uuid'].includes(name)) return 'uuid';
   if (['md5', 'sha', 'sha1', 'hex', 'to_hex'].includes(name)) return 'text';
-  if (['sha224', 'sha256', 'sha384', 'sha512'].includes(name)) return 'bytes';
+	  if (name === 'decode') {
+	    const args = functionArguments(genericFunction);
+	    if (args.length > 2) return commonArgumentType([...args.slice(2).filter((_, index) => index % 2 === 0), args.at(-1)].filter(isRecord), schema, binds);
+	    return 'bytes';
+	  }
+	  if (['sha224', 'sha256', 'sha384', 'sha512', 'md5_binary', 'sha2_binary', 'to_binary', 'uuid_to_bin', 'to_utf8', 'from_base64', 'unhex', 'inet6_aton', 'aes_encrypt', 'aes_decrypt', 'base64_decode_binary', 'compress', 'decompress_binary', 'zeroblob'].includes(name)) return 'bytes';
   if (['random', 'rand'].includes(name)) return 'decimal';
-  if (['array_length', 'array_size', 'cardinality', 'array_sum'].includes(name)) return 'integer';
+  if (['array_length', 'array_size', 'cardinality', 'array_sum', 'hash', 'list_position', 'list_unique', 'xxhash64'].includes(name)) return 'integer';
   if (['array_contains', 'list_contains'].includes(name)) return 'boolean';
   if (name === 'array_join') return 'text';
+  if (name === 'arrayjoin') {
+    const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+    return type ? arrayElementType(type) ?? type : undefined;
+  }
+  if (name === 'array_flatten') {
+    const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+    const element = type ? arrayElementType(type) : undefined;
+    return element && /^array\s*</i.test(element) ? element : type;
+  }
+  if (['array_compact', 'array_intersect', 'array_union', 'array_except', 'list_slice', 'list_reverse', 'list_concat'].includes(name)) {
+    return firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+  }
+  if (name === 'array_zip') {
+    const fields = functionArguments(genericFunction).map((arg, index) => {
+      const arrayType = inferColumn(arg, `array_zip_${index + 1}`, schema, binds, 'generic').type;
+      return `field_${index + 1} ${arrayElementType(arrayType) ?? 'unknown'}`;
+    });
+    return fields.length > 0 ? `array<struct<${fields.join(', ')}>>` : 'array<struct<>>';
+  }
+  if (['array_all', 'array_any'].includes(name)) return 'boolean';
+  if (['array_first', 'array_last', 'list_extract', 'array_extract'].includes(name)) {
+    const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+    return type ? arrayElementType(type) ?? type : undefined;
+  }
   if (['list_value', 'array_value'].includes(name)) {
     const type = commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'unknown';
     return `array<${type}>`;
+  }
+  if (name === 'from_json') {
+    const schema = literalString(functionArguments(genericFunction)[1]);
+    const fields = schema ? structFieldsFromSchemaString(schema) : [];
+    return fields.length > 0 ? `struct<${fields.join(', ')}>` : 'json';
   }
   if (name === 'struct_pack') {
     const fields = namedArgumentStructFields(functionArguments(genericFunction), schema, binds);
     return fields.length > 0 ? `struct<${fields.join(', ')}>` : undefined;
   }
   if (name === 'array_to_string') return 'text';
-  if (['array_cat', 'array_concat', 'array_prepend', 'array_append', 'array_remove', 'array_replace', 'array_reverse', 'array_sort'].includes(name)) {
+  if (['array_cat', 'array_concat', 'array_slice', 'array_distinct', 'array_prepend', 'array_append', 'array_remove', 'array_replace', 'array_reverse', 'array_sort'].includes(name)) {
     return firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
   }
   if (['current_date'].includes(name)) return 'date';
   if (['current_time'].includes(name)) return 'time';
   if (['current_timestamp', 'now', 'localtimestamp', 'utc_timestamp'].includes(name)) return 'timestamp';
   if (name === 'current_datetime') return 'datetime';
+  if (name === 'timestamp') return 'timestamp';
+  if (name === 'datetime') return 'datetime';
+  if (name === 'time') return 'time';
+  if (name === 'age') return 'interval';
   if (['grouping', 'grouping_id', 'groupingid'].includes(name)) return 'integer';
   if (name === 'convert' || name === 'try_convert') {
     const targetType = Array.isArray(genericFunction.args) ? genericFunction.args[0] : undefined;
     const type = isRecord(targetType) ? dataTypeToString(targetType.data_type ?? targetType) : undefined;
     if (type) return type;
   }
-  if (['abs', 'round', 'ceil', 'ceiling', 'floor', 'safe_add', 'safe_subtract', 'safe_multiply'].includes(name)) return commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'decimal';
-  if (name === 'safe_divide') return 'decimal';
-  if (['to_number', 'try_to_number', 'to_decimal', 'try_to_decimal'].includes(name)) return 'decimal';
+	  if (['abs', 'round', 'ceil', 'ceiling', 'floor', 'degrees', 'radians', 'truncate', 'safe_add', 'safe_subtract', 'safe_multiply', 'pmod', 'div'].includes(name)) return commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'decimal';
+	  if (['safe_divide', 'ieee_divide', 'cbrt'].includes(name)) return 'decimal';
+	  if (['factorial'].includes(name)) return 'integer';
+  if (['to_number', 'try_to_number', 'to_decimal', 'try_to_decimal', 'try_to_decfloat', 'zeroifnull'].includes(name)) return 'decimal';
+  if (/^to(?:u?int|integer|bigint|smallint)/i.test(name)) return 'integer';
+  if (/^to(?:float|double|decimal)/i.test(name)) return 'decimal';
+  if (name === 'tobool') return 'boolean';
+  if (name === 'to_boolean') return 'boolean';
+  if (name === 'touuid') return 'uuid';
+  if (name === 'todate') return 'date';
   if (name === 'try_base64_decode_string') return 'text';
   if (name === 'try_base64_decode_binary') return 'bytes';
-  if (['sqrt', 'power', 'pow', 'exp', 'ln', 'log', 'log10', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'radians', 'degrees', 'pi'].includes(name)) return 'decimal';
+  if (name === 'check_xml') return 'text';
+  if (['row_to_json', 'json_query', 'parse_json', 'json_set', 'json_insert', 'json_remove', 'json_merge_patch', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
+  if (name === 'json_query_array') return 'array<json>';
+  if (name === 'json_value_array') return 'array<text>';
+  if (name === 'get') return 'variant';
+  if (name === 'to_regclass') return 'regclass';
+  if (name === 'to_variant') return 'variant';
+  if (name === 'to_object') return 'object';
+  if (name === 'to_array') return 'array<variant>';
+  if (name === 'object_insert') return 'object';
+  if (['cosine_distance', 'euclidean_distance', 'manhattan_distance'].includes(name)) return 'decimal';
+  if (name === 'generate_embedding') return 'vector';
+  if (name === 'ai_classify') return 'object';
+  if (['ai_agg', 'ml_translate'].includes(name)) return 'text';
+  if (['ml_forecast', 'vector_search'].includes(name)) return 'variant';
+  if (['sqrt', 'power', 'pow', 'exp', 'ln', 'log', 'log10', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'radians', 'degrees', 'pi', 'ratio_to_report'].includes(name)) return 'decimal';
+  if (['months_between'].includes(name)) return 'decimal';
   if (['sign'].includes(name)) return 'integer';
   if (['coalesce', 'ifnull', 'nvl', 'nullif', 'greatest', 'least'].includes(name)) {
     return bindFirstArgumentType(genericFunction, binds) ?? commonArgumentType(functionArguments(genericFunction), schema, binds);
+  }
+  if (name === 'nvl2') {
+    const args = functionArguments(genericFunction);
+    return commonArgumentType(args.slice(1, 3), schema, binds);
+  }
+  if (name === 'multiif') {
+    const args = functionArguments(genericFunction);
+    const branches = args.filter((_, index) => index % 2 === 1 || index === args.length - 1);
+    return commonArgumentType(branches, schema, binds);
   }
   return undefined;
 }
@@ -1974,6 +2970,23 @@ function inferMapFunctionType(expression: AstExpression, schema: ValidationSchem
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
+  if (['map_keys', 'mapkeys'].includes(name)) {
+    const types = mapArgumentTypes(functionArguments(fn)[0], schema, binds);
+    return types ? `array<${types[0]}>` : undefined;
+  }
+  if (['map_values', 'mapvalues'].includes(name)) {
+    const types = mapArgumentTypes(functionArguments(fn)[0], schema, binds);
+    return types ? `array<${types[1]}>` : undefined;
+  }
+  if (name === 'element_at') {
+    const first = functionArguments(fn)[0];
+    const types = mapArgumentTypes(first, schema, binds);
+    if (types) return types[1];
+    if (isRecord(first)) {
+      const arrayType = inferColumn(first, 'element_at', schema, binds, 'generic').type;
+      return arrayElementType(arrayType);
+    }
+  }
   if (name === 'map_entries') {
     const types = mapArgumentTypes(functionArguments(fn)[0], schema, binds);
     return types ? `array<struct<key ${types[0]}, value ${types[1]}>>` : undefined;
@@ -2066,11 +3079,13 @@ function inferBindType(expression: AstExpression, binds: BindSpec): string | und
   if (!isRecord(placeholder)) return undefined;
   if (binds.mode === 'positional') {
     const index = typeof placeholder.index === 'number' ? placeholder.index : 1;
-    return binds.binds.find((bind) => bind.index === index)?.type;
+    const type = binds.binds.find((bind) => bind.index === index)?.type;
+    return type ? normalizeDataTypeName(type) : undefined;
   }
   if (binds.mode === 'named') {
     const name = typeof placeholder.name === 'string' ? placeholder.name : undefined;
-    return name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
+    const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
+    return type ? normalizeDataTypeName(type) : undefined;
   }
   return undefined;
 }
@@ -2220,6 +3235,8 @@ function typeAtPath(type: string, steps: NestedPathStep[]): string | undefined {
   return steps.reduce<string | undefined>((current, step) => {
     if (!current) return undefined;
     if (step.kind === 'element') return arrayElementType(current) ?? mapKeyValueTypes(current)?.[1];
+    if (/^(?:json|jsonb)$/i.test(current)) return current.toLowerCase();
+    if (/^(?:variant|object)$/i.test(current)) return current.toLowerCase();
     return fieldType(current, step.name);
   }, type);
 }
@@ -2288,7 +3305,8 @@ function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): s
   if (!isRecord(column)) return undefined;
   const rawName = identifierName(column.name);
   const name = rawName?.match(/^[@$]([A-Za-z_]\w*)$/)?.[1];
-  return name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
+  const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
+  return type ? normalizeDataTypeName(type) : undefined;
 }
 
 interface OutputItem {
@@ -2310,6 +3328,7 @@ function extractResultSets(parsedAst: unknown, schema: ValidationSchema, dialect
   return statements.map((statement) => {
     const items = outputItemsForStatement(statement, currentSchema, context, dialect);
     rememberPreparedStatement(statement, context);
+    forgetPreparedStatement(statement, context);
     currentSchema = schemaAfterStatement(statement, currentSchema, context);
     return items;
   });
@@ -2372,9 +3391,11 @@ function resultKindForStatement(statement: unknown): StatementResultKind {
   if (isRecord(statement.summarize)) return 'metadata';
   if (isRecord(statement.copy) && isNoResultCopy(statement.copy)) return 'none';
   if (isNoResultCommandStatement(statement)) return 'none';
+  if (isStaticCommandStatement(statement)) return 'static';
+  if (isStaticExecuteStatement(statement)) return 'static';
   if (isRecord(statement.execute) || isRecord(statement.copy)) return 'runtime';
   if (isRuntimeCommandStatement(statement)) return 'runtime';
-  if (isRecord(statement.select) || isRecord(statement.values) || isRecord(statement.union) || isRecord(statement.intersect) || isRecord(statement.except) || isRecord(statement.pivot)) return 'unknown';
+  if (isRecord(statement.select) || isRecord(statement.values) || isRecord(statement.union) || isRecord(statement.intersect) || isRecord(statement.except) || isRecord(statement.pivot) || isRecord(statement.put) || isWatchExpressionStatement(statement)) return 'unknown';
   if (isNoResultStatement(statement)) return 'none';
   return 'none';
 }
@@ -2385,10 +3406,33 @@ function isRuntimeCommandStatement(statement: Record<string, unknown>): boolean 
   return /^(call|execute|exec|copy)\b/.test(command);
 }
 
+function isStaticCommandStatement(statement: Record<string, unknown>): boolean {
+  if (!isRecord(statement.command)) return false;
+  const command = String(statement.command.this ?? '').toLowerCase();
+  return isStaticCommandText(command);
+}
+
+function isStaticCommandText(command: string): boolean {
+  return /^(?:optimize|repair|check|checksum)\s+table\b/.test(command)
+    || /^(?:list|ls)\s+@/.test(command)
+    || /^get\s+@/.test(command)
+    || /^(?:remove|rm)\s+@/.test(command)
+    || /^exists\s+(?:table|database|view|dictionary)\b/.test(command)
+    || /^explain\b/.test(command)
+    || /^show\s+(?:clusters|users|roles|grants|settings|dictionaries|functions|databases|schemas|tables|columns|create\s+(?:table|database|dictionary)|processlist)\b/.test(command)
+    || /^list\s+(?:file|jar|archive)\b/.test(command)
+    || /^(?:describe|desc)\s+table\b/.test(command)
+    || /^help\s+(?:table|database|column)\b/.test(command);
+}
+
+function isStaticExecuteStatement(statement: Record<string, unknown>): boolean {
+  return isRecord(statement.execute) && staticExecuteColumns(statement.execute).length > 0;
+}
+
 function isNoResultCommandStatement(statement: Record<string, unknown>): boolean {
   if (!isRecord(statement.command)) return false;
   const command = String(statement.command.this ?? '').toLowerCase();
-  return /^(lock|vacuum|msck|repair|refresh|discard|cluster|reindex)\b/.test(command);
+  return /^(lock|vacuum|msck|repair|refresh|discard|cluster|reindex|reset)\b/.test(command);
 }
 
 function isNoResultStatement(statement: Record<string, unknown>): boolean {
@@ -2400,6 +3444,7 @@ function isNoResultStatement(statement: Record<string, unknown>): boolean {
     'create_table',
     'create_view',
     'drop_table',
+    'undrop',
     'drop_view',
     'alter_table',
     'alter_view',
@@ -2416,6 +3461,7 @@ function isNoResultStatement(statement: Record<string, unknown>): boolean {
     'drop_database',
     'create_sequence',
     'drop_sequence',
+    'alter_sequence',
     'create_function',
     'create_procedure',
     'create_trigger',
@@ -2436,12 +3482,21 @@ function isNoResultStatement(statement: Record<string, unknown>): boolean {
     'analyze',
     'refresh',
     'truncate',
+    'truncate_table',
+    'locking_statement',
     'command',
+    'kill',
     'declare',
+    'declare_item',
     'attach',
     'detach',
+    'install',
     'cache',
     'uncache',
+    'load_data',
+    'clone',
+    'sequence_properties',
+    'query_band',
   ].some((key) => isRecord(statement[key]));
 }
 
@@ -2450,8 +3505,17 @@ function isNoResultCopy(copy: Record<string, unknown>): boolean {
 }
 
 function isNoResultExpressionCommand(statement: Record<string, unknown>): boolean {
+  const fn = isRecord(statement.function) ? String(statement.function.name ?? '').toLowerCase() : undefined;
+  if (fn && ['raiserror'].includes(fn)) return true;
+  if (isDfsExpressionCommand(statement)) return true;
   const keyword = topLevelExpressionKeyword(statement);
-  return keyword ? ['checkpoint', 'listen', 'notify', 'unlisten', 'savepoint', 'reindex', 'cluster'].includes(keyword) : false;
+  return keyword ? ['checkpoint', 'listen', 'notify', 'unlisten', 'savepoint', 'reindex', 'cluster', 'flush'].includes(keyword) : false;
+}
+
+function isDfsExpressionCommand(statement: Record<string, unknown>): boolean {
+  const sub = isRecord(statement.sub) ? statement.sub : undefined;
+  const leftColumn = sub && isRecord(sub.left) ? getAst(sub.left, 'column') : undefined;
+  return isRecord(leftColumn) && identifierName(leftColumn.name)?.toLowerCase() === 'dfs';
 }
 
 function topLevelExpressionKeyword(statement: Record<string, unknown>): string | undefined {
@@ -2459,6 +3523,12 @@ function topLevelExpressionKeyword(statement: Record<string, unknown>): string |
   const alias = isRecord(statement.alias) ? statement.alias : undefined;
   const aliasColumn = alias && isRecord(alias.this) && isRecord(alias.this.column) ? alias.this.column : undefined;
   return identifierName(column?.name ?? aliasColumn?.name)?.toLowerCase();
+}
+
+function isWatchExpressionStatement(statement: Record<string, unknown>): boolean {
+  const alias = isRecord(statement.alias) ? statement.alias : undefined;
+  if (!alias || !isRecord(alias.this) || !isRecord(alias.this.column)) return false;
+  return identifierName(alias.this.column.name)?.toLowerCase() === 'watch' && Boolean(identifierName(alias.alias));
 }
 
 function isTopLevelExpressionStatement(statement: Record<string, unknown>): boolean {
@@ -2515,6 +3585,7 @@ function isTopLevelExpressionStatement(statement: Record<string, unknown>): bool
     'create_type',
     'declare',
     'detach',
+    'install',
     'grant',
     'refresh',
     'revoke',
@@ -2610,8 +3681,120 @@ function suppressResolvedNestedDiagnostics(diagnostics: Diagnostic[], columns: D
     const match = diagnostic.message.match(/Unknown table or alias '([^']+)' referenced by column '([^']+)'/);
     if (!match) return true;
     const [, qualifier, column] = match;
-    return !columns.some((resultColumn) => resultColumn.source?.toLowerCase().endsWith(`.${qualifier}.${column}`.toLowerCase()));
+    const qualifiedColumn = `${qualifier}.${column}`.toLowerCase();
+    return !columns.some((resultColumn) => {
+      const source = resultColumn.source?.toLowerCase();
+      return source === qualifiedColumn || source?.endsWith(`.${qualifiedColumn}`);
+    });
   });
+}
+
+function suppressExpandedStarDiagnostics(
+  diagnostics: Diagnostic[],
+  resultSets: Array<{ index: number; columns: DescribeColumn[] }>,
+): Diagnostic[] {
+  if (!resultSets.some((resultSet) => resultSet.columns.length > 0)) return diagnostics;
+  return diagnostics.filter((diagnostic) => diagnostic.code !== 'W001');
+}
+
+function suppressNamedFunctionArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown): Diagnostic[] {
+  const names = namedFunctionArgumentNames(parsedAst);
+  if (names.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)'/);
+    return !match || !names.has(match[1].toLowerCase());
+  });
+}
+
+function suppressKnownTableFunctionArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown): Diagnostic[] {
+  const names = knownTableFunctionArgumentNames(parsedAst);
+  if (names.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)'/);
+    return !match || !names.has(match[1].toLowerCase());
+  });
+}
+
+function suppressWholeRowFunctionDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
+  const names = wholeRowFunctionArgumentNames(parsedAst);
+  if (names.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)' in table '([^']+)'/);
+    if (!match) return true;
+    const [, columnName, tableName] = match;
+    const normalizedColumn = columnName.toLowerCase();
+    const normalizedTable = tableName.toLowerCase();
+    if (!names.has(normalizedColumn)) return true;
+    return !schema.tables.some((table) => table.name.toLowerCase() === normalizedTable && table.name.toLowerCase() === normalizedColumn);
+  });
+}
+
+function suppressOracleCurrentUserDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, dialect: string): Diagnostic[] {
+  if (dialect !== 'oracle' || !hasUnqualifiedCurrentUserColumn(parsedAst)) return diagnostics;
+  return diagnostics.filter((diagnostic) => !/Unknown column 'user'(?: in table 'dual')?/i.test(diagnostic.message));
+}
+
+function hasUnqualifiedCurrentUserColumn(value: unknown): boolean {
+  let found = false;
+  visitAst(value, (node) => {
+    if (found || !isRecord(node.column)) return;
+    found = !identifierName(node.column.table) && identifierName(node.column.name)?.toLowerCase() === 'user';
+  });
+  return found;
+}
+
+function namedFunctionArgumentNames(value: unknown): Set<string> {
+  const names = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.function) || !Array.isArray(node.function.args)) return;
+    for (const arg of node.function.args) {
+      const eq = isRecord(arg) ? getAst(arg, 'eq') : undefined;
+      const leftColumn = isRecord(eq) && isRecord(eq.left) ? getAst(eq.left, 'column') : undefined;
+      const name = isRecord(leftColumn) ? identifierName(leftColumn.name) : undefined;
+      if (name) names.add(name.toLowerCase());
+    }
+  });
+  return names;
+}
+
+function wholeRowFunctionArgumentNames(value: unknown): Set<string> {
+  const names = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.function)) return;
+    const functionName = String(node.function.name ?? '').toLowerCase();
+    if (!['row_to_json', 'to_json', 'to_jsonb'].includes(functionName)) return;
+    for (const arg of functionArguments(node.function)) {
+      const column = isRecord(arg) ? getAst(arg, 'column') : undefined;
+      if (!isRecord(column)) continue;
+      const name = identifierName(column.name);
+      if (name && !identifierName(column.table)) names.add(name.toLowerCase());
+    }
+  });
+  return names;
+}
+
+function knownTableFunctionArgumentNames(value: unknown): Set<string> {
+  const names = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.function)) return;
+    const functionName = String(node.function.name ?? '').toLowerCase();
+    if (!['file', 'url'].includes(functionName)) return;
+    const formatArg = functionArguments(node.function)[1];
+    const column = isRecord(formatArg) ? getAst(formatArg, 'column') : undefined;
+    const name = isRecord(column) && !identifierName(column.table) ? identifierName(column.name) : undefined;
+    if (name) names.add(name.toLowerCase());
+  });
+  return names;
+}
+
+function visitAst(value: unknown, visitor: (node: Record<string, unknown>) => void): void {
+  if (Array.isArray(value)) {
+    value.forEach((item) => visitAst(item, visitor));
+    return;
+  }
+  if (!isRecord(value)) return;
+  visitor(value);
+  Object.values(value).forEach((item) => visitAst(item, visitor));
 }
 
 function suppressResolvedColumnDiagnostics(diagnostics: Diagnostic[], columns: DescribeColumn[]): Diagnostic[] {
@@ -2641,6 +3824,14 @@ function suppressResolvedSourceDiagnostics(diagnostics: Diagnostic[], columns: D
   });
 }
 
+function suppressResolvedOrderingDiagnostics(
+  diagnostics: Diagnostic[],
+  resultSets: Array<{ index: number; columns: DescribeColumn[] }>,
+): Diagnostic[] {
+  if (!resultSets.some((resultSet) => resultSet.columns.length > 0)) return diagnostics;
+  return diagnostics.filter((diagnostic) => diagnostic.code !== 'W003');
+}
+
 function suppressKnownSchemaDiagnostics(diagnostics: Diagnostic[], schema: ValidationSchema): Diagnostic[] {
   return diagnostics.filter((diagnostic) => {
     const tableColumn = diagnostic.message.match(/Unknown column '([^']+)' in table '([^']+)'/);
@@ -2656,6 +3847,99 @@ function suppressResolvedInsertValueDiagnostics(diagnostics: Diagnostic[], parse
   const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
   if (!statements.some(hasBalancedInsertValues)) return diagnostics;
   return diagnostics.filter((diagnostic) => !/^INSERT row \d+ has \d+ values but target has \d+ columns$/i.test(diagnostic.message));
+}
+
+function suppressSetOperationTypeDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
+  const compatibleColumns = compatibleSetOperationColumns(parsedAst, schema);
+  if (compatibleColumns.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/^(UNION|EXCEPT|INTERSECT) column (\d+) has incompatible types:/i);
+    if (!match) return true;
+    return !compatibleColumns.has(`${match[1].toLowerCase()}:${match[2]}`);
+  });
+}
+
+function suppressCompatibleComparisonDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
+  if (!allComparisonsAreCompatible(parsedAst, schema)) return diagnostics;
+  return diagnostics.filter((diagnostic) => !/^Incompatible comparison between .+ and .+$/i.test(diagnostic.message));
+}
+
+function allComparisonsAreCompatible(parsedAst: unknown, schema: ValidationSchema): boolean {
+  const comparisons: Array<[AstExpression, AstExpression]> = [];
+  const comparisonSchema = schemaWithTableAliases(parsedAst, schema);
+  visitAst(parsedAst, (node) => {
+    for (const key of ['eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'null_safe_eq', 'null_safe_neq']) {
+      const comparison = isRecord(node[key]) ? node[key] : undefined;
+      if (comparison && isRecord(comparison.left) && isRecord(comparison.right)) comparisons.push([comparison.left, comparison.right]);
+    }
+  });
+  return comparisons.length > 0 && comparisons.every(([left, right]) => {
+    if (!isColumnLikeExpression(left) || !isColumnLikeExpression(right)) return true;
+    const leftType = inferColumn(left, 'comparison_left', comparisonSchema, { mode: 'none', binds: [] }, 'generic').type;
+    const rightType = inferColumn(right, 'comparison_right', comparisonSchema, { mode: 'none', binds: [] }, 'generic').type;
+    return areSetOperationTypesCompatible(leftType, rightType);
+  });
+}
+
+function isColumnLikeExpression(expression: AstExpression): boolean {
+  return isRecord(getAst(expression, 'column')) || isRecord(dotAsColumnRef(expression));
+}
+
+function schemaWithTableAliases(parsedAst: unknown, schema: ValidationSchema): ValidationSchema {
+  const tables = [...schema.tables];
+  const byName = new Map(schema.tables.map((table) => [schemaTableName(table).toLowerCase(), table]));
+  for (const tableRef of tableReferences(parsedAst)) {
+    const alias = identifierName(tableRef.alias);
+    if (!alias) continue;
+    const tableName = relationTableName({ table: tableRef });
+    if (!tableName) continue;
+    const schemaName = identifierName(tableRef.schema);
+    const qualified = schemaName ? `${schemaName}.${tableName}` : tableName;
+    const source = byName.get(qualified.toLowerCase()) ?? byName.get(tableName.toLowerCase());
+    if (source && !tables.some((table) => table.name.toLowerCase() === alias.toLowerCase())) {
+      tables.push({ ...source, schema: undefined, name: alias });
+    }
+  }
+  return { tables };
+}
+
+function tableReferences(value: unknown): Array<Record<string, unknown>> {
+  const tables: Array<Record<string, unknown>> = [];
+  visitAst(value, (node) => {
+    if (isRecord(node.table)) tables.push(node.table);
+  });
+  return tables;
+}
+
+function compatibleSetOperationColumns(parsedAst: unknown, schema: ValidationSchema): Set<string> {
+  const columns = new Set<string>();
+  visitAst(parsedAst, (node) => {
+    for (const kind of ['union', 'except', 'intersect']) {
+      const setOperation = isRecord(node[kind]) ? node[kind] : undefined;
+      if (!setOperation) continue;
+      const left = outputItemsForStatement(setOperation.left, schema, { prepared: new Map() });
+      const right = outputItemsForStatement(setOperation.right, schema, { prepared: new Map() });
+      left.forEach((item, index) => {
+        const rightItem = right[index];
+        if (!rightItem) return;
+        const leftType = inferColumn(item.expression, item.name ?? 'set_left', item.schema ?? schema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases).type;
+        const rightType = inferColumn(rightItem.expression, rightItem.name ?? 'set_right', rightItem.schema ?? schema, { mode: 'none', binds: [] }, 'generic', rightItem.source, rightItem.tableAliases).type;
+        if (areSetOperationTypesCompatible(leftType, rightType)) columns.add(`${kind}:${index + 1}`);
+      });
+    }
+  });
+  return columns;
+}
+
+function areSetOperationTypesCompatible(left: string, right: string): boolean {
+  if (left === 'unknown' || right === 'unknown') return false;
+  if (left.toLowerCase() === right.toLowerCase()) return true;
+  if (isNumericType(left) && isNumericType(right)) return true;
+  return false;
+}
+
+function isNumericType(type: string): boolean {
+  return /(?:decimal|numeric|real|double|float|int|number|bigint|smallint)/i.test(type);
 }
 
 function hasBalancedInsertValues(statement: unknown): boolean {
@@ -2684,8 +3968,19 @@ function suppressStaticStatementDiagnostics(
   const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
   const staticStatementIndexes = new Set(resultSets.filter((resultSet) => resultSet.columns.length > 0).map((resultSet) => resultSet.index));
   const hasStaticExport = statements.some((statement, index) => staticStatementIndexes.has(index + 1) && isRecord(statement) && isRecord(statement.export));
-  if (!hasStaticExport) return diagnostics;
-  return diagnostics.filter((diagnostic) => diagnostic.code !== 'E004');
+  const hasStaticBareProcedure = statements.some((statement, index) => staticStatementIndexes.has(index + 1) && staticBareTsqlProcedureColumns(statement, 'tsql').length > 0);
+  const hasStaticMetadata = statements.some((statement, index) => {
+    if (!staticStatementIndexes.has(index + 1) || !isRecord(statement)) return false;
+    return isDescribeMetadataStatement(statement) || isRecord(statement.show) || isStaticCommandStatement(statement);
+  });
+  const hasStaticExecute = statements.some((statement, index) => staticStatementIndexes.has(index + 1) && isRecord(statement) && isRecord(statement.execute));
+  const hasStaticWatch = statements.some((statement, index) => staticStatementIndexes.has(index + 1) && isRecord(statement) && isWatchExpressionStatement(statement));
+  if (!hasStaticExport && !hasStaticBareProcedure && !hasStaticMetadata && !hasStaticExecute && !hasStaticWatch) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    if ((hasStaticExport || hasStaticBareProcedure || hasStaticWatch) && diagnostic.code === 'E004') return false;
+    if ((hasStaticMetadata || hasStaticExecute) && (diagnostic.code === 'E004' || diagnostic.code === 'E200' || diagnostic.code === 'E201')) return false;
+    return true;
+  });
 }
 
 function suppressResolvedPreparedDiagnostics(
@@ -2717,6 +4012,11 @@ function suppressRuntimeOnlyDiagnostics(diagnostics: Diagnostic[], statements: S
   });
 }
 
+function suppressNoResultParseDiagnostics(diagnostics: Diagnostic[], statements: StatementSummary[]): Diagnostic[] {
+  if (!statements.some((statement) => statement.resultKind === 'none')) return diagnostics;
+  return diagnostics.filter((diagnostic) => !/Invalid expression|Unexpected token/i.test(diagnostic.message));
+}
+
 function outputItemsForStatement(statement: unknown, schema: ValidationSchema, context: StatementContext = { prepared: new Map() }, dialect = 'generic'): OutputItem[] {
   if (!isRecord(statement)) return [];
   if (isRecord(statement.select)) {
@@ -2737,8 +4037,9 @@ function outputItemsForStatement(statement: unknown, schema: ValidationSchema, c
   if (isRecord(statement.summarize)) return outputItemsFromSummarize();
   if (isRecord(statement.pragma)) return outputItemsFromPragma(statement.pragma);
   if (isRecord(statement.analyze)) return outputItemsFromAnalyze(statement.analyze);
+  if (isRecord(statement.put)) return outputItemsFromPut();
   if (isNoResultCommandStatement(statement)) return [];
-  if (isRecord(statement.command)) return outputItemsFromCommand(statement.command);
+  if (isRecord(statement.command)) return outputItemsFromCommand(statement.command, schema, context, dialect);
   if (isRecord(statement.copy)) return outputItemsFromCopy(statement.copy, schema, context);
   if (isRecord(statement.export)) return outputItemsFromExport(statement.export, schema, context);
   if (isRecord(statement.insert)) return outputItemsFromReturning(statement.insert, schema);
@@ -2746,6 +4047,11 @@ function outputItemsForStatement(statement: unknown, schema: ValidationSchema, c
   if (isRecord(statement.delete)) return outputItemsFromReturning(statement.delete, schema);
   if (isRecord(statement.merge)) return outputItemsFromMerge(statement.merge, schema);
   if (isNoResultExpressionCommand(statement)) return [];
+  if (isWatchExpressionStatement(statement)) return outputItemsFromWatchExpression(statement, schema);
+  {
+    const bareProcedureColumns = staticBareTsqlProcedureColumns(statement, dialect);
+    if (bareProcedureColumns.length > 0) return bareProcedureColumns;
+  }
   if (isTopLevelExpressionStatement(statement)) return outputItemsFromExpressions([statement], schema);
 
   return [];
@@ -2771,7 +4077,7 @@ function schemaFromDefinitionStatement(statement: unknown, schema: ValidationSch
 function schemaAfterStatement(statement: unknown, schema: ValidationSchema, context: StatementContext): ValidationSchema {
   if (isRecord(statement) && isRecord(statement.alter_table)) return schemaAfterAlterTable(statement.alter_table, schema);
   if (isRecord(statement) && isRecord(statement.alter_view)) return schemaAfterAlterView(statement.alter_view, schema);
-  if (isRecord(statement) && isRecord(statement.raw)) return schemaAfterRawStatement(statement.raw, schema);
+  if (isRecord(statement) && isRecord(statement.raw)) return schemaAfterRawStatement(statement.raw, schema, context);
   if (isRecord(statement) && isRecord(statement.drop_table)) return schemaAfterDropTable(statement.drop_table, schema);
   if (isRecord(statement) && isRecord(statement.drop_view)) return schemaAfterDropView(statement.drop_view, schema);
   if (isRecord(statement) && isRecord(statement.drop_schema)) return schemaAfterDropSchema(statement.drop_schema, schema);
@@ -2811,10 +4117,14 @@ function schemaAfterDropSchema(dropSchema: Record<string, unknown>, schema: Vali
   };
 }
 
-function schemaAfterRawStatement(raw: Record<string, unknown>, schema: ValidationSchema): ValidationSchema {
+function schemaAfterRawStatement(raw: Record<string, unknown>, schema: ValidationSchema, context: StatementContext): ValidationSchema {
   const sql = typeof raw.sql === 'string' ? raw.sql : '';
   const rawTable = tableFromRawCreateTable(sql);
   if (rawTable) return mergeSchemas({ tables: [rawTable] }, schema);
+  const rawView = tableFromRawCreateView(sql, schema, context);
+  if (rawView) return mergeSchemas({ tables: [rawView] }, schema);
+  const rawTableMacro = tableFromRawCreateTableMacro(sql, schema, context);
+  if (rawTableMacro) return mergeSchemas({ tables: [rawTableMacro] }, schema);
   const alterMaterializedViewRename = sql.match(/^alter\s+materialized\s+view\s+(.+?)\s+rename\s+to\s+(.+?)\s*$/i);
   if (alterMaterializedViewRename) {
     const oldRef = relationRefFromSqlName(alterMaterializedViewRename[1]);
@@ -2928,7 +4238,9 @@ function applyAlterActions(table: SchemaTable, actions: unknown[]): SchemaTable 
 }
 
 function tableFromRawCreateTable(sql: string): SchemaTable | undefined {
-  const create = sql.match(/^create\s+(?:global\s+temporary\s+|temporary\s+|temp\s+)?table\s+(.+?)\s*\(([\s\S]*)\)\s*$/i);
+  const parsed = parseCreateTables(sql, 'generic');
+  if (parsed[0]) return parsed[0];
+  const create = sql.match(/^create\s+(?:global\s+temporary\s+|temporary\s+|temp\s+)?table\s+(.+?)\s*\(([\s\S]*)\)(?:\s+[\s\S]*)?$/i);
   if (!create) return undefined;
   const ref = relationRefFromSqlName(create[1]);
   if (!ref.name) return undefined;
@@ -2936,6 +4248,51 @@ function tableFromRawCreateTable(sql: string): SchemaTable | undefined {
     .map(rawSchemaColumn)
     .filter((column): column is SchemaColumn => Boolean(column));
   return columns.length > 0 ? { name: ref.name, ...(ref.schema ? { schema: ref.schema } : {}), columns } : undefined;
+}
+
+function tableFromRawCreateView(sql: string, schema: ValidationSchema, context: StatementContext): SchemaTable | undefined {
+  const create = sql.match(/^create\s+(?:or\s+replace\s+)?(?:recursive\s+)?(?:global\s+temporary\s+|temporary\s+|temp\s+)?(?:materialized\s+)?view\s+(.+?)\s+as\s+([\s\S]+)$/i);
+  if (!create) return undefined;
+  const header = create[1].trim();
+  const query = create[2].trim();
+  const headerMatch = header.match(/^(.+?)(?:\s*\(([\s\S]*)\))?$/);
+  const ref = relationRefFromSqlName(headerMatch?.[1] ?? header);
+  if (!ref.name) return undefined;
+  const explicitColumns = headerMatch?.[2]
+    ? splitTopLevel(headerMatch[2], ',').map((column) => ({ name: { name: cleanIdentifier(column.trim()) } }))
+    : [];
+  try {
+    const parsed = parse(query, 'postgres' as never) as PolyglotParseResult;
+    if (!parsed.success) return undefined;
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    if (!statement) return undefined;
+    const items = outputItemsForStatement(statement, schema, context, 'postgres');
+    const columns = columnsFromOutputItems(items, explicitColumns, schema);
+    return columns.length > 0 ? { name: ref.name, ...(ref.schema ? { schema: ref.schema } : {}), columns } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function tableFromRawCreateTableMacro(sql: string, schema: ValidationSchema, context: StatementContext): SchemaTable | undefined {
+  const create = sql.match(/^create\s+(?:or\s+replace\s+)?macro\s+(.+?)\s*\([^)]*\)\s+as\s+table\s+([\s\S]+)$/i);
+  if (!create) return undefined;
+  const name = cleanIdentifier(create[1].trim());
+  if (!name) return undefined;
+  const query = create[2].trim();
+  try {
+    const parsed = parse(query, 'duckdb' as never) as PolyglotParseResult;
+    if (!parsed.success) return undefined;
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    if (!statement) return undefined;
+    const items = outputItemsForStatement(statement, schema, context, 'duckdb');
+    const columns = columnsFromOutputItems(items, [], schema);
+    return columns.length > 0 ? { name, columns } : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function rawSchemaColumn(spec: string): SchemaColumn | undefined {
@@ -3060,7 +4417,7 @@ function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>): 
 
 function dataTypeFromRawColumnSpec(spec: string): string | undefined {
   const type = spec.trim().split(/\s+/)[0];
-  return type ? cleanIdentifier(type).toLowerCase() : undefined;
+  return type ? normalizeDataTypeName(cleanIdentifier(type)) : undefined;
 }
 
 function dropAlterColumn(table: SchemaTable, columnName: unknown): SchemaTable {
@@ -3185,10 +4542,124 @@ function rememberPreparedStatement(statement: unknown, context: StatementContext
   if (name && isRecord(statement.prepare.statement)) context.prepared.set(name.toLowerCase(), statement.prepare.statement);
 }
 
+function forgetPreparedStatement(statement: unknown, context: StatementContext): void {
+  if (!isRecord(statement) || !isRecord(statement.command)) return;
+  const command = String(statement.command.this ?? '').trim();
+  const match = command.match(/^deallocate(?:\s+prepare)?(?:\s+(.+))?$/i);
+  if (!match) return;
+  const name = match[1]?.trim();
+  if (!name || /^all$/i.test(name)) {
+    context.prepared.clear();
+    return;
+  }
+  context.prepared.delete(cleanIdentifier(name).toLowerCase());
+}
+
 function outputItemsFromExecute(execute: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
+  const staticColumns = staticExecuteColumns(execute);
+  if (staticColumns.length > 0) return staticColumns;
   const name = executeName(execute);
   const prepared = name ? context.prepared.get(name.toLowerCase()) : undefined;
   return prepared ? outputItemsForStatement(prepared, schema, context, dialect) : [];
+}
+
+function staticExecuteColumns(execute: Record<string, unknown>): OutputItem[] {
+  const declaredColumns = executeResultSetColumns(execute);
+  if (declaredColumns.length > 0) return declaredColumns;
+
+  const name = executeName(execute)?.toLowerCase();
+  return staticProcedureColumns(name);
+}
+
+function staticBareTsqlProcedureColumns(statement: unknown, dialect: string): OutputItem[] {
+  if (dialect !== 'tsql' || !isRecord(statement)) return [];
+  const alias = getAst(statement, 'alias');
+  if (!isRecord(alias)) return [];
+  const procedure = identifierName(alias.this)?.toLowerCase();
+  if (!procedure?.startsWith('sp_')) return [];
+  return staticProcedureColumns(procedure);
+}
+
+function staticProcedureColumns(name: string | undefined): OutputItem[] {
+  if (name === 'sp_help') {
+    return staticColumns([
+      ['Name', 'text'],
+      ['Owner', 'text'],
+      ['Type', 'text'],
+      ['Created_datetime', 'timestamp'],
+    ]);
+  }
+  if (name === 'sp_who' || name === 'sp_who2') {
+    return staticColumns([
+      ['spid', 'integer'],
+      ['ecid', 'integer'],
+      ['status', 'text'],
+      ['loginame', 'text'],
+      ['hostname', 'text'],
+      ['blk', 'text'],
+      ['dbname', 'text'],
+      ['cmd', 'text'],
+      ['request_id', 'integer'],
+    ]);
+  }
+  if (name === 'sp_spaceused') {
+    return staticColumns([
+      ['name', 'text'],
+      ['rows', 'text'],
+      ['reserved', 'text'],
+      ['data', 'text'],
+      ['index_size', 'text'],
+      ['unused', 'text'],
+    ]);
+  }
+  if (name === 'sp_tables') {
+    return staticColumns([
+      ['TABLE_QUALIFIER', 'text'],
+      ['TABLE_OWNER', 'text'],
+      ['TABLE_NAME', 'text'],
+      ['TABLE_TYPE', 'text'],
+      ['REMARKS', 'text'],
+    ]);
+  }
+  if (name === 'sp_columns') {
+    return staticColumns([
+      ['TABLE_QUALIFIER', 'text'],
+      ['TABLE_OWNER', 'text'],
+      ['TABLE_NAME', 'text'],
+      ['COLUMN_NAME', 'text'],
+      ['DATA_TYPE', 'integer'],
+      ['TYPE_NAME', 'text'],
+      ['PRECISION', 'integer'],
+      ['LENGTH', 'integer'],
+      ['SCALE', 'integer'],
+      ['RADIX', 'integer'],
+      ['NULLABLE', 'integer'],
+      ['REMARKS', 'text'],
+    ]);
+  }
+  if (name === 'sp_databases') {
+    return staticColumns([
+      ['DATABASE_NAME', 'text'],
+      ['DATABASE_SIZE', 'integer'],
+      ['REMARKS', 'text'],
+    ]);
+  }
+  return [];
+}
+
+function executeResultSetColumns(execute: Record<string, unknown>): OutputItem[] {
+  const suffix = typeof execute.suffix === 'string' ? execute.suffix : undefined;
+  if (!suffix) return [];
+  const match = suffix.match(/\bwith\s+result\s+sets\s*\(\s*\((.*)\)\s*\)\s*$/i);
+  if (!match) return [];
+  return splitTopLevel(match[1], ',').flatMap((part) => {
+    const definition = part.trim();
+    const column = definition.match(/^([`"[\]\w@$#]+)\s+(.+)$/);
+    if (!column) return [];
+    const name = cleanIdentifier(column[1].replace(/^\[/, '').replace(/\]$/, ''));
+    const type = dataTypeFromRawColumnSpec(column[2]) ?? 'unknown';
+    return name ? staticColumns([[name, type]]) : [];
+  });
 }
 
 function outputItemsFromDescribe(describe: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
@@ -3270,7 +4741,7 @@ function describeObjectColumns(target: Record<string, unknown>): OutputItem[] {
 function snowflakeDescribeObjectColumns(target: Record<string, unknown>, dialect: string): OutputItem[] {
   if (dialect.toLowerCase() !== 'snowflake' || !isRecord(target.table)) return [];
   const name = identifierName(target.table.name)?.toLowerCase();
-  if (!name || !['warehouse', 'integration', 'stage', 'pipe', 'task'].includes(name)) return [];
+  if (!name || !['warehouse', 'integration', 'stage', 'pipe', 'stream', 'task'].includes(name)) return [];
   if (name === 'warehouse') {
     return staticColumns([
       ['property', 'text'],
@@ -3289,7 +4760,7 @@ function snowflakeDescribeObjectColumns(target: Record<string, unknown>, dialect
       ['property_default', 'text'],
     ]);
   }
-  if (name === 'pipe' || name === 'task') {
+  if (name === 'pipe' || name === 'stream' || name === 'task') {
     return staticColumns([
       ['property', 'text'],
       ['value', 'text'],
@@ -3359,8 +4830,6 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ...(subject === 'full tables' ? [['Table_type', 'text']] satisfies Array<[string, string]> : []),
     ]);
   }
-  if (subject.startsWith('table ')) return snowflakeTableListingColumns();
-  if (subject === 'all tables') return snowflakeTableListingColumns();
   if (subject === 'databases' || subject === 'schemas') {
     return staticColumns([
       [subject === 'schemas' ? 'Schema' : 'Database', 'text'],
@@ -3377,6 +4846,11 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['name', 'text'],
       ['setting', 'text'],
       ['description', 'text'],
+    ]);
+  }
+  if (subject === 'transaction isolation level') {
+    return staticColumns([
+      ['transaction_isolation', 'text'],
     ]);
   }
   if (subject === 'catalogs') {
@@ -3396,6 +4870,8 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Comment', 'text'],
     ]);
   }
+  if (subject.startsWith('table ')) return snowflakeTableListingColumns();
+  if (subject === 'all tables') return snowflakeTableListingColumns();
   if (subject === 'warnings' || subject === 'errors') {
     return staticColumns([
       ['Level', 'text'],
@@ -4047,13 +5523,29 @@ function outputItemsFromAnalyze(analyze: Record<string, unknown>): OutputItem[] 
   return String(analyze.kind ?? '').toLowerCase() === 'table' || isRecord(analyze.this) ? tableMaintenanceStatusColumns() : [];
 }
 
-function outputItemsFromCommand(command: Record<string, unknown>): OutputItem[] {
+function outputItemsFromCommand(command: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect: string): OutputItem[] {
   const text = String(command.this ?? '').toLowerCase();
+  const immediate = outputItemsFromExecuteImmediateCommand(command, schema, context, dialect);
+  if (immediate.length > 0) return immediate;
   if (/^(optimize|repair|check|checksum)\s+table\b/.test(text)) return tableMaintenanceStatusColumns();
+  if (/^(?:list|ls)\s+@/.test(text)) return snowflakeListColumns();
+  if (/^get\s+@/.test(text)) return snowflakeGetColumns();
+  if (/^(?:remove|rm)\s+@/.test(text)) return snowflakeRemoveColumns();
+  if (/^exists\s+(?:table|database|view|dictionary)\b/.test(text)) return staticColumns([['result', 'boolean']]);
+  if (/^explain\b/.test(text)) return explainColumns(dialect);
+  if (/^show\s+clusters\b/.test(text)) return clickHouseClustersColumns();
+  if (/^show\s+users\b/.test(text)) return clickHouseUsersColumns();
+  if (/^show\s+roles\b/.test(text)) return clickHouseRolesColumns();
+  if (/^show\s+grants\b/.test(text)) return clickHouseGrantsColumns();
+  if (/^show\s+settings\b/.test(text)) return clickHouseSettingsColumns();
+  if (/^show\s+dictionaries\b/.test(text)) return clickHouseDictionariesColumns();
+  if (/^show\s+functions\b/.test(text)) return staticColumns([['name', 'text']]);
+  if (/^list\s+(?:file|jar|archive)\b/.test(text)) return sparkListResourceColumns();
   if (/^show\s+databases\b/.test(text)) return outputItemsFromShow({ this: 'databases' });
+  if (/^show\s+schemas\b/.test(text)) return outputItemsFromShow({ this: 'schemas' });
   if (/^show\s+tables\b/.test(text)) return outputItemsFromShow({ this: 'tables' });
   if (/^show\s+columns\b/.test(text)) return outputItemsFromShow({ this: 'columns' });
-  if (/^show\s+create\s+table\b/.test(text)) {
+  if (/^show\s+create\s+(?:table|database|dictionary)\b/.test(text)) {
     return staticColumns([
       ['statement', 'text'],
     ]);
@@ -4094,7 +5586,152 @@ function outputItemsFromCommand(command: Record<string, unknown>): OutputItem[] 
       ['Decimal Fractional Digits', 'integer'],
     ]);
   }
+  if (/^help\s+database\b/.test(text)) {
+    return staticColumns([
+      ['Database Name', 'text'],
+      ['Owner Name', 'text'],
+      ['Account Name', 'text'],
+      ['Protection Type', 'text'],
+      ['Journal Flag', 'text'],
+      ['Perm Space', 'integer'],
+      ['Spool Space', 'integer'],
+      ['Temp Space', 'integer'],
+    ]);
+  }
+  if (/^help\s+column\b/.test(text)) {
+    return staticColumns([
+      ['Column Name', 'text'],
+      ['Type', 'text'],
+      ['Nullable', 'text'],
+      ['Format', 'text'],
+      ['Title', 'text'],
+      ['Max Length', 'integer'],
+      ['Decimal Total Digits', 'integer'],
+      ['Decimal Fractional Digits', 'integer'],
+    ]);
+  }
   return [];
+}
+
+function outputItemsFromExecuteImmediateCommand(command: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect: string): OutputItem[] {
+  const sql = executeImmediateSql(String(command.this ?? ''));
+  if (!sql) return [];
+  try {
+    const parsed = parse(sql, dialect as never) as PolyglotParseResult;
+    if (!parsed.success) return [];
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    return statement ? outputItemsForStatement(statement, schema, context, dialect) : [];
+  } catch {
+    return [];
+  }
+}
+
+function executeImmediateSql(command: string): string | undefined {
+  const match = command.match(/^execute\s+immediate\s+'((?:''|[^'])*)'/i);
+  return match ? match[1].replace(/''/g, "'") : undefined;
+}
+
+function clickHouseSettingsColumns(): OutputItem[] {
+  return staticColumns([
+    ['name', 'text'],
+    ['value', 'text'],
+    ['changed', 'boolean'],
+    ['description', 'text'],
+    ['min', 'text'],
+    ['max', 'text'],
+    ['readonly', 'boolean'],
+    ['type', 'text'],
+  ]);
+}
+
+function clickHouseClustersColumns(): OutputItem[] {
+  return staticColumns([
+    ['cluster', 'text'],
+    ['shard_num', 'integer'],
+    ['shard_weight', 'integer'],
+    ['replica_num', 'integer'],
+    ['host_name', 'text'],
+    ['host_address', 'text'],
+    ['port', 'integer'],
+    ['is_local', 'boolean'],
+    ['user', 'text'],
+  ]);
+}
+
+function clickHouseUsersColumns(): OutputItem[] {
+  return staticColumns([
+    ['name', 'text'],
+  ]);
+}
+
+function clickHouseRolesColumns(): OutputItem[] {
+  return staticColumns([
+    ['name', 'text'],
+  ]);
+}
+
+function clickHouseGrantsColumns(): OutputItem[] {
+  return staticColumns([
+    ['GRANTS', 'text'],
+  ]);
+}
+
+function clickHouseDictionariesColumns(): OutputItem[] {
+  return staticColumns([
+    ['database', 'text'],
+    ['name', 'text'],
+    ['uuid', 'uuid'],
+    ['status', 'text'],
+    ['origin', 'text'],
+    ['type', 'text'],
+    ['key', 'text'],
+    ['attribute.names', 'array<text>'],
+  ]);
+}
+
+function sparkListResourceColumns(): OutputItem[] {
+  return staticColumns([
+    ['resource', 'text'],
+  ]);
+}
+
+function outputItemsFromPut(): OutputItem[] {
+  return staticColumns([
+    ['source', 'text'],
+    ['target', 'text'],
+    ['source_size', 'integer'],
+    ['target_size', 'integer'],
+    ['source_compression', 'text'],
+    ['target_compression', 'text'],
+    ['status', 'text'],
+    ['message', 'text'],
+  ]);
+}
+
+function snowflakeListColumns(): OutputItem[] {
+  return staticColumns([
+    ['name', 'text'],
+    ['size', 'integer'],
+    ['md5', 'text'],
+    ['last_modified', 'timestamp'],
+  ]);
+}
+
+function snowflakeGetColumns(): OutputItem[] {
+  return staticColumns([
+    ['file', 'text'],
+    ['size', 'integer'],
+    ['status', 'text'],
+    ['message', 'text'],
+  ]);
+}
+
+function snowflakeRemoveColumns(): OutputItem[] {
+  return staticColumns([
+    ['name', 'text'],
+    ['result', 'text'],
+  ]);
 }
 
 function tableMaintenanceStatusColumns(): OutputItem[] {
@@ -4170,6 +5807,36 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
       ['file', 'text'],
     ]);
   }
+  if (name === 'show_tables') {
+    return staticColumns([
+      ['name', 'text'],
+    ]);
+  }
+  if (name === 'version') {
+    return staticColumns([
+      ['library_version', 'text'],
+      ['source_id', 'text'],
+      ['codename', 'text'],
+    ]);
+  }
+  if (name === 'database_size') {
+    return staticColumns([
+      ['database_name', 'text'],
+      ['database_size', 'text'],
+      ['block_size', 'integer'],
+      ['total_blocks', 'integer'],
+      ['used_blocks', 'integer'],
+      ['free_blocks', 'integer'],
+      ['wal_size', 'text'],
+      ['memory_usage', 'text'],
+      ['memory_limit', 'text'],
+    ]);
+  }
+  if (name === 'platform') {
+    return staticColumns([
+      ['platform', 'text'],
+    ]);
+  }
   if (name === 'foreign_key_list') {
     return staticColumns([
       ['id', 'integer'],
@@ -4210,9 +5877,24 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
       ['flags', 'integer'],
     ]);
   }
+  if (name === 'functions') {
+    return staticColumns([
+      ['name', 'text'],
+      ['type', 'text'],
+      ['parameters', 'array<text>'],
+      ['varargs', 'text'],
+      ['return_type', 'text'],
+      ['side_effects', 'boolean'],
+    ]);
+  }
   if (name === 'module_list') {
     return staticColumns([
       ['name', 'text'],
+    ]);
+  }
+  if (name === 'collations') {
+    return staticColumns([
+      ['collname', 'text'],
     ]);
   }
   if (name === 'compile_options') {
@@ -4278,6 +5960,7 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
     'defer_foreign_keys',
     'ignore_check_constraints',
     'recursive_triggers',
+    'reverse_unordered_selects',
     'read_uncommitted',
     'query_only',
   ].includes(name ?? '')) {
@@ -4322,6 +6005,10 @@ function outputItemsFromCopySource(source: unknown, schema: ValidationSchema, co
     return outputItemsForStatement(source, schema, context);
   }
   if (isRecord(source.table)) return outputItemsFromDescribedTable(source.table, schema);
+  if (isRecord(source.column)) {
+    const tableName = identifierName(source.column.name);
+    if (tableName) return outputItemsFromDescribedTable({ name: { name: tableName } }, schema);
+  }
   return [];
 }
 
@@ -4346,6 +6033,12 @@ function outputItemsFromDescribedTable(tableRef: Record<string, unknown>, schema
       visibleColumnNames: [],
     }]]),
   }));
+}
+
+function outputItemsFromWatchExpression(statement: Record<string, unknown>, schema: ValidationSchema): OutputItem[] {
+  const alias = isRecord(statement.alias) ? statement.alias : undefined;
+  const tableName = alias ? identifierName(alias.alias) : undefined;
+  return tableName ? outputItemsFromDescribedTable({ name: { name: tableName } }, schema) : [];
 }
 
 function executeName(execute: Record<string, unknown>): string | undefined {
@@ -4705,7 +6398,13 @@ function tableFunctionAlias(source: Record<string, unknown>, schema: ValidationS
     ? alias.column_aliases.map(identifierName).filter((columnName): columnName is string => Boolean(columnName))
     : [];
   if (name) {
-    const knownTable = tableFromKnownTableFunction(alias.this, name);
+    const functionName = aliasFunctionName(alias.this);
+    const schemaTable = functionName ? schema.tables.find((table) => table.name.toLowerCase() === functionName.toLowerCase()) : undefined;
+    if (schemaTable) {
+      const aliasedTable = { ...schemaTable, name };
+      return explicitColumnAliases.length > 0 ? applyTableColumnAliases(aliasedTable, explicitColumnAliases) : aliasedTable;
+    }
+    const knownTable = tableFromKnownTableFunction(alias.this, name, schema);
     if (knownTable) return explicitColumnAliases.length > 0 ? applyTableColumnAliases(knownTable, explicitColumnAliases) : knownTable;
   }
   const columnAliases = explicitColumnAliases.length > 0 ? explicitColumnAliases : name ? [name] : [];
@@ -4718,6 +6417,11 @@ function tableFunctionAlias(source: Record<string, unknown>, schema: ValidationS
       type: columnTypes[index] ?? columnTypes[0] ?? 'unknown',
     })),
   };
+}
+
+function aliasFunctionName(expression: unknown): string | undefined {
+  const fn = getAst(expression, 'function');
+  return isRecord(fn) ? unqualifiedFunctionName(fn) : undefined;
 }
 
 function applyTableColumnAliases(table: SchemaTable, columnAliases: string[]): SchemaTable {
@@ -4752,25 +6456,44 @@ function tableFunctionTupleAlias(source: Record<string, unknown>, schema: Valida
 function tableFromDirectTableFunction(source: Record<string, unknown>, schema: ValidationSchema): SchemaTable | undefined {
   if (isRecord(source.function)) {
     const name = String(source.function.name ?? '').toLowerCase();
-    const known = tableFromKnownTableFunction(source, name);
+    const schemaTable = schema.tables.find((table) => table.name.toLowerCase() === name);
+    if (schemaTable) return schemaTable;
+    const known = tableFromKnownTableFunction(source, name, schema);
     if (known) return known;
     return { name, columns: [{ name, type: tableFunctionDefaultType(name, source, schema) }] };
   }
   if (isRecord(source.unnest)) {
-    const structColumns = unnestStructColumns(source.unnest, schema);
-    if (structColumns.length > 0) return { name: 'unnest', columns: structColumns };
+    const unnest = source.unnest;
+    const aliasName = identifierName(unnest.alias);
+    const offsetAlias = identifierName(unnest.offset_alias);
+    const tableName = aliasName ?? 'unnest';
+    const structColumns = unnestStructColumns(unnest, schema);
+    if (structColumns.length > 0) return { name: tableName, columns: withOrdinalityColumn(structColumns, offsetAlias, unnest) };
     const columnTypes = tableFunctionColumnTypes(source, schema);
     return {
-      name: 'unnest',
+      name: tableName,
       columns: columnTypes.length > 0
-        ? columnTypes.map((type, index) => ({ name: index === 0 ? 'unnest' : `unnest_${index + 1}`, type }))
-        : [{ name: 'unnest', type: 'unknown' }],
+        ? columnTypes.map((type, index) => ({ name: unnestColumnName(index, aliasName, offsetAlias, unnest), type }))
+        : [{ name: aliasName ?? 'unnest', type: 'unknown' }],
     };
   }
   return undefined;
 }
 
-function tableFromKnownTableFunction(expression: unknown, alias: string): SchemaTable | undefined {
+function unnestColumnName(index: number, aliasName: string | undefined, offsetAlias: string | undefined, unnest: Record<string, unknown>): string {
+  const typeCount = tableFunctionColumnTypes({ unnest }, { tables: [] }).length;
+  if (offsetAlias && unnest.with_ordinality === true && index === typeCount - 1) return offsetAlias;
+  if (index === 0) return aliasName ?? 'unnest';
+  return `unnest_${index + 1}`;
+}
+
+function withOrdinalityColumn(columns: SchemaColumn[], offsetAlias: string | undefined, unnest: Record<string, unknown>): SchemaColumn[] {
+  return unnest.with_ordinality === true
+    ? [...columns, { name: offsetAlias ?? 'ordinality', type: 'integer' }]
+    : columns;
+}
+
+function tableFromKnownTableFunction(expression: unknown, alias: string, schema: ValidationSchema): SchemaTable | undefined {
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = unqualifiedFunctionName(fn);
@@ -4778,17 +6501,40 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
     const firstArg = functionArguments(fn).find(isRecord);
     const collectionType = oracleCollectionTableType(firstArg);
     if (collectionType) return { name: alias, columns: [{ name: alias, type: collectionType }] };
-    const wrapped = isRecord(firstArg) ? tableFromKnownTableFunction(firstArg, alias) : undefined;
+    const wrapped = isRecord(firstArg) ? tableFromKnownTableFunction(firstArg, alias, schema) : undefined;
     if (wrapped) return wrapped;
   }
   if (name === 'flatten') {
     return flattenTable(alias);
   }
+  if (name === 'generator') {
+    return { name: alias, columns: [] };
+  }
+  if (name === 'infer_schema') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'expression', type: 'text' },
+        { name: 'column_name', type: 'text' },
+        { name: 'type', type: 'text' },
+        { name: 'nullable', type: 'boolean' },
+        { name: 'filenames', type: 'array<text>' },
+        { name: 'order_id', type: 'integer' },
+      ],
+    };
+  }
+  if (name === 'json_populate_record' || name === 'jsonb_populate_record') {
+    const firstArg = functionArguments(fn)[0];
+    const cast = isRecord(firstArg) ? getAst(firstArg, 'cast') : undefined;
+    const target = isRecord(cast) && isRecord(cast.to) ? cleanIdentifier(String(cast.to.name ?? cast.to.data_type ?? '')) : undefined;
+    const table = target ? schema.tables.find((candidate) => candidate.name.toLowerCase() === target.toLowerCase()) : undefined;
+    if (table) return { ...table, name: alias };
+  }
   if (name === 'generate_series' || name === 'range') {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] });
     return { name: alias, columns: [{ name: alias, type: type && /date|time|timestamp/i.test(type) ? type : 'integer' }] };
   }
-  if (name === 'numbers') {
+  if (name === 'numbers' || name === 'numbers_mt') {
     return { name: alias, columns: [{ name: alias, type: 'integer' }] };
   }
   if (name === 'sequence') {
@@ -4810,6 +6556,9 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
   }
   if (name === 'string_split') {
     return { name: alias, columns: [{ name: 'value', type: 'text' }] };
+  }
+  if (name === 'current_setting') {
+    return { name: alias, columns: [{ name: alias, type: 'text' }] };
   }
   if (['regexp_matches', 'regexp_split_to_array'].includes(name)) {
     return { name: alias, columns: [{ name: alias, type: 'array<text>' }] };
@@ -4885,8 +6634,48 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
       ],
     };
   }
+  if (name === 'pg_stat_get_activity') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'datid', type: 'oid' },
+        { name: 'pid', type: 'integer' },
+        { name: 'usesysid', type: 'oid' },
+        { name: 'application_name', type: 'text' },
+        { name: 'state', type: 'text' },
+        { name: 'query', type: 'text' },
+        { name: 'query_start', type: 'timestamp' },
+        { name: 'backend_start', type: 'timestamp' },
+        { name: 'xact_start', type: 'timestamp' },
+        { name: 'waiting', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'pg_get_object_address') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'classid', type: 'oid' },
+        { name: 'objid', type: 'oid' },
+        { name: 'objsubid', type: 'integer' },
+      ],
+    };
+  }
   if (name === 'pg_ls_dir') {
     return { name: alias, columns: [{ name: alias, type: 'text' }] };
+  }
+  if (name === 'pg_read_file' || name === 'pg_read_binary_file') {
+    return { name: alias, columns: [{ name: alias, type: name === 'pg_read_binary_file' ? 'bytes' : 'text' }] };
+  }
+  if (['pg_ls_waldir', 'pg_ls_logdir', 'pg_ls_archive_statusdir'].includes(name)) {
+    return {
+      name: alias,
+      columns: [
+        { name: 'name', type: 'text' },
+        { name: 'size', type: 'bigint' },
+        { name: 'modification', type: 'timestamp' },
+      ],
+    };
   }
   if (name === 'pg_stat_file') {
     return {
@@ -4898,6 +6687,43 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
         { name: 'change', type: 'timestamp' },
         { name: 'creation', type: 'timestamp' },
         { name: 'isdir', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'pg_timezone_names') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'name', type: 'text' },
+        { name: 'abbrev', type: 'text' },
+        { name: 'utc_offset', type: 'interval' },
+        { name: 'is_dst', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'pg_timezone_abbrevs') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'abbrev', type: 'text' },
+        { name: 'utc_offset', type: 'interval' },
+        { name: 'is_dst', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'pg_available_extension_versions') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'name', type: 'text' },
+        { name: 'version', type: 'text' },
+        { name: 'installed', type: 'boolean' },
+        { name: 'superuser', type: 'boolean' },
+        { name: 'trusted', type: 'boolean' },
+        { name: 'relocatable', type: 'boolean' },
+        { name: 'schema', type: 'text' },
+        { name: 'requires', type: 'array<text>' },
+        { name: 'comment', type: 'text' },
       ],
     };
   }
@@ -4913,6 +6739,72 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
   }
   if (name === 'glob') {
     return { name: alias, columns: [{ name: 'file', type: 'text' }] };
+  }
+  if (name === 'read_blob') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'filename', type: 'text' },
+        { name: 'content', type: 'blob' },
+      ],
+    };
+  }
+  if (name === 'read_text') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'filename', type: 'text' },
+        { name: 'content', type: 'text' },
+      ],
+    };
+  }
+  if (name === 'parquet_schema') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'file_name', type: 'text' },
+        { name: 'name', type: 'text' },
+        { name: 'type', type: 'text' },
+        { name: 'type_length', type: 'text' },
+        { name: 'repetition_type', type: 'text' },
+        { name: 'num_children', type: 'integer' },
+        { name: 'converted_type', type: 'text' },
+        { name: 'scale', type: 'integer' },
+        { name: 'precision', type: 'integer' },
+        { name: 'field_id', type: 'integer' },
+        { name: 'logical_type', type: 'text' },
+      ],
+    };
+  }
+  if (name === 'parquet_metadata') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'file_name', type: 'text' },
+        { name: 'row_group_id', type: 'integer' },
+        { name: 'row_group_num_rows', type: 'integer' },
+        { name: 'row_group_num_columns', type: 'integer' },
+        { name: 'row_group_bytes', type: 'integer' },
+        { name: 'column_id', type: 'integer' },
+        { name: 'file_offset', type: 'integer' },
+        { name: 'num_values', type: 'integer' },
+        { name: 'path_in_schema', type: 'text' },
+        { name: 'type', type: 'text' },
+        { name: 'stats_min', type: 'text' },
+        { name: 'stats_max', type: 'text' },
+        { name: 'stats_null_count', type: 'integer' },
+        { name: 'total_compressed_size', type: 'integer' },
+        { name: 'total_uncompressed_size', type: 'integer' },
+      ],
+    };
+  }
+  if (['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_parquet'].includes(name)) {
+    const columns = tableFunctionColumnsArgument(fn);
+    if (columns.length > 0) return { name: alias, columns };
+  }
+  if (name === 'file' || name === 'url') {
+    const columns = columnsFromSchemaString(lastSchemaLikeLiteral(functionArguments(fn)));
+    if (columns.length > 0) return { name: alias, columns };
   }
   if (name === 'pragma_table_info') {
     return {
@@ -4950,6 +6842,57 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
         { name: 'column_index', type: 'integer' },
         { name: 'data_type', type: 'text' },
         { name: 'is_nullable', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'duckdb_keywords') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'keyword_name', type: 'text' },
+        { name: 'keyword_category', type: 'text' },
+      ],
+    };
+  }
+  if (name === 'duckdb_types') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'database_name', type: 'text' },
+        { name: 'schema_name', type: 'text' },
+        { name: 'type_name', type: 'text' },
+        { name: 'type_size', type: 'integer' },
+        { name: 'logical_type', type: 'text' },
+        { name: 'labels', type: 'array<text>' },
+      ],
+    };
+  }
+  if (name === 'duckdb_memory') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'tag', type: 'text' },
+        { name: 'memory_usage_bytes', type: 'integer' },
+        { name: 'temporary_storage_bytes', type: 'integer' },
+      ],
+    };
+  }
+  if (name === 'duckdb_constraints') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'database_name', type: 'text' },
+        { name: 'database_oid', type: 'integer' },
+        { name: 'schema_name', type: 'text' },
+        { name: 'schema_oid', type: 'integer' },
+        { name: 'table_name', type: 'text' },
+        { name: 'table_oid', type: 'integer' },
+        { name: 'constraint_index', type: 'integer' },
+        { name: 'constraint_type', type: 'text' },
+        { name: 'constraint_text', type: 'text' },
+        { name: 'expression', type: 'text' },
+        { name: 'constraint_column_indexes', type: 'array<integer>' },
+        { name: 'constraint_column_names', type: 'array<text>' },
       ],
     };
   }
@@ -5000,6 +6943,47 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
       ],
     };
   }
+  if (name === 'duckdb_settings') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'name', type: 'text' },
+        { name: 'value', type: 'text' },
+        { name: 'description', type: 'text' },
+        { name: 'input_type', type: 'text' },
+        { name: 'scope', type: 'text' },
+        { name: 'aliases', type: 'array<text>' },
+      ],
+    };
+  }
+  if (name === 'duckdb_extensions') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'extension_name', type: 'text' },
+        { name: 'loaded', type: 'boolean' },
+        { name: 'installed', type: 'boolean' },
+        { name: 'install_path', type: 'text' },
+        { name: 'description', type: 'text' },
+        { name: 'aliases', type: 'array<text>' },
+      ],
+    };
+  }
+  if (name === 'duckdb_databases') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'database_name', type: 'text' },
+        { name: 'database_oid', type: 'integer' },
+        { name: 'path', type: 'text' },
+        { name: 'internal', type: 'boolean' },
+      ],
+    };
+  }
+  if (name === 'openquery' || name === 'openrowset') {
+    const queryTable = tableFromEmbeddedSqlTableFunction(fn, alias, schema);
+    if (queryTable) return queryTable;
+  }
   if (['openquery', 'opendatasource', 'openrowset'].includes(name)) {
     return { name: alias, columns: [{ name: alias, type: 'unknown' }] };
   }
@@ -5019,6 +7003,80 @@ function tableFromKnownTableFunction(expression: unknown, alias: string): Schema
     };
   }
   return undefined;
+}
+
+function tableFunctionColumnsArgument(fn: Record<string, unknown>): SchemaColumn[] {
+  for (const arg of functionArguments(fn)) {
+    const eq = getAst(arg, 'eq');
+    if (!isRecord(eq)) continue;
+    const name = isRecord(eq.left) ? identifierName(getAst(eq.left, 'column') && (getAst(eq.left, 'column') as Record<string, unknown>).name) : undefined;
+    if (name?.toLowerCase() !== 'columns') continue;
+    const columns = columnsFromMapLiteral(eq.right);
+    if (columns.length > 0) return columns;
+  }
+  return [];
+}
+
+function columnsFromMapLiteral(expression: unknown): SchemaColumn[] {
+  const map = isRecord(expression) ? getAst(expression, 'map_func') : undefined;
+  if (!isRecord(map) || !Array.isArray(map.keys) || !Array.isArray(map.values)) return [];
+  const keys = map.keys;
+  const values = map.values;
+  return keys.flatMap((key, index) => {
+    const name = literalString(key);
+    const typeSpec = literalString(values[index]);
+    if (!name || !typeSpec) return [];
+    return [{ name, type: dataTypeFromRawColumnSpec(typeSpec) ?? 'unknown' }];
+  });
+}
+
+function columnsFromSchemaString(spec: string | undefined): SchemaColumn[] {
+  if (!spec) return [];
+  return splitTopLevel(spec, ',').flatMap((part) => {
+    const match = part.trim().match(/^([`"']?[\w$]+[`"']?)\s+(.+)$/);
+    if (!match) return [];
+    const name = cleanIdentifier(match[1]);
+    const type = dataTypeFromRawColumnSpec(match[2]) ?? 'unknown';
+    return name ? [{ name, type }] : [];
+  });
+}
+
+function lastSchemaLikeLiteral(args: AstExpression[]): string | undefined {
+  for (let index = args.length - 1; index >= 0; index -= 1) {
+    const value = literalString(args[index]);
+    if (value && /\w+\s+\w+/.test(value)) return value;
+  }
+  return undefined;
+}
+
+function tableFromEmbeddedSqlTableFunction(fn: Record<string, unknown>, alias: string, schema: ValidationSchema): SchemaTable | undefined {
+  const literals = functionArguments(fn).map(stringLiteralValue);
+  let sql: string | undefined;
+  for (let index = literals.length - 1; index >= 0; index -= 1) {
+    const value = literals[index];
+    if (value !== undefined && /^(?:with|select|values)\b/i.test(value.trim())) {
+      sql = value;
+      break;
+    }
+  }
+  if (!sql) return undefined;
+  try {
+    const parsed = parse(sql, 'tsql' as never) as PolyglotParseResult;
+    if (!parsed.success) return undefined;
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    if (!statement) return undefined;
+    const items = outputItemsForStatement(statement, schema, { prepared: new Map() }, 'tsql');
+    const columns = columnsFromOutputItems(items, [], schema);
+    return columns.length > 0 ? { name: alias, columns } : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function stringLiteralValue(expression: unknown): string | undefined {
+  const literal = isRecord(expression) ? expression.literal : undefined;
+  return isRecord(literal) && literal.literal_type === 'string' ? String(literal.value ?? '') : undefined;
 }
 
 function unqualifiedFunctionName(fn: Record<string, unknown>): string {
@@ -5133,7 +7191,7 @@ function jsonTableColumn(expression: unknown): SchemaColumn[] {
 
 function jsonColumnType(kind: unknown): string {
   if (typeof kind !== 'string' || kind.length === 0) return 'unknown';
-  return kind.toLowerCase();
+  return normalizeDataTypeName(kind);
 }
 
 function matchRecognizeAlias(source: Record<string, unknown>, schema: ValidationSchema): SchemaTable | undefined {
@@ -5222,6 +7280,14 @@ function tableFunctionColumnTypes(expression: unknown, schema: ValidationSchema)
     const type = commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
     if (type && /date|time|timestamp/i.test(type)) return [type];
     return ['integer'];
+  }
+  if (name === 'explode' || name === 'explode_outer' || name === 'inline' || name === 'inline_outer') {
+    const type = firstArrayArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    return [type ? arrayElementType(type) ?? type : 'unknown'];
+  }
+  if (name === 'posexplode' || name === 'posexplode_outer') {
+    const type = firstArrayArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    return ['integer', type ? arrayElementType(type) ?? type : 'unknown'];
   }
   return [];
 }
@@ -5508,10 +7574,12 @@ function relationSourcesFromOwner(owner?: Record<string, unknown>): Record<strin
       table: owner.table,
       ...(isRecord(owner.alias) ? { alias: owner.alias } : {}),
     });
-    sources.unshift({ table: owner.table, alias: { name: 'inserted' } });
-    sources.unshift({ table: owner.table, alias: { name: 'deleted' } });
-    sources.unshift({ table: owner.table, alias: { name: 'excluded' } });
-  }
+	    sources.unshift({ table: owner.table, alias: { name: 'inserted' } });
+	    sources.unshift({ table: owner.table, alias: { name: 'deleted' } });
+	    sources.unshift({ table: owner.table, alias: { name: 'excluded' } });
+	    sources.unshift({ table: owner.table, alias: { name: 'old' } });
+	    sources.unshift({ table: owner.table, alias: { name: 'new' } });
+	  }
   for (const join of joins) {
     if (isRecord(join) && isRecord(join.this)) {
       const joinNullable = ['Left', 'Full'].includes(String(join.kind ?? ''));
@@ -5612,7 +7680,7 @@ function sourceRelationName(source: Record<string, unknown>): string | undefined
   if (tupleAlias) return tupleAlias;
   const fn = isRecord(source.function) ? source.function : undefined;
   if (fn) return String(fn.name ?? '').toLowerCase();
-  if (isRecord(source.unnest)) return 'unnest';
+  if (isRecord(source.unnest)) return identifierName(source.unnest.alias) ?? 'unnest';
   const aliasNode = isRecord(source.alias) && isRecord(source.alias.this) ? source.alias : undefined;
   return aliasNode ? identifierName(aliasNode.alias) : undefined;
 }
@@ -5676,6 +7744,7 @@ function identifierName(identifier: unknown): string | undefined {
   if (!identifier) return undefined;
   if (typeof identifier === 'string') return cleanIdentifier(identifier);
   if (isRecord(identifier) && typeof identifier.name === 'string') return cleanIdentifier(identifier.name);
+  if (isRecord(identifier) && isRecord(identifier.column)) return identifierName(identifier.column.name);
   if (isRecord(identifier) && isRecord(identifier.var) && typeof identifier.var.this === 'string') return cleanIdentifier(identifier.var.this);
   if (isRecord(identifier) && isRecord(identifier.identifier)) return identifierName(identifier.identifier);
   return undefined;
@@ -5768,11 +7837,25 @@ function dataTypeToString(dataType: unknown): string | undefined {
 }
 
 function normalizeDataTypeName(value: string): string {
-  const lower = value.toLowerCase();
-  if (lower === 'serial' || lower === 'serial4') return 'integer';
-  if (lower === 'bigserial' || lower === 'serial8') return 'big_int';
-  if (lower === 'smallserial' || lower === 'serial2') return 'small_int';
-  return value;
+  const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
+  const compact = unparameterized.replace(/\s+/g, '');
+  if (compact === 'serial' || compact === 'serial4') return 'integer';
+  if (compact === 'bigserial' || compact === 'serial8') return 'bigint';
+  if (compact === 'smallserial' || compact === 'serial2') return 'integer';
+  if (['int', 'int2', 'int4', 'int16', 'int32', 'integer', 'smallint', 'tinyint', 'small_int', 'tiny_int', 'uint8', 'uint16', 'uint32'].includes(compact)) return 'integer';
+  if (['int8', 'int64', 'bigint', 'big_int', 'uint64'].includes(compact)) return 'bigint';
+  if (['decimal', 'dec', 'numeric', 'number'].includes(compact)) return 'decimal';
+  if (['float', 'float4', 'float8', 'double', 'doubleprecision', 'real'].includes(compact)) return 'decimal';
+  if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
+  if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
+  if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
+  if (compact === 'json_b') return 'jsonb';
+  if (compact === 'datetime2') return 'datetime';
+  if (compact === 'timestampntz' || compact === 'timestampltz' || compact === 'timestamptz' || compact.startsWith('timestamp')) return 'timestamp';
+  if (compact === 'array') return 'array<variant>';
+  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
+  return unparameterized;
 }
 
 type AstExpression = Record<string, unknown>;

@@ -89,7 +89,7 @@ describe('describeQuery', () => {
     const result = await describeQuery({ sql: '1 + 2' });
     assert.partialDeepStrictEqual(result.statements[0], { kind: 'add', resultKind: 'static' });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['column_1', 'int', 'polyglot'],
+      ['column_1', 'integer', 'polyglot'],
     ]);
 
     const aliasResult = await describeQuery({ sql: '1 as one' });
@@ -100,21 +100,21 @@ describe('describeQuery', () => {
     const expressionCases = [
       ['true', 'boolean'],
       ['not true', 'boolean'],
-      ['-1', 'int'],
+      ['-1', 'integer'],
       ['(1)', 'integer'],
       ['array[1,2]', 'array<integer>'],
-      ['case when true then 1 else 0 end', 'int'],
+      ['case when true then 1 else 0 end', 'integer'],
       ['coalesce(null, 1)', 'integer'],
       ['exists(select 1)', 'boolean'],
       ['extract(year from current_date)', 'integer'],
       ['1 is distinct from 2', 'boolean'],
       ["1 ilike '1'", 'boolean'],
-      ['1 % 2', 'int'],
-      ['1 & 2', 'big_int'],
-      ['1 | 2', 'big_int'],
+      ['1 % 2', 'integer'],
+      ['1 & 2', 'bigint'],
+      ['1 | 2', 'bigint'],
       ['1 << 2', 'integer'],
       ['1 >> 2', 'integer'],
-      ['1 ^ 2', 'double'],
+      ['1 ^ 2', 'decimal'],
     ] as const;
     for (const [sql, type] of expressionCases) {
       const expressionResult = await describeQuery({ sql, dialect: 'postgres' });
@@ -139,7 +139,7 @@ describe('describeQuery', () => {
     ]);
 
     const positionalExpressionResult = await describeQuery({ sql: 'select coalesce(?, 1) as n', binds: 'int' });
-    assert.partialDeepStrictEqual(positionalExpressionResult.columns[0], { name: 'n', type: 'int', source: 'expression' });
+    assert.partialDeepStrictEqual(positionalExpressionResult.columns[0], { name: 'n', type: 'integer', source: 'expression' });
 
     const namedExpressionResult = await describeQuery({ sql: 'select greatest(:score, 1) as score', binds: 'score=decimal' });
     assert.partialDeepStrictEqual(namedExpressionResult.columns[0], { name: 'score', type: 'decimal', source: 'expression' });
@@ -153,9 +153,9 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
       ['distinct_check', 'boolean', 'expression'],
       ['pattern_check', 'boolean', 'polyglot'],
-      ['rem', 'int', 'polyglot'],
-      ['masked', 'big_int', 'polyglot'],
-      ['powered', 'double', 'polyglot'],
+      ['rem', 'integer', 'polyglot'],
+      ['masked', 'bigint', 'polyglot'],
+      ['powered', 'decimal', 'polyglot'],
     ]);
   });
 
@@ -738,6 +738,20 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(widenedResult.columns.map((column) => [column.name, column.type]), [
       ['n', 'decimal'],
     ]);
+
+    const schemaBackedResult = await describeQuery({
+      sql: 'select id from users union select user_id from orders',
+      schema: {
+        tables: [
+          { name: 'users', columns: [{ name: 'id', type: 'integer' }] },
+          { name: 'orders', columns: [{ name: 'user_id', type: 'integer' }] },
+        ],
+      },
+    });
+    assert.deepStrictEqual(schemaBackedResult.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+    ]);
+    assert.deepStrictEqual(schemaBackedResult.diagnostics, []);
   });
 
   it('describes projections over CTEs', async () => {
@@ -812,7 +826,7 @@ describe('describeQuery', () => {
     });
     assert.deepStrictEqual(correlatedResult.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
-      ['order_count', 'big_int'],
+      ['order_count', 'bigint'],
     ]);
   });
 
@@ -897,7 +911,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(jsonRecordsetResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['a', 'int', 'x.a'],
+      ['a', 'integer', 'x.a'],
       ['b', 'text', 'x.b'],
     ]);
 
@@ -971,7 +985,82 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(openQueryResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['openquery', 'unknown', 'openquery.openquery'],
+      ['id', 'integer', 'openquery.id'],
+    ]);
+
+    const openRowsetResult = await describeQuery({
+      sql: "select * from openrowset('SQLNCLI', 'server=x;', 'select 1 as id, cast(''x'' as varchar(10)) as name') as o",
+      dialect: 'tsql',
+      schema,
+    });
+    assert.deepStrictEqual(openRowsetResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'o.id'],
+      ['name', 'text', 'o.name'],
+    ]);
+
+    const duckDbReadBlobResult = await describeQuery({
+      sql: "select * from read_blob('x')",
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbReadBlobResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['filename', 'text', 'read_blob.filename'],
+      ['content', 'blob', 'read_blob.content'],
+    ]);
+
+    const duckDbReadTextResult = await describeQuery({
+      sql: "select * from read_text('x')",
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbReadTextResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['filename', 'text', 'read_text.filename'],
+      ['content', 'text', 'read_text.content'],
+    ]);
+
+    const duckDbParquetSchemaResult = await describeQuery({
+      sql: "select * from parquet_schema('x.parquet')",
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbParquetSchemaResult.columns.slice(0, 4).map((column) => [column.name, column.type, column.source]), [
+      ['file_name', 'text', 'parquet_schema.file_name'],
+      ['name', 'text', 'parquet_schema.name'],
+      ['type', 'text', 'parquet_schema.type'],
+      ['type_length', 'text', 'parquet_schema.type_length'],
+    ]);
+
+    const snowflakeInferSchemaResult = await describeQuery({
+      sql: "select * from table(infer_schema(location=>'@mystage', file_format=>'ff'))",
+      dialect: 'snowflake',
+      schema,
+    });
+    assert.deepStrictEqual(snowflakeInferSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['expression', 'text', 'table.expression'],
+      ['column_name', 'text', 'table.column_name'],
+      ['type', 'text', 'table.type'],
+      ['nullable', 'boolean', 'table.nullable'],
+      ['filenames', 'array<text>', 'table.filenames'],
+      ['order_id', 'integer', 'table.order_id'],
+    ]);
+
+    const clickHouseFileResult = await describeQuery({
+      sql: "select * from file('a.csv', CSV, 'id UInt64, name String')",
+      dialect: 'clickhouse',
+      schema,
+    });
+    assert.deepStrictEqual(clickHouseFileResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'bigint', 'file.id'],
+      ['name', 'text', 'file.name'],
+    ]);
+
+    const sparkExplodeResult = await describeQuery({
+      sql: 'select * from explode(array(1,2)) as t',
+      dialect: 'spark',
+      schema,
+    });
+    assert.deepStrictEqual(sparkExplodeResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['t', 'integer', 't.t'],
     ]);
 
     const bigQueryArrayResult = await describeQuery({
@@ -999,6 +1088,21 @@ describe('describeQuery', () => {
     });
     assert.deepStrictEqual(oracleCollectionResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['t', 'text', 't.t'],
+    ]);
+  });
+
+  it('describes literal execute immediate query shapes', async () => {
+    const result = await describeQuery({
+      sql: "execute immediate 'select 1 as id, cast(2 as numeric) as n'",
+      dialect: 'bigquery',
+      schema,
+    });
+    assert.deepStrictEqual(result.statements.map((statement) => [statement.kind, statement.resultKind]), [
+      ['command', 'static'],
+    ]);
+    assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'literal'],
+      ['n', 'decimal', 'cast'],
     ]);
   });
 
@@ -1257,6 +1361,25 @@ describe('describeQuery', () => {
       ['len', 'integer', 'expression'],
       ['kind', 'text', 'expression'],
     ]);
+
+    const bigQueryJsonResult = await describeQuery({
+      sql: "select to_json_string(data) as js, json_query(data, '$.a') as jq, regexp_contains(name, r'a') as rc from users",
+      dialect: 'bigquery',
+      schema: {
+        tables: [{
+          name: 'users',
+          columns: [
+            { name: 'data', type: 'json' },
+            { name: 'name', type: 'text' },
+          ],
+        }],
+      },
+    });
+    assert.deepStrictEqual(bigQueryJsonResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['js', 'text', 'expression'],
+      ['jq', 'json', 'expression'],
+      ['rc', 'boolean', 'expression'],
+    ]);
   });
 
   it('describes temporal function result types', async () => {
@@ -1284,6 +1407,15 @@ describe('describeQuery', () => {
       ['month', 'integer', 'expression'],
       ['d', 'date', 'expression'],
       ['ts', 'timestamp', 'expression'],
+    ]);
+
+    const postgresAgeResult = await describeQuery({
+      sql: 'select age(created_at) as elapsed from events',
+      dialect: 'postgres',
+      schema: temporalSchema,
+    });
+    assert.deepStrictEqual(postgresAgeResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['elapsed', 'interval', 'expression'],
     ]);
 
     const diffResult = await describeQuery({
@@ -1324,8 +1456,8 @@ describe('describeQuery', () => {
       schema: conversionSchema,
     });
     assert.deepStrictEqual(tsqlResult.columns.map((column) => [column.name, column.type]), [
-      ['a', 'int'],
-      ['b', 'int'],
+      ['a', 'integer'],
+      ['b', 'integer'],
       ['c', 'decimal'],
     ]);
 
@@ -1335,7 +1467,7 @@ describe('describeQuery', () => {
       schema: conversionSchema,
     });
     assert.deepStrictEqual(bigQueryResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['s', 'string', 'polyglot'],
+      ['s', 'text', 'polyglot'],
       ['d', 'date', 'expression'],
       ['ts', 'timestamp', 'expression'],
     ]);
@@ -1411,6 +1543,38 @@ describe('describeQuery', () => {
       ['sha_hash', 'bytes', 'expression'],
       ['r', 'decimal', 'expression'],
     ]);
+
+    const additionalHashResult = await describeQuery({
+      sql: "select decode(name, 'hex') as decoded, pg_typeof(name) as type_name, quote_ident(name) as quoted from users",
+      dialect: 'postgres',
+      schema: hashSchema,
+    });
+    assert.deepStrictEqual(additionalHashResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['decoded', 'bytes', 'expression'],
+      ['type_name', 'text', 'expression'],
+      ['quoted', 'text', 'expression'],
+    ]);
+
+    const sparkHashResult = await describeQuery({
+      sql: 'select sha2(name, 256) as sha, crc32(name) as crc, xxhash64(name) as xx from users',
+      dialect: 'spark',
+      schema: hashSchema,
+    });
+    assert.deepStrictEqual(sparkHashResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['sha', 'text', 'expression'],
+      ['crc', 'integer', 'expression'],
+      ['xx', 'integer', 'expression'],
+    ]);
+
+    const mysqlNetworkResult = await describeQuery({
+      sql: 'select inet6_aton(name) as packed, inet6_ntoa(inet6_aton(name)) as addr from users',
+      dialect: 'mysql',
+      schema: hashSchema,
+    });
+    assert.deepStrictEqual(mysqlNetworkResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['packed', 'bytes', 'expression'],
+      ['addr', 'text', 'expression'],
+    ]);
   });
 
   it('describes aggregate function result types', async () => {
@@ -1462,7 +1626,7 @@ describe('describeQuery', () => {
       ['part', 'text', 'expression'],
       ['matches', 'integer', 'expression'],
       ['pieces', 'array<text>', 'expression'],
-      ['root', 'double', 'polyglot'],
+      ['root', 'decimal', 'polyglot'],
       ['direction', 'integer', 'expression'],
     ]);
   });
@@ -1514,16 +1678,27 @@ describe('describeQuery', () => {
       ],
     };
     const result = await describeQuery({
-      sql: "select array_length(tags, 1) as len, cardinality(tags) as card, array_append(tags, 'x') as appended, array_cat(tags, array['x']) as cat, array_to_string(tags, ',') as joined from users",
+      sql: "select array_length(tags, 1) as len, cardinality(tags) as card, array_position(tags, 'x') as pos, array_append(tags, 'x') as appended, array_cat(tags, array['x']) as cat, array_to_string(tags, ',') as joined from users",
       dialect: 'postgres',
       schema: arraySchema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
       ['len', 'integer', 'expression'],
       ['card', 'integer', 'expression'],
+      ['pos', 'integer', 'expression'],
       ['appended', 'text[]', 'expression'],
       ['cat', 'text[]', 'expression'],
       ['joined', 'text', 'expression'],
+    ]);
+
+    const postgresArrayResult = await describeQuery({
+      sql: "select array_dims(tags) as dims, array_ndims(tags) as ndims from users",
+      dialect: 'postgres',
+      schema: arraySchema,
+    });
+    assert.deepStrictEqual(postgresArrayResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['dims', 'text', 'expression'],
+      ['ndims', 'integer', 'expression'],
     ]);
 
     const bigQueryResult = await describeQuery({
@@ -1579,12 +1754,35 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['lower_name', 'var_char', 'polyglot'],
-      ['name_len', 'int', 'polyglot'],
-      ['age_abs', 'double', 'polyglot'],
+      ['lower_name', 'text', 'polyglot'],
+      ['name_len', 'integer', 'polyglot'],
+      ['age_abs', 'decimal', 'polyglot'],
       ['display_name', 'text', 'expression'],
-      ['max_age', 'int', 'polyglot'],
+      ['max_age', 'integer', 'polyglot'],
       ['today', 'date', 'polyglot'],
+    ]);
+
+    const dialectScalarResult = await describeQuery({
+      sql: "select nvl(name, 'x') as n, typeof(age) as type_name, to_utf8(name) as encoded, from_utf8(to_utf8(name)) as decoded from users",
+      dialect: 'trino',
+      schema,
+    });
+    assert.deepStrictEqual(dialectScalarResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['n', 'text', 'expression'],
+      ['type_name', 'text', 'expression'],
+      ['encoded', 'bytes', 'expression'],
+      ['decoded', 'text', 'expression'],
+    ]);
+
+    const numericScalarResult = await describeQuery({
+      sql: 'select width_bucket(age, 0, 100, 10) as bucket, num_nonnulls(name, age) as present, num_nulls(name, age) as missing from users',
+      dialect: 'postgres',
+      schema,
+    });
+    assert.deepStrictEqual(numericScalarResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['bucket', 'integer', 'expression'],
+      ['present', 'integer', 'expression'],
+      ['missing', 'integer', 'expression'],
     ]);
   });
 
@@ -1620,8 +1818,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(caseResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['label', 'var_char', 'polyglot'],
-      ['bucket', 'int', 'polyglot'],
+      ['label', 'text', 'expression'],
+      ['bucket', 'integer', 'expression'],
     ]);
 
     const ifResult = await describeQuery({
@@ -1630,7 +1828,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(ifResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['label', 'var_char', 'polyglot'],
+      ['label', 'text', 'expression'],
     ]);
 
     const iffResult = await describeQuery({
@@ -1639,7 +1837,25 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(iffResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['label', 'var_char', 'polyglot'],
+      ['label', 'text', 'expression'],
+    ]);
+
+    const nvl2Result = await describeQuery({
+      sql: 'select nvl2(name, age, id) as fallback_age from users',
+      dialect: 'snowflake',
+      schema,
+    });
+    assert.deepStrictEqual(nvl2Result.columns.map((column) => [column.name, column.type, column.source]), [
+      ['fallback_age', 'integer', 'expression'],
+    ]);
+
+    const multiIfResult = await describeQuery({
+      sql: "select multiIf(age > 18, name, 'minor') as label from users",
+      dialect: 'clickhouse',
+      schema,
+    });
+    assert.deepStrictEqual(multiIfResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['label', 'text', 'expression'],
     ]);
   });
 
@@ -1795,8 +2011,8 @@ describe('describeQuery', () => {
       dialect: 'mysql',
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'jt.id'],
-      ['label', 'varchar', 'jt.label'],
+      ['id', 'integer', 'jt.id'],
+      ['label', 'text', 'jt.label'],
     ]);
 
     const qualifiedResult = await describeQuery({
@@ -1804,7 +2020,7 @@ describe('describeQuery', () => {
       dialect: 'mysql',
     });
     assert.deepStrictEqual(qualifiedResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'jt.id'],
+      ['id', 'integer', 'jt.id'],
     ]);
 
     const nestedResult = await describeQuery({
@@ -1813,7 +2029,7 @@ describe('describeQuery', () => {
     });
     assert.deepStrictEqual(nestedResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['ord', 'integer', 'jt.ord'],
-      ['item_id', 'int', 'jt.item_id'],
+      ['item_id', 'integer', 'jt.item_id'],
     ]);
   });
 
@@ -1824,8 +2040,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'openjson.id'],
-      ['name', 'NVARCHAR(100)', 'openjson.name'],
+      ['id', 'integer', 'openjson.id'],
+      ['name', 'text', 'openjson.name'],
     ]);
 
     const defaultResult = await describeQuery({
@@ -1846,8 +2062,8 @@ describe('describeQuery', () => {
       dialect: 'oracle',
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'NUMBER', 'xt.id'],
-      ['label', 'VARCHAR2(20)', 'xt.label'],
+      ['id', 'decimal', 'xt.id'],
+      ['label', 'text', 'xt.label'],
     ]);
   });
 
@@ -1968,6 +2184,25 @@ describe('describeQuery', () => {
       ['tablename', 'text', 'pg_catalog.pg_tables.tablename'],
     ]);
 
+    const pgRolesResult = await describeQuery({
+      sql: 'select rolname, rolcanlogin from pg_catalog.pg_roles',
+      dialect: 'postgres',
+    });
+    assert.deepStrictEqual(pgRolesResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['rolname', 'text', 'pg_catalog.pg_roles.rolname'],
+      ['rolcanlogin', 'boolean', 'pg_catalog.pg_roles.rolcanlogin'],
+    ]);
+
+    const pgLocksResult = await describeQuery({
+      sql: 'select locktype, pid, granted from pg_catalog.pg_locks',
+      dialect: 'postgres',
+    });
+    assert.deepStrictEqual(pgLocksResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['locktype', 'text', 'pg_catalog.pg_locks.locktype'],
+      ['pid', 'integer', 'pg_catalog.pg_locks.pid'],
+      ['granted', 'boolean', 'pg_catalog.pg_locks.granted'],
+    ]);
+
     const constraintsResult = await describeQuery({
       sql: 'select constraint_name, update_rule from information_schema.referential_constraints',
       dialect: 'postgres',
@@ -1975,6 +2210,23 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(constraintsResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['constraint_name', 'text', 'information_schema.referential_constraints.constraint_name'],
       ['update_rule', 'text', 'information_schema.referential_constraints.update_rule'],
+    ]);
+
+    const oracleUsersResult = await describeQuery({
+      sql: 'select username, user_id from all_users',
+      dialect: 'oracle',
+    });
+    assert.deepStrictEqual(oracleUsersResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['username', 'text', 'all_users.username'],
+      ['user_id', 'integer', 'all_users.user_id'],
+    ]);
+
+    const redshiftTablesResult = await describeQuery({
+      sql: 'select tablename from pg_catalog.svv_tables',
+      dialect: 'redshift',
+    });
+    assert.deepStrictEqual(redshiftTablesResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['tablename', 'text', 'pg_catalog.svv_tables.tablename'],
     ]);
 
     const sysResult = await describeQuery({
@@ -2582,6 +2834,12 @@ describe('describeQuery', () => {
       ['QUERY PLAN', 'text', 'cast'],
     ]);
 
+    const clickHouseExplainResult = await describeQuery({ sql: 'explain ast select id from users', dialect: 'clickhouse', schema });
+    assert.partialDeepStrictEqual(clickHouseExplainResult.statements[0], { kind: 'command', resultKind: 'static' });
+    assert.deepStrictEqual(clickHouseExplainResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['QUERY PLAN', 'text', 'cast'],
+    ]);
+
     const explainAnalyzeResult = await describeQuery({ sql: 'explain analyze select id from users', dialect: 'postgres', schema });
     assert.deepStrictEqual(explainAnalyzeResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['QUERY PLAN', 'text', 'cast'],
@@ -2742,6 +3000,63 @@ describe('describeQuery', () => {
     ]);
     assert.strictEqual(result.resultSets[0]?.index, 2);
     assert.ok(!result.diagnostics.some((entry) => matchesPartial(entry, { code: 'E200' })));
+
+    const deallocatedResult = await describeQuery({
+      sql: 'prepare get_user as select id, name from users; execute get_user; deallocate get_user; execute get_user',
+      dialect: 'postgres',
+      schema,
+    });
+    assert.deepStrictEqual(deallocatedResult.statements.map((statement) => [statement.kind, statement.resultKind]), [
+      ['prepare', 'none'],
+      ['execute', 'static'],
+      ['command', 'none'],
+      ['execute', 'runtime'],
+    ]);
+    assert.deepStrictEqual(deallocatedResult.resultSets.map((resultSet) => resultSet.index), [2]);
+    assert.ok(deallocatedResult.diagnostics.some((entry) => matchesPartial(entry, {
+      code: 'SQLDESC_RUNTIME_RESULT_SHAPE',
+      message: 'EXECUTE parses successfully, but its result-set shape depends on runtime database behavior.',
+    })));
+
+    const spHelpResult = await describeQuery({ sql: 'exec sp_help users', dialect: 'tsql', schema });
+    assert.deepStrictEqual(spHelpResult.columns.map((column) => [column.name, column.type, column.source]).slice(0, 4), [
+      ['Name', 'text', 'cast'],
+      ['Owner', 'text', 'cast'],
+      ['Type', 'text', 'cast'],
+      ['Created_datetime', 'timestamp', 'cast'],
+    ]);
+    assert.strictEqual(spHelpResult.statements[0]?.resultKind, 'static');
+
+    const spWhoResult = await describeQuery({ sql: 'execute sp_who', dialect: 'tsql', schema });
+    assert.deepStrictEqual(spWhoResult.columns.map((column) => [column.name, column.type, column.source]).slice(0, 4), [
+      ['spid', 'integer', 'cast'],
+      ['ecid', 'integer', 'cast'],
+      ['status', 'text', 'cast'],
+      ['loginame', 'text', 'cast'],
+    ]);
+    assert.strictEqual(spWhoResult.statements[0]?.resultKind, 'static');
+
+    const spSpaceUsedResult = await describeQuery({ sql: 'exec sp_spaceused users', dialect: 'tsql', schema });
+    assert.deepStrictEqual(spSpaceUsedResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['name', 'text', 'cast'],
+      ['rows', 'text', 'cast'],
+      ['reserved', 'text', 'cast'],
+      ['data', 'text', 'cast'],
+      ['index_size', 'text', 'cast'],
+      ['unused', 'text', 'cast'],
+    ]);
+    assert.strictEqual(spSpaceUsedResult.statements[0]?.resultKind, 'static');
+
+    const declaredResult = await describeQuery({
+      sql: 'exec dbo.my_proc with result sets ((id int not null, name nvarchar(20) null))',
+      dialect: 'tsql',
+      schema,
+    });
+    assert.deepStrictEqual(declaredResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'cast'],
+      ['name', 'text', 'cast'],
+    ]);
+    assert.strictEqual(declaredResult.statements[0]?.resultKind, 'static');
   });
 
   it('classifies non-result statements', async () => {
@@ -2848,6 +3163,58 @@ describe('describeQuery', () => {
     ]);
     assert.ok(!schemaBackedViewResult.diagnostics.some((entry) => matchesPartial(entry, { code: 'E200' })));
 
+    const rawRecursiveViewResult = await describeQuery({
+      sql: 'create recursive view rv(id) as select id from users; select id from rv',
+      dialect: 'postgres',
+      schema,
+    });
+    assert.deepStrictEqual(rawRecursiveViewResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'rv.id'],
+    ]);
+    assert.deepStrictEqual(rawRecursiveViewResult.warnings, []);
+
+    const sparkGlobalViewResult = await describeQuery({
+      sql: 'create global temporary view gv as select id from users; select id from gv',
+      dialect: 'spark',
+      schema,
+    });
+    assert.deepStrictEqual(sparkGlobalViewResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'gv.id'],
+    ]);
+    assert.deepStrictEqual(sparkGlobalViewResult.warnings, []);
+
+    const duckDbTableMacroResult = await describeQuery({
+      sql: "create macro pair() as table select 1 as id, 'x' as label; select id, label from pair()",
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbTableMacroResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'pair.id'],
+      ['label', 'text', 'pair.label'],
+    ]);
+    assert.deepStrictEqual(duckDbTableMacroResult.warnings, []);
+
+    const duckDbAliasedTableMacroResult = await describeQuery({
+      sql: "create macro pair() as table select 1 as id, 'x' as label; select p.id, p.label from pair() as p",
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbAliasedTableMacroResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'integer', 'p.id'],
+      ['label', 'text', 'p.label'],
+    ]);
+    assert.deepStrictEqual(duckDbAliasedTableMacroResult.warnings, []);
+
+    const duckDbColumnAliasedTableMacroResult = await describeQuery({
+      sql: 'create macro pair() as table select 1 as id; select x from pair() as p(x)',
+      dialect: 'duckdb',
+      schema,
+    });
+    assert.deepStrictEqual(duckDbColumnAliasedTableMacroResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['x', 'integer', 'p.x'],
+    ]);
+    assert.deepStrictEqual(duckDbColumnAliasedTableMacroResult.warnings, []);
+
     const ctasResult = await describeQuery({ sql: "create table t as select 1 as id, 'a' as label; select label from t" });
     assert.deepStrictEqual(ctasResult.resultSets[1]?.columns.map((column) => [column.name, column.type, column.source]), [
       ['label', 'text', 't.label'],
@@ -2856,7 +3223,7 @@ describe('describeQuery', () => {
     const tableResult = await describeQuery({ sql: 'create table local_users (id int, name text); select id, name from local_users' });
     assert.strictEqual(tableResult.resultSets[0]?.index, 2);
     assert.deepStrictEqual(tableResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'local_users.id'],
+      ['id', 'integer', 'local_users.id'],
       ['name', 'text', 'local_users.name'],
     ]);
 
@@ -2864,7 +3231,7 @@ describe('describeQuery', () => {
       sql: 'create table users (id int, name text); create synonym user_syn for users; select id, name from user_syn',
     });
     assert.deepStrictEqual(synonymResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'user_syn.id'],
+      ['id', 'integer', 'user_syn.id'],
       ['name', 'text', 'user_syn.name'],
     ]);
   });
@@ -2907,7 +3274,7 @@ describe('describeQuery', () => {
     });
     assert.strictEqual(addResult.resultSets[0]?.index, 3);
     assert.deepStrictEqual(addResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'users.id'],
+      ['id', 'integer', 'users.id'],
       ['name', 'text', 'users.name'],
     ]);
 
@@ -2915,7 +3282,7 @@ describe('describeQuery', () => {
       sql: 'create table users (id int, age int); alter table users drop column age; select * from users',
     });
     assert.deepStrictEqual(dropResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'users.id'],
+      ['id', 'integer', 'users.id'],
     ]);
 
     const renameResult = await describeQuery({
@@ -2930,7 +3297,7 @@ describe('describeQuery', () => {
       dialect: 'postgres',
     });
     assert.deepStrictEqual(alterTypeResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['age', 'big_int', 'users.age'],
+      ['age', 'bigint', 'users.age'],
     ]);
 
     const changeResult = await describeQuery({
@@ -2938,7 +3305,7 @@ describe('describeQuery', () => {
       dialect: 'mysql',
     });
     assert.deepStrictEqual(changeResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['years', 'big_int', 'users.years'],
+      ['years', 'bigint', 'users.years'],
     ]);
 
     const modifyResult = await describeQuery({
@@ -2966,9 +3333,9 @@ describe('describeQuery', () => {
       dialect: 'postgres',
     });
     assert.deepStrictEqual(addColumnsResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'users.id'],
+      ['id', 'integer', 'users.id'],
       ['name', 'text', 'users.name'],
-      ['age', 'int', 'users.age'],
+      ['age', 'integer', 'users.age'],
     ]);
 
     const serialResult = await describeQuery({
@@ -2987,7 +3354,7 @@ describe('describeQuery', () => {
       dialect: 'oracle',
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['name', 'varchar2(20)', 'tmp_users.name'],
+      ['name', 'text', 'tmp_users.name'],
     ]);
     assert.deepStrictEqual(result.warnings, []);
   });
@@ -3023,7 +3390,7 @@ describe('describeQuery', () => {
       sql: 'create table users (id int); alter table users rename to people; select id from people',
     });
     assert.deepStrictEqual(renameResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'people.id'],
+      ['id', 'integer', 'people.id'],
     ]);
 
     const setSchemaResult = await describeQuery({
@@ -3031,7 +3398,7 @@ describe('describeQuery', () => {
       dialect: 'postgres',
     });
     assert.deepStrictEqual(setSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'archive.users.id'],
+      ['id', 'integer', 'archive.users.id'],
     ]);
 
     const renameSchemaResult = await describeQuery({
@@ -3039,7 +3406,7 @@ describe('describeQuery', () => {
       dialect: 'postgres',
     });
     assert.deepStrictEqual(renameSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'int', 'archive.events.id'],
+      ['id', 'integer', 'archive.events.id'],
     ]);
 
     const renameViewResult = await describeQuery({

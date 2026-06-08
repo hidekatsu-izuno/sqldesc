@@ -21,7 +21,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'int' }]);
+    assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'integer' }]);
     assert.partialDeepStrictEqual(json.binds, { mode: 'positional', binds: [{ index: 1, type: 'int' }] });
   });
 
@@ -60,9 +60,62 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
-      { name: 'id', type: 'int', source: 'users.id' },
+      { name: 'id', type: 'integer', source: 'users.id' },
       { name: 'name', type: 'text', source: 'users.name' },
     ]);
+  });
+
+  it('loads raw dialect DDL schema files through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-oracle-schema-'));
+    await writeFile(
+      path.join(dir, 'schema.sql'),
+      'create global temporary table t(id number, name varchar2(20)) on commit preserve rows;',
+      'utf8',
+    );
+
+    const result = await runCli([
+      '--sql',
+      'select id, name from t',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'oracle',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'id', type: 'decimal', source: 't.id' },
+      { name: 'name', type: 'text', source: 't.name' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('uses named bind types for dialect-specific expressions', async () => {
+    const result = await runCli([
+      '--sql',
+      "select iff(:flag, :label, 'x') as label",
+      '--binds',
+      'flag=boolean,label=text',
+      '--dialect',
+      'snowflake',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [{ name: 'label', type: 'text' }]);
+    assert.partialDeepStrictEqual(json.binds, {
+      mode: 'named',
+      binds: [
+        { name: 'flag', type: 'boolean' },
+        { name: 'label', type: 'text' },
+      ],
+    });
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
   });
 
   it('prints a text table by default', async () => {
