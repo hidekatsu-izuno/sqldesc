@@ -5,6 +5,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { PassThrough } from 'node:stream';
+import { getDialects } from '@polyglot-sql/sdk';
 import { main } from '../dist/cli.js';
 
 const root = process.cwd();
@@ -23,6 +24,22 @@ describe('sqldesc CLI', () => {
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'integer' }]);
     assert.partialDeepStrictEqual(json.binds, { mode: 'positional', binds: [{ index: 1, type: 'int' }] });
+  });
+
+  it('prints supported dialects without SQL input', async () => {
+    const result = await runCli(['--dialects']);
+
+    assert.strictEqual(result.code, 0);
+    assert.deepStrictEqual(result.stdout.trim().split('\n'), getDialects().map(String).toSorted());
+    assert.strictEqual(result.stderr, '');
+  });
+
+  it('returns a clear error for unsupported dialects', async () => {
+    const result = await runCli(['--sql', 'select 1', '--dialect', 'nosuch', '--json']);
+
+    assert.notStrictEqual(result.code, 0);
+    assert.match(result.stderr, /Unsupported SQL dialect "nosuch"/);
+    assert.match(result.stderr, /sqldesc --dialects/);
   });
 
   it('prefers a SQL file over inline SQL', async () => {

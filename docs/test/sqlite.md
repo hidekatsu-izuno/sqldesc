@@ -3329,7 +3329,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| a | unknown | — |
+| a | json | expression |
 
 ---
 
@@ -4392,7 +4392,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| value | unknown | — |
+| value | integer | generate_series.value |
 
 ---
 
@@ -4610,7 +4610,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| t | unknown | — |
+| t | decimal | expression |
 
 ---
 
@@ -7156,7 +7156,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| o | unknown | — |
+| o | text | expression |
 
 ---
 
@@ -7187,7 +7187,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| m | unknown | — |
+| m | bytes | expression |
 
 ---
 
@@ -7572,7 +7572,7 @@ verify: true
 
 ## REGEXP / MATCH / GLOB（SELECT 投影）
 
-WHERE 句では形状が保たれます。投影では型注釈がない `REGEXP` / `MATCH` は `unknown` ですが、`GLOB` は boolean として推論されます。
+WHERE 句では形状が保たれます。投影でも `REGEXP` / `MATCH` / `GLOB` は boolean として推論されます。
 
 ### Given
 
@@ -7599,8 +7599,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | unknown | — |
-| m | unknown | — |
+| r | boolean | expression |
+| m | boolean | expression |
 | g | boolean | expression |
 
 ---
@@ -7633,7 +7633,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| p | unknown | — |
+| p | json | expression |
 
 ---
 
@@ -7661,7 +7661,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | unknown | — |
+| r | json | expression |
 
 ---
 
@@ -7692,7 +7692,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| o | unknown | — |
+| o | json | expression |
 
 ---
 

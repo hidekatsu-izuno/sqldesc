@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import Table from 'easy-table';
 import { describeQuery } from './describe.js';
+import { getSupportedDialects } from './dialect.js';
 import { resolveSchemaGlobPatterns } from './schema.js';
 
 type CliIo = {
@@ -21,6 +22,7 @@ const CLI_OPTIONS = {
   binds: { type: 'string' as const },
   dialect: { type: 'string' as const, default: 'generic' },
   json: { type: 'boolean' as const },
+  dialects: { type: 'boolean' as const },
   help: { type: 'boolean' as const, short: 'h' },
 };
 
@@ -30,6 +32,7 @@ type ParsedCliOptions = {
   binds?: string;
   dialect: string;
   json?: boolean;
+  dialects?: boolean;
   help?: boolean;
 };
 
@@ -63,6 +66,11 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
 
   if (values.help) {
     io.stdout.write(formatUsage());
+    return 0;
+  }
+
+  if (values.dialects) {
+    io.stdout.write(`${getSupportedDialects().join('\n')}\n`);
     return 0;
   }
 
@@ -116,6 +124,7 @@ Options:
   --schema <pattern>    Schema SQL glob pattern (repeatable)
   --binds <spec>        Bind types, e.g. "int,text" or "id=int,name=text"
   --dialect <dialect>   SQL dialect (default: "generic")
+  --dialects            List supported SQL dialects
   --json                Print JSON output
   -h, --help            Show this help message
 `;

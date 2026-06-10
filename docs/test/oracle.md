@@ -2779,7 +2779,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| table | unknown | table.table |
+| plan_table_output | text | table.plan_table_output |
 
 ---
 # 階層問合せ
@@ -4056,7 +4056,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | unknown | — |
+| n | decimal | function |
 
 ---
 # メンテナンス

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { getDialects } from '@polyglot-sql/sdk';
 import { describeQuery } from '../dist/describe.js';
-import { normalizeDialect } from '../dist/index.js';
+import { getSupportedDialects, normalizeDialect } from '../dist/index.js';
 
 function matchesPartial(actual: unknown, expected: Record<string, unknown>): boolean {
   try {
@@ -41,6 +41,7 @@ describe('describeQuery', () => {
   it('accepts every dialect name exposed by polyglot', async () => {
     const dialects = getDialects().map(String);
     assert.ok(dialects.length >= 30);
+    assert.deepStrictEqual(getSupportedDialects(), dialects.toSorted());
 
     for (const dialect of dialects) {
       const normalized = normalizeDialect(dialect);
@@ -48,6 +49,13 @@ describe('describeQuery', () => {
       assert.strictEqual(result.columns[0]?.type, 'integer', dialect);
       assert.strictEqual(normalized, dialect.toLowerCase(), dialect);
     }
+  });
+
+  it('rejects unsupported dialect names before parsing SQL', async () => {
+    await assert.rejects(
+      () => describeQuery({ sql: 'select 1', dialect: 'nosuch' }),
+      /Unsupported SQL dialect "nosuch"/,
+    );
   });
 
   it('accepts common dialect aliases through the library API', async () => {
@@ -774,6 +782,24 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(result.warnings, []);
     assert.deepStrictEqual(result.diagnostics, []);
 
+    const oracleResult = await describeQuery({
+      dialect: 'oracle',
+      schema,
+      sql: 'CREATE OR REPLACE FUNCTION add_one(x NUMBER) RETURN NUMBER IS BEGIN RETURN x + 1; END; SELECT add_one(age) AS n FROM users',
+    });
+    assert.deepStrictEqual(oracleResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['n', 'decimal', 'function'],
+    ]);
+
+    const tsqlResult = await describeQuery({
+      dialect: 'tsql',
+      schema,
+      sql: 'CREATE FUNCTION dbo.add_one(@x INT) RETURNS INT AS BEGIN RETURN @x + 1; END; SELECT dbo.add_one(age) AS n FROM users',
+    });
+    assert.deepStrictEqual(tsqlResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['n', 'integer', 'function'],
+    ]);
+
     const ctasResult = await describeQuery({
       dialect: 'postgres',
       schema,
@@ -1003,6 +1029,16 @@ describe('describeQuery', () => {
       ['generate_series', 'integer', 'generate_series.generate_series'],
     ]);
 
+    const sqliteSeriesResult = await describeQuery({ sql: 'select value from generate_series(1,3)', dialect: 'sqlite', schema });
+    assert.deepStrictEqual(sqliteSeriesResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['value', 'integer', 'generate_series.value'],
+    ]);
+
+    const oracleXplanResult = await describeQuery({ sql: 'select * from table(dbms_xplan.display)', dialect: 'oracle' });
+    assert.deepStrictEqual(oracleXplanResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['plan_table_output', 'text', 'table.plan_table_output'],
+    ]);
+
     const timestampResult = await describeQuery({
       sql: "select * from generate_series(timestamp '2020-01-01', timestamp '2020-01-02', interval '1 day') as g(ts)",
       dialect: 'postgres',
@@ -1018,6 +1054,15 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(jsonEachResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['key', 'text', 'j.key'],
       ['value', 'json', 'j.value'],
+    ]);
+
+    const sqliteFtsHelperResult = await describeQuery({
+      sql: "select offsets(docs_fts) as o, matchinfo(docs_fts) as m from docs_fts('search')",
+      dialect: 'sqlite',
+    });
+    assert.deepStrictEqual(sqliteFtsHelperResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['o', 'text', 'expression'],
+      ['m', 'bytes', 'expression'],
     ]);
 
     const jsonEachStarResult = await describeQuery({
@@ -1556,6 +1601,21 @@ describe('describeQuery', () => {
       ['jq', 'json', 'expression'],
       ['rc', 'boolean', 'expression'],
     ]);
+
+    const sqliteJsonMutationResult = await describeQuery({
+      sql: "select json_patch(data, '{\"y\":2}') as patched, json_replace(data, '$.x', 1) as replaced from users",
+      dialect: 'sqlite',
+      schema: {
+        tables: [{
+          name: 'users',
+          columns: [{ name: 'data', type: 'json' }],
+        }],
+      },
+    });
+    assert.deepStrictEqual(sqliteJsonMutationResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['patched', 'json', 'expression'],
+      ['replaced', 'json', 'expression'],
+    ]);
   });
 
   it('describes temporal function result types', async () => {
@@ -1790,7 +1850,7 @@ describe('describeQuery', () => {
     ]);
 
     const aliasAggregateResult = await describeQuery({
-      sql: 'select min(o.total) as min_total, max(o.total) as max_total, sum(o.total) as sum_total from orders o',
+      sql: 'select min(o.total) as min_total, max(o.total) as max_total, sum(o.total) as sum_total, total(o.total) as sqlite_total from orders o',
       dialect: 'sqlite',
       schema: aggregateSchema,
     });
@@ -1798,6 +1858,16 @@ describe('describeQuery', () => {
       ['min_total', 'decimal', 'expression'],
       ['max_total', 'decimal', 'expression'],
       ['sum_total', 'decimal', 'expression'],
+      ['sqlite_total', 'decimal', 'expression'],
+    ]);
+
+    const sqliteJsonAggregateResult = await describeQuery({
+      sql: 'select JSON_GROUP_ARRAY(name) as a from orders',
+      dialect: 'sqlite',
+      schema: aggregateSchema,
+    });
+    assert.deepStrictEqual(sqliteJsonAggregateResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['a', 'json', 'expression'],
     ]);
 
     const tsqlAggregateResult = await describeQuery({
@@ -2132,13 +2202,16 @@ describe('describeQuery', () => {
     ]);
 
     const dialectResult = await describeQuery({
-      sql: "select name ~* 'a' as regex_match, name glob 'a*' as glob_match, data is json as json_check from users",
+      sql: "select name ~* 'a' as regex_match, name glob 'a*' as glob_match, regexp(name, '^a') as regexp_func, name regexp '^a' as regexp_match, name match 'a' as fts_match, data is json as json_check from users",
       dialect: 'sqlite',
       schema,
     });
     assert.deepStrictEqual(dialectResult.columns.map((column) => [column.name, column.type]), [
       ['regex_match', 'boolean'],
       ['glob_match', 'boolean'],
+      ['regexp_func', 'boolean'],
+      ['regexp_match', 'boolean'],
+      ['fts_match', 'boolean'],
       ['json_check', 'boolean'],
     ]);
 

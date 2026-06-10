@@ -1,10 +1,10 @@
 import { glob, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, annotateTypes, ast } from '@polyglot-sql/sdk';
-import { normalizeDialect } from './dialect.js';
+import { assertSupportedDialect, normalizeDialect } from './dialect.js';
 import type { SchemaColumn, SchemaFunction, SchemaLoadOptions, SchemaProcedure, SchemaTable, ValidationSchema } from './types.js';
 
-const TABLE_CONSTRAINT_RE = /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check)\b/i;
+const TABLE_CONSTRAINT_RE = /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check|period\s+for)\b/i;
 
 export async function resolveSchemaGlobPatterns(patterns: string[], cwd = process.cwd()): Promise<string[]> {
   return (
@@ -19,7 +19,7 @@ export async function loadSchema(patterns: string[], options: SchemaLoadOptions 
 }
 
 export async function loadSchemaFiles(files: string[], options: SchemaLoadOptions = {}): Promise<ValidationSchema> {
-  const dialect = normalizeDialect(options.dialect);
+  const dialect = assertSupportedDialect(options.dialect);
   const tables: SchemaTable[] = [];
   const sqlFiles: string[] = [];
   const typeAliases = new Map<string, string>();
@@ -107,6 +107,7 @@ function schemaColumnFromColumnDef(column: unknown, typeAliases = new Map<string
   if (!isRecord(column)) return null;
   const name = identifierName(column.name);
   if (!name) return null;
+  if (name.toLowerCase() === 'period' && dataTypeToString(column.data_type)?.toLowerCase() === 'for system_time') return null;
   const primaryKey = column.primary_key === true;
   const nullableType = isRecord(column.data_type) && column.data_type.data_type === 'nullable';
   return {
@@ -654,7 +655,7 @@ function synonymFromStatement(statement: unknown, schema: ValidationSchema): Sch
   const targetSchema = tableSchemaFromRef(synonym.target);
   const target = schema.tables.find((table) => {
     if (table.name.toLowerCase() !== targetName.toLowerCase()) return false;
-    if (targetSchema && table.schema?.toLowerCase() !== targetSchema.toLowerCase()) return false;
+    if (targetSchema && table.schema && table.schema.toLowerCase() !== targetSchema.toLowerCase()) return false;
     return true;
   });
   if (!target) return [];
@@ -1026,6 +1027,7 @@ function normalizeDataTypeName(value: string): string {
   if (compact === 'datetime2') return 'datetime';
   if (compact === 'timestampntz' || compact === 'timestampltz' || compact === 'timestamptz' || compact.startsWith('timestamp')) return 'timestamp';
   if (compact === 'array') return 'array<variant>';
+  if (compact === 'uniqueidentifier') return 'uuid';
   if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
 }

@@ -170,6 +170,15 @@ describe('parseCreateTables', () => {
   });
 });
 
+describe('loadSchema dialect handling', () => {
+  it('rejects unsupported dialect names before reading schema SQL', async () => {
+    await assert.rejects(
+      () => loadSchema([], { dialect: 'nosuch' }),
+      /Unsupported SQL dialect "nosuch"/,
+    );
+  });
+});
+
 describe('parseCreateViews', () => {
   it('extracts view columns from schema-backed projections', () => {
     const baseSchema = {

@@ -834,13 +834,20 @@ const schemaProducingDdlCases = [
 
 const structuralSelectCases = [
   'with c as (select id, name from users) select id, name from c',
+  'with c(id, label) as (select id, name from users) select id, label from c',
   'with recursive c(n) as (values (1) union all select n + 1 from c where n < 3) select n from c',
   'select id from users union all select user_id from orders',
   'select id from users intersect select user_id from orders',
   'select id from users except select user_id from orders',
   'select * from (select id, name from users) u',
   'select u.* from (select id, name from users) u',
+  "select * from (values (1,'a')) as v(id,name)",
+  'select users.id, orders.amount from users left join orders on orders.user_id = users.id',
+  'select users.id, orders.amount from users right join orders on orders.user_id = users.id',
+  'select users.id, orders.amount from users full join orders on orders.user_id = users.id',
+  'select id from users join orders using (id)',
   'select id, (select amount from orders where user_id = users.id) amount from users',
+  'select id, name from users where (id, name) in (select id, name from users)',
   'select dept, count(*) c, sum(age) s from users group by dept having count(*) > 0',
   'select id, row_number() over(partition by dept order by age) rn from users',
   'select id from users where id in (select user_id from orders)',
@@ -958,8 +965,29 @@ const expressionShapeCases = [
   "select 'abc' like 'a%' as v",
   'select case when true then 1 else 2 end as v',
   'select coalesce(null, 1) as v',
+  'select nullif(1,2) as v',
+  'select ifnull(null,1) as v',
+  'select nvl(null,1) as v',
   'select greatest(1,2) as v',
   'select least(1,2) as v',
+  'select 1 is distinct from 2 as v',
+  'select 1 is not distinct from 2 as v',
+  "select extract(year from timestamp '2020-01-01 00:00:00') as v",
+  "select substring('abcdef' from 1 for 2) as v",
+  "select trim(' x ') as v",
+  "select lower('X') as v",
+  "select upper('x') as v",
+  "select position('a' in 'abc') as v",
+  "select overlay('abc' placing 'x' from 1 for 1) as v",
+  'select cast(null as integer) as v',
+  'select try_cast(null as integer) as v',
+  'select current_date as v',
+  'select current_time as v',
+  'select localtimestamp as v',
+  'select exists(select 1) as v',
+  'select array_length(array[1,2], 1) as v',
+  'select json_array(1,2) as v',
+  "select json_object('a',1) as v",
   'select array[1,2] as v',
   "select map(array['a'], array[1]) as v",
   "select row(1, 'a') as v",
@@ -1014,6 +1042,26 @@ const selectModifierCases = [
 ] as const;
 
 describe('polyglot representative SQL coverage', () => {
+  it('keeps representative Polyglot statement kinds explicitly covered', () => {
+    const cases = representativeSqlCases();
+    const unknownKinds = new Map<string, string[]>();
+
+    for (const [dialect, sql] of cases) {
+      const parsed = parse(sql, dialect);
+      if (parsed.error || !Array.isArray(parsed.ast)) continue;
+      for (const statement of parsed.ast) {
+        const kind = statementKind(statement);
+        if (!knownStatementKinds.has(kind)) {
+          const examples = unknownKinds.get(kind) ?? [];
+          if (examples.length < 5) examples.push(`${dialect}: ${sql}`);
+          unknownKinds.set(kind, examples);
+        }
+      }
+    }
+
+    assert.deepStrictEqual([...unknownKinds.entries()], []);
+  });
+
   for (const dialect of getDialects()) {
     it(`describes a schema-backed SELECT for supported dialect: ${dialect}`, async () => {
       const result = await describeQuery({
@@ -1231,3 +1279,145 @@ describe('polyglot representative SQL coverage', () => {
 function unresolvedColumnCount(result: DescribeResult): number {
   return result.columns.filter((column) => column.type === 'unknown').length;
 }
+
+function representativeSqlCases(): Array<[string, string]> {
+  const dialects = getDialects().map(String);
+  return [
+    ...staticResultCases,
+    ...noResultCases,
+    ...schemaTrackingCases,
+    ...dialects.flatMap((dialect) => returningDmlCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => schemaProducingDdlCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => structuralSelectCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => tableFunctionCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => broadNoResultCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => bindPlaceholderCases.map(({ sql }): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => expressionShapeCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => aggregateWindowCases.map((sql): [string, string] => [dialect, sql])),
+    ...dialects.flatMap((dialect) => selectModifierCases.map((sql): [string, string] => [dialect, sql])),
+  ];
+}
+
+function statementKind(statement: unknown): string {
+  return isRecord(statement) ? Object.keys(statement)[0] ?? 'unknown' : 'unknown';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+const knownStatementKinds = new Set([
+  'add',
+  'alias',
+  'alter_table',
+  'alter_sequence',
+  'alter_view',
+  'analyze',
+  'array_func',
+  'attach',
+  'between',
+  'boolean',
+  'cache',
+  'case',
+  'cast',
+  'clone',
+  'coalesce',
+  'column',
+  'command',
+  'comment',
+  'commit',
+  'concat',
+  'copy',
+  'create_database',
+  'create_function',
+  'create_index',
+  'create_procedure',
+  'create_schema',
+  'create_sequence',
+  'create_synonym',
+  'create_table',
+  'create_task',
+  'create_trigger',
+  'create_type',
+  'create_view',
+  'declare',
+  'declare_item',
+  'delete',
+  'describe',
+  'detach',
+  'div',
+  'drop_database',
+  'drop_function',
+  'drop_index',
+  'drop_namespace',
+  'drop_procedure',
+  'drop_schema',
+  'drop_sequence',
+  'drop_table',
+  'drop_trigger',
+  'drop_type',
+  'drop_view',
+  'eq',
+  'except',
+  'execute',
+  'exists',
+  'export',
+  'extract',
+  'function',
+  'grant',
+  'gt',
+  'gte',
+  'if_func',
+  'in',
+  'insert',
+  'install',
+  'intersect',
+  'is',
+  'is_not_null',
+  'is_null',
+  'kill',
+  'like',
+  'literal',
+  'load_data',
+  'locking_statement',
+  'lt',
+  'lte',
+  'merge',
+  'mod',
+  'mul',
+  'neg',
+  'not',
+  'null',
+  'null_safe_eq',
+  'null_safe_neq',
+  'paren',
+  'pivot',
+  'power',
+  'pragma',
+  'prepare',
+  'put',
+  'query_band',
+  'raw',
+  'refresh',
+  'revoke',
+  'rollback',
+  'safe_cast',
+  'select',
+  'sequence_properties',
+  'set_statement',
+  'show',
+  'similar_to',
+  'sub',
+  'subquery',
+  'summarize',
+  'transaction',
+  'truncate',
+  'truncate_table',
+  'try_cast',
+  'uncache',
+  'undrop',
+  'union',
+  'update',
+  'use',
+  'values',
+]);

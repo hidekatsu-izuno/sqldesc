@@ -18,7 +18,7 @@ dialect: tsql
 | カテゴリ | テストケース |
 |----------|-------------|
 | SELECT 基本 | 列の明示指定、`*` 全列展開、TOP、TOP PERCENT、OFFSET / FETCH、DISTINCT、ORDER BY、FROM 句なし、角括弧識別子 |
-| JOIN | INNER JOIN、LEFT JOIN、RIGHT JOIN、FULL OUTER JOIN、CROSS JOIN、旧式結合（カンマ + WHERE）、NATURAL JOIN |
+| JOIN | INNER JOIN、LEFT JOIN、RIGHT JOIN、FULL OUTER JOIN、CROSS JOIN、旧式結合（カンマ + WHERE）、共通列 INNER JOIN（NATURAL JOIN 相当） |
 | APPLY | CROSS APPLY、OUTER APPLY |
 | サブクエリ | IN サブクエリ、EXISTS、NOT EXISTS、スカラーサブクエリ、派生テーブル、相関サブクエリ |
 | 集約 | GROUP BY / HAVING、MIN / MAX / AVG / SUM、COUNT DISTINCT、STRING_AGG、GROUP BY CUBE、GROUP BY ROLLUP、VAR / STDEV、GROUPING SETS、GROUPING 関数 |
@@ -141,6 +141,21 @@ dialect: tsql
     }
   ]
 }
+```
+
+## Prepare-3: dbo.people テーブル
+
+```yaml
+kind: schema-ddl
+dialect: tsql
+```
+
+```sql
+IF OBJECT_ID('dbo.people', 'U') IS NOT NULL DROP TABLE dbo.people;
+CREATE TABLE dbo.people (
+  id   INT NOT NULL,
+  name NVARCHAR(100) NOT NULL
+);
 ```
 
 ---
@@ -623,7 +638,7 @@ verify: true
 | amount | decimal | orders.amount |
 
 ---
-## NATURAL JOIN
+## 共通列 INNER JOIN（NATURAL JOIN 相当）
 
 ### Given
 
@@ -638,7 +653,7 @@ dialect: tsql
 ```
 
 ```sql
-SELECT id, name FROM users NATURAL JOIN active_users
+SELECT u.id, u.name FROM users u INNER JOIN active_users a ON u.id = a.id
 ```
 
 ### Then
@@ -2265,7 +2280,9 @@ dialect: tsql
 ```
 
 ```sql
-SELECT NEWID() AS nid, NEWSEQUENTIALID() AS nsid FROM users
+DECLARE @g TABLE (id UNIQUEIDENTIFIER DEFAULT NEWSEQUENTIALID());
+INSERT INTO @g DEFAULT VALUES;
+SELECT NEWID() AS nid, CAST((SELECT TOP 1 id FROM @g) AS UNIQUEIDENTIFIER) AS nsid;
 ```
 
 ### Then
@@ -2278,7 +2295,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | nid | uuid | expression |
-| nsid | uuid | expression |
+| nsid | uuid | polyglot |
 
 ---
 ## LEN / STUFF
@@ -2490,7 +2507,8 @@ binds: text
 ```
 
 ```sql
-SELECT [key], value, type FROM OPENJSON(@json)
+DECLARE @json NVARCHAR(MAX) = N'{"a": 1}';
+SELECT [key], value, type FROM OPENJSON(@json);
 ```
 
 ### Then
@@ -2916,7 +2934,7 @@ dialect: tsql
 ```
 
 ```sql
-INSERT INTO active_users(name) SELECT name FROM users
+INSERT INTO active_users(id, name) SELECT id + 100, name FROM users
 ```
 
 ### Then
@@ -3122,7 +3140,7 @@ dialect: tsql
 ```
 
 ```sql
-MERGE users AS t USING orders AS s ON t.id = s.user_id WHEN MATCHED THEN UPDATE SET name = t.name
+MERGE users AS t USING src AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET name = s.name;
 ```
 
 ### Then
@@ -3152,7 +3170,7 @@ dialect: tsql
 ```
 
 ```sql
-MERGE users AS t USING orders AS s ON t.id = s.user_id WHEN MATCHED THEN UPDATE SET name = t.name OUTPUT inserted.id, inserted.name
+MERGE users AS t USING src AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET name = s.name OUTPUT inserted.id, inserted.name;
 ```
 
 ### Then
@@ -3183,7 +3201,7 @@ dialect: tsql
 ```
 
 ```sql
-MERGE INTO users AS t USING users AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET name = s.name OUTPUT inserted.id, deleted.name
+MERGE INTO users AS t USING users AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET name = s.name OUTPUT inserted.id, deleted.name;
 ```
 
 ### Then
@@ -3252,7 +3270,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2
+prepare: Prepare-2, Prepare-3
 ```
 
 ### When
@@ -3283,7 +3301,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2
+prepare: Prepare-2, Prepare-3
 ```
 
 ### When
@@ -3678,7 +3696,8 @@ dialect: tsql
 ```
 
 ```sql
-EXEC dbo.my_proc WITH RESULT SETS ((id INT, name NVARCHAR(20)))
+CREATE PROCEDURE dbo.my_proc AS SELECT 1 AS id, N'a' AS name;
+EXEC dbo.my_proc WITH RESULT SETS ((id INT, name NVARCHAR(20)));
 ```
 
 ### Then
@@ -4086,7 +4105,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | unknown | — |
+| n | integer | function |
 
 ---
 # スキーマ追跡
@@ -4174,8 +4193,8 @@ dialect: tsql
 ```
 
 ```sql
-CREATE SYNONYM p FOR users;
-SELECT name FROM p
+CREATE SYNONYM p FOR dbo.users;
+SELECT name FROM p;
 ```
 
 ### Then
@@ -4378,7 +4397,8 @@ dialect: tsql
 ```
 
 ```sql
-COMMIT
+BEGIN TRANSACTION;
+COMMIT;
 ```
 
 ### Then
@@ -4408,7 +4428,8 @@ dialect: tsql
 ```
 
 ```sql
-ROLLBACK
+BEGIN TRANSACTION;
+ROLLBACK;
 ```
 
 ### Then
@@ -4498,7 +4519,8 @@ dialect: tsql
 ```
 
 ```sql
-DROP INDEX idx_users_name ON users
+CREATE INDEX idx_users_name ON users(name);
+DROP INDEX idx_users_name ON users;
 ```
 
 ### Then
@@ -4558,7 +4580,7 @@ dialect: tsql
 ```
 
 ```sql
-RAISERROR('error', 16, 1)
+RAISERROR('error', 10, 1)
 ```
 
 ### Then
@@ -4612,8 +4634,10 @@ verify: true
 
 | カテゴリ | 例 | 期待される挙動 |
 |----------|-----|----------------|
+| NATURAL JOIN | `NATURAL JOIN` | SQL Server 非対応。共通列での `INNER JOIN` を使用する |
+| NEWSEQUENTIALID | `SELECT NEWSEQUENTIALID()` | `DEFAULT` 式専用。`SELECT` ではテーブル変数等で取得する |
+| OPENQUERY / OPENROWSET | リンクサーバー経由 | リテラル SQL は静的に推論する。実行にはリンクサーバー登録や `Ad Hoc Distributed Queries` の有効化が必要 |
 | UNPIVOT | 複雑な `UNPIVOT` 句 | パース未対応または `unknown` |
-| OPENQUERY / OPENROWSET | リンクサーバー経由 | 列は推論されるが型は `unknown` になりやすい |
 | テーブル変数 / sp_rename | `DECLARE @t TABLE`、`sp_rename` | パース未対応 |
 | 動的 EXEC | `EXEC dbo.my_proc`（結果セット宣言なし） | `SQLDESC_RUNTIME_RESULT_SHAPE` 警告 |
 | DBCC | `DBCC CHECKDB` 等 | 結果列なし + 実行時依存 |

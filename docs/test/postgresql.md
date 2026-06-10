@@ -26,7 +26,7 @@ dialect: postgres
 | ウィンドウ関数 | ROW_NUMBER、RANK / DENSE_RANK、LAG / LEAD、SUM OVER パーティション、NTILE、名前付き WINDOW 句 |
 | 式・述語 | CASE 式、CAST / ::、COALESCE / NULLIF、ILIKE、BETWEEN、バインドパラメータ `$1`、ROW コンストラクタ、組み込み version()、IS DISTINCT FROM、SIMILAR TO、GLOB 相当（~ 演算子） |
 | 配列 | 添字アクセス、スライス、array_agg、unnest、unnest WITH ORDINALITY、generate_subscripts、配列演算子 && / @>、array_dims / array_upper、配列サブクエリ |
-| JSON / JSONB | JSONB 演算子 `->` / `->>`、jsonb_each、jsonb_array_elements、jsonb_build_object、テーブル列との jsonb_each、json_to_record、jsonb_to_recordset、json_arrayagg / json_objectagg、row_to_json、jsonb_path_query、json_each_text |
+| JSON / JSONB | JSONB 演算子 `->` / `->>`、jsonb_each、jsonb_array_elements、jsonb_build_object、テーブル列との jsonb_each、json_to_record、jsonb_to_recordset、json_arrayagg / json_object_agg、row_to_json、jsonb_path_query、json_each_text |
 | 全文検索 | to_tsvector / plainto_tsquery、ts_rank、ts_debug TVF、to_tsvector / websearch_to_tsquery、setweight |
 | テーブル値関数 | generate_series、generate_series（ステップ）、pg_settings、pg_timezone_names、pg_stat_activity |
 | 日付・時刻 | to_char、date_bin、clock_timestamp / current_schema |
@@ -637,7 +637,7 @@ dialect: postgres
 ```
 
 ```sql
-SELECT id, name FROM users JOIN active_users USING (id)
+SELECT id, users.name FROM users JOIN active_users USING (id)
 ```
 
 ### Then
@@ -2385,7 +2385,7 @@ verify: true
 | id | integer | x.id |
 
 ---
-## json_arrayagg / json_objectagg
+## json_arrayagg / json_object_agg
 
 ### Given
 
@@ -2400,7 +2400,7 @@ dialect: postgres
 ```
 
 ```sql
-SELECT json_arrayagg(name) AS ja, json_objectagg(name, age) AS jo FROM users
+SELECT json_arrayagg(name) AS ja, json_object_agg(name, age) AS jo FROM users
 ```
 
 ### Then
@@ -3142,7 +3142,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: none
+prepare: Prepare-1
 ```
 
 ### When
@@ -3320,7 +3320,7 @@ dialect: postgres
 ```
 
 ```sql
-DELETE FROM users WHERE id = 1 RETURNING id
+DELETE FROM users WHERE id = 2 RETURNING id
 ```
 
 ### Then
@@ -4387,7 +4387,7 @@ dialect: postgres
 ```
 
 ```sql
-TRUNCATE TABLE users
+TRUNCATE TABLE users CASCADE
 ```
 
 ### Then
@@ -4447,7 +4447,7 @@ dialect: postgres
 ```
 
 ```sql
-SAVEPOINT sp1
+BEGIN; SAVEPOINT sp1; COMMIT
 ```
 
 ### Then
@@ -4570,8 +4570,9 @@ verify: true
 
 | カテゴリ | 例 | 期待される挙動 |
 |----------|-----|----------------|
+| バージョン依存 SQL | `MERGE ... RETURNING`（17+）、`RETURNING old` / `new`（18+） | PostgreSQL 17 未満では `MERGE` の `RETURNING` が使えない。18 未満では `UPDATE ... RETURNING old` / `new` が使えない |
 | 全文検索 MATCH | `@@` を含む複雑な WHERE | 列は推論されるが関連度関数は `polyglot` / `expression` になりやすい |
-| PostGIS 一部 | `ST_*` 幾何関数 | 型は `polyglot` または `unknown` |
+| PostGIS 未列挙関数 | 一部の `ST_*` 幾何関数 | 代表的な関数は推論する。未列挙関数は `polyglot` または `unknown` になりうる |
 | 実行時依存 | `pg_sleep`、レプリケーションスロット系 TVF | スキーマのみでは列形状が不完全な場合あり |
 | MERGE / COPY | 複雑な句 | 主要列は推論されるが周辺関数は `expression` になりやすい |
 | メタデータ依存 | 未登録テーブル参照 | `unknown` + warnings |
