@@ -175,7 +175,7 @@ function inferColumn(
     return { type: identifierHashRandomType, confidence: 'medium', source: 'expression' };
   }
 
-  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases);
+  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases, dialect);
   if (aggregateType) {
     return { type: aggregateType, confidence: 'medium', source: 'expression' };
   }
@@ -2418,11 +2418,11 @@ function inferMethodCallType(expression: AstExpression, schema: ValidationSchema
   return undefined;
 }
 
-function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
-  if (isAst(expression, 'count')) return 'integer';
-  if (isAst(expression, 'avg')) return 'decimal';
-  if (isAst(expression, 'count_if')) return 'integer';
-  if (isAst(expression, 'approx_count_distinct') || isAst(expression, 'approx_distinct')) return 'integer';
+function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
+  if (isAst(expression, 'count')) return dialectCountType(dialect);
+  if (isAst(expression, 'avg')) return dialectAvgType(expression, schema, binds, tableAliases, dialect);
+  if (isAst(expression, 'count_if')) return dialectCountType(dialect);
+  if (isAst(expression, 'approx_count_distinct') || isAst(expression, 'approx_distinct')) return dialectCountType(dialect);
   const directValue = getAst(expression, 'first_value') ?? getAst(expression, 'last_value');
   if (isRecord(directValue) && isRecord(directValue.this)) return inferAggregateExpressionType(directValue.this, schema, binds, tableAliases);
 
@@ -2462,7 +2462,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   if (isRecord(withinGroup)) {
     const ordered = Array.isArray(withinGroup.order_by) ? withinGroup.order_by.map((item) => isRecord(item) && isRecord(item.this) ? item.this : undefined).filter(isRecord) : [];
     const inner = isRecord(withinGroup.this) ? withinGroup.this : undefined;
-    const innerAggregate = inner ? inferAggregateType(inner, schema, binds, tableAliases) : undefined;
+    const innerAggregate = inner ? inferAggregateType(inner, schema, binds, tableAliases, dialect) : undefined;
     if (innerAggregate && innerAggregate !== 'unknown') return innerAggregate;
     const orderType = commonArgumentType(ordered, schema, binds);
     if (orderType) return orderType;
@@ -2500,6 +2500,27 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   }
 
   return undefined;
+}
+
+function dialectCountType(dialect: string): string {
+  if (['postgresql', 'mysql', 'mariadb', 'singlestore', 'tidb', 'duckdb'].includes(dialect)) return 'bigint';
+  if (dialect === 'oracle') return 'number';
+  return 'integer';
+}
+
+function dialectAvgType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string {
+  if (dialect === 'tsql') {
+    const avg = getAst(expression, 'avg');
+    const inner = firstAggregateExpression(isRecord(avg) ? avg : expression);
+    const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
+    if (innerType && ['integer', 'bigint'].includes(normalizeDataTypeName(innerType))) return innerType;
+    return 'decimal';
+  }
+  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return 'decimal(14,4)';
+  if (dialect === 'duckdb') return 'double';
+  if (dialect === 'oracle') return 'number';
+  if (dialect === 'postgresql') return 'numeric';
+  return 'decimal';
 }
 
 function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
@@ -9365,6 +9386,16 @@ function dataTypeToString(dataType: unknown): string | undefined {
   const value = record.data_type === 'custom' && typeof record.name === 'string'
     ? record.name
     : record.data_type ?? record.type ?? record.name;
+  if (value === 'timestamp' && record.timezone === true) return 'timestamptz';
+  if (typeof value === 'string') {
+    const normalizedValue = value.toLowerCase().replace(/\s+/g, '');
+    if (typeof record.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary'].includes(normalizedValue)) {
+      return `${normalizedValue === 'var_char' ? 'varchar' : normalizedValue}(${record.length})`;
+    }
+    if (typeof record.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime2'].includes(normalizedValue)) {
+      return `${normalizedValue}(${record.precision}${typeof record.scale === 'number' ? `,${record.scale}` : ''})`;
+    }
+  }
   return typeof value === 'string' ? normalizeDataTypeName(value) : undefined;
 }
 
@@ -9385,11 +9416,12 @@ function normalizeDataTypeName(value: string): string {
   if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
   if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
   if (compact === 'json_b') return 'jsonb';
-  if (compact === 'datetime2') return 'datetime';
-  if (compact === 'timestampntz' || compact === 'timestampltz' || compact === 'timestamptz' || compact.startsWith('timestamp')) return 'timestamp';
+  if (compact === 'datetime2') return 'datetime2';
+  if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
+  if (compact === 'timestampntz' || compact === 'timestampltz' || compact.startsWith('timestamp')) return 'timestamp';
   if (compact === 'array') return 'array<variant>';
   if (compact === 'uniqueidentifier') return 'uuid';
-  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
+  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'datetime2', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
 }
 
@@ -9401,6 +9433,17 @@ function displayTypeName(type: string, dialect: string): string {
   if (normalized.startsWith('struct<')) return displayComplexType(normalized, dialect);
 
   const family = dialectTypeFamily(dialect);
+  const parameterized = /^([a-z_][\w]*)\(([^)]*)\)$/.exec(normalized);
+  if (parameterized) {
+    const [, base, args] = parameterized;
+    if (['decimal', 'dec', 'numeric', 'number'].includes(base)) {
+      if (family === 'postgresql') return `numeric(${args})`;
+      if (family === 'oracle') return `number(${args})`;
+      return `decimal(${args})`;
+    }
+    if (base === 'datetime2' && family === 'tsql') return `datetime2(${args})`;
+    return normalized;
+  }
   const maps: Record<string, Record<string, string>> = {
     postgresql: {
       integer: 'integer',
@@ -9413,7 +9456,8 @@ function displayTypeName(type: string, dialect: string): string {
       jsonb: 'jsonb',
       date: 'date',
       time: 'time',
-      timestamp: 'timestamp',
+      timestamp: 'timestamp without time zone',
+      timestamptz: 'timestamp with time zone',
       datetime: 'timestamp',
       uuid: 'uuid',
     },
@@ -9429,6 +9473,7 @@ function displayTypeName(type: string, dialect: string): string {
       date: 'date',
       time: 'time',
       timestamp: 'timestamp',
+      timestamptz: 'timestamp',
       datetime: 'datetime',
       uuid: 'char(36)',
     },
@@ -9444,6 +9489,7 @@ function displayTypeName(type: string, dialect: string): string {
       date: 'text',
       time: 'text',
       timestamp: 'text',
+      timestamptz: 'text',
       datetime: 'text',
       uuid: 'text',
     },
@@ -9459,7 +9505,9 @@ function displayTypeName(type: string, dialect: string): string {
       xml: 'xml',
       date: 'date',
       time: 'time',
-      timestamp: 'datetime2',
+      timestamp: 'datetime2(7)',
+      timestamptz: 'datetimeoffset',
+      datetime2: 'datetime2(7)',
       datetime: 'datetime2',
       uuid: 'uniqueidentifier',
     },
@@ -9475,7 +9523,8 @@ function displayTypeName(type: string, dialect: string): string {
       xml: 'xmltype',
       date: 'date',
       time: 'timestamp',
-      timestamp: 'timestamp',
+      timestamp: 'timestamp(6)',
+      timestamptz: 'timestamp(6) with time zone',
       datetime: 'timestamp',
       uuid: 'raw(16)',
     },
@@ -9491,6 +9540,7 @@ function displayTypeName(type: string, dialect: string): string {
       date: 'date',
       time: 'time',
       timestamp: 'timestamp',
+      timestamptz: 'timestamp with time zone',
       datetime: 'timestamp',
       uuid: 'uuid',
     },
@@ -9506,6 +9556,7 @@ function displayTypeName(type: string, dialect: string): string {
       date: 'date',
       time: 'time',
       timestamp: 'timestamp',
+      timestamptz: 'timestamp',
       datetime: 'datetime',
       uuid: 'string',
     },
@@ -9522,6 +9573,7 @@ function displayTypeName(type: string, dialect: string): string {
       date: 'DATE',
       time: 'TIME',
       timestamp: 'TIMESTAMP',
+      timestamptz: 'TIMESTAMP_WITH_TIMEZONE',
       datetime: 'TIMESTAMP',
       uuid: 'VARCHAR(36)',
     },
@@ -9554,6 +9606,9 @@ function parseParameterizedType(value: string): string | undefined {
   const args = splitTopLevel(match[2], ',');
   if (name === 'nullable' || name === 'lowcardinality') {
     return args[0] ? normalizeDataTypeName(args[0]) : 'unknown';
+  }
+  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'decimal', 'dec', 'numeric', 'number', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
+    return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
   if (name === 'array' || name === 'list') {
     return `array<${args[0] ? normalizeDataTypeName(args[0]) : 'unknown'}>`;

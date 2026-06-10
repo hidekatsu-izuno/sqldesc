@@ -137,7 +137,7 @@ describe('sqldesc CLI', () => {
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
       { name: 'id', type: 'number', source: 't.id' },
-      { name: 'name', type: 'varchar2(255)', source: 't.name' },
+      { name: 'name', type: 'varchar2(20)', source: 't.name' },
     ]);
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);
@@ -362,7 +362,7 @@ describe('sqldesc CLI', () => {
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.resultSets.at(-1).columns, [
       { name: 'id', type: 'integer', source: 't.id' },
-      { name: 'name', type: 'text', source: 't.name' },
+      { name: 'name', type: 'varchar(20)', source: 't.name' },
     ]);
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);

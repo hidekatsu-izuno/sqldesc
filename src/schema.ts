@@ -1496,6 +1496,16 @@ function dataTypeToString(dataType: unknown): string | undefined {
   const value = dataType.data_type === 'custom' && typeof dataType.name === 'string'
     ? dataType.name
     : dataType.data_type ?? dataType.type ?? dataType.name;
+  if (value === 'timestamp' && dataType.timezone === true) return 'timestamptz';
+  if (typeof value === 'string') {
+    const normalizedValue = value.toLowerCase().replace(/\s+/g, '');
+    if (typeof dataType.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary'].includes(normalizedValue)) {
+      return `${normalizedValue === 'var_char' ? 'varchar' : normalizedValue}(${dataType.length})`;
+    }
+    if (typeof dataType.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime2'].includes(normalizedValue)) {
+      return `${normalizedValue}(${dataType.precision}${typeof dataType.scale === 'number' ? `,${dataType.scale}` : ''})`;
+    }
+  }
   return typeof value === 'string' ? normalizeDataTypeName(value) : undefined;
 }
 
@@ -1522,11 +1532,12 @@ function normalizeDataTypeName(value: string): string {
   if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
   if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
   if (compact === 'json_b') return 'jsonb';
-  if (compact === 'datetime2') return 'datetime';
-  if (compact === 'timestampntz' || compact === 'timestampltz' || compact === 'timestamptz' || compact.startsWith('timestamp')) return 'timestamp';
+  if (compact === 'datetime2') return 'datetime2';
+  if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
+  if (compact === 'timestampntz' || compact === 'timestampltz' || compact.startsWith('timestamp')) return 'timestamp';
   if (compact === 'array') return 'array<variant>';
   if (compact === 'uniqueidentifier') return 'uuid';
-  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
+  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'datetime2', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
 }
 
@@ -1537,6 +1548,9 @@ function parseParameterizedType(value: string): string | undefined {
   const args = splitTopLevel(match[2], ',');
   if (name === 'nullable' || name === 'lowcardinality') {
     return args[0] ? normalizeDataTypeName(args[0]) : 'unknown';
+  }
+  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'decimal', 'dec', 'numeric', 'number', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
+    return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
   if (name === 'array' || name === 'list') {
     return `array<${args[0] ? normalizeDataTypeName(args[0]) : 'unknown'}>`;

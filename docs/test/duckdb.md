@@ -488,7 +488,7 @@ verify: true
 |------|------|--------|
 | id | integer | users.id |
 | name | varchar | users.name |
-| amount | decimal(18, 3) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -518,7 +518,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal(18, 3) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -548,7 +548,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal(18, 3) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -578,7 +578,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal(18, 3) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -785,7 +785,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal(18, 3) | o.amount |
+| amount | decimal(10,2) | o.amount |
 
 ---
 # サブクエリ
@@ -909,7 +909,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| max_amt | decimal(18, 3) | expression |
+| max_amt | decimal(10,2) | expression |
 
 ---
 ## 派生テーブル
@@ -1003,7 +1003,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | varchar | users.dept |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 ## サーバー生成列名（alias なし）
@@ -1034,7 +1034,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| count_star() | integer | expression |
+| count_star() | bigint | expression |
 | (id + 1) | integer | polyglot |
 | upper("name") | varchar | polyglot |
 
@@ -1124,7 +1124,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| adults | integer | expression |
+| adults | bigint | expression |
 
 ---
 ## GROUP BY ROLLUP
@@ -1154,7 +1154,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | varchar | users.dept |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 ## approx_count_distinct
@@ -1183,7 +1183,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| ac | integer | expression |
+| ac | bigint | expression |
 
 ---
 ## histogram

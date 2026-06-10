@@ -240,7 +240,7 @@ verify: true
 | dept | text | users.dept |
 | data | jsonb | users.data |
 | tags | array<text> | users.tags |
-| created_at | timestamp | users.created_at |
+| created_at | timestamp with time zone | users.created_at |
 | geom | geometry | users.geom |
 | geog | geography | users.geog |
 
@@ -464,7 +464,7 @@ verify: true
 |------|------|--------|
 | id | integer | users.id |
 | name | text | users.name |
-| amount | numeric | orders.amount |
+| amount | numeric(10,2) | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -495,7 +495,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | numeric | orders.amount |
+| amount | numeric(10,2) | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -526,7 +526,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | numeric | orders.amount |
+| amount | numeric(10,2) | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -557,7 +557,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | numeric | orders.amount |
+| amount | numeric(10,2) | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -778,7 +778,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| max_amt | numeric | expression |
+| max_amt | numeric(10,2) | expression |
 
 ---
 ## 派生テーブル
@@ -876,7 +876,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 ## サーバー生成列名（alias なし）
@@ -908,7 +908,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| count | integer | expression |
+| count | bigint | expression |
 | ?column? | integer | polyglot |
 | upper | text | polyglot |
 
@@ -973,7 +973,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| cd | integer | expression |
+| cd | bigint | expression |
 
 ---
 ## STRING_AGG
@@ -1034,7 +1034,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| adult_cnt | integer | expression |
+| adult_cnt | bigint | expression |
 
 ---
 ## GROUP BY ROLLUP
@@ -1065,7 +1065,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 ## GROUP BY CUBE
@@ -1096,7 +1096,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 ## GROUPING 関数
@@ -1128,7 +1128,7 @@ verify: true
 |------|------|--------|
 | dept | text | users.dept |
 | g | integer | expression |
-| cnt | integer | expression |
+| cnt | bigint | expression |
 
 ---
 # CTE
@@ -3032,7 +3032,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| db | timestamp | expression |
+| db | timestamp without time zone | expression |
 
 ---
 ## clock_timestamp / current_schema
@@ -3062,7 +3062,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ct | timestamp | expression |
+| ct | timestamp without time zone | expression |
 | cs | text | expression |
 
 ---

@@ -206,7 +206,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 ## `*` 全列展開
@@ -237,9 +237,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 | age | int | users.age |
-| dept | varchar(255) | users.dept |
+| dept | varchar(50) | users.dept |
 | data | json | users.data |
 | tags | json | users.tags |
 | created_at | datetime | users.created_at |
@@ -275,7 +275,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 ## DISTINCT
@@ -305,7 +305,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | varchar(255) | users.dept |
+| dept | varchar(50) | users.dept |
 
 ---
 ## ORDER BY
@@ -402,8 +402,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
-| amount | decimal | orders.amount |
+| name | varchar(100) | users.name |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -434,7 +434,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -465,7 +465,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -527,7 +527,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 ## JOIN USING
@@ -558,7 +558,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 # サブクエリ
@@ -595,7 +595,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 ## EXISTS
@@ -686,7 +686,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| max_amt | decimal | expression |
+| max_amt | decimal(10,2) | expression |
 
 ---
 ## 派生テーブル
@@ -717,7 +717,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | t.id |
-| n | varchar(255) | t.n |
+| n | varchar(100) | t.n |
 
 ---
 ## 相関サブクエリ
@@ -783,8 +783,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | varchar(255) | users.dept |
-| cnt | int | expression |
+| dept | varchar(50) | users.dept |
+| cnt | bigint | expression |
 
 ---
 ## サーバー生成列名（alias なし）
@@ -816,7 +816,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| count(*) | int | expression |
+| count(*) | bigint | expression |
 | id+1 | int | polyglot |
 | upper(name) | varchar(255) | polyglot |
 
@@ -850,7 +850,7 @@ verify: true
 |------|------|--------|
 | mi | int | expression |
 | ma | int | expression |
-| av | decimal | expression |
+| av | decimal(14,4) | expression |
 | su | int | expression |
 
 ---
@@ -881,7 +881,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| cd | int | expression |
+| cd | bigint | expression |
 
 ---
 ## GROUP_CONCAT
@@ -911,7 +911,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | varchar(255) | users.dept |
+| dept | varchar(50) | users.dept |
 | names | varchar(255) | expression |
 
 ---
@@ -942,8 +942,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | varchar(255) | users.dept |
-| cnt | int | expression |
+| dept | varchar(50) | users.dept |
+| cnt | bigint | expression |
 
 ---
 ## stddev_pop / var_pop
@@ -1042,7 +1042,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | active.id |
-| name | varchar(255) | active.name |
+| name | varchar(100) | active.name |
 
 ---
 ## 再帰 CTE
@@ -2485,7 +2485,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | varchar(255) | jt.name |
+| name | varchar(100) | jt.name |
 
 ---
 # 全文検索
@@ -2521,7 +2521,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| title | varchar(255) | documents.title |
+| title | varchar(200) | documents.title |
 | score | decimal | expression |
 
 ---
@@ -2552,7 +2552,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| title | varchar(255) | documents.title |
+| title | varchar(200) | documents.title |
 
 ---
 # DUAL
@@ -2845,7 +2845,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal | o.amount |
+| amount | decimal(10,2) | o.amount |
 
 ---
 # スキーマ修飾
@@ -3517,7 +3517,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | active.id |
-| name | varchar(255) | active.name |
+| name | varchar(100) | active.name |
 
 ---
 ## CREATE TABLE AS SELECT
@@ -3582,7 +3582,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | varchar(255) | t.name |
+| name | varchar(20) | t.name |
 
 ---
 ## CREATE TABLE LIKE
@@ -3614,7 +3614,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | varchar(255) | t.name |
+| name | varchar(100) | t.name |
 
 ---
 ## ALTER TABLE CHANGE COLUMN
@@ -3647,7 +3647,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| full_name | varchar(255) | t.full_name |
+| full_name | varchar(30) | t.full_name |
 
 ---
 # ストアド
@@ -3686,7 +3686,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | varchar(255) | users.name |
+| name | varchar(100) | users.name |
 
 ---
 # メンテナンス

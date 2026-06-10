@@ -194,7 +194,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## `*` 全列展開
@@ -225,11 +225,11 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 | age | int | users.age |
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | data | nvarchar(max) | users.data |
-| created_at | datetime2 | users.created_at |
+| created_at | datetime2(7) | users.created_at |
 | d | date | users.d |
 
 ---
@@ -261,7 +261,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## TOP PERCENT
@@ -351,7 +351,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 
 ---
 ## ORDER BY
@@ -442,7 +442,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 # JOIN
@@ -479,8 +479,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
-| amount | decimal(38, 10) | orders.amount |
+| name | nvarchar(100) | users.name |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -511,7 +511,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal(38, 10) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -542,7 +542,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal(38, 10) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -573,7 +573,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal(38, 10) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -635,7 +635,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| amount | decimal(38, 10) | orders.amount |
+| amount | decimal(10,2) | orders.amount |
 
 ---
 ## 共通列 INNER JOIN（NATURAL JOIN 相当）
@@ -666,7 +666,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 # APPLY
@@ -703,7 +703,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| n | decimal(38, 10) | x.n |
+| n | decimal(10,2) | x.n |
 
 ---
 ## OUTER APPLY
@@ -734,7 +734,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| n | decimal(38, 10) | x.n |
+| n | decimal(10,2) | x.n |
 
 ---
 # サブクエリ
@@ -771,7 +771,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## EXISTS
@@ -862,7 +862,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| max_amt | decimal(38, 10) | expression |
+| max_amt | decimal(10,2) | expression |
 
 ---
 ## 派生テーブル
@@ -958,7 +958,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | cnt | int | expression |
 
 ---
@@ -1025,7 +1025,7 @@ verify: true
 |------|------|--------|
 | mi | int | expression |
 | ma | int | expression |
-| av | decimal(38, 10) | expression |
+| av | int | expression |
 | su | int | expression |
 
 ---
@@ -1086,7 +1086,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | names | nvarchar(max) | expression |
 
 ---
@@ -1117,7 +1117,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | cnt | int | expression |
 
 ---
@@ -1148,7 +1148,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | cnt | int | expression |
 
 ---
@@ -1210,7 +1210,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | cnt | int | expression |
 
 ---
@@ -1241,7 +1241,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | g | int | expression |
 | cnt | int | expression |
 
@@ -1280,7 +1280,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | active.id |
-| name | nvarchar(max) | active.name |
+| name | nvarchar(100) | active.name |
 
 ---
 ## 再帰 CTE
@@ -1760,7 +1760,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| a | nvarchar(max) | polyglot |
+| a | nvarchar(10) | polyglot |
 | b | int | expression |
 | c | int | expression |
 
@@ -1976,7 +1976,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| c | nvarchar(max) | users.name |
+| c | nvarchar(100) | users.name |
 
 ---
 ## @@VERSION
@@ -2042,9 +2042,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| gd | datetime2 | expression |
-| sdt | datetime2 | expression |
-| sudt | datetime2 | expression |
+| gd | datetime2(7) | expression |
+| sdt | datetime2(7) | expression |
+| sudt | datetime2(7) | expression |
 
 ---
 ## DATENAME
@@ -2231,7 +2231,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| cs | nvarchar(max) | expression |
+| cs | nvarchar(100) | expression |
 | bc | int | expression |
 | pi | nvarchar(max) | polyglot |
 
@@ -2623,9 +2623,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | p.id |
-| name | nvarchar(max) | p.name |
+| name | nvarchar(100) | p.name |
 | data | nvarchar(max) | p.data |
-| created_at | datetime2 | p.created_at |
+| created_at | datetime2(7) | p.created_at |
 | d | date | p.d |
 | IT | int | p.IT |
 | HR | int | p.HR |
@@ -3013,7 +3013,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## UPDATE OUTPUT
@@ -3044,7 +3044,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## DELETE OUTPUT
@@ -3105,11 +3105,11 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 | age | int | users.age |
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | data | nvarchar(max) | users.data |
-| created_at | datetime2 | users.created_at |
+| created_at | datetime2(7) | users.created_at |
 | d | date | users.d |
 
 ---
@@ -3141,11 +3141,11 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 | age | int | users.age |
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | data | nvarchar(max) | users.data |
-| created_at | datetime2 | users.created_at |
+| created_at | datetime2(7) | users.created_at |
 | d | date | users.d |
 
 ---
@@ -3213,7 +3213,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## MERGE OUTPUT inserted/deleted
@@ -3244,7 +3244,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 # 時間指定
@@ -3281,11 +3281,11 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 | age | int | users.age |
-| dept | nvarchar(max) | users.dept |
+| dept | nvarchar(50) | users.dept |
 | data | nvarchar(max) | users.data |
-| created_at | datetime2 | users.created_at |
+| created_at | datetime2(7) | users.created_at |
 | d | date | users.d |
 
 ---
@@ -3391,7 +3391,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | name | nvarchar(max) | sys.tables.name |
-| create_date | datetime2 | sys.tables.create_date |
+| create_date | datetime2(7) | sys.tables.create_date |
 
 ---
 ## sys.databases
@@ -3560,7 +3560,7 @@ verify: true
 | Name | nvarchar(max) | cast |
 | Owner | nvarchar(max) | cast |
 | Type | nvarchar(max) | cast |
-| Created_datetime | datetime2 | cast |
+| Created_datetime | datetime2(7) | cast |
 
 ---
 ## sp_who
@@ -3740,7 +3740,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | cast |
-| name | nvarchar(max) | cast |
+| name | nvarchar(20) | cast |
 
 ---
 ## CREATE PROCEDURE + EXEC
@@ -3772,7 +3772,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| name | nvarchar(max) | users.name |
+| name | nvarchar(100) | users.name |
 
 ---
 ## sp_helpindex
@@ -4173,7 +4173,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | active.name |
+| name | nvarchar(100) | active.name |
 
 ---
 ## SELECT INTO
@@ -4237,7 +4237,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | p.name |
+| name | nvarchar(100) | p.name |
 
 ---
 ## ALTER TABLE ADD COLUMN
@@ -4270,7 +4270,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | t.name |
+| name | nvarchar(20) | t.name |
 
 ---
 ## IDENTITY 列
@@ -4303,7 +4303,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | t.id |
-| name | nvarchar(max) | t.name |
+| name | nvarchar(20) | t.name |
 
 ---
 ## CREATE TABLE
@@ -4335,7 +4335,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | t.name |
+| name | nvarchar(20) | t.name |
 
 ---
 # 一時テーブル
@@ -4373,7 +4373,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | #t.name |
+| name | nvarchar(20) | #t.name |
 
 ---
 # 結果なし文
