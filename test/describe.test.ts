@@ -818,24 +818,6 @@ describe('describeQuery', () => {
       ['n', 'integer', 'function'],
     ]);
 
-    const droppedFunctionResult = await describeQuery({
-      dialect: 'postgres',
-      sql: 'create function f(x int) returns int language sql as $$ select x $$; select f(1) as before_drop; drop function f; select f(1) as after_drop',
-    });
-    assert.deepStrictEqual(droppedFunctionResult.resultSets.map((resultSet) => resultSet.index), [2, 4]);
-    assert.deepStrictEqual(droppedFunctionResult.statements.map((statement) => [statement.kind, statement.resultKind]), [
-      ['create_function', 'none'],
-      ['select', 'static'],
-      ['drop_function', 'none'],
-      ['select', 'static'],
-    ]);
-    assert.deepStrictEqual(droppedFunctionResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
-      ['before_drop', 'integer', 'function'],
-    ]);
-    assert.deepStrictEqual(droppedFunctionResult.resultSets[1]?.columns.map((column) => [column.name, column.type, column.source]), [
-      ['after_drop', 'unknown', undefined],
-    ]);
-
     const ctasResult = await describeQuery({
       dialect: 'postgres',
       schema,

@@ -277,13 +277,17 @@ function parseColumnTable(body: string): ExpectedColumn[] {
     if (!name || !type || (name === 'name' && type === 'type')) continue;
 
     columns.push({
-      name,
+      name: normalizeColumnName(name),
       type,
       source: normalizeSource(sourceRaw),
     });
   }
 
   return columns;
+}
+
+function normalizeColumnName(name: string): string | null {
+  return name === 'null' ? null : name;
 }
 
 function normalizeSource(source?: string): string | undefined {
