@@ -1,6 +1,7 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
 import { assertSupportedDialect } from './dialect.js';
+import { transformJdbcSql } from './jdbc.js';
 import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import type {
   BindSpec,
@@ -19,6 +20,7 @@ import type {
 
 export async function describeQuery(input: DescribeInput): Promise<DescribeResult> {
   const dialect = assertSupportedDialect(input.dialect);
+  const sql = input.jdbc ? transformJdbcSql(input.sql, dialect) : input.sql;
   const binds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
   const loadedSchema = input.schemaFiles?.length
     ? await loadSchemaFiles(input.schemaFiles, { dialect })
@@ -30,14 +32,18 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   const warnings: string[] = [];
   const diagnostics: Diagnostic[] = [];
 
-  const parseResult = parse(input.sql, dialect as never) as PolyglotParseResult;
-  if (!parseResult.success) {
+  const parseResult = parse(sql, dialect as never) as PolyglotParseResult;
+  const fallbackSql = rewriteCreateValuesSql(sql);
+  const fallbackParseResult = !parseResult.success && fallbackSql !== sql ? parse(fallbackSql, dialect as never) as PolyglotParseResult : undefined;
+  if (!parseResult.success && !fallbackParseResult?.success) {
     throw new Error(parseResult.error ?? 'Failed to parse SQL.');
   }
-  const annotatedAst = annotateSqlTypes(input.sql, dialect, effectiveSchema) ?? parseResult.ast;
+  const parsedAst = parseResult.success ? parseResult.ast : fallbackParseResult?.ast;
+  const typeSql = parseResult.success ? sql : fallbackSql;
+  const annotatedAst = parseResult.success ? annotateSqlTypes(typeSql, dialect, effectiveSchema) ?? parsedAst : parsedAst;
 
-  if (schema.tables.length > 0) {
-    const validation = validateWithSchema(input.sql, toPolyglotSchema(effectiveSchema), dialect, {
+  if (schema.tables.length > 0 && parseResult.success) {
+    const validation = validateWithSchema(sql, toPolyglotSchema(effectiveSchema), dialect, {
       checkTypes: true,
       checkReferences: true,
       semantic: true,
@@ -323,6 +329,17 @@ function annotateSqlTypes(sql: string, dialect: string, schema: ValidationSchema
   } catch {
     return undefined;
   }
+}
+
+function rewriteCreateValuesSql(sql: string): string {
+  return sql.replace(
+    /create\s+((?:(?:or\s+replace|temporary|temp)\s+)*(?:table|view)\s+(?:if\s+not\s+exists\s+)?[`"\[\]\w.]+\s*(?:\(([^)]*)\))?\s+as\s+)values\s+((?:[^;'"`]|'[^']*'|"[^"]*"|`[^`]*`)+)(?=;|$)/gi,
+    (match, prefix: string, columns: string | undefined, valuesBody: string) => {
+      const aliases = splitTopLevel(columns ?? '', ',').map(cleanIdentifier).filter(Boolean);
+      if (aliases.length === 0) return match;
+      return `create ${prefix}select * from (values ${valuesBody}) as sqldesc_values(${aliases.join(', ')})`;
+    },
+  );
 }
 
 function builtinMetadataSchema(): ValidationSchema {
@@ -3796,7 +3813,8 @@ function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): s
   if (!isRecord(column)) return undefined;
   const rawName = identifierName(column.name);
   if (binds.mode === 'positional') {
-    const index = rawName?.match(/^\$(\d+)$/)?.[1];
+    const index = rawName?.match(/^\$(\d+)$/)?.[1]
+      ?? rawName?.match(/^@P(\d+)$/i)?.[1];
     const type = index ? binds.binds.find((bind) => bind.index === Number(index))?.type : undefined;
     return type ? normalizeDataTypeName(type) : undefined;
   }
@@ -4621,6 +4639,8 @@ function suppressNoResultParseDiagnostics(diagnostics: Diagnostic[], statements:
 function outputItemsForStatement(statement: unknown, schema: ValidationSchema, context: StatementContext = emptyStatementContext(), dialect = 'generic'): OutputItem[] {
   if (!isRecord(statement)) return [];
   if (isRecord(statement.select)) {
+    const serialized = outputItemsFromSerializedTsqlSelect(statement.select, dialect);
+    if (serialized.length > 0) return serialized;
     const schemaWithFunctions = mergeSchemas({ tables: [...context.tableFunctions.values()] }, schema);
     const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schemaWithFunctions), schemaWithFunctions);
     const scopedSchema = mergeSchemas(schemaFromDerivedTables(statement.select, localSchema, dialect), localSchema);
@@ -5762,6 +5782,11 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
     ]);
   }
   if (subject === 'grants') {
+    if (isMysqlLikeDialect(dialect)) {
+      return staticColumns([
+        ['Grants', 'text'],
+      ]);
+    }
     return staticColumns([
       ['created_on', 'timestamp'],
       ['privilege', 'text'],
@@ -5821,7 +5846,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Maxlen', 'integer'],
     ]);
   }
-  if (subject === 'collation') {
+  if (subject === 'collation' || subject === 'collations') {
     return staticColumns([
       ['Collation', 'text'],
       ['Charset', 'text'],
@@ -6428,7 +6453,24 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Index_comment', 'text'],
     ]);
   }
-  if (subject.startsWith('create table') || subject.startsWith('create view') || subject.startsWith('create schema')) {
+  if (subject.startsWith('create schema')) {
+    if (isMysqlLikeDialect(dialect)) {
+      return staticColumns([
+        ['Database', 'text'],
+        ['Create Database', 'text'],
+      ]);
+    }
+    return staticColumns([
+      ['Create Schema', 'text'],
+    ]);
+  }
+  if (subject.startsWith('create database') && isMysqlLikeDialect(dialect)) {
+    return staticColumns([
+      ['Database', 'text'],
+      ['Create Database', 'text'],
+    ]);
+  }
+  if (subject.startsWith('create table') || subject.startsWith('create view')) {
     return staticColumns([
       ['Table', 'text'],
       [showCreateStatementColumnName(subject.match(/^create\s+(table|view|schema)/)?.[0] ?? subject), 'text'],
@@ -6842,6 +6884,7 @@ function showCreateStatementColumnName(subject: string): string {
   if (subject === 'create event') return 'Create Event';
   if (subject === 'create function') return 'Create Function';
   if (subject === 'create procedure') return 'Create Procedure';
+  if (subject === 'create schema') return 'Create Schema';
   if (subject === 'create trigger') return 'Create Trigger';
   if (subject === 'create user') return 'Create User';
   return subject === 'create view' ? 'Create View' : 'Create Table';
@@ -7095,6 +7138,21 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
     'query_only',
   ].includes(name ?? '')) {
     return staticColumns([[name ?? 'value', 'boolean']]);
+  }
+  return [];
+}
+
+function isMysqlLikeDialect(dialect: string): boolean {
+  return ['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect.toLowerCase());
+}
+
+function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
+  if (dialect !== 'tsql') return [];
+  if (Array.isArray(select.for_json) && select.for_json.length > 0) {
+    return staticColumns([['JSON_F52E2B61-18A1-11d1-B105-00805F49916B', 'text']]);
+  }
+  if (Array.isArray(select.for_xml) && select.for_xml.length > 0) {
+    return staticColumns([['XML_F52E2B61-18A1-11d1-B105-00805F49916B', 'xml']]);
   }
   return [];
 }

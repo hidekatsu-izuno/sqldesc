@@ -2772,6 +2772,32 @@ describe('describeQuery', () => {
     ]);
   });
 
+  it('describes CREATE definitions backed directly by VALUES', async () => {
+    const viewResult = await describeQuery({ sql: "create view value_view(label, n) as values ('a', 1)", dialect: 'postgres' });
+    assert.partialDeepStrictEqual(viewResult.statements[0], { kind: 'create_view', resultKind: 'static' });
+    assert.deepStrictEqual(viewResult.columns.map((column) => [column.name, column.type]), [
+      ['label', 'text'],
+      ['n', 'integer'],
+    ]);
+
+    const tableResult = await describeQuery({ sql: "create table value_table(label, n) as values ('a', 1)", dialect: 'postgres' });
+    assert.partialDeepStrictEqual(tableResult.statements[0], { kind: 'create_table', resultKind: 'static' });
+    assert.deepStrictEqual(tableResult.columns.map((column) => [column.name, column.type]), [
+      ['label', 'text'],
+      ['n', 'integer'],
+    ]);
+
+    const trackedResult = await describeQuery({ sql: "create view value_view(label, n) as values ('a', 1); select label, n from value_view", dialect: 'postgres' });
+    assert.deepStrictEqual(trackedResult.statements.map((statement) => [statement.kind, statement.resultKind]), [
+      ['create_view', 'static'],
+      ['select', 'static'],
+    ]);
+    assert.deepStrictEqual(trackedResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['label', 'text', 'value_view.label'],
+      ['n', 'integer', 'value_view.n'],
+    ]);
+  });
+
   it('describes common show listing result columns', async () => {
     const result = await describeQuery({ sql: 'show tables' });
     assert.partialDeepStrictEqual(result.statements[0], { kind: 'show', resultKind: 'static' });
@@ -3036,6 +3062,38 @@ describe('describeQuery', () => {
       ['distinct_values_count', 'integer', 'cast'],
       ['nulls_fraction', 'decimal', 'cast'],
     ]);
+
+    const mysqlGrantsResult = await describeQuery({ sql: 'show grants for current_user', dialect: 'mysql' });
+    assert.deepStrictEqual(mysqlGrantsResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['Grants', 'text', 'cast'],
+    ]);
+
+    const mysqlCollationsResult = await describeQuery({ sql: 'show collations', dialect: 'mysql' });
+    assert.deepStrictEqual(mysqlCollationsResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['Collation', 'text', 'cast'],
+      ['Charset', 'text', 'cast'],
+      ['Id', 'integer', 'cast'],
+      ['Default', 'text', 'cast'],
+      ['Compiled', 'text', 'cast'],
+      ['Sortlen', 'integer', 'cast'],
+    ]);
+
+    const trinoCreateSchemaResult = await describeQuery({ sql: 'show create schema default', dialect: 'trino' });
+    assert.deepStrictEqual(trinoCreateSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['Create Schema', 'text', 'cast'],
+    ]);
+
+    const mysqlCreateDatabaseResult = await describeQuery({ sql: 'show create database mydb', dialect: 'mysql' });
+    assert.deepStrictEqual(mysqlCreateDatabaseResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['Database', 'text', 'cast'],
+      ['Create Database', 'text', 'cast'],
+    ]);
+
+    const mysqlCreateSchemaResult = await describeQuery({ sql: 'show create schema mydb', dialect: 'mysql' });
+    assert.deepStrictEqual(mysqlCreateSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['Database', 'text', 'cast'],
+      ['Create Database', 'text', 'cast'],
+    ]);
   });
 
   it('describes duckdb summarize metadata columns', async () => {
@@ -3090,6 +3148,26 @@ describe('describeQuery', () => {
       ['Index_type', 'text', 'cast'],
       ['Comment', 'text', 'cast'],
       ['Index_comment', 'text', 'cast'],
+    ]);
+  });
+
+  it('describes T-SQL FOR JSON and FOR XML as serialized single-column result sets', async () => {
+    const jsonResult = await describeQuery({
+      sql: 'select id, name from users for json path',
+      dialect: 'tsql',
+      schema,
+    });
+    assert.deepStrictEqual(jsonResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['JSON_F52E2B61-18A1-11d1-B105-00805F49916B', 'text', 'cast'],
+    ]);
+
+    const xmlResult = await describeQuery({
+      sql: 'select id, name from users for xml raw',
+      dialect: 'tsql',
+      schema,
+    });
+    assert.deepStrictEqual(xmlResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['XML_F52E2B61-18A1-11d1-B105-00805F49916B', 'xml', 'cast'],
     ]);
   });
 

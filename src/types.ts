@@ -58,6 +58,7 @@ export interface ValidationSchema {
 export interface DescribeInput {
   sql: string;
   dialect?: string;
+  jdbc?: boolean;
   binds?: string | BindSpec;
   schema?: ValidationSchema;
   schemaPatterns?: string[];

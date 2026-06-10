@@ -26,6 +26,23 @@ describe('sqldesc CLI', () => {
     assert.partialDeepStrictEqual(json.binds, { mode: 'positional', binds: [{ index: 1, type: 'int' }] });
   });
 
+  it('translates JDBC SQL before describing inline SQL', async () => {
+    const result = await runCli([
+      '--sql',
+      "select {fn UCASE(?)} as label",
+      '--binds',
+      'text',
+      '--dialect',
+      'postgres',
+      '--jdbc',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0, result.stderr);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'label', type: 'text' }]);
+  });
+
   it('prints supported dialects without SQL input', async () => {
     const result = await runCli(['--dialects']);
 
@@ -349,8 +366,19 @@ describe('sqldesc CLI', () => {
     const result = await runCli(['--sql', 'select 1 as one']);
 
     assert.strictEqual(result.code, 0);
-    assert.ok(result.stdout.includes('one'));
-    assert.ok(result.stdout.includes('integer'));
+    assert.match(result.stdout, /^index  name  type\s+nullable  confidence  source\s+note$/m);
+    assert.match(result.stdout, /^-----  ----  ----/m);
+    assert.match(result.stdout, /^1\s+one\s+integer\s+high\s+literal$/m);
+  });
+
+  it('pads text table columns using the widest cell', async () => {
+    const result = await runCli(['--sql', "select 1 as short, 'abcdef' as very_long_column_name"]);
+
+    assert.strictEqual(result.code, 0);
+    assert.match(result.stdout, /^index  name\s+type\s+nullable  confidence  source\s+note$/m);
+    assert.match(result.stdout, /^-----  ---------------------  -------/m);
+    assert.match(result.stdout, /^1\s+short\s+integer\s+high\s+literal$/m);
+    assert.match(result.stdout, /^2\s+very_long_column_name\s+text\s+high\s+literal$/m);
   });
 
   it('returns structured diagnostics for no-result SQL in JSON output', async () => {

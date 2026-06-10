@@ -214,6 +214,150 @@ describe('parseCreateViews', () => {
     ]);
   });
 
+  it('extracts VALUES-backed view and CTAS columns when Polyglot omits CREATE AST', () => {
+    assert.deepStrictEqual(parseCreateViews("create view value_view(label, n) as values ('a', 1), ('b', 2)", undefined, 'postgres'), [
+      {
+        name: 'value_view',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'n', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+
+    assert.deepStrictEqual(parseCreateAsTables("create table value_table(label, n) as values ('a', 1)", undefined, 'postgres'), [
+      {
+        name: 'value_table',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'n', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+
+    assert.deepStrictEqual(parseCreateViews("create view semicolon_value(label, n) as values ('a;b', 1);", undefined, 'postgres'), [
+      {
+        name: 'semicolon_value',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'n', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+
+    assert.deepStrictEqual(parseCreateViews("create view derived_value_view(label, n) as select * from (values ('a', 1)) as x(a, b)", undefined, 'postgres'), [
+      {
+        name: 'derived_value_view',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'n', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+
+    assert.deepStrictEqual(parseCreateAsTables("create table derived_value_table(label, n) as select * from (values ('a', 1)) as x(a, b)", undefined, 'postgres'), [
+      {
+        name: 'derived_value_table',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'n', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('extracts cast expression types from view queries', () => {
+    assert.deepStrictEqual(parseCreateViews('create view typed_view as select id::int as id, name::text as name from users', {
+      tables: [
+        {
+          name: 'users',
+          columns: [
+            { name: 'id', type: 'text' },
+            { name: 'name', type: 'text' },
+          ],
+        },
+      ],
+    }, 'postgres'), [
+      {
+        name: 'typed_view',
+        columns: [
+          { name: 'id', type: 'integer', nullable: undefined },
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('extracts common expression types from view queries', () => {
+    assert.deepStrictEqual(parseCreateViews(`
+      create view expression_view as
+      select
+        coalesce(name, 'x') as label,
+        case when age > 0 then age else 0 end as bucket,
+        true as flag,
+        id + 1 as next_id
+      from users
+    `, {
+      tables: [
+        {
+          name: 'users',
+          columns: [
+            { name: 'id', type: 'integer' },
+            { name: 'name', type: 'text' },
+            { name: 'age', type: 'integer' },
+          ],
+        },
+      ],
+    }, 'postgres'), [
+      {
+        name: 'expression_view',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'bucket', type: 'integer', nullable: undefined },
+          { name: 'flag', type: 'boolean', nullable: undefined },
+          { name: 'next_id', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('extracts function aggregate and window expression types from view queries', () => {
+    assert.deepStrictEqual(parseCreateViews(`
+      create view function_view as
+      select
+        lower(name) as label,
+        length(name) as label_length,
+        count(*) as row_count,
+        sum(age) as total_age,
+        avg(age) as average_age,
+        row_number() over(order by id) as rownum
+      from users
+    `, {
+      tables: [
+        {
+          name: 'users',
+          columns: [
+            { name: 'id', type: 'integer' },
+            { name: 'name', type: 'text' },
+            { name: 'age', type: 'integer' },
+          ],
+        },
+      ],
+    }, 'postgres'), [
+      {
+        name: 'function_view',
+        columns: [
+          { name: 'label', type: 'text', nullable: undefined },
+          { name: 'label_length', type: 'integer', nullable: undefined },
+          { name: 'row_count', type: 'integer', nullable: undefined },
+          { name: 'total_age', type: 'integer', nullable: undefined },
+          { name: 'average_age', type: 'decimal', nullable: undefined },
+          { name: 'rownum', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
   it('resolves CTE-backed view projection types', () => {
     assert.deepStrictEqual(parseCreateViews('create view cte_view as with q as (select 1 as id) select id from q', undefined, 'postgres'), [
       {
@@ -571,6 +715,339 @@ describe('parseCreateSynonyms', () => {
 });
 
 describe('loadSchema', () => {
+  it('loads Oracle SQL*Plus schema scripts split by slash commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-oracle-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      set define off
+      prompt creating schema objects
+      create table users (
+        id number,
+        name varchar2(20)
+      )
+      /
+      create view user_names as
+      select id, name from users
+      /
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'oracle' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'decimal'],
+      ['name', 'text'],
+    ]);
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'decimal'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads Oracle SQL*Plus scripts included with @ commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-oracle-include-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      @parts/tables.sql
+      create view user_names as select id, name from users
+      /
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), `
+      create table users(id number, name varchar2(20))
+      /
+    `);
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'oracle' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'decimal'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads Oracle SQL*Plus scripts with DEFINE substitution', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-oracle-define-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      define owner = APP
+      create table &owner..users(id number, name varchar2(20))
+      /
+      create view &owner..user_names as select id, name from &owner..users
+      /
+    `);
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'oracle' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users' && table.schema === 'APP')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'decimal'],
+      ['name', 'text'],
+    ]);
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'APP')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'decimal'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads MySQL schema scripts with DELIMITER commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-mysql-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      create table users(id int, name text);
+      DELIMITER //
+      create procedure p()
+      begin
+        select id, name from users;
+      end//
+      DELIMITER ;
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.procedures, [
+      {
+        name: 'p',
+        columns: [
+          { name: 'id', type: 'integer', nullable: undefined },
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('loads MySQL schema scripts included with SOURCE commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-mysql-source-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      SOURCE parts/tables.sql
+      create view user_names as select id, name from users;
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), 'create table users(id int, name text);');
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads MySQL schema scripts with USE as the default object schema', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-mysql-use-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      USE app;
+      create table users(id int, name text);
+      create view user_names as select id, name from app.users;
+    `);
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users' && table.schema === 'app')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'app')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads T-SQL schema scripts split by GO batches', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-tsql-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      create table users(id int, name nvarchar(20));
+      GO
+      create view user_names as select id, name from users;
+      GO
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'tsql' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads sqlcmd scripts included with :r commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-sqlcmd-include-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      :r parts/tables.sql
+      GO
+      create view user_names as select id, name from users;
+      GO
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), 'create table users(id int, name nvarchar(20));');
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'sqlserver' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads PostgreSQL psql scripts while ignoring backslash meta-commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-psql-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      \\set ON_ERROR_STOP on
+      \\echo creating schema objects
+      create table users(id int, name text);
+      \\dt
+      create view user_names as select id, name from users;
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads PostgreSQL psql scripts included with backslash include commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-psql-include-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      \\i parts/tables.sql
+      create view user_names as select id, name from users;
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), 'create table users(id int, name text);');
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads PostgreSQL psql scripts with variable substitution', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-psql-vars-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      \\set schema app
+      create table :schema.users(id int, name text);
+      create view :schema.user_names as select id, name from :schema.users where id::int > 0;
+    `);
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users' && table.schema === 'app')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'app')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('honors literal PostgreSQL psql conditional blocks while loading schema scripts', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-psql-conditional-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      \\if false
+      \\i parts/missing.sql
+      create table skipped(id int);
+      \\else
+      \\i parts/tables.sql
+      \\endif
+      create view user_names as select id, name from users;
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), 'create table users(id int, name text);');
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'postgres' });
+    assert.strictEqual(schema.tables.some((table) => table.name === 'skipped'), false);
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads sqlcmd scripts while ignoring colon commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-sqlcmd-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      :setvar dbname sqldesc
+      :on error exit
+      create table users(id int, name nvarchar(20));
+      GO
+      create view user_names as select id, name from users;
+      GO
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'sqlserver' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads sqlcmd scripts with :setvar variable substitution', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-sqlcmd-setvar-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      :setvar schemaName "dbo"
+      :setvar tableName users
+      :r parts/tables.sql
+      GO
+      create view $(schemaName).user_names as select id, name from $(schemaName).$(tableName);
+      GO
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), `
+      create table $(schemaName).$(tableName)(id int, name nvarchar(20));
+    `);
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'sqlserver' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'dbo')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads SQLite CLI scripts while ignoring dot commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-sqlite-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      .bail on
+      .headers on
+      create table users(id integer, name text);
+      .mode column
+      create view user_names as select id, name from users;
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'sqlite' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads SQLite CLI scripts included with .read commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-sqlite-read-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas', 'parts'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      .read parts/tables.sql
+      create view user_names as select id, name from users;
+    `);
+    await writeFile(path.join(cwd, 'schemas', 'parts', 'tables.sql'), 'create table users(id integer, name text);');
+
+    const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'sqlite' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads DuckDB CLI scripts while ignoring dot commands', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-duckdb-script-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), `
+      .timer on
+      create table users(id integer, name varchar);
+      .mode duckbox
+      create view user_names as select id, name from users;
+    `);
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'duckdb' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
   it('loads create synonyms after base table definitions', async () => {
     const cwd = path.join(tmpdir(), `sqldesc-schema-${Date.now()}`);
     await mkdir(path.join(cwd, 'schemas'), { recursive: true });

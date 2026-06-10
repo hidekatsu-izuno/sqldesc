@@ -21,6 +21,7 @@ const CLI_OPTIONS = {
   schema: { type: 'string' as const, multiple: true },
   binds: { type: 'string' as const },
   dialect: { type: 'string' as const, default: 'generic' },
+  jdbc: { type: 'boolean' as const },
   json: { type: 'boolean' as const },
   dialects: { type: 'boolean' as const },
   help: { type: 'boolean' as const, short: 'h' },
@@ -31,6 +32,7 @@ type ParsedCliOptions = {
   schema?: string[];
   binds?: string;
   dialect: string;
+  jdbc?: boolean;
   json?: boolean;
   dialects?: boolean;
   help?: boolean;
@@ -83,6 +85,7 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
       sql,
       dialect: values.dialect,
       binds: values.binds,
+      jdbc: values.jdbc,
       schemaFiles,
       cwd: io.cwd,
     });
@@ -125,6 +128,7 @@ Options:
   --schema <pattern>    Schema SQL glob pattern (repeatable)
   --binds <spec>        Bind types, e.g. "int,text" or "id=int,name=text"
   --dialect <dialect>   SQL dialect (default: "generic")
+  --jdbc                Translate JDBC parameter markers and escapes first
   --dialects            List supported SQL dialects
   --json                Print JSON output
   -h, --help            Show this help message

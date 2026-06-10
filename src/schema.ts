@@ -24,7 +24,7 @@ export async function loadSchemaFiles(files: string[], options: SchemaLoadOption
   const sqlFiles: string[] = [];
   const typeAliases = new Map<string, string>();
   for (const file of files) {
-    const sql = await readFile(file, 'utf8');
+    const sql = await loadSchemaScript(file, dialect);
     sqlFiles.push(sql);
     const astTables = parseCreateTablesWithAst(sql, dialect, typeAliases);
     tables.push(...(astTables.length > 0 ? astTables : parseCreateTablesFallback(sql)));
@@ -61,11 +61,394 @@ async function globFiles(pattern: string, cwd: string): Promise<string[]> {
   return files;
 }
 
+async function loadSchemaScript(file: string, dialect: string, seen = new Set<string>()): Promise<string> {
+  const resolved = path.resolve(file);
+  if (seen.has(resolved)) return '';
+  seen.add(resolved);
+  const sql = await readFile(resolved, 'utf8');
+  const expanded = await expandSchemaScriptIncludes(sql, dialect, path.dirname(resolved), seen);
+  return normalizeSchemaScript(expanded, dialect);
+}
+
+async function expandSchemaScriptIncludes(sql: string, dialect: string, baseDir: string, seen: Set<string>): Promise<string> {
+  const normalizedDialect = normalizeDialect(dialect);
+  const lines = sql.replace(/^\uFEFF/, '').split(/\r?\n/);
+  const expanded: string[] = [];
+  const psqlConditions = normalizedDialect === 'postgresql' ? newPsqlConditionState() : undefined;
+  for (const line of lines) {
+    if (psqlConditions && updatePsqlConditionState(psqlConditions, line)) {
+      expanded.push(line);
+      continue;
+    }
+    if (psqlConditions && !isPsqlConditionActive(psqlConditions)) {
+      expanded.push(line);
+      continue;
+    }
+    const includePath = schemaIncludePath(line, normalizedDialect);
+    if (!includePath) {
+      expanded.push(line);
+      continue;
+    }
+    expanded.push(await loadSchemaScript(resolveSchemaInclude(includePath, baseDir), normalizedDialect, seen));
+  }
+  return expanded.join('\n');
+}
+
+function schemaIncludePath(line: string, dialect: string): string | undefined {
+  const trimmed = line.trim();
+  if (dialect === 'oracle') {
+    const match = trimmed.match(/^(?:@{1,2}|start\s+)(.+)$/i);
+    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  }
+  if (dialect === 'postgresql') {
+    const match = trimmed.match(/^\\(?:i|include|ir|include_relative)\s+(.+)$/i);
+    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  }
+  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) {
+    const match = trimmed.match(/^(?:source|\\\.)\s+(.+)$/i);
+    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  }
+  if (dialect === 'tsql') {
+    const match = trimmed.match(/^:r\s+(.+)$/i);
+    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  }
+  if (dialect === 'sqlite' || dialect === 'duckdb') {
+    const match = trimmed.match(/^\.read\s+(.+)$/i);
+    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  }
+  return undefined;
+}
+
+function firstScriptArgument(spec: string | undefined): string {
+  if (!spec) return '';
+  const trimmed = spec.trim();
+  const quoted = trimmed.match(/^(['"])(.*?)\1/);
+  if (quoted) return quoted[2] ?? '';
+  return trimmed.split(/\s+/)[0] ?? '';
+}
+
+function unquoteScriptPath(spec: string): string | undefined {
+  const trimmed = spec.trim();
+  if (!trimmed) return undefined;
+  return trimmed.replace(/^['"]|['"]$/g, '');
+}
+
+function resolveSchemaInclude(includePath: string, baseDir: string): string {
+  return path.isAbsolute(includePath) ? includePath : path.resolve(baseDir, includePath);
+}
+
 export function parseCreateTables(sql: string, dialect = 'generic'): SchemaTable[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const astTables = parseCreateTablesWithAst(sql, normalizedDialect);
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const astTables = parseCreateTablesWithAst(normalizedSql, normalizedDialect);
   if (astTables.length > 0) return astTables;
-  return parseCreateTablesFallback(sql);
+  return parseCreateTablesFallback(normalizedSql);
+}
+
+function normalizeSchemaScript(sql: string, dialect: string): string {
+  const normalizedDialect = normalizeDialect(dialect);
+  if (normalizedDialect === 'postgresql') return normalizePsqlScript(sql);
+  if (normalizedDialect === 'oracle') return normalizeOracleSqlPlusScript(sql);
+  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(normalizedDialect)) return normalizeMysqlDelimiterScript(sql);
+  if (normalizedDialect === 'tsql') return normalizeTsqlGoScript(sql);
+  if (normalizedDialect === 'sqlite' || normalizedDialect === 'duckdb') return normalizeDotCommandScript(sql);
+  return sql;
+}
+
+function normalizeDotCommandScript(sql: string): string {
+  return sql
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*\.[A-Za-z]/.test(line))
+    .join('\n');
+}
+
+function normalizePsqlScript(sql: string): string {
+  const state = newPsqlConditionState();
+  const variables = new Map<string, string>();
+  return sql
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      if (updatePsqlConditionState(state, line)) return [];
+      if (!isPsqlConditionActive(state)) return [];
+      const setVariable = psqlSetVariable(line);
+      if (setVariable) {
+        variables.set(setVariable.name.toLowerCase(), setVariable.value);
+        return [];
+      }
+      const unsetVariable = psqlUnsetVariable(line);
+      if (unsetVariable) {
+        variables.delete(unsetVariable.toLowerCase());
+        return [];
+      }
+      if (/^\s*\\/.test(line)) return [];
+      return [applyPsqlVariables(line, variables)];
+    })
+    .join('\n');
+}
+
+type PsqlConditionFrame = {
+  parentActive: boolean;
+  active: boolean;
+  matched: boolean;
+};
+
+function newPsqlConditionState(): PsqlConditionFrame[] {
+  return [];
+}
+
+function updatePsqlConditionState(state: PsqlConditionFrame[], line: string): boolean {
+  const match = line.trim().match(/^\\(if|elif|else|endif)\b(?:\s+(.*))?$/i);
+  if (!match) return false;
+  const command = match[1]?.toLowerCase();
+  const expression = match[2] ?? '';
+  if (command === 'if') {
+    const parentActive = isPsqlConditionActive(state);
+    const active = parentActive && psqlBooleanExpression(expression) !== false;
+    state.push({ parentActive, active, matched: active });
+    return true;
+  }
+  const current = state.at(-1);
+  if (!current) return true;
+  if (command === 'elif') {
+    const active = current.parentActive && !current.matched && psqlBooleanExpression(expression) !== false;
+    current.active = active;
+    current.matched = current.matched || active;
+    return true;
+  }
+  if (command === 'else') {
+    const active = current.parentActive && !current.matched;
+    current.active = active;
+    current.matched = true;
+    return true;
+  }
+  if (command === 'endif') {
+    state.pop();
+    return true;
+  }
+  return true;
+}
+
+function isPsqlConditionActive(state: PsqlConditionFrame[]): boolean {
+  return state.every((frame) => frame.active);
+}
+
+function psqlBooleanExpression(expression: string): boolean | undefined {
+  const normalized = expression.trim().replace(/^['"]|['"]$/g, '').toLowerCase();
+  if (['false', 'off', 'no', '0'].includes(normalized)) return false;
+  if (['true', 'on', 'yes', '1'].includes(normalized)) return true;
+  return undefined;
+}
+
+function psqlSetVariable(line: string): { name: string; value: string } | undefined {
+  const match = line.trim().match(/^\\set\s+([A-Za-z_][\w]*)\s*(.*)$/i);
+  if (!match) return undefined;
+  return {
+    name: match[1] ?? '',
+    value: unquotePsqlValue(match[2] ?? ''),
+  };
+}
+
+function psqlUnsetVariable(line: string): string | undefined {
+  return line.trim().match(/^\\unset\s+([A-Za-z_][\w]*)\b/i)?.[1];
+}
+
+function unquotePsqlValue(value: string): string {
+  const trimmed = value.trim();
+  const quoted = trimmed.match(/^(['"])([\s\S]*)\1$/);
+  return quoted ? quoted[2] ?? '' : trimmed;
+}
+
+function applyPsqlVariables(line: string, variables: Map<string, string>): string {
+  return line
+    .replace(/(?<!:):'([A-Za-z_][\w]*)'/g, (match, name: string) => variables.get(name.toLowerCase()) ?? match)
+    .replace(/(?<!:):"([A-Za-z_][\w]*)"/g, (match, name: string) => quoteIdentifier(variables.get(name.toLowerCase())) ?? match)
+    .replace(/(?<!:):([A-Za-z_][\w]*)/g, (match, name: string) => variables.get(name.toLowerCase()) ?? match);
+}
+
+function quoteIdentifier(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function normalizeOracleSqlPlusScript(sql: string): string {
+  const statements: string[] = [];
+  let buffer: string[] = [];
+  const variables = new Map<string, string>();
+  let defineOn = true;
+  for (const line of sql.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed === '/') {
+      pushBufferedStatement(statements, buffer);
+      buffer = [];
+      continue;
+    }
+    const defineSetting = sqlPlusDefineSetting(trimmed);
+    if (defineSetting !== undefined) {
+      defineOn = defineSetting;
+      continue;
+    }
+    const defined = sqlPlusDefine(trimmed);
+    if (defined) {
+      variables.set(defined.name.toLowerCase(), defined.value);
+      continue;
+    }
+    const undefinedName = sqlPlusUndefine(trimmed);
+    if (undefinedName) {
+      variables.delete(undefinedName.toLowerCase());
+      continue;
+    }
+    if (isSqlPlusCommand(trimmed)) continue;
+    buffer.push(defineOn ? applySqlPlusVariables(line, variables) : line);
+  }
+  pushBufferedStatement(statements, buffer);
+  return statements.join('\n');
+}
+
+function isSqlPlusCommand(line: string): boolean {
+  return /^(?:set|prompt|spool|whenever|define|undefine|variable|column|remark|rem)\b/i.test(line);
+}
+
+function sqlPlusDefineSetting(line: string): boolean | undefined {
+  const match = line.match(/^set\s+define\s+(on|off)\b/i);
+  if (!match) return undefined;
+  return match[1]?.toLowerCase() === 'on';
+}
+
+function sqlPlusDefine(line: string): { name: string; value: string } | undefined {
+  const match = line.match(/^define\s+([A-Za-z_][\w$#]*)\s*(?:=\s*)?(.+)$/i);
+  if (!match) return undefined;
+  return {
+    name: match[1] ?? '',
+    value: unquoteSqlPlusValue(match[2] ?? ''),
+  };
+}
+
+function sqlPlusUndefine(line: string): string | undefined {
+  return line.match(/^undefine\s+([A-Za-z_][\w$#]*)\b/i)?.[1];
+}
+
+function unquoteSqlPlusValue(value: string): string {
+  const trimmed = value.trim();
+  const quoted = trimmed.match(/^(['"])([\s\S]*)\1$/);
+  return quoted ? quoted[2] ?? '' : trimmed;
+}
+
+function applySqlPlusVariables(line: string, variables: Map<string, string>): string {
+  return line.replace(/&&?([A-Za-z_][\w$#]*)(\.)?/g, (match, name: string, delimiter: string | undefined, offset: number, source: string) => {
+    const value = variables.get(name.toLowerCase());
+    if (value === undefined) return match;
+    const next = source[offset + match.length];
+    return delimiter && next === '.' ? value : `${value}${delimiter ?? ''}`;
+  }).replace(/(?<=\w)\.\./g, '.');
+}
+
+function normalizeMysqlDelimiterScript(sql: string): string {
+  const statements: string[] = [];
+  let delimiter = ';';
+  let buffer = '';
+  let defaultSchema: string | undefined;
+  for (const line of sql.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    const delimiterMatch = line.trim().match(/^delimiter\s+(.+)$/i);
+    if (delimiterMatch) {
+      defaultSchema = pushMysqlDelimitedStatement(statements, buffer, defaultSchema);
+      buffer = '';
+      delimiter = delimiterMatch[1] ?? ';';
+      continue;
+    }
+    buffer += `${line}\n`;
+    if (buffer.trimEnd().endsWith(delimiter)) {
+      buffer = buffer.trimEnd().slice(0, -delimiter.length);
+      defaultSchema = pushMysqlDelimitedStatement(statements, buffer, defaultSchema);
+      buffer = '';
+    }
+  }
+  pushMysqlDelimitedStatement(statements, buffer, defaultSchema);
+  return statements.join('\n');
+}
+
+function pushMysqlDelimitedStatement(statements: string[], statement: string, defaultSchema: string | undefined): string | undefined {
+  const trimmed = statement.trim();
+  if (!trimmed) return defaultSchema;
+  const useMatch = trimmed.match(/^use\s+(.+?)\s*;?$/i);
+  if (useMatch) return cleanIdentifier(useMatch[1].trim());
+  pushDelimitedStatement(statements, qualifyMysqlSchemaObject(trimmed, defaultSchema));
+  return defaultSchema;
+}
+
+function qualifyMysqlSchemaObject(statement: string, defaultSchema: string | undefined): string {
+  if (!defaultSchema) return statement;
+  return statement.replace(
+    /^(\s*create\s+(?:(?:or\s+replace|temporary)\s+)*(?:table|view|procedure|function)\s+)(?!if\s+not\s+exists\s+)([`"']?[\w$]+[`"']?)(\s|\()/i,
+    (match, prefix: string, name: string, suffix: string) => {
+      if (name.includes('.')) return match;
+      return `${prefix}${quoteSchemaObject(defaultSchema, name)}${suffix}`;
+    },
+  ).replace(
+    /^(\s*create\s+(?:(?:or\s+replace|temporary)\s+)*table\s+if\s+not\s+exists\s+)([`"']?[\w$]+[`"']?)(\s|\()/i,
+    (match, prefix: string, name: string, suffix: string) => {
+      if (name.includes('.')) return match;
+      return `${prefix}${quoteSchemaObject(defaultSchema, name)}${suffix}`;
+    },
+  );
+}
+
+function quoteSchemaObject(schema: string, objectName: string): string {
+  const cleanedSchema = cleanIdentifier(schema);
+  const quote = objectName.startsWith('`') ? '`' : objectName.startsWith('"') ? '"' : objectName.startsWith("'") ? "'" : '';
+  return quote ? `${quote}${cleanedSchema}${quote}.${objectName}` : `${cleanedSchema}.${objectName}`;
+}
+
+function normalizeTsqlGoScript(sql: string): string {
+  const statements: string[] = [];
+  let buffer: string[] = [];
+  const variables = new Map<string, string>();
+  for (const line of sql.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    const setVar = sqlcmdSetVar(line);
+    if (setVar) {
+      variables.set(setVar.name.toLowerCase(), setVar.value);
+      continue;
+    }
+    if (/^\s*:[A-Za-z]/.test(line)) continue;
+    if (/^\s*go(?:\s+\d+)?\s*$/i.test(line)) {
+      pushBufferedStatement(statements, buffer);
+      buffer = [];
+      continue;
+    }
+    buffer.push(applySqlcmdVariables(line, variables));
+  }
+  pushBufferedStatement(statements, buffer);
+  return statements.join('\n');
+}
+
+function sqlcmdSetVar(line: string): { name: string; value: string } | undefined {
+  const match = line.trim().match(/^:setvar\s+([A-Za-z_][\w]*)\s*(.*)$/i);
+  if (!match) return undefined;
+  return {
+    name: match[1] ?? '',
+    value: unquoteSqlcmdValue(match[2] ?? ''),
+  };
+}
+
+function unquoteSqlcmdValue(value: string): string {
+  const trimmed = value.trim();
+  const quoted = trimmed.match(/^(['"])([\s\S]*)\1$/);
+  return quoted ? quoted[2] ?? '' : trimmed;
+}
+
+function applySqlcmdVariables(line: string, variables: Map<string, string>): string {
+  return line.replace(/\$\(([^)]+)\)/g, (match, name: string) => variables.get(name.toLowerCase()) ?? match);
+}
+
+function pushBufferedStatement(statements: string[], buffer: string[]): void {
+  pushDelimitedStatement(statements, buffer.join('\n'));
+}
+
+function pushDelimitedStatement(statements: string[], statement: string): void {
+  const trimmed = statement.trim();
+  if (!trimmed) return;
+  statements.push(trimmed.endsWith(';') ? trimmed : `${trimmed};`);
 }
 
 function parseCreateTablesWithAst(sql: string, dialect = 'generic', typeAliases = new Map<string, string>()): SchemaTable[] {
@@ -231,37 +614,48 @@ function parseCreateTablesFallback(sql: string): SchemaTable[] {
 
 export function parseCreateViews(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
-  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
-  const annotated = annotateViewTypes(sql, schema, normalizedDialect) ?? parseResult.ast;
-  return annotated.flatMap((statement) => viewFromStatement(statement, schema));
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return parseCreateValuesViewsFallback(normalizedSql, schema, normalizedDialect);
+  const annotated = annotateViewTypes(normalizedSql, schema, normalizedDialect) ?? parseResult.ast;
+  return uniqueSchemaTables([
+    ...annotated.flatMap((statement) => viewFromStatement(statement, schema)),
+    ...parseCreateValuesViewsFallback(normalizedSql, schema, normalizedDialect),
+  ]);
 }
 
 export function parseCreateAsTables(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
-  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
-  const annotated = annotateViewTypes(sql, schema, normalizedDialect) ?? parseResult.ast;
-  return annotated.flatMap((statement) => tableFromCreateAsStatement(statement, schema));
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return parseCreateValuesTablesFallback(normalizedSql, schema, normalizedDialect);
+  const annotated = annotateViewTypes(normalizedSql, schema, normalizedDialect) ?? parseResult.ast;
+  return uniqueSchemaTables([
+    ...annotated.flatMap((statement) => tableFromCreateAsStatement(statement, schema)),
+    ...parseCreateValuesTablesFallback(normalizedSql, schema, normalizedDialect),
+  ]);
 }
 
 export function parseCreateSynonyms(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
   return parseResult.ast.flatMap((statement) => synonymFromStatement(statement, schema));
 }
 
 export function parseCreateTableFunctions(sql: string, dialect = 'generic'): SchemaTable[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
   return parseResult.ast.flatMap(tableFromCreateTableFunctionStatement);
 }
 
 export function parseCreateScalarFunctions(sql: string, dialect = 'generic'): SchemaFunction[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
   return parseResult.ast.flatMap(functionFromCreateFunctionStatement);
 }
@@ -284,7 +678,8 @@ function activeScalarFunctionsFromSqlFiles(sqlFiles: string[], dialect: string):
 
 export function parseCreateProcedures(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaProcedure[] {
   const normalizedDialect = normalizeDialect(dialect);
-  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedSql = normalizeSchemaScript(sql, normalizedDialect);
+  const parseResult = parse(normalizedSql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
   return parseResult.ast.flatMap((statement) => procedureFromCreateProcedureStatement(statement, schema, normalizedDialect));
 }
@@ -611,6 +1006,14 @@ function tableFromCreateAsStatement(statement: unknown, schema: ValidationSchema
   }
   const explicitColumns = Array.isArray(createTable.columns) ? createTable.columns : [];
   if (explicitColumns.length > 0) {
+    const hasExplicitTypes = explicitColumns.some((column) => isRecord(column) && Boolean(dataTypeToString(column.data_type)));
+    if (createTable.as_select && !hasExplicitTypes) {
+      return [{
+        name,
+        ...(schemaName ? { schema: schemaName } : {}),
+        columns: columnsFromQuery(createTable.as_select, schema, explicitColumns),
+      }];
+    }
     return [{
       name,
       ...(schemaName ? { schema: schemaName } : {}),
@@ -698,6 +1101,46 @@ function viewFromStatement(statement: unknown, schema: ValidationSchema): Schema
   return [{ name, ...(schemaName ? { schema: schemaName } : {}), columns }];
 }
 
+function parseCreateValuesViewsFallback(sql: string, schema: ValidationSchema, dialect: string): SchemaTable[] {
+  return findCreateValuesStatements(sql, 'view').flatMap((statement) => {
+    const parsedValues = parse(statement.valuesSql, dialect as never) as { success: boolean; ast?: unknown[] };
+    if (!parsedValues.success || !Array.isArray(parsedValues.ast)) return [];
+    const query = parsedValues.ast.find(isRecord);
+    if (!query) return [];
+    const rawName = cleanIdentifier(statement.name);
+    const nameParts = rawName.split('.');
+    const name = nameParts.pop() ?? rawName;
+    const schemaName = nameParts.length > 0 ? nameParts.join('.') : undefined;
+    return [{
+      name,
+      ...(schemaName ? { schema: schemaName } : {}),
+      columns: columnsFromQuery(query, schema, statement.columns),
+    }];
+  });
+}
+
+function parseCreateValuesTablesFallback(sql: string, schema: ValidationSchema, dialect: string): SchemaTable[] {
+  return findCreateValuesStatements(sql, 'table').flatMap((statement) => {
+    const parsedValues = parse(statement.valuesSql, dialect as never) as { success: boolean; ast?: unknown[] };
+    if (!parsedValues.success || !Array.isArray(parsedValues.ast)) return [];
+    const query = parsedValues.ast.find(isRecord);
+    if (!query) return [];
+    const rawName = cleanIdentifier(statement.name);
+    const nameParts = rawName.split('.');
+    const name = nameParts.pop() ?? rawName;
+    const schemaName = nameParts.length > 0 ? nameParts.join('.') : undefined;
+    return [{
+      name,
+      ...(schemaName ? { schema: schemaName } : {}),
+      columns: columnsFromQuery(query, schema, statement.columns),
+    }];
+  });
+}
+
+function uniqueSchemaTables(tables: SchemaTable[]): SchemaTable[] {
+  return tables.filter((table, index) => !tables.slice(0, index).some((existing) => sameTable(existing, table)));
+}
+
 function columnsFromQuery(query: unknown, schema: ValidationSchema, explicitColumns: unknown[] = []): SchemaColumn[] {
   const cteSchema = { tables: cteTablesFromQuery(query, schema) };
   const relationSchema = { tables: relationTablesFromQuery(query, mergeSchemas(cteSchema, schema)) };
@@ -708,15 +1151,25 @@ function columnsFromQuery(query: unknown, schema: ValidationSchema, explicitColu
   const nullableRelations = nullableRelationsFromSelect(select);
   return expressions.flatMap((expression, index) => {
     const star = isRecord(expression) ? expression.star : undefined;
-    if (isRecord(star)) return columnsFromStar(star, effectiveSchema, fromTables, select, nullableRelations);
+    if (isRecord(star)) {
+      return applyExplicitColumnNames(columnsFromStar(star, effectiveSchema, fromTables, select, nullableRelations), explicitColumns, index);
+    }
     const columnName = cleanIdentifier(identifierName(explicitColumns[index]) ?? outputName(expression, index + 1));
     const base = baseExpression(expression);
     return [{
       name: columnName,
-      type: schemaFunctionReturnType(base, effectiveSchema) ?? inferredType(base) ?? schemaColumnType(base, effectiveSchema, fromTables) ?? literalType(base) ?? 'unknown',
+      type: schemaFunctionReturnType(base, effectiveSchema) ?? expressionType(base, effectiveSchema, fromTables) ?? 'unknown',
       nullable: schemaColumnNullable(base, effectiveSchema, fromTables, nullableRelations),
     }];
   });
+}
+
+function applyExplicitColumnNames(columns: SchemaColumn[], explicitColumns: unknown[], offset = 0): SchemaColumn[] {
+  if (explicitColumns.length === 0) return columns;
+  return columns.map((column, index) => ({
+    ...column,
+    name: cleanIdentifier(identifierName(explicitColumns[offset + index]) ?? column.name),
+  }));
 }
 
 function schemaFunctionReturnType(expression: unknown, schema: ValidationSchema): string | undefined {
@@ -884,7 +1337,7 @@ function functionArguments(fn: Record<string, unknown>): unknown[] {
 
 function commonArgumentType(args: unknown[], schema: ValidationSchema): string | undefined {
   const types = args
-    .map((arg) => inferredType(arg) ?? literalType(arg) ?? schemaColumnType(arg, schema, []))
+    .map((arg) => expressionType(arg, schema, []))
     .filter((type): type is string => Boolean(type));
   if (types.length === 0) return undefined;
   if (types.some((type) => /text|char|string/i.test(type))) return 'text';
@@ -893,6 +1346,19 @@ function commonArgumentType(args: unknown[], schema: ValidationSchema): string |
   if (types.some((type) => /decimal|numeric|double|float|real/i.test(type))) return 'decimal';
   if (types.some((type) => /int|number|bigint|smallint/i.test(type))) return 'integer';
   return types[0];
+}
+
+function expressionType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  return castType(expression)
+    ?? inferredType(expression)
+    ?? schemaColumnType(expression, schema, fromTables)
+    ?? literalType(expression)
+    ?? aggregateType(expression, schema, fromTables)
+    ?? windowFunctionType(expression, schema, fromTables)
+    ?? scalarFunctionType(expression, schema, fromTables)
+    ?? coalesceType(expression, schema, fromTables)
+    ?? caseType(expression, schema, fromTables)
+    ?? binaryExpressionType(expression, schema, fromTables);
 }
 
 function cteTablesFromQuery(query: unknown, schema: ValidationSchema): SchemaTable[] {
@@ -973,6 +1439,11 @@ function inferredType(expression: unknown): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+function castType(expression: unknown): string | undefined {
+  const cast = isRecord(expression) ? expression.cast ?? expression.try_cast ?? expression.safe_cast : undefined;
+  return isRecord(cast) ? dataTypeToString(cast.to) : undefined;
 }
 
 function dataTypeToString(dataType: unknown): string | undefined {
@@ -1074,6 +1545,7 @@ function fieldFromTypeArgument(argument: string, index: number): { name: string;
 }
 
 function literalType(expression: unknown): string | undefined {
+  if (isRecord(expression) && isRecord(expression.boolean)) return 'boolean';
   const literal = isRecord(expression) ? expression.literal : undefined;
   if (!isRecord(literal)) return undefined;
   const literalKind = String(literal.literal_type ?? '');
@@ -1082,6 +1554,98 @@ function literalType(expression: unknown): string | undefined {
   if (literalKind === 'number') return value.includes('.') ? 'decimal' : 'integer';
   if (literalKind === 'boolean') return 'boolean';
   return undefined;
+}
+
+function coalesceType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  const coalesce = isRecord(expression) ? expression.coalesce : undefined;
+  if (!isRecord(coalesce) || !Array.isArray(coalesce.expressions)) return undefined;
+  return commonExpressionType(coalesce.expressions, schema, fromTables);
+}
+
+function caseType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  const caseExpression = isRecord(expression) ? expression.case : undefined;
+  if (!isRecord(caseExpression)) return undefined;
+  const branchExpressions = Array.isArray(caseExpression.whens)
+    ? caseExpression.whens.flatMap((when) => Array.isArray(when) ? when[1] : [])
+    : [];
+  return commonExpressionType([...branchExpressions, caseExpression.else_].filter(Boolean), schema, fromTables);
+}
+
+function binaryExpressionType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  if (!isRecord(expression)) return undefined;
+  for (const key of ['add', 'sub', 'mul', 'div', 'mod']) {
+    const operation = expression[key];
+    if (!isRecord(operation)) continue;
+    const leftType = expressionType(operation.left, schema, fromTables);
+    const rightType = expressionType(operation.right, schema, fromTables);
+    return commonExpressionTypeFromTypes([leftType, rightType].filter((type): type is string => Boolean(type)));
+  }
+  for (const key of ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'like', 'is', 'in', 'between']) {
+    if (isRecord(expression[key])) return 'boolean';
+  }
+  return undefined;
+}
+
+function aggregateType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  if (!isRecord(expression)) return undefined;
+  if (isRecord(expression.count)) return 'integer';
+  for (const key of ['sum', 'min', 'max', 'median']) {
+    const aggregate = expression[key];
+    if (!isRecord(aggregate)) continue;
+    return expressionType(aggregate.this, schema, fromTables);
+  }
+  if (isRecord(expression.avg)) return 'decimal';
+  return undefined;
+}
+
+function windowFunctionType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  const windowFunction = isRecord(expression) ? expression.window_function : undefined;
+  const inner = isRecord(windowFunction) ? windowFunction.this : undefined;
+  if (!isRecord(inner)) return undefined;
+  if (Object.prototype.hasOwnProperty.call(inner, 'row_number') || Object.prototype.hasOwnProperty.call(inner, 'rank') || Object.prototype.hasOwnProperty.call(inner, 'dense_rank')) return 'integer';
+  const valueFunction = inner.first_value ?? inner.last_value ?? inner.lag ?? inner.lead;
+  return valueFunction ? expressionType(valueFunction, schema, fromTables) : aggregateType(inner, schema, fromTables);
+}
+
+function scalarFunctionType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
+  if (!isRecord(expression)) return undefined;
+  for (const [key, type] of [
+    ['lower', 'text'],
+    ['upper', 'text'],
+    ['trim', 'text'],
+    ['substring', 'text'],
+    ['concat', 'text'],
+    ['length', 'integer'],
+    ['abs', undefined],
+    ['round', undefined],
+  ] satisfies Array<[string, string | undefined]>) {
+    const fn = expression[key];
+    if (!isRecord(fn)) continue;
+    return type ?? expressionType(fn.this, schema, fromTables);
+  }
+  const generic = expression.function;
+  if (!isRecord(generic)) return undefined;
+  const name = String(generic.name ?? '').toLowerCase();
+  if (['lower', 'upper', 'trim', 'substring', 'concat', 'concat_ws', 'replace', 'reverse', 'initcap'].includes(name)) return 'text';
+  if (['length', 'char_length', 'character_length', 'octet_length', 'bit_length'].includes(name)) return 'integer';
+  if (['abs', 'round', 'ceil', 'ceiling', 'floor'].includes(name)) return commonExpressionType(functionArguments(generic), schema, fromTables);
+  return undefined;
+}
+
+function commonExpressionType(expressions: unknown[], schema: ValidationSchema, fromTables: string[]): string | undefined {
+  return commonExpressionTypeFromTypes(expressions.map((expression) => expressionType(expression, schema, fromTables)).filter((type): type is string => Boolean(type)));
+}
+
+function commonExpressionTypeFromTypes(types: string[]): string | undefined {
+  if (types.length === 0) return undefined;
+  if (types.some((type) => /text|char|string/i.test(type))) return 'text';
+  if (types.some((type) => /timestamp/i.test(type))) return 'timestamp';
+  if (types.some((type) => /^date$/i.test(type))) return 'date';
+  if (types.some((type) => /decimal|numeric|double|float|real/i.test(type))) return 'decimal';
+  if (types.some((type) => /bigint/i.test(type))) return 'bigint';
+  if (types.some((type) => /int|number|smallint/i.test(type))) return 'integer';
+  if (types.every((type) => type === 'boolean')) return 'boolean';
+  return types[0];
 }
 
 function schemaColumnType(expression: unknown, schema: ValidationSchema, fromTables: string[]): string | undefined {
@@ -1155,6 +1719,21 @@ function findCreateTableStatements(sql: string): Array<{ name: string; body: str
     if (bodyEnd > bodyStart) {
       statements.push({ name: match[1], body: sql.slice(bodyStart, bodyEnd) });
     }
+  }
+  return statements;
+}
+
+function findCreateValuesStatements(sql: string, kind: 'table' | 'view'): Array<{ name: string; columns: Array<{ name: string }>; valuesSql: string }> {
+  const statements: Array<{ name: string; columns: Array<{ name: string }>; valuesSql: string }> = [];
+  const re = new RegExp(`create\\s+(?:(?:or\\s+replace|temporary|temp)\\s+)*${kind}\\s+(?:if\\s+not\\s+exists\\s+)?([\`"\\[\\]\\w.]+)\\s*(?:\\(([^)]*)\\))?\\s+as\\s+(values\\s+(?:[^;'"\\\`]|'[^']*'|"[^"]*"|\`[^\`]*\`)+)(?=;|$)`, 'gi');
+  for (const match of sql.matchAll(re)) {
+    const valuesSql = match[3]?.trim();
+    if (!valuesSql) continue;
+    statements.push({
+      name: match[1] ?? '',
+      columns: splitTopLevel(match[2] ?? '', ',').map((name) => ({ name: cleanIdentifier(name) })).filter((column) => Boolean(column.name)),
+      valuesSql,
+    });
   }
   return statements;
 }

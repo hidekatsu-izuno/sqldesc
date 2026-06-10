@@ -2630,8 +2630,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
+| JSON_F52E2B61-18A1-11d1-B105-00805F49916B | text | cast |
 
 ---
 ## FOR JSON AUTO
@@ -2661,8 +2660,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
+| JSON_F52E2B61-18A1-11d1-B105-00805F49916B | text | cast |
 
 ---
 ## FOR XML PATH
@@ -2692,8 +2690,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
+| XML_F52E2B61-18A1-11d1-B105-00805F49916B | xml | cast |
 
 ---
 ## FOR XML RAW
@@ -2723,8 +2720,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
+| XML_F52E2B61-18A1-11d1-B105-00805F49916B | xml | cast |
 
 ---
 # テーブル関数
