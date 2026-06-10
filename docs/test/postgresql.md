@@ -2473,7 +2473,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jp | unknown | — |
+| jp | jsonb | expression |
 
 ---
 ## json_each_text

@@ -401,7 +401,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| rid | unknown | — |
+| rid | text | expression |
 
 ---
 # JOIN
@@ -2713,7 +2713,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| x | unknown | — |
+| x | xml | expression |
 
 ---
 # テーブル関数
@@ -2817,7 +2817,7 @@ verify: true
 |------|------|--------|
 | id | decimal | users.id |
 | name | text | users.name |
-| lvl | unknown | — |
+| lvl | integer | expression |
 
 ---
 ## LEVEL from DUAL
@@ -2847,7 +2847,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| lvl | unknown | — |
+| lvl | integer | expression |
 
 ---
 # MATCH_RECOGNIZE
@@ -3318,8 +3318,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | unknown | — |
-| c | unknown | — |
+| n | integer | expression |
+| c | integer | expression |
 
 ---
 # スキーマ修飾

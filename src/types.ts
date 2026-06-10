@@ -37,8 +37,22 @@ export interface SchemaTable {
   foreignKeys?: unknown[];
 }
 
+export interface SchemaFunction {
+  name: string;
+  schema?: string;
+  returnType: string;
+}
+
+export interface SchemaProcedure {
+  name: string;
+  schema?: string;
+  columns: SchemaColumn[];
+}
+
 export interface ValidationSchema {
   tables: SchemaTable[];
+  functions?: SchemaFunction[];
+  procedures?: SchemaProcedure[];
 }
 
 export interface DescribeInput {

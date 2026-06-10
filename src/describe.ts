@@ -1,5 +1,6 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
+import { normalizeDialect } from './dialect.js';
 import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import type {
   BindSpec,
@@ -8,6 +9,8 @@ import type {
   DescribeResult,
   Diagnostic,
   SchemaColumn,
+  SchemaFunction,
+  SchemaProcedure,
   SchemaTable,
   StatementResultKind,
   StatementSummary,
@@ -15,7 +18,7 @@ import type {
 } from './types.js';
 
 export async function describeQuery(input: DescribeInput): Promise<DescribeResult> {
-  const dialect = input.dialect ?? 'generic';
+  const dialect = normalizeDialect(input.dialect);
   const binds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
   const loadedSchema = input.schemaFiles?.length
     ? await loadSchemaFiles(input.schemaFiles, { dialect })
@@ -60,17 +63,22 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   const allColumns = resultSets.flatMap((resultSet) => resultSet.columns);
   let returnedDiagnostics = suppressResolvedNestedDiagnostics(diagnostics, allColumns);
   returnedDiagnostics = suppressOracleCurrentUserDiagnostics(returnedDiagnostics, annotatedAst, dialect);
+  returnedDiagnostics = suppressCurrentTemporalIdentifierDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressWholeRowFunctionDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
   returnedDiagnostics = suppressNamedFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressKnownTableFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
+  returnedDiagnostics = suppressVirtualTableArgumentDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressSqliteRowidDiagnostics(returnedDiagnostics, annotatedAst, dialect);
   returnedDiagnostics = suppressResolvedColumnDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressResolvedSourceDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressCompatibleComparisonDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressTemporalUnitDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressResolvedOrderingDiagnostics(returnedDiagnostics, resultSets);
   returnedDiagnostics = suppressSetOperationTypeDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
   returnedDiagnostics = suppressResolvedInsertValueDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressKnownSchemaDiagnostics(returnedDiagnostics, effectiveSchema);
   returnedDiagnostics = suppressStaticStatementDiagnostics(returnedDiagnostics, annotatedAst, resultSets);
+  returnedDiagnostics = suppressNonShapeValidationDiagnostics(returnedDiagnostics, resultSets);
   returnedDiagnostics = suppressRuntimeOnlyDiagnostics(returnedDiagnostics, statements);
   returnedDiagnostics = suppressResolvedPreparedDiagnostics(returnedDiagnostics, annotatedAst, resultSets);
   returnedDiagnostics = suppressNoResultParseDiagnostics(returnedDiagnostics, statements);
@@ -88,7 +96,7 @@ function describeOutputItems(
 ): DescribeColumn[] {
   return outputItems.map((item, index) => {
     const name = item.name ?? inferNameFromAst(item.expression, index + 1);
-    const inferred = inferColumn(item.expression, name, item.schema ?? schema, binds, dialect, item.source, item.tableAliases);
+    const inferred = inferColumn(item.expression, name, item.schema ?? schema, binds, dialect, item.source, item.tableAliases, item.functionReturnTypes);
     if (inferred.type === 'unknown' && inferred.note) warnings.push(inferred.note);
     return {
       index: index + 1,
@@ -106,7 +114,13 @@ function inferColumn(
   dialect: string,
   explicitSource?: string,
   tableAliases?: TableAliasMap,
+  functionReturnTypes?: Map<string, string>,
 ): Omit<DescribeColumn, 'index' | 'name'> {
+  const collation = getAst(expression, 'collation');
+  if (isRecord(collation) && isRecord(collation.this)) {
+    return inferColumn(collation.this, name, schema, binds, dialect, explicitSource, tableAliases, functionReturnTypes);
+  }
+
   const specialIdentifierType = inferSpecialIdentifierType(expression, dialect);
   if (specialIdentifierType) {
     return { type: specialIdentifierType, confidence: 'medium', source: 'expression' };
@@ -115,6 +129,16 @@ function inferColumn(
   const constructorType = inferConstructorType(expression, schema, binds);
   if (constructorType) {
     return { type: constructorType, confidence: 'medium', source: 'expression' };
+  }
+
+  const jsonScalarNestedColumn = inferJsonScalarNestedColumn(expression, schema, tableAliases);
+  if (jsonScalarNestedColumn) {
+    return {
+      type: jsonScalarNestedColumn.type,
+      nullable: jsonScalarNestedColumn.nullable,
+      confidence: 'medium',
+      source: jsonScalarNestedColumn.source,
+    };
   }
 
   const jsonType = inferJsonType(expression);
@@ -137,7 +161,7 @@ function inferColumn(
     return { type: identifierHashRandomType, confidence: 'medium', source: 'expression' };
   }
 
-  const aggregateType = inferAggregateType(expression, schema, binds);
+  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases);
   if (aggregateType) {
     return { type: aggregateType, confidence: 'medium', source: 'expression' };
   }
@@ -160,6 +184,16 @@ function inferColumn(
   const conditionalType = inferConditionalType(expression, schema, binds);
   if (conditionalType) {
     return { type: conditionalType, confidence: 'medium', source: 'expression' };
+  }
+
+  const sequenceType = inferSequenceFunctionType(expression);
+  if (sequenceType) {
+    return { type: sequenceType, confidence: 'medium', source: 'expression' };
+  }
+
+  const definedFunctionType = inferDefinedFunctionType(expression, functionReturnTypes);
+  if (definedFunctionType) {
+    return { type: definedFunctionType, confidence: 'medium', source: 'function' };
   }
 
   const annotatedType = dataTypeToString(ast.getInferredType(expression as never));
@@ -202,7 +236,7 @@ function inferColumn(
     return { type: wholeRowType.type, confidence: 'medium', source: wholeRowType.source };
   }
 
-  const expressionType = inferExpressionType(expression, schema, binds);
+  const expressionType = inferExpressionType(expression, schema, binds, tableAliases);
   if (expressionType) {
     return { type: expressionType, confidence: 'medium', source: 'expression' };
   }
@@ -223,15 +257,50 @@ function inferSpecialIdentifierType(expression: AstExpression, dialect: string):
   if (isRecord(parameter) && String(parameter.style ?? '').toLowerCase() === 'doubleat') {
     const name = String(parameter.name ?? '').toLowerCase();
     if (['spid', 'rowcount', 'fetch_status', 'nestlevel', 'trancount'].includes(name)) return 'integer';
+    if (name === 'identity') return 'integer';
     if (['servername', 'servicename', 'version', 'language', 'lock_timeout'].includes(name)) return 'text';
   }
 
   const column = getAst(expression, 'column');
+  if (isRecord(column) && !identifierName(column.table)) {
+    const name = identifierName(column.name)?.toLowerCase();
+    if (name === 'current_date') return 'date';
+    if (name === 'current_time') return 'time';
+    if (name === 'current_timestamp' || name === 'localtimestamp') return 'timestamp';
+    if (dialect === 'oracle' && ['connect_by_iscycle', 'connect_by_isleaf'].includes(name ?? '')) return 'integer';
+  }
   if (dialect === 'oracle' && isRecord(column) && !identifierName(column.table) && identifierName(column.name)?.toLowerCase() === 'user') {
     return 'text';
   }
+  if (dialect === 'oracle' && isRecord(column) && ['nextval', 'currval'].includes(identifierName(column.name)?.toLowerCase() ?? '')) {
+    return 'integer';
+  }
+  const pseudocolumn = getAst(expression, 'pseudocolumn');
+  if (dialect === 'oracle' && isRecord(pseudocolumn)) {
+    const kind = String(pseudocolumn.kind ?? '').toLowerCase();
+    if (kind === 'rowid') return 'text';
+    if (['level', 'rownum'].includes(kind)) return 'integer';
+  }
+  if (dialect === 'sqlite' && isRecord(column) && ['rowid', '_rowid_', 'oid'].includes(identifierName(column.name)?.toLowerCase() ?? '')) {
+    return 'integer';
+  }
 
   return undefined;
+}
+
+function inferSequenceFunctionType(expression: AstExpression): string | undefined {
+  const fn = getAst(expression, 'function');
+  if (!isRecord(fn)) return undefined;
+  const name = String(fn.name ?? '').toLowerCase();
+  return ['nextval', 'currval', 'lastval', 'setval'].includes(name) ? 'bigint' : undefined;
+}
+
+function inferDefinedFunctionType(expression: AstExpression, functionReturnTypes?: Map<string, string>): string | undefined {
+  if (!functionReturnTypes || functionReturnTypes.size === 0) return undefined;
+  const fn = getAst(expression, 'function');
+  if (!isRecord(fn)) return undefined;
+  const name = String(fn.name ?? '').toLowerCase();
+  return functionReturnTypes.get(name);
 }
 
 function annotateSqlTypes(sql: string, dialect: string, schema: ValidationSchema): unknown[] | undefined {
@@ -650,6 +719,26 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        name: 'sqlite_temp_master',
+        columns: [
+          text('type'),
+          text('name'),
+          text('tbl_name'),
+          integer('rootpage'),
+          text('sql'),
+        ],
+      },
+      {
+        name: 'sqlite_temp_schema',
+        columns: [
+          text('type'),
+          text('name'),
+          text('tbl_name'),
+          integer('rootpage'),
+          text('sql'),
+        ],
+      },
+      {
         name: 'information_schema.views',
         columns: [
           text('table_catalog'),
@@ -662,6 +751,25 @@ function builtinMetadataSchema(): ValidationSchema {
       },
       {
         name: 'information_schema.jobs',
+        columns: [
+          text('project_id'),
+          text('project_number'),
+          text('user_email'),
+          text('job_id'),
+          text('job_type'),
+          text('statement_type'),
+          timestamp('creation_time'),
+          timestamp('start_time'),
+          timestamp('end_time'),
+          text('state'),
+          text('reservation_id'),
+          integer('total_bytes_processed'),
+          integer('total_slot_ms'),
+          text('error_result'),
+        ],
+      },
+      {
+        name: 'information_schema.jobs_by_user',
         columns: [
           text('project_id'),
           text('project_number'),
@@ -721,6 +829,46 @@ function builtinMetadataSchema(): ValidationSchema {
           timestamp('rolvaliduntil'),
           text('rolconfig'),
           integer('oid'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_settings',
+        columns: [
+          text('name'),
+          text('setting'),
+          text('unit'),
+          text('category'),
+          text('short_desc'),
+          text('extra_desc'),
+          text('context'),
+          text('vartype'),
+          text('source'),
+          text('min_val'),
+          text('max_val'),
+          text('enumvals'),
+          text('boot_val'),
+          text('reset_val'),
+          boolean('pending_restart'),
+        ],
+      },
+      {
+        schema: 'pg_catalog',
+        name: 'pg_stat_database',
+        columns: [
+          integer('datid'),
+          text('datname'),
+          integer('numbackends'),
+          integer('xact_commit'),
+          integer('xact_rollback'),
+          integer('blks_read'),
+          integer('blks_hit'),
+          integer('tup_returned'),
+          integer('tup_fetched'),
+          integer('tup_inserted'),
+          integer('tup_updated'),
+          integer('tup_deleted'),
+          timestamp('stats_reset'),
         ],
       },
       {
@@ -1228,6 +1376,25 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        schema: 'performance_schema',
+        name: 'events_statements_summary_by_digest',
+        columns: [
+          text('SCHEMA_NAME'),
+          text('DIGEST'),
+          text('DIGEST_TEXT'),
+          integer('COUNT_STAR'),
+          integer('SUM_TIMER_WAIT'),
+          integer('MIN_TIMER_WAIT'),
+          integer('AVG_TIMER_WAIT'),
+          integer('MAX_TIMER_WAIT'),
+          integer('SUM_ROWS_AFFECTED'),
+          integer('SUM_ROWS_SENT'),
+          integer('SUM_ROWS_EXAMINED'),
+          timestamp('FIRST_SEEN'),
+          timestamp('LAST_SEEN'),
+        ],
+      },
+      {
         schema: 'information_schema',
         name: 'events',
         columns: [
@@ -1519,6 +1686,49 @@ function builtinMetadataSchema(): ValidationSchema {
       },
       {
         schema: 'system',
+        name: 'merges',
+        columns: [
+          text('database'),
+          text('table'),
+          integer('elapsed'),
+          decimal('progress'),
+          integer('num_parts'),
+          text('result_part_name'),
+          text('partition_id'),
+          boolean('is_mutation'),
+        ],
+      },
+      {
+        schema: 'system',
+        name: 'mutations',
+        columns: [
+          text('database'),
+          text('table'),
+          text('mutation_id'),
+          text('command'),
+          timestamp('create_time'),
+          integer('parts_to_do'),
+          boolean('is_done'),
+          text('latest_failed_part'),
+          text('latest_fail_reason'),
+        ],
+      },
+      {
+        schema: 'system',
+        name: 'settings',
+        columns: [
+          text('name'),
+          text('value'),
+          boolean('changed'),
+          text('description'),
+          text('min'),
+          text('max'),
+          boolean('readonly'),
+          text('type'),
+        ],
+      },
+      {
+        schema: 'system',
         name: 'query_log',
         columns: [
           text('hostname'),
@@ -1779,6 +1989,48 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        name: 'user_indexes',
+        columns: [
+          text('index_name'),
+          text('index_type'),
+          text('table_name'),
+          text('table_type'),
+          text('uniqueness'),
+          text('compression'),
+          text('status'),
+          integer('blevel'),
+          integer('leaf_blocks'),
+          integer('distinct_keys'),
+          integer('num_rows'),
+          timestamp('last_analyzed'),
+        ],
+      },
+      {
+        name: 'user_ind_columns',
+        columns: [
+          text('index_name'),
+          text('table_name'),
+          text('column_name'),
+          integer('column_position'),
+          integer('column_length'),
+          text('descend'),
+        ],
+      },
+      {
+        name: 'dba_tables',
+        columns: [
+          text('owner'),
+          text('table_name'),
+          text('tablespace_name'),
+          text('cluster_name'),
+          text('status'),
+          integer('num_rows'),
+          integer('blocks'),
+          integer('empty_blocks'),
+          timestamp('last_analyzed'),
+        ],
+      },
+      {
         name: 'dual',
         columns: [
           text('dummy'),
@@ -1806,6 +2058,22 @@ function builtinMetadataSchema(): ValidationSchema {
           timestamp('last_commit'),
           boolean('has_distribution_key'),
           text('delete_percentage'),
+        ],
+      },
+      {
+        name: 'exa_all_columns',
+        columns: [
+          text('column_schema'),
+          text('column_table'),
+          text('column_name'),
+          integer('column_ordinal_position'),
+          text('column_default'),
+          boolean('column_is_nullable'),
+          text('column_type'),
+          integer('column_maxsize'),
+          integer('column_num_prec'),
+          integer('column_num_scale'),
+          text('column_comment'),
         ],
       },
       {
@@ -1945,6 +2213,24 @@ function builtinMetadataSchema(): ValidationSchema {
         ],
       },
       {
+        schema: 'account_usage',
+        name: 'grants_to_roles',
+        columns: [
+          timestamp('created_on'),
+          timestamp('modified_on'),
+          text('privilege'),
+          text('granted_on'),
+          text('name'),
+          text('table_catalog'),
+          text('table_schema'),
+          text('granted_to'),
+          text('grantee_name'),
+          text('grant_option'),
+          text('granted_by'),
+          boolean('deleted'),
+        ],
+      },
+      {
         schema: 'sys',
         name: 'segments',
         columns: [
@@ -2017,14 +2303,19 @@ function inferWholeRowType(expression: AstExpression, schema: ValidationSchema, 
   };
 }
 
-function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
   if (isAst(expression, 'boolean')) return 'boolean';
+  if (isAst(expression, 'pi')) return 'decimal';
+  if (isAst(expression, 'match_against')) return 'decimal';
+  if (getAst(expression, 'x_m_l_element') || getAst(expression, 'x_m_l_forest')) return 'xml';
   const paren = getAst(expression, 'paren');
   if (isRecord(paren) && isRecord(paren.this)) return inferColumn(paren.this, 'expression', schema, binds, 'generic').type;
   const neg = getAst(expression, 'neg');
   if (isRecord(neg) && isRecord(neg.this)) return inferColumn(neg.this, 'expression', schema, binds, 'generic').type;
   const arraySlice = getAst(expression, 'array_slice');
   if (isRecord(arraySlice) && isRecord(arraySlice.this)) return inferColumn(arraySlice.this, 'expression', schema, binds, 'generic').type;
+  const collation = getAst(expression, 'collation');
+  if (isRecord(collation) && isRecord(collation.this)) return inferColumn(collation.this, 'expression', schema, binds, 'generic').type;
 
   const windowType = inferWindowFunctionType(expression, schema, binds);
   if (windowType) return windowType;
@@ -2038,13 +2329,13 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   if (jsonType) return jsonType;
   const scalarSubqueryType = inferScalarSubqueryType(expression, schema, binds);
   if (scalarSubqueryType) return scalarSubqueryType;
-  const aggregateType = inferAggregateType(expression, schema, binds);
+  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases);
   if (aggregateType) return aggregateType;
   const methodType = inferMethodCallType(expression, schema, binds);
   if (methodType) return methodType;
   const scalarType = inferScalarFunctionType(expression, schema, binds);
   if (scalarType) return scalarType;
-  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'int_div') ?? getAst(expression, 'mod')
+  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'int_div') ?? getAst(expression, 'mod') ?? getAst(expression, 'mod_func')
     ?? getAst(expression, 'bitwise_and') ?? getAst(expression, 'bitwise_or') ?? getAst(expression, 'bitwise_xor')
     ?? getAst(expression, 'bitwise_left_shift') ?? getAst(expression, 'bitwise_right_shift');
   if (isRecord(arithmetic)) {
@@ -2089,11 +2380,13 @@ function inferMethodCallType(expression: AstExpression, schema: ValidationSchema
   return undefined;
 }
 
-function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
   if (isAst(expression, 'count')) return 'integer';
   if (isAst(expression, 'avg')) return 'decimal';
   if (isAst(expression, 'count_if')) return 'integer';
   if (isAst(expression, 'approx_count_distinct') || isAst(expression, 'approx_distinct')) return 'integer';
+  const directValue = getAst(expression, 'first_value') ?? getAst(expression, 'last_value');
+  if (isRecord(directValue) && isRecord(directValue.this)) return inferAggregateExpressionType(directValue.this, schema, binds, tableAliases);
 
   const boolAggregate = getAst(expression, 'bool_and') ?? getAst(expression, 'bool_or') ?? getAst(expression, 'every') ?? getAst(expression, 'logical_and') ?? getAst(expression, 'logical_or');
   if (isRecord(boolAggregate)) return 'boolean';
@@ -2104,7 +2397,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   const bitwiseAggregate = getAst(expression, 'bitwise_and_agg') ?? getAst(expression, 'bitwise_or_agg') ?? getAst(expression, 'bitwise_xor_agg');
   if (isRecord(bitwiseAggregate)) {
     const inner = firstAggregateExpression(bitwiseAggregate);
-    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'integer';
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'integer';
   }
 
   const textAggregate = getAst(expression, 'string_agg') ?? getAst(expression, 'group_concat') ?? getAst(expression, 'listagg');
@@ -2113,14 +2406,14 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   const arrayAggregate = getAst(expression, 'array_agg') ?? getAst(expression, 'list') ?? getAst(expression, 'collect_list') ?? getAst(expression, 'collect_set');
   if (isRecord(arrayAggregate)) {
     const inner = firstAggregateExpression(arrayAggregate);
-    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    const type = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'unknown';
     return `array<${type}>`;
   }
 
   const arrayConcatAggregate = getAst(expression, 'array_concat_agg');
   if (isRecord(arrayConcatAggregate)) {
     const inner = firstAggregateExpression(arrayConcatAggregate);
-    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'array<unknown>';
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'array<unknown>';
   }
 
   const jsonAggregate = getAst(expression, 'json_agg') ?? getAst(expression, 'json_object_agg') ?? getAst(expression, 'json_arrayagg') ?? getAst(expression, 'json_objectagg')
@@ -2131,7 +2424,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   if (isRecord(withinGroup)) {
     const ordered = Array.isArray(withinGroup.order_by) ? withinGroup.order_by.map((item) => isRecord(item) && isRecord(item.this) ? item.this : undefined).filter(isRecord) : [];
     const inner = isRecord(withinGroup.this) ? withinGroup.this : undefined;
-    const innerAggregate = inner ? inferAggregateType(inner, schema, binds) : undefined;
+    const innerAggregate = inner ? inferAggregateType(inner, schema, binds, tableAliases) : undefined;
     if (innerAggregate && innerAggregate !== 'unknown') return innerAggregate;
     const orderType = commonArgumentType(ordered, schema, binds);
     if (orderType) return orderType;
@@ -2140,30 +2433,39 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   const anyValue = getAst(expression, 'any_value') ?? getAst(expression, 'first') ?? getAst(expression, 'last') ?? getAst(expression, 'mode');
   if (isRecord(anyValue)) {
     const inner = firstAggregateExpression(anyValue);
-    if (inner) return inferColumn(inner, 'aggregate', schema, binds, 'generic').type;
+    if (inner) return inferAggregateExpressionType(inner, schema, binds, tableAliases);
   }
 
   const namedAggregate = getAst(expression, 'aggregate_function');
-  if (isRecord(namedAggregate)) return aggregateTypeByName(String(namedAggregate.name ?? '').toLowerCase(), namedAggregate, schema, binds);
+  if (isRecord(namedAggregate)) return aggregateTypeByName(String(namedAggregate.name ?? '').toLowerCase(), namedAggregate, schema, binds, tableAliases);
+  const parameterizedAggregate = getAst(expression, 'combined_parameterized_agg');
+  if (isRecord(parameterizedAggregate)) {
+    const name = identifierName(parameterizedAggregate.this)?.toLowerCase();
+    if (name === 'quantiles') {
+      const inner = firstExpression(Array.isArray(parameterizedAggregate.expressions) ? parameterizedAggregate.expressions.filter(isRecord) : []);
+      const type = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'unknown';
+      return `array<${type}>`;
+    }
+  }
 
   const genericFunction = getAst(expression, 'function');
   if (isRecord(genericFunction)) {
     const name = String(genericFunction.name ?? '').toLowerCase();
-    const type = aggregateTypeByName(name, genericFunction, schema, binds);
+    const type = aggregateTypeByName(name, genericFunction, schema, binds, tableAliases);
     if (type) return type;
   }
 
   const aggregate = getAst(expression, 'sum') ?? getAst(expression, 'min') ?? getAst(expression, 'max') ?? getAst(expression, 'median');
   if (isRecord(aggregate)) {
     const inner = firstAggregateExpression(aggregate);
-    if (inner) return inferColumn(inner, 'aggregate', schema, binds, 'generic').type;
+    if (inner) return inferAggregateExpressionType(inner, schema, binds, tableAliases);
   }
 
   return undefined;
 }
 
-function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec): string | undefined {
-  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count'].includes(name)) return 'integer';
+function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
+  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return 'integer';
   if ([
     'avg',
     'corr',
@@ -2171,6 +2473,8 @@ function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, s
     'covar_samp',
     'entropy',
     'geometric_mean',
+    'kurtosis',
+    'mad',
     'product',
     'regr_avgx',
     'regr_avgy',
@@ -2180,51 +2484,76 @@ function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, s
     'stddev',
     'stddev_pop',
     'stddev_samp',
+    'stddevpop',
+    'stddevsamp',
+    'sem',
+    'skewness',
+    'stdev',
+    'stdevp',
     'variance',
+    'var',
     'var_pop',
     'var_samp',
+    'varp',
+    'varpop',
+    'varsamp',
     'percentile_approx',
+    'approx_percentile',
     'percentile_cont',
     'quantile',
     'quantile_cont',
+    'quantile_disc',
   ].includes(name)) return 'decimal';
-  if (['bool_and', 'bool_or', 'every', 'logical_and', 'logical_or'].includes(name)) return 'boolean';
+  if (['bool_and', 'bool_or', 'every', 'logical_and', 'logical_or', 'booland_agg', 'boolor_agg'].includes(name)) return 'boolean';
   if (['string_agg', 'group_concat', 'listagg', 'ai_agg'].includes(name)) return 'text';
   if (['bit_and', 'bit_or', 'bit_xor', 'checksum'].includes(name)) {
     const inner = firstAggregateExpression(aggregate);
-    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'integer';
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'integer';
   }
   if (['array_agg', 'list', 'collect_list', 'collect_set'].includes(name)) {
     const inner = firstAggregateExpression(aggregate);
-    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    const type = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'unknown';
     return `array<${type}>`;
   }
   if (name === 'array_concat_agg') {
     const inner = firstAggregateExpression(aggregate);
-    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'array<unknown>';
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'array<unknown>';
   }
-  if (name === 'approx_quantiles') {
+  if (name === 'approx_quantiles' || name === 'quantiles') {
     const inner = firstAggregateExpression(aggregate);
-    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    const type = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'unknown';
     return `array<${type}>`;
   }
   if (['histogram'].includes(name)) {
     const inner = firstAggregateExpression(aggregate);
-    const type = inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : 'unknown';
+    const type = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'unknown';
     return `map<${type}, integer>`;
   }
+  if (name === 'numeric_histogram') {
+    const args = functionArguments(aggregate);
+    const value = args[1] ?? args[0];
+    const type = isRecord(value) ? inferAggregateExpressionType(value, schema, binds, tableAliases) : 'unknown';
+    return `map<${type}, decimal>`;
+  }
+  if (name === 'approx_set') return 'hyperloglog';
+  if (name === 'set_digest') return 'setdigest';
   if (name === 'map_agg' || name === 'mapagg') {
     const args = functionArguments(aggregate);
-    const keyType = isRecord(args[0]) ? inferColumn(args[0], 'map_key', schema, binds, 'generic').type : 'unknown';
-    const valueType = isRecord(args[1]) ? inferColumn(args[1], 'map_value', schema, binds, 'generic').type : 'unknown';
+    const keyType = isRecord(args[0]) ? inferAggregateExpressionType(args[0], schema, binds, tableAliases) : 'unknown';
+    const valueType = isRecord(args[1]) ? inferAggregateExpressionType(args[1], schema, binds, tableAliases) : 'unknown';
     return `map<${keyType}, ${valueType}>`;
   }
   if (['json_agg', 'json_object_agg', 'json_arrayagg', 'json_objectagg', 'object_agg'].includes(name)) return 'json';
-  if (['any_value', 'first', 'last', 'mode', 'percentile_disc'].includes(name)) {
+  if (['xmlagg'].includes(name)) return 'xml';
+  if (['any_value', 'any', 'first', 'last', 'first_value', 'last_value', 'arbitrary', 'argmax', 'argmin', 'mode', 'percentile_disc'].includes(name)) {
     const inner = firstAggregateExpression(aggregate);
-    return inner ? inferColumn(inner, 'aggregate', schema, binds, 'generic').type : undefined;
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
   }
   return undefined;
+}
+
+function inferAggregateExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string {
+  return inferColumn(expression, 'aggregate', schema, binds, 'generic', undefined, tableAliases).type;
 }
 
 function firstAggregateExpression(aggregate: Record<string, unknown>): AstExpression | undefined {
@@ -2277,6 +2606,9 @@ function inferPredicateType(expression: AstExpression): string | undefined {
     'between',
     'exists',
     'regexp_like',
+    'regexp_i_like',
+    'glob',
+    'is_json',
     'starts_with',
     'ends_with',
     'contains',
@@ -2290,6 +2622,8 @@ function inferPredicateType(expression: AstExpression): string | undefined {
 function inferJsonType(expression: AstExpression): string | undefined {
   if (getAst(expression, 'json_object') || getAst(expression, 'j_s_o_n_array') || getAst(expression, 'json_extract')) return 'json';
   if (getAst(expression, 'j_s_o_n_extract')) return 'json';
+  if (hasAstKey(expression, 'json_extract_path')) return 'json';
+  if (hasAstKey(expression, 'json_extract_scalar')) return 'text';
   if (getAst(expression, 'json_value')) return 'text';
   if (getAst(expression, 'to_json')) return 'json';
   if (getAst(expression, 'json_keys')) return 'json';
@@ -2300,7 +2634,7 @@ function inferJsonType(expression: AstExpression): string | undefined {
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
   if (['json_build_object', 'json_build_array', 'json_object', 'json_array', 'json_keys', 'to_json'].includes(name)) return 'json';
-  if (['jsonb_build_object', 'jsonb_build_array', 'to_jsonb'].includes(name)) return 'jsonb';
+  if (['jsonb_build_object', 'jsonb_build_array', 'to_jsonb', 'jsonb_path_query', 'jsonb_path_query_first', 'jsonb_path_query_array'].includes(name)) return 'jsonb';
   if (['json_extract', 'json_query', 'json_set', 'json_insert', 'json_remove', 'json_merge_patch', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
   if (['json_query_array'].includes(name)) return 'array<json>';
   if (['json_value_array'].includes(name)) return 'array<text>';
@@ -2311,6 +2645,15 @@ function inferJsonType(expression: AstExpression): string | undefined {
   if (['jsonhas', 'json_valid', 'jsonb_path_exists', 'json_array_contains'].includes(name)) return 'boolean';
   if (['json_typeof', 'jsonb_typeof', 'json_type'].includes(name)) return 'text';
   return undefined;
+}
+
+function hasAstKey(value: unknown, key: string): boolean {
+  if (!isRecord(value)) return false;
+  if (isRecord(value[key])) return true;
+  return Object.values(value).some((entry) => {
+    if (Array.isArray(entry)) return entry.some((item) => hasAstKey(item, key));
+    return hasAstKey(entry, key);
+  });
 }
 
 function inferTemporalFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
@@ -2327,9 +2670,11 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     }
   }
   if (getAst(expression, 'extract')) return 'integer';
-  if (getAst(expression, 'day') || getAst(expression, 'month') || getAst(expression, 'year')) return 'integer';
+  if (getAst(expression, 'at_time_zone')) return 'datetimeoffset';
+  if (getAst(expression, 'day') || getAst(expression, 'month') || getAst(expression, 'year') || getAst(expression, 'quarter') || getAst(expression, 'weekofyear') || getAst(expression, 'week_of_year')) return 'integer';
   if (getAst(expression, 'date_diff')) return 'integer';
   if (getAst(expression, 'last_day')) return 'date';
+  if (getAst(expression, 'next_day')) return 'date';
   if (getAst(expression, 'add_months')) return 'date';
   if (getAst(expression, 'months_between')) return 'decimal';
   if (getAst(expression, 'epoch') || getAst(expression, 'epoch_ms') || getAst(expression, 'epoch_us') || getAst(expression, 'epoch_ns')) return 'integer';
@@ -2337,7 +2682,7 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
-  if (['date_add', 'date_sub', 'timestamp_add', 'timestamp_sub', 'datetime_add', 'datetime_sub', 'add_months', 'dateadd', 'timeadd', 'timestampadd', 'adddays', 'addmonths', 'addyears'].includes(name)) {
+  if (['date_add', 'date_sub', 'timestamp_add', 'timestamp_sub', 'datetime_add', 'datetime_sub', 'add_months', 'dateadd', 'timeadd', 'timestampadd', 'adddays', 'addmonths', 'addyears', 'subtractdays', 'subtractmonths', 'subtractyears'].includes(name)) {
     const valueType = functionArguments(fn)
       .map((arg) => inferColumn(arg, 'temporal', schema, binds, 'generic').type)
       .find(isTemporalType);
@@ -2347,7 +2692,7 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     if (name.startsWith('time')) return 'time';
     return 'date';
   }
-  if (['date_trunc', 'timestamp_trunc', 'datetime_trunc', 'datetrunc', 'tostartofday', 'tostartofhour', 'tostartofminute', 'tostartofmonth', 'tostartofyear'].includes(name)) {
+  if (['date_trunc', 'timestamp_trunc', 'datetime_trunc', 'datetrunc', 'tostartofday', 'tostartofhour', 'tostartofminute', 'tostartofweek', 'tostartofmonth', 'tostartofyear', 'trunc'].includes(name)) {
     const args = functionArguments(fn);
     const value = args[1] ?? args[0];
     if (value) {
@@ -2357,11 +2702,17 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     }
     return name === 'date_trunc' || name === 'timestamp_trunc' ? 'timestamp' : 'datetime';
   }
-  if (name === 'date_part' || name === 'extract' || /^to(?:year|month|day|hour|minute|second)/i.test(name)) return 'integer';
+  if (['time_floor', 'time_ceil', 'time_shift'].includes(name)) return 'timestamp';
+  if (name === 'time_parse') return 'timestamp';
+  if (name === 'time_format') return 'text';
+  if (name === 'time_extract') return 'integer';
+  if (name === 'date_part' || name === 'datepart' || name === 'extract' || /^to(?:year|month|day|hour|minute|second|unixtimestamp)/i.test(name)) return 'integer';
+  if (['quarter', 'weekofyear'].includes(name)) return 'integer';
+  if (name === 'datename') return 'text';
   if (['datediff', 'date_diff', 'timestampdiff', 'timestamp_diff'].includes(name)) return 'integer';
-  if (['unix_seconds', 'unix_millis', 'unix_micros', 'unix_timestamp'].includes(name)) return 'integer';
+  if (['unix_seconds', 'unix_millis', 'unix_micros', 'unix_timestamp', 'time_to_sec'].includes(name)) return 'integer';
   if (['epoch', 'epoch_ms', 'epoch_us', 'epoch_ns'].includes(name)) return 'integer';
-  if (['make_interval', 'justify_interval', 'justify_days', 'justify_hours'].includes(name)) return 'interval';
+  if (['make_interval', 'justify_interval', 'justify_days', 'justify_hours', 'numtodsinterval', 'numtoyminterval'].includes(name)) return 'interval';
   if (name === 'date_bin') {
     const args = functionArguments(fn);
     const value = args[1] ?? args[0];
@@ -2371,11 +2722,11 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
     }
     return 'timestamp';
   }
-  if (['make_date', 'date_from_parts', 'parse_date', 'to_date', 'str_to_date', 'ts_or_ds_to_date', 'last_day', 'last_day_of_month'].includes(name)) return 'date';
-  if (['make_time', 'time_from_parts', 'parse_time', 'to_time'].includes(name)) return 'time';
-  if (['make_timestamp', 'timestamp_from_parts', 'datetime_from_parts', 'parse_timestamp', 'to_timestamp'].includes(name)) return 'timestamp';
+  if (['make_date', 'date_from_parts', 'parse_date', 'to_date', 'str_to_date', 'ts_or_ds_to_date', 'last_day', 'last_day_of_month', 'eomonth', 'curdate', 'utc_date', 'today', 'yesterday', 'next_day'].includes(name)) return 'date';
+  if (['make_time', 'time_from_parts', 'parse_time', 'to_time', 'curtime', 'utc_time', 'sec_to_time'].includes(name)) return 'time';
+  if (['make_timestamp', 'timestamp_from_parts', 'datetime_from_parts', 'parse_timestamp', 'to_timestamp', 'from_unixtime', 'tumble_start', 'tumble_end', 'hop_start', 'hop_end'].includes(name)) return 'timestamp';
   if (['parse_datetime', 'to_datetime'].includes(name)) return 'datetime';
-  if (['clock_timestamp', 'statement_timestamp', 'transaction_timestamp', 'current_timestamp', 'sysdate', 'systimestamp'].includes(name)) return 'timestamp';
+  if (['clock_timestamp', 'statement_timestamp', 'transaction_timestamp', 'current_timestamp', 'pg_postmaster_start_time', 'getdate', 'sysdatetime', 'sysutcdatetime', 'sysdate', 'systimestamp'].includes(name)) return 'timestamp';
   return undefined;
 }
 
@@ -2473,10 +2824,16 @@ function inferConditionalType(expression: AstExpression, schema: ValidationSchem
   }
 
   const genericFunction = getAst(expression, 'function');
+  if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'choose') {
+    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds);
+  }
   if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'multiif') {
     const args = functionArguments(genericFunction);
     const branches = args.filter((_, index) => index % 2 === 1 || index === args.length - 1);
     return commonArgumentType(branches, schema, binds);
+  }
+  if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'choose') {
+    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds);
   }
 
   return undefined;
@@ -2585,10 +2942,13 @@ function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], 
   if (![
     'transform',
     'list_transform',
+    'list_apply',
     'array_transform',
+    'arraymap',
     'filter',
     'array_filter',
     'list_filter',
+    'arrayfilter',
     'exists',
     'forall',
     'any_match',
@@ -2599,14 +2959,16 @@ function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], 
     'array_reduce',
   ].includes(name)) return undefined;
 
-  const arrayExpression = args[0];
+  const lambdaFirst = ['arraymap', 'arrayfilter'].includes(name);
+  const arrayExpression = lambdaFirst ? args[1] : args[0];
   const arrayType = arrayExpression ? inferColumn(arrayExpression, 'lambda_array', schema, binds, 'generic').type : undefined;
   const elementType = arrayType ? arrayElementType(arrayType) : undefined;
-  if (['filter', 'array_filter', 'list_filter'].includes(name)) return arrayType;
+  if (['filter', 'array_filter', 'list_filter', 'arrayfilter'].includes(name)) return arrayType;
   if (['exists', 'forall', 'any_match', 'all_match', 'none_match'].includes(name)) return 'boolean';
   if (['reduce', 'aggregate', 'array_reduce'].includes(name)) {
     const initialState = args[1];
-    return initialState ? inferColumn(initialState, 'lambda_state', schema, binds, 'generic').type : elementType;
+    if (initialState && !isRecord(initialState.lambda)) return inferColumn(initialState, 'lambda_state', schema, binds, 'generic').type;
+    return elementType;
   }
   const lambda = args.find((arg) => isRecord(arg.lambda))?.lambda;
   const body = isRecord(lambda) && isRecord(lambda.body) ? lambda.body : undefined;
@@ -2715,6 +3077,11 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   const genericFunction = getAst(expression, 'function');
   if (!isRecord(genericFunction)) return undefined;
   const name = String(genericFunction.name ?? '').toLowerCase();
+  if (['nextval', 'currval', 'lastval', 'setval'].includes(name)) return 'bigint';
+  if (name === 'try') {
+    const arg = functionArguments(genericFunction)[0];
+    return arg ? inferColumn(arg, 'scalar', schema, binds, 'generic').type : undefined;
+  }
   if ([
     'lower',
     'upper',
@@ -2728,6 +3095,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'substring',
     'substr',
     'substring_index',
+    'stuff',
     'lpad',
     'rpad',
     'chr',
@@ -2741,6 +3109,8 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'regexp_replace',
     'regexp_extract',
     'regexp_substr',
+    'convert_from',
+    'replaceall',
     'replaceregexpall',
     'replaceregexpone',
     'split_part',
@@ -2758,17 +3128,21 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'to_json_string',
     'json_value',
     'json_extract_string',
+    'tidb_version',
+    'stringify_json',
     'from_utf8',
     'typeof',
     'system$typeof',
     'sha2',
     'json_unquote',
+    'json_pretty',
     'to_base64',
     'check_json',
     'tostring',
     'format',
     'bin',
     'json_type',
+    'format_datetime',
     'formatdatetime',
     'soundex',
     'space',
@@ -2782,14 +3156,26 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'decompress_string',
     'parse_url',
 	    'arraystringconcat',
+	    'current_catalog',
 	    'current_schema',
 	    'inet_client_addr',
+	    'current_query',
 	    'current_database',
 	    'current_user',
+	    'current_warehouse',
 	    'current_version',
 	    'current_account',
 	    'current_region',
 	    'current_role',
+	    'database',
+	    'schema',
+	    'user',
+	    'suser_name',
+	    'system_user',
+	    'last_query_id',
+	    'obj_description',
+	    'col_description',
+	    'pg_get_expr',
 	    'currentdatabase',
 	    'currentuser',
 	    'version',
@@ -2799,15 +3185,33 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
 	    'stats',
 	    'quote',
 	    'sqlite_version',
+	    'sqlite_source_id',
+	    'fts5_get_locale',
+	    'fts5_insttoken',
+	    'printf',
+	    'highlight',
+	    'snippet',
 	    'dump',
 	    'conv',
-	    'url_extract_host',
-	    'url_encode',
+    'url_extract_host',
+    'url_extract_protocol',
+    'url_extract_path',
+    'url_extract_query',
+    'url_extract_fragment',
+    'url_encode',
+    'bytearray_substring',
+    'json_type',
+    'jsontype',
+    'to_clob',
+    'rawtohex',
+    'object_name',
+    'schema_name',
 	  ].includes(name)) return 'text';
-	  if (['length', 'char_length', 'character_length', 'bit_length', 'byte_length', 'octet_length', 'ascii', 'codepoint', 'instr', 'locate', 'strpos', 'position', 'charindex', 'size', 'match_number', 'array_position', 'array_size', 'array_ndims', 'field', 'find_in_set', 'inet_aton', 'width_bucket', 'num_nonnulls', 'num_nulls', 'crc32', 'farm_fingerprint', 'cityhash64', 'siphash64', 'checksum', 'levenshtein', 'editdistance', 'bit_count', 'bitcount', 'connection_id', 'last_insert_id', 'changes', 'total_changes', 'last_insert_rowid', 'pg_backend_pid', 'inet_server_port', 'txid_current', 'binary_checksum', 'patindex', 'day', 'dayofmonth', 'month', 'year', 'quarter', 'week', 'hour', 'minute', 'second'].includes(name)) return 'integer';
+	  if (['length', 'char_length', 'character_length', 'bit_length', 'byte_length', 'octet_length', 'ascii', 'codepoint', 'instr', 'locate', 'strpos', 'position', 'charindex', 'size', 'match_number', 'array_position', 'array_size', 'array_ndims', 'array_upper', 'array_lower', 'field', 'find_in_set', 'inet_aton', 'inet_client_port', 'datalength', 'width_bucket', 'num_nonnulls', 'num_nulls', 'crc32', 'farm_fingerprint', 'cityhash64', 'siphash64', 'checksum', 'levenshtein', 'editdistance', 'bit_count', 'bitcount', 'bitmap_count', 'hll_cardinality', 'jsonlength', 'connection_id', 'last_insert_id', 'changes', 'total_changes', 'last_insert_rowid', 'pg_backend_pid', 'inet_server_port', 'txid_current', 'binary_checksum', 'patindex', 'monotonically_increasing_id', 'ora_hash', 'json_storage_size', 'day', 'dayofmonth', 'month', 'year', 'quarter', 'week', 'weekofyear', 'hour', 'minute', 'second', 'db_id', 'object_id', 'isdate', 'isnumeric'].includes(name)) return 'integer';
+  if (name === 'bm25') return 'decimal';
   if (['regexp_count'].includes(name)) return 'integer';
   if (['regexp_instr', 'regexp_position'].includes(name)) return 'integer';
-	  if (['regexp_full_match', 'regexp_contains', 'regexp_like', 'rlike', 'match', 'prefix', 'suffix', 'starts_with', 'ends_with', 'startswith', 'endswith', 'json_contains', 'json_valid', 'json_array_contains', 'is_null_value', 'is_inf', 'is_nan', 'is_ipv4', 'is_ipv6', 'contains', 'has', 'list_has', 'list_has_all', 'list_has_any', 'array_contains_all', 'array_contained_by', 'array_overlaps', 'empty', 'notempty'].includes(name)) return 'boolean';
+	  if (['regexp_full_match', 'regexp_contains', 'regexp_like', 'rlike', 'match', 'prefix', 'suffix', 'starts_with', 'ends_with', 'startswith', 'endswith', 'json_contains', 'json_valid', 'json_array_contains', 'is_null_value', 'is_inf', 'is_nan', 'isfinite', 'is_ipv4', 'is_ipv6', 'contains', 'has', 'list_has', 'list_has_all', 'list_has_any', 'array_contains_all', 'array_contained_by', 'array_overlaps', 'empty', 'notempty'].includes(name)) return 'boolean';
   if (['regexp_matches', 'regexp_match', 'split', 'str_split', 'string_to_array', 'regexp_split', 'regexp_extract_all', 'parse_ident'].includes(name)) return 'array<text>';
   if (['regexp_split_to_array'].includes(name)) return 'array<text>';
   if (name === 'regexp_split_to_table') return 'text';
@@ -2816,14 +3220,14 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   if (['to_tsquery', 'plainto_tsquery', 'phraseto_tsquery', 'websearch_to_tsquery'].includes(name)) return 'tsquery';
   if (name === 'object_keys') return 'array<text>';
   if (name === 'to_code_points') return 'array<integer>';
-  if (['uuid', 'uuid_string', 'gen_random_uuid', 'generate_uuid'].includes(name)) return 'uuid';
+  if (['uuid', 'uuid_string', 'gen_random_uuid', 'generate_uuid', 'generateuuidv4', 'newid', 'newsequentialid'].includes(name)) return 'uuid';
   if (['md5', 'sha', 'sha1', 'hex', 'to_hex'].includes(name)) return 'text';
 	  if (name === 'decode') {
 	    const args = functionArguments(genericFunction);
 	    if (args.length > 2) return commonArgumentType([...args.slice(2).filter((_, index) => index % 2 === 0), args.at(-1)].filter(isRecord), schema, binds);
 	    return 'bytes';
 	  }
-	  if (['sha224', 'sha256', 'sha384', 'sha512', 'md5_binary', 'sha2_binary', 'to_binary', 'uuid_to_bin', 'to_utf8', 'from_base64', 'unhex', 'inet6_aton', 'aes_encrypt', 'aes_decrypt', 'base64_decode_binary', 'compress', 'decompress_binary', 'zeroblob'].includes(name)) return 'bytes';
+	  if (['sha224', 'sha256', 'sha384', 'sha512', 'md5_binary', 'sha2_binary', 'to_binary', 'convert_to', 'uuid_to_bin', 'to_utf8', 'from_base64', 'unhex', 'hextoraw', 'inet6_aton', 'aes_encrypt', 'aes_decrypt', 'base64_decode_binary', 'compress', 'decompress_binary', 'zeroblob', 'sys_guid'].includes(name)) return 'bytes';
   if (['random', 'rand'].includes(name)) return 'decimal';
   if (['array_length', 'array_size', 'cardinality', 'array_sum', 'hash', 'list_position', 'list_unique', 'xxhash64'].includes(name)) return 'integer';
   if (['array_contains', 'list_contains'].includes(name)) return 'boolean';
@@ -2832,13 +3236,20 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
     return type ? arrayElementType(type) ?? type : undefined;
   }
+  if (name === 'flatten') {
+    const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+    return type ? arrayElementType(type) ?? type : undefined;
+  }
   if (name === 'array_flatten') {
     const type = firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
     const element = type ? arrayElementType(type) : undefined;
     return element && /^array\s*</i.test(element) ? element : type;
   }
-  if (['array_compact', 'array_intersect', 'array_union', 'array_except', 'list_slice', 'list_reverse', 'list_concat'].includes(name)) {
+  if (['array_compact', 'array_intersect', 'array_union', 'array_except', 'arraycompact', 'arrayintersect', 'arrayexcept', 'list_slice', 'list_reverse', 'list_concat', 'list_resize', 'list_distinct', 'list_sort', 'list_select', 'array_pop_back', 'array_pop_front', 'array_push_back', 'array_push_front'].includes(name)) {
     return firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
+  }
+  if (name === 'list_grade_up') {
+    return 'array<integer>';
   }
   if (name === 'array_zip') {
     const fields = functionArguments(genericFunction).map((arg, index) => {
@@ -2866,37 +3277,47 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     return fields.length > 0 ? `struct<${fields.join(', ')}>` : undefined;
   }
   if (name === 'array_to_string') return 'text';
-  if (['array_cat', 'array_concat', 'array_slice', 'array_distinct', 'array_prepend', 'array_append', 'array_remove', 'array_replace', 'array_reverse', 'array_sort'].includes(name)) {
+  if (['array_cat', 'array_concat', 'array_slice', 'array_distinct', 'array_prepend', 'array_append', 'array_remove', 'array_replace', 'array_reverse', 'array_sort', 'arraycat', 'arrayconcat', 'arrayslice', 'arraydistinct', 'arrayreverse'].includes(name)) {
     return firstArrayArgumentType(functionArguments(genericFunction), schema, binds);
   }
   if (['current_date'].includes(name)) return 'date';
   if (['current_time'].includes(name)) return 'time';
-  if (['current_timestamp', 'now', 'localtimestamp', 'utc_timestamp'].includes(name)) return 'timestamp';
+  if (['current_timestamp', 'now', 'localtimestamp', 'utc_timestamp', 'pg_postmaster_start_time', 'timestamp_seconds', 'timestamp_millis', 'timestamp_micros', 'date_parse'].includes(name)) return 'timestamp';
+  if (name === 'julianday') return 'decimal';
+  if (name === 'unixepoch') return sqliteUnixepochType(genericFunction);
+  if (name === 'mz_now') return 'mz_timestamp';
   if (name === 'current_datetime') return 'datetime';
   if (name === 'timestamp') return 'timestamp';
+  if (name === 'todatetime') return 'timestamp';
   if (name === 'datetime') return 'datetime';
   if (name === 'time') return 'time';
   if (name === 'age') return 'interval';
+  if (['to_bitmap', 'hll_hash'].includes(name)) return name === 'to_bitmap' ? 'bitmap' : 'hll';
+  if (name === 'varbinary_to_uint256') return 'decimal';
+  if (name === 'scope_identity') return 'integer';
+  if (name === 'isnumeric') return 'integer';
   if (['grouping', 'grouping_id', 'groupingid'].includes(name)) return 'integer';
   if (name === 'convert' || name === 'try_convert') {
     const targetType = Array.isArray(genericFunction.args) ? genericFunction.args[0] : undefined;
     const type = isRecord(targetType) ? dataTypeToString(targetType.data_type ?? targetType) : undefined;
     if (type) return type;
   }
-	  if (['abs', 'round', 'ceil', 'ceiling', 'floor', 'degrees', 'radians', 'truncate', 'safe_add', 'safe_subtract', 'safe_multiply', 'pmod', 'div'].includes(name)) return commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'decimal';
+	  if (['abs', 'round', 'ceil', 'ceiling', 'floor', 'degrees', 'radians', 'truncate', 'safe_add', 'safe_subtract', 'safe_multiply', 'pmod', 'div', 'mod'].includes(name)) return commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'decimal';
 	  if (['safe_divide', 'ieee_divide', 'cbrt'].includes(name)) return 'decimal';
 	  if (['factorial'].includes(name)) return 'integer';
-  if (['to_number', 'try_to_number', 'to_decimal', 'try_to_decimal', 'try_to_decfloat', 'zeroifnull'].includes(name)) return 'decimal';
+  if (['to_number', 'try_to_number', 'to_decimal', 'try_to_decimal', 'try_to_decfloat', 'zeroifnull', 'nullifzero'].includes(name)) return 'decimal';
   if (/^to(?:u?int|integer|bigint|smallint)/i.test(name)) return 'integer';
   if (/^to(?:float|double|decimal)/i.test(name)) return 'decimal';
   if (name === 'tobool') return 'boolean';
   if (name === 'to_boolean') return 'boolean';
+  if (name === 'try_to_boolean') return 'boolean';
   if (name === 'touuid') return 'uuid';
   if (name === 'todate') return 'date';
   if (name === 'try_base64_decode_string') return 'text';
   if (name === 'try_base64_decode_binary') return 'bytes';
   if (name === 'check_xml') return 'text';
-  if (['row_to_json', 'json_query', 'parse_json', 'json_set', 'json_insert', 'json_remove', 'json_merge_patch', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
+  if (['row_to_json', 'json_query', 'parse_json', 'json_set', 'json_insert', 'json_remove', 'json_strip_nulls', 'json_merge_patch', 'json_merge_preserve', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
+  if (name === 'json_modify') return 'text';
   if (name === 'json_query_array') return 'array<json>';
   if (name === 'json_value_array') return 'array<text>';
   if (name === 'get') return 'variant';
@@ -2904,6 +3325,9 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   if (name === 'to_variant') return 'variant';
   if (name === 'to_object') return 'object';
   if (name === 'to_array') return 'array<variant>';
+  if (name === 'as_array') return 'array<variant>';
+  if (name === 'as_object') return 'object';
+  if (name === 'as_varchar') return 'text';
   if (name === 'object_insert') return 'object';
   if (['cosine_distance', 'euclidean_distance', 'manhattan_distance'].includes(name)) return 'decimal';
   if (name === 'generate_embedding') return 'vector';
@@ -2913,7 +3337,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   if (['sqrt', 'power', 'pow', 'exp', 'ln', 'log', 'log10', 'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'radians', 'degrees', 'pi', 'ratio_to_report'].includes(name)) return 'decimal';
   if (['months_between'].includes(name)) return 'decimal';
   if (['sign'].includes(name)) return 'integer';
-  if (['coalesce', 'ifnull', 'nvl', 'nullif', 'greatest', 'least'].includes(name)) {
+  if (['coalesce', 'ifnull', 'isnull', 'nvl', 'nullif', 'greatest', 'least'].includes(name)) {
     return bindFirstArgumentType(genericFunction, binds) ?? commonArgumentType(functionArguments(genericFunction), schema, binds);
   }
   if (name === 'nvl2') {
@@ -2933,6 +3357,13 @@ function bindFirstArgumentType(functionNode: Record<string, unknown>, binds: Bin
   return isRecord(first) ? inferBindType(first, binds) : undefined;
 }
 
+function sqliteUnixepochType(functionNode: Record<string, unknown>): 'integer' | 'decimal' {
+  const hasSubsecondModifier = functionArguments(functionNode)
+    .map(literalString)
+    .some((value) => value ? ['subsec', 'subsecond'].includes(value.toLowerCase()) : false);
+  return hasSubsecondModifier ? 'decimal' : 'integer';
+}
+
 function inferBindSensitiveFunctionType(expression: AstExpression, binds: BindSpec): string | undefined {
   const coalesce = getAst(expression, 'coalesce') ?? getAst(expression, 'nullif');
   if (isRecord(coalesce)) return bindFirstArgumentType(coalesce, binds);
@@ -2945,6 +3376,15 @@ function inferBindSensitiveFunctionType(expression: AstExpression, binds: BindSp
 }
 
 function inferMapFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+  const mapFromArrays = getAst(expression, 'map_from_arrays');
+  if (isRecord(mapFromArrays)) {
+    const keyArray = isRecord(mapFromArrays.this) ? inferColumn(mapFromArrays.this, 'map_keys', schema, binds, 'generic').type : undefined;
+    const valueArray = isRecord(mapFromArrays.expression) ? inferColumn(mapFromArrays.expression, 'map_values', schema, binds, 'generic').type : undefined;
+    const keyType = keyArray ? arrayElementType(keyArray) : undefined;
+    const valueType = valueArray ? arrayElementType(valueArray) : undefined;
+    return keyType && valueType ? `map<${keyType}, ${valueType}>` : undefined;
+  }
+
   const keys = getAst(expression, 'map_keys');
   if (isRecord(keys)) {
     const types = mapArgumentTypes(keys.this, schema, binds);
@@ -2978,7 +3418,7 @@ function inferMapFunctionType(expression: AstExpression, schema: ValidationSchem
     const types = mapArgumentTypes(functionArguments(fn)[0], schema, binds);
     return types ? `array<${types[1]}>` : undefined;
   }
-  if (name === 'element_at') {
+  if (['element_at', 'map_extract'].includes(name)) {
     const first = functionArguments(fn)[0];
     const types = mapArgumentTypes(first, schema, binds);
     if (types) return types[1];
@@ -2987,14 +3427,25 @@ function inferMapFunctionType(expression: AstExpression, schema: ValidationSchem
       return arrayElementType(arrayType);
     }
   }
+  if (name === 'map_contains' || name === 'mapcontains') {
+    return 'boolean';
+  }
   if (name === 'map_entries') {
     const types = mapArgumentTypes(functionArguments(fn)[0], schema, binds);
     return types ? `array<struct<key ${types[0]}, value ${types[1]}>>` : undefined;
   }
-  if (['map_concat', 'map_cat', 'map_delete', 'map_insert', 'map_pick'].includes(name)) {
+  if (['map_concat', 'map_cat', 'map_delete', 'map_insert', 'map_pick', 'map_filter', 'transform_values'].includes(name)) {
     return functionArguments(fn)
       .map((arg) => inferColumn(arg, 'map_func_arg', schema, binds, 'generic').type)
       .find((type) => /^map\s*</i.test(type));
+  }
+  if (name === 'map_from_arrays') {
+    const args = functionArguments(fn);
+    const keyArray = args[0] ? inferColumn(args[0], 'map_keys', schema, binds, 'generic').type : undefined;
+    const valueArray = args[1] ? inferColumn(args[1], 'map_values', schema, binds, 'generic').type : undefined;
+    const keyType = keyArray ? arrayElementType(keyArray) : undefined;
+    const valueType = valueArray ? arrayElementType(valueArray) : undefined;
+    return keyType && valueType ? `map<${keyType}, ${valueType}>` : undefined;
   }
   return undefined;
 }
@@ -3047,6 +3498,14 @@ function inferWindowFunctionType(expression: AstExpression, schema: ValidationSc
   if (isRecord(valueFunction) && isRecord(valueFunction.this)) {
     return inferColumn(valueFunction.this, 'window_value', schema, binds, 'generic').type;
   }
+  const genericFunction = getAst(inner, 'function');
+  if (isRecord(genericFunction)) {
+    const name = String(genericFunction.name ?? '').toLowerCase();
+    if (['laginframe', 'leadinframe'].includes(name)) {
+      const firstArg = functionArguments(genericFunction)[0];
+      return firstArg ? inferColumn(firstArg, 'window_value', schema, binds, 'generic').type : undefined;
+    }
+  }
   return inferExpressionType(inner, schema, binds);
 }
 
@@ -3067,9 +3526,9 @@ function inferLiteralType(expression: AstExpression): string | undefined {
     if (literalType === 'time') return 'time';
     if (literalType === 'timestamp') return 'timestamp';
     if (literalType === 'interval') return 'interval';
-    if (literalType === 'null') return 'unknown';
+    if (literalType === 'null') return 'null';
   }
-  if (isAst(expression, 'null')) return 'unknown';
+  if (isAst(expression, 'null')) return 'null';
   return undefined;
 }
 
@@ -3142,16 +3601,8 @@ function inferNestedColumn(
   schema: ValidationSchema,
   tableAliases?: TableAliasMap,
 ): { type: string; nullable?: boolean; source: string } | undefined {
-  const jsonScalar = getAst(expression, 'json_extract_scalar');
-  if (isRecord(jsonScalar)) {
-    const base = nestedBaseColumn(jsonScalar.this, schema, tableAliases);
-    const path = literalString(jsonScalar.path);
-    return {
-      type: 'text',
-      nullable: base?.column.nullable,
-      source: base && path ? `${base.source}.${path}` : base?.source ?? 'json',
-    };
-  }
+  const jsonScalar = inferJsonScalarNestedColumn(expression, schema, tableAliases);
+  if (jsonScalar) return jsonScalar;
 
   const path = nestedAccessPath(expression, schema, tableAliases);
   if (!path) return undefined;
@@ -3161,6 +3612,22 @@ function inferNestedColumn(
     type,
     nullable: path.base.column.nullable,
     source: [path.base.source, ...path.steps.filter((step) => step.kind === 'field').map((step) => step.name)].join('.'),
+  };
+}
+
+function inferJsonScalarNestedColumn(
+  expression: AstExpression,
+  schema: ValidationSchema,
+  tableAliases?: TableAliasMap,
+): { type: string; nullable?: boolean; source: string } | undefined {
+  const jsonScalar = getAst(expression, 'json_extract_scalar');
+  if (!isRecord(jsonScalar)) return undefined;
+  const base = nestedBaseColumn(jsonScalar.this, schema, tableAliases);
+  const path = literalString(jsonScalar.path);
+  return {
+    type: 'text',
+    nullable: base?.column.nullable,
+    source: base && path ? `${base.source}.${path}` : base?.source ?? 'json',
   };
 }
 
@@ -3295,18 +3762,32 @@ function literalString(expression: unknown): string | undefined {
   return typeof literal.value === 'string' ? literal.value : undefined;
 }
 
+function numericLiteralValue(expression: unknown): number | undefined {
+  const literal = getAst(expression, 'literal');
+  if (!isRecord(literal) || literal.literal_type !== 'number') return undefined;
+  const value = Number(literal.value);
+  return Number.isFinite(value) ? value : undefined;
+}
+
 function isNumericString(value: string): boolean {
   return /^\d+$/.test(value);
 }
 
 function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): string | undefined {
-  if (binds.mode !== 'named') return undefined;
   const column = getAst(expression, 'column');
   if (!isRecord(column)) return undefined;
   const rawName = identifierName(column.name);
-  const name = rawName?.match(/^[@$]([A-Za-z_]\w*)$/)?.[1];
-  const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
-  return type ? normalizeDataTypeName(type) : undefined;
+  if (binds.mode === 'positional') {
+    const index = rawName?.match(/^\$(\d+)$/)?.[1];
+    const type = index ? binds.binds.find((bind) => bind.index === Number(index))?.type : undefined;
+    return type ? normalizeDataTypeName(type) : undefined;
+  }
+  if (binds.mode === 'named') {
+    const name = rawName?.match(/^[@$]([A-Za-z_]\w*)$/)?.[1];
+    const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
+    return type ? normalizeDataTypeName(type) : undefined;
+  }
+  return undefined;
 }
 
 interface OutputItem {
@@ -3315,6 +3796,7 @@ interface OutputItem {
   source?: string;
   schema?: ValidationSchema;
   tableAliases?: TableAliasMap;
+  functionReturnTypes?: Map<string, string>;
 }
 
 function extractOutputItems(parsedAst: unknown, schema: ValidationSchema, dialect = 'generic'): OutputItem[] {
@@ -3323,11 +3805,14 @@ function extractOutputItems(parsedAst: unknown, schema: ValidationSchema, dialec
 
 function extractResultSets(parsedAst: unknown, schema: ValidationSchema, dialect = 'generic'): OutputItem[][] {
   const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
-  const context: StatementContext = { prepared: new Map() };
+  const context = statementContextFromSchema(schema);
   let currentSchema = schema;
   return statements.map((statement) => {
     const items = outputItemsForStatement(statement, currentSchema, context, dialect);
     rememberPreparedStatement(statement, context);
+    rememberFunctionDefinition(statement, context);
+    rememberProcedureDefinition(statement, currentSchema, context, dialect);
+    rememberTypeDefinition(statement, context);
     forgetPreparedStatement(statement, context);
     currentSchema = schemaAfterStatement(statement, currentSchema, context);
     return items;
@@ -3386,6 +3871,7 @@ function statementKind(statement: unknown): string {
 function resultKindForStatement(statement: unknown): StatementResultKind {
   if (!isRecord(statement)) return 'unknown';
   if (isNoResultExpressionCommand(statement)) return 'none';
+  if (isRuntimeExpressionCommand(statement)) return 'runtime';
   if (isRecord(statement.show) || isDescribeMetadataStatement(statement)) return 'metadata';
   if (isRecord(statement.pragma)) return 'metadata';
   if (isRecord(statement.summarize)) return 'metadata';
@@ -3413,13 +3899,15 @@ function isStaticCommandStatement(statement: Record<string, unknown>): boolean {
 }
 
 function isStaticCommandText(command: string): boolean {
-  return /^(?:optimize|repair|check|checksum)\s+table\b/.test(command)
+  if (staticProcedureColumns(commandProcedureName(command)).length > 0) return true;
+  return /^begin\s+select\b/.test(command)
+    || /^(?:optimize|repair|check|checksum)\s+table\b/.test(command)
     || /^(?:list|ls)\s+@/.test(command)
     || /^get\s+@/.test(command)
     || /^(?:remove|rm)\s+@/.test(command)
     || /^exists\s+(?:table|database|view|dictionary)\b/.test(command)
     || /^explain\b/.test(command)
-    || /^show\s+(?:clusters|users|roles|grants|settings|dictionaries|functions|databases|schemas|tables|columns|create\s+(?:table|database|dictionary)|processlist)\b/.test(command)
+    || /^show\s+(?:clusters|users|roles|grants|settings|dictionaries|functions|databases|schemas|tables|views|materialized\s+views|columns|indexes|variables|catalogs|current\s+namespace|engines|table|create\s+(?:table|database|dictionary|view)|processlist)\b/.test(command)
     || /^list\s+(?:file|jar|archive)\b/.test(command)
     || /^(?:describe|desc)\s+table\b/.test(command)
     || /^help\s+(?:table|database|column)\b/.test(command);
@@ -3512,6 +4000,10 @@ function isNoResultExpressionCommand(statement: Record<string, unknown>): boolea
   return keyword ? ['checkpoint', 'listen', 'notify', 'unlisten', 'savepoint', 'reindex', 'cluster', 'flush'].includes(keyword) : false;
 }
 
+function isRuntimeExpressionCommand(statement: Record<string, unknown>): boolean {
+  return topLevelExpressionKeyword(statement) === 'dbcc';
+}
+
 function isDfsExpressionCommand(statement: Record<string, unknown>): boolean {
   const sub = isRecord(statement.sub) ? statement.sub : undefined;
   const leftColumn = sub && isRecord(sub.left) ? getAst(sub.left, 'column') : undefined;
@@ -3596,7 +4088,7 @@ function isTopLevelExpressionStatement(statement: Record<string, unknown>): bool
     'uncache',
     'use',
   ];
-  if (statementKeys.some((key) => hasAstKey(statement, key))) return false;
+  if (statementKeys.some((key) => statementHasKey(statement, key))) return false;
   return [
     'alias',
     'array_func',
@@ -3644,10 +4136,10 @@ function isTopLevelExpressionStatement(statement: Record<string, unknown>): bool
     'safe_cast',
     'similar_to',
     'subquery',
-  ].some((key) => hasAstKey(statement, key));
+  ].some((key) => statementHasKey(statement, key));
 }
 
-function hasAstKey(statement: Record<string, unknown>, key: string): boolean {
+function statementHasKey(statement: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(statement, key);
 }
 
@@ -3715,6 +4207,23 @@ function suppressKnownTableFunctionArgumentDiagnostics(diagnostics: Diagnostic[]
   });
 }
 
+function suppressVirtualTableArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
+  const names = virtualTableArgumentNames(parsedAst, schema);
+  if (names.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)'(?: in table '([^']+)')?/);
+    if (!match) return true;
+    const column = match[1].toLowerCase();
+    const table = match[2]?.toLowerCase();
+    return !names.has(column) || Boolean(table && table !== column);
+  });
+}
+
+function suppressSqliteRowidDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, dialect: string): Diagnostic[] {
+  if (dialect !== 'sqlite' || !hasSqliteRowidColumn(parsedAst)) return diagnostics;
+  return diagnostics.filter((diagnostic) => !/Unknown column '(?:rowid|_rowid_|oid)'/i.test(diagnostic.message));
+}
+
 function suppressWholeRowFunctionDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
   const names = wholeRowFunctionArgumentNames(parsedAst);
   if (names.size === 0) return diagnostics;
@@ -3734,6 +4243,15 @@ function suppressOracleCurrentUserDiagnostics(diagnostics: Diagnostic[], parsedA
   return diagnostics.filter((diagnostic) => !/Unknown column 'user'(?: in table 'dual')?/i.test(diagnostic.message));
 }
 
+function suppressCurrentTemporalIdentifierDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown): Diagnostic[] {
+  const names = currentTemporalIdentifierNames(parsedAst);
+  if (names.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)'/);
+    return !match || !names.has(match[1].toLowerCase());
+  });
+}
+
 function hasUnqualifiedCurrentUserColumn(value: unknown): boolean {
   let found = false;
   visitAst(value, (node) => {
@@ -3741,6 +4259,18 @@ function hasUnqualifiedCurrentUserColumn(value: unknown): boolean {
     found = !identifierName(node.column.table) && identifierName(node.column.name)?.toLowerCase() === 'user';
   });
   return found;
+}
+
+function currentTemporalIdentifierNames(value: unknown): Set<string> {
+  const names = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.column)) return;
+    const name = identifierName(node.column.name)?.toLowerCase();
+    if (!identifierName(node.column.table) && name && ['current_date', 'current_time', 'current_timestamp', 'localtimestamp'].includes(name)) {
+      names.add(name);
+    }
+  });
+  return names;
 }
 
 function namedFunctionArgumentNames(value: unknown): Set<string> {
@@ -3785,6 +4315,29 @@ function knownTableFunctionArgumentNames(value: unknown): Set<string> {
     if (name) names.add(name.toLowerCase());
   });
   return names;
+}
+
+function virtualTableArgumentNames(value: unknown, schema: ValidationSchema): Set<string> {
+  const names = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.function)) return;
+    const functionName = String(node.function.name ?? '').toLowerCase();
+    if (!['highlight', 'snippet', 'bm25', 'fts5vocab'].includes(functionName)) return;
+    const firstArg = functionArguments(node.function)[0];
+    const column = isRecord(firstArg) ? getAst(firstArg, 'column') : undefined;
+    const name = isRecord(column) && !identifierName(column.table) ? identifierName(column.name) : undefined;
+    if (name && schema.tables.some((table) => table.name.toLowerCase() === name.toLowerCase())) names.add(name.toLowerCase());
+  });
+  return names;
+}
+
+function hasSqliteRowidColumn(value: unknown): boolean {
+  let found = false;
+  visitAst(value, (node) => {
+    if (found || !isRecord(node.column)) return;
+    found = ['rowid', '_rowid_', 'oid'].includes(identifierName(node.column.name)?.toLowerCase() ?? '');
+  });
+  return found;
 }
 
 function visitAst(value: unknown, visitor: (node: Record<string, unknown>) => void): void {
@@ -3864,6 +4417,30 @@ function suppressCompatibleComparisonDiagnostics(diagnostics: Diagnostic[], pars
   return diagnostics.filter((diagnostic) => !/^Incompatible comparison between .+ and .+$/i.test(diagnostic.message));
 }
 
+function suppressTemporalUnitDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown): Diagnostic[] {
+  const units = temporalUnitArgumentNames(parsedAst);
+  if (units.size === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => {
+    const match = diagnostic.message.match(/Unknown column '([^']+)'/);
+    return !match || !units.has(match[1].toLowerCase());
+  });
+}
+
+function temporalUnitArgumentNames(value: unknown): Set<string> {
+  const units = new Set<string>();
+  visitAst(value, (node) => {
+    if (!isRecord(node.function)) return;
+    const name = String(node.function.name ?? '').toLowerCase();
+    if (!['dateadd', 'date_add', 'date_sub', 'datediff', 'date_diff', 'timestampdiff', 'timestamp_diff', 'timestampadd'].includes(name)) return;
+    for (const arg of functionArguments(node.function)) {
+      const column = isRecord(arg) ? getAst(arg, 'column') : undefined;
+      const unit = isRecord(column) && !identifierName(column.table) ? identifierName(column.name)?.toLowerCase() : undefined;
+      if (unit && ['year', 'quarter', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond', 'microsecond'].includes(unit)) units.add(unit);
+    }
+  });
+  return units;
+}
+
 function allComparisonsAreCompatible(parsedAst: unknown, schema: ValidationSchema): boolean {
   const comparisons: Array<[AstExpression, AstExpression]> = [];
   const comparisonSchema = schemaWithTableAliases(parsedAst, schema);
@@ -3917,8 +4494,8 @@ function compatibleSetOperationColumns(parsedAst: unknown, schema: ValidationSch
     for (const kind of ['union', 'except', 'intersect']) {
       const setOperation = isRecord(node[kind]) ? node[kind] : undefined;
       if (!setOperation) continue;
-      const left = outputItemsForStatement(setOperation.left, schema, { prepared: new Map() });
-      const right = outputItemsForStatement(setOperation.right, schema, { prepared: new Map() });
+      const left = outputItemsForStatement(setOperation.left, schema, emptyStatementContext());
+      const right = outputItemsForStatement(setOperation.right, schema, emptyStatementContext());
       left.forEach((item, index) => {
         const rightItem = right[index];
         if (!rightItem) return;
@@ -4007,9 +4584,15 @@ function suppressRuntimeOnlyDiagnostics(diagnostics: Diagnostic[], statements: S
   if (statements.some((statement) => statement.resultKind === 'static' || statement.resultKind === 'unknown')) return diagnostics;
   return diagnostics.filter((diagnostic) => {
     if (diagnostic.code === 'E200' || diagnostic.code === 'E004') return false;
+    if (/Invalid expression|Unexpected token/i.test(diagnostic.message)) return false;
     if (/Unknown table|Unknown column|Unknown table or alias/i.test(diagnostic.message)) return false;
     return true;
   });
+}
+
+function suppressNonShapeValidationDiagnostics(diagnostics: Diagnostic[], resultSets: Array<{ index: number; columns: DescribeColumn[] }>): Diagnostic[] {
+  if (resultSets.length === 0) return diagnostics;
+  return diagnostics.filter((diagnostic) => diagnostic.code !== 'W004');
 }
 
 function suppressNoResultParseDiagnostics(diagnostics: Diagnostic[], statements: StatementSummary[]): Diagnostic[] {
@@ -4017,12 +4600,13 @@ function suppressNoResultParseDiagnostics(diagnostics: Diagnostic[], statements:
   return diagnostics.filter((diagnostic) => !/Invalid expression|Unexpected token/i.test(diagnostic.message));
 }
 
-function outputItemsForStatement(statement: unknown, schema: ValidationSchema, context: StatementContext = { prepared: new Map() }, dialect = 'generic'): OutputItem[] {
+function outputItemsForStatement(statement: unknown, schema: ValidationSchema, context: StatementContext = emptyStatementContext(), dialect = 'generic'): OutputItem[] {
   if (!isRecord(statement)) return [];
   if (isRecord(statement.select)) {
-    const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schema), schema);
+    const schemaWithFunctions = mergeSchemas({ tables: [...context.tableFunctions.values()] }, schema);
+    const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schemaWithFunctions), schemaWithFunctions);
     const scopedSchema = mergeSchemas(schemaFromDerivedTables(statement.select, localSchema), localSchema);
-    return outputItemsFromExpressions(statement.select.expressions, scopedSchema, statement.select);
+    return outputItemsFromExpressions(statement.select.expressions, scopedSchema, statement.select, context);
   }
   if (isRecord(statement.values)) return outputItemsFromValues(statement.values, schema);
   if (isRecord(statement.union)) return outputItemsFromSetOperation(statement.union, schema, context, dialect);
@@ -4047,6 +4631,7 @@ function outputItemsForStatement(statement: unknown, schema: ValidationSchema, c
   if (isRecord(statement.delete)) return outputItemsFromReturning(statement.delete, schema);
   if (isRecord(statement.merge)) return outputItemsFromMerge(statement.merge, schema);
   if (isNoResultExpressionCommand(statement)) return [];
+  if (isRuntimeExpressionCommand(statement)) return [];
   if (isWatchExpressionStatement(statement)) return outputItemsFromWatchExpression(statement, schema);
   {
     const bareProcedureColumns = staticBareTsqlProcedureColumns(statement, dialect);
@@ -4240,6 +4825,8 @@ function applyAlterActions(table: SchemaTable, actions: unknown[]): SchemaTable 
 function tableFromRawCreateTable(sql: string): SchemaTable | undefined {
   const parsed = parseCreateTables(sql, 'generic');
   if (parsed[0]) return parsed[0];
+  const virtual = tableFromRawCreateVirtualTable(sql);
+  if (virtual) return virtual;
   const create = sql.match(/^create\s+(?:global\s+temporary\s+|temporary\s+|temp\s+)?table\s+(.+?)\s*\(([\s\S]*)\)(?:\s+[\s\S]*)?$/i);
   if (!create) return undefined;
   const ref = relationRefFromSqlName(create[1]);
@@ -4247,6 +4834,21 @@ function tableFromRawCreateTable(sql: string): SchemaTable | undefined {
   const columns = splitTopLevel(create[2], ',')
     .map(rawSchemaColumn)
     .filter((column): column is SchemaColumn => Boolean(column));
+  return columns.length > 0 ? { name: ref.name, ...(ref.schema ? { schema: ref.schema } : {}), columns } : undefined;
+}
+
+function tableFromRawCreateVirtualTable(sql: string): SchemaTable | undefined {
+  const create = sql.match(/^create\s+virtual\s+table\s+(.+?)\s+using\s+(\w+)\s*\(([\s\S]*)\)(?:\s*[\s\S]*)?$/i);
+  if (!create) return undefined;
+  const ref = relationRefFromSqlName(create[1]);
+  const moduleName = create[2].toLowerCase();
+  if (!ref.name || !['fts3', 'fts4', 'fts5'].includes(moduleName)) return undefined;
+  const columns = splitTopLevel(create[3], ',').flatMap((part) => {
+    const trimmed = part.trim();
+    if (!trimmed || /=/.test(trimmed)) return [];
+    const name = cleanIdentifier(trimmed.split(/\s+/)[0] ?? '');
+    return name ? [{ name, type: 'text' }] : [];
+  });
   return columns.length > 0 ? { name: ref.name, ...(ref.schema ? { schema: ref.schema } : {}), columns } : undefined;
 }
 
@@ -4327,7 +4929,7 @@ function addAlterColumn(table: SchemaTable, columnDefinition: unknown): SchemaTa
 
 function addAlterColumns(table: SchemaTable, columnDefinitions: unknown): SchemaTable {
   const columns = Array.isArray(columnDefinitions)
-    ? columnDefinitions.map(schemaColumnFromDefinition).filter((column): column is SchemaColumn => Boolean(column))
+    ? columnDefinitions.map((column) => schemaColumnFromDefinition(column)).filter((column): column is SchemaColumn => Boolean(column))
     : [];
   return columns.reduce((current, column) => {
     const existing = current.columns.filter((candidate) => candidate.name.toLowerCase() !== column.name.toLowerCase());
@@ -4465,7 +5067,7 @@ function tableFromCreateTableDefinition(createTable: Record<string, unknown>, sc
   const copied = copiedTableColumns(createTable, schema);
   if (copied) return { name, ...(schemaName ? { schema: schemaName } : {}), columns: copied };
   const columns = Array.isArray(createTable.columns)
-    ? createTable.columns.map(schemaColumnFromDefinition).filter((column): column is SchemaColumn => column !== undefined)
+    ? createTable.columns.map((column) => schemaColumnFromDefinition(column, context)).filter((column): column is SchemaColumn => column !== undefined)
     : [];
   return columns.length > 0 ? { name, ...(schemaName ? { schema: schemaName } : {}), columns } : undefined;
 }
@@ -4523,13 +5125,13 @@ function relationSchemaFromRef(ref: unknown): string | undefined {
   return isRecord(ref) ? identifierName(ref.schema) : undefined;
 }
 
-function schemaColumnFromDefinition(column: unknown): SchemaColumn | undefined {
+function schemaColumnFromDefinition(column: unknown, context?: StatementContext): SchemaColumn | undefined {
   if (!isRecord(column)) return undefined;
   const name = identifierName(column.name);
   if (!name) return undefined;
   return {
     name,
-    type: dataTypeToString(column.data_type) ?? 'unknown',
+    type: dataTypeToStringWithAliases(column.data_type, context) ?? 'unknown',
     nullable: typeof column.nullable === 'boolean' ? column.nullable : undefined,
     primaryKey: column.primary_key === true,
     unique: column.unique === true,
@@ -4540,6 +5142,107 @@ function rememberPreparedStatement(statement: unknown, context: StatementContext
   if (!isRecord(statement) || !isRecord(statement.prepare)) return;
   const name = identifierName(statement.prepare.name);
   if (name && isRecord(statement.prepare.statement)) context.prepared.set(name.toLowerCase(), statement.prepare.statement);
+}
+
+function rememberFunctionDefinition(statement: unknown, context: StatementContext): void {
+  if (!isRecord(statement) || !isRecord(statement.create_function)) return;
+  const createFunction = statement.create_function;
+  const name = relationNameFromRef(createFunction.name);
+  if (!name) return;
+  const type = dataTypeToString(createFunction.return_type);
+  if (type) context.functionReturnTypes.set(name.toLowerCase(), type);
+  const table = tableFromCreateFunctionReturnTable(name, createFunction);
+  if (table) context.tableFunctions.set(name.toLowerCase(), table);
+}
+
+function rememberProcedureDefinition(statement: unknown, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): void {
+  if (!isRecord(statement) || !isRecord(statement.create_procedure)) return;
+  const createProcedure = statement.create_procedure;
+  const name = relationNameFromRef(createProcedure.name);
+  if (!name) return;
+  const items = outputItemsFromProcedureDefinition(createProcedure, schema, context, dialect);
+  if (items.length > 0) context.procedureResultSets.set(name.toLowerCase(), items);
+}
+
+function outputItemsFromProcedureDefinition(createProcedure: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
+  const returnColumns = tableColumnsFromProcedureReturnType(createProcedure.return_type);
+  if (returnColumns.length > 0) return staticColumns(returnColumns.map((column) => [column.name, column.type]));
+  const body = isRecord(createProcedure.body) ? createProcedure.body : undefined;
+  if (body && isRecord(body.Expression)) {
+    const literal = getAst(body.Expression, 'literal');
+    if (isRecord(literal) && literal.literal_type === 'dollar_string' && typeof literal.value === 'string') {
+      return outputItemsFromProcedureSql(literal.value, schema, context, dialect);
+    }
+    return outputItemsForStatement(body.Expression, schema, context, dialect);
+  }
+  const rawBlock = body && typeof body.RawBlock === 'string' ? body.RawBlock : undefined;
+  return rawBlock ? outputItemsFromProcedureSql(rawBlock, schema, context, dialect) : [];
+}
+
+function outputItemsFromProcedureSql(sql: string, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
+  const body = sql.trim().replace(/^begin\b/i, '').replace(/\bend\s*$/i, '').trim();
+  if (!/\bselect\b/i.test(body)) return [];
+  try {
+    const parsed = parse(body, dialect as never) as PolyglotParseResult;
+    if (!parsed.success) return [];
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    for (const statement of statements) {
+      const items = outputItemsForStatement(statement, schema, context, dialect);
+      if (items.length > 0) return items;
+    }
+  } catch {
+    return [];
+  }
+  return [];
+}
+
+function tableColumnsFromProcedureReturnType(returnType: unknown): SchemaColumn[] {
+  if (!isRecord(returnType)) return [];
+  const custom = returnType.data_type === 'custom' && typeof returnType.name === 'string' ? returnType.name : undefined;
+  const match = custom?.match(/^table\s*\(([\s\S]*)\)$/i);
+  return columnsFromSchemaString(match?.[1]);
+}
+
+function cloneOutputItems(items: OutputItem[]): OutputItem[] {
+  return items.map((item) => ({ ...item }));
+}
+
+function tableFromCreateFunctionReturnTable(name: string, createFunction: Record<string, unknown>): SchemaTable | undefined {
+  const body = typeof createFunction.returns_table_body === 'string' ? createFunction.returns_table_body : undefined;
+  if (!body) return undefined;
+  const match = body.match(/^table\s*\(([\s\S]*)\)$/i);
+  const columns = columnsFromSchemaString(match?.[1]);
+  return columns.length > 0 ? { name, columns } : undefined;
+}
+
+function rememberTypeDefinition(statement: unknown, context: StatementContext): void {
+  if (!isRecord(statement) || !isRecord(statement.create_type)) return;
+  const name = relationNameFromRef(statement.create_type.name);
+  const type = typeFromCreateTypeDefinition(statement.create_type.definition);
+  if (name && type) context.typeAliases.set(name.toLowerCase(), type);
+}
+
+function typeFromCreateTypeDefinition(definition: unknown): string | undefined {
+  if (!isRecord(definition)) return undefined;
+  const domain = isRecord(definition.Domain) ? definition.Domain : undefined;
+  if (domain) return dataTypeToString(domain.base_type);
+  if (Array.isArray(definition.Enum)) return 'text';
+  if (Array.isArray(definition.Composite)) {
+    const fields = definition.Composite.flatMap((field) => {
+      if (!isRecord(field)) return [];
+      const name = identifierName(field.name);
+      const type = dataTypeToString(field.data_type) ?? 'unknown';
+      return name ? [`${name} ${type}`] : [];
+    });
+    return `struct<${fields.join(', ')}>`;
+  }
+  return undefined;
+}
+
+function dataTypeToStringWithAliases(dataType: unknown, context?: StatementContext): string | undefined {
+  const type = dataTypeToString(dataType);
+  if (!type || !context) return type;
+  return context.typeAliases.get(type.toLowerCase()) ?? type;
 }
 
 function forgetPreparedStatement(statement: unknown, context: StatementContext): void {
@@ -4560,7 +5263,9 @@ function outputItemsFromExecute(execute: Record<string, unknown>, schema: Valida
   if (staticColumns.length > 0) return staticColumns;
   const name = executeName(execute);
   const prepared = name ? context.prepared.get(name.toLowerCase()) : undefined;
-  return prepared ? outputItemsForStatement(prepared, schema, context, dialect) : [];
+  if (prepared) return outputItemsForStatement(prepared, schema, context, dialect);
+  const procedure = name ? context.procedureResultSets.get(name.toLowerCase()) : undefined;
+  return procedure ? cloneOutputItems(procedure) : [];
 }
 
 function staticExecuteColumns(execute: Record<string, unknown>): OutputItem[] {
@@ -4573,6 +5278,11 @@ function staticExecuteColumns(execute: Record<string, unknown>): OutputItem[] {
 
 function staticBareTsqlProcedureColumns(statement: unknown, dialect: string): OutputItem[] {
   if (dialect !== 'tsql' || !isRecord(statement)) return [];
+  const column = getAst(statement, 'column');
+  if (isRecord(column) && !identifierName(column.table)) {
+    const procedure = identifierName(column.name)?.toLowerCase();
+    if (procedure?.startsWith('sp_')) return staticProcedureColumns(procedure);
+  }
   const alias = getAst(statement, 'alias');
   if (!isRecord(alias)) return [];
   const procedure = identifierName(alias.this)?.toLowerCase();
@@ -4637,11 +5347,132 @@ function staticProcedureColumns(name: string | undefined): OutputItem[] {
       ['REMARKS', 'text'],
     ]);
   }
+  if (name === 'sp_helpindex') {
+    return staticColumns([
+      ['index_name', 'text'],
+      ['index_description', 'text'],
+      ['index_keys', 'text'],
+    ]);
+  }
+  if (name === 'sp_helpconstraint') {
+    return staticColumns([
+      ['constraint_type', 'text'],
+      ['constraint_name', 'text'],
+      ['delete_action', 'text'],
+      ['update_action', 'text'],
+      ['status_enabled', 'text'],
+      ['status_for_replication', 'text'],
+      ['constraint_keys', 'text'],
+    ]);
+  }
   if (name === 'sp_databases') {
     return staticColumns([
       ['DATABASE_NAME', 'text'],
       ['DATABASE_SIZE', 'integer'],
       ['REMARKS', 'text'],
+    ]);
+  }
+  if (name === 'sp_server_info') {
+    return staticColumns([
+      ['attribute_id', 'integer'],
+      ['attribute_name', 'text'],
+      ['attribute_value', 'text'],
+    ]);
+  }
+  if (name === 'sp_helpdb') {
+    return staticColumns([
+      ['name', 'text'],
+      ['db_size', 'text'],
+      ['owner', 'text'],
+      ['dbid', 'integer'],
+      ['created', 'text'],
+      ['status', 'text'],
+      ['compatibility_level', 'integer'],
+    ]);
+  }
+  if (name === 'sp_helpfile') {
+    return staticColumns([
+      ['name', 'text'],
+      ['fileid', 'integer'],
+      ['filename', 'text'],
+      ['filegroup', 'text'],
+      ['size', 'text'],
+      ['maxsize', 'text'],
+      ['growth', 'text'],
+      ['usage', 'text'],
+    ]);
+  }
+  if (name === 'sp_helpfilegroup') {
+    return staticColumns([
+      ['groupname', 'text'],
+      ['groupid', 'integer'],
+      ['filecount', 'integer'],
+    ]);
+  }
+  if (name === 'sp_stored_procedures') {
+    return staticColumns([
+      ['PROCEDURE_QUALIFIER', 'text'],
+      ['PROCEDURE_OWNER', 'text'],
+      ['PROCEDURE_NAME', 'text'],
+      ['NUM_INPUT_PARAMS', 'integer'],
+      ['NUM_OUTPUT_PARAMS', 'integer'],
+      ['NUM_RESULT_SETS', 'integer'],
+      ['REMARKS', 'text'],
+      ['PROCEDURE_TYPE', 'integer'],
+    ]);
+  }
+  if (name === 'sp_pkeys') {
+    return staticColumns([
+      ['TABLE_QUALIFIER', 'text'],
+      ['TABLE_OWNER', 'text'],
+      ['TABLE_NAME', 'text'],
+      ['COLUMN_NAME', 'text'],
+      ['KEY_SEQ', 'integer'],
+      ['PK_NAME', 'text'],
+    ]);
+  }
+  if (name === 'sp_fkeys') {
+    return staticColumns([
+      ['PKTABLE_QUALIFIER', 'text'],
+      ['PKTABLE_OWNER', 'text'],
+      ['PKTABLE_NAME', 'text'],
+      ['PKCOLUMN_NAME', 'text'],
+      ['FKTABLE_QUALIFIER', 'text'],
+      ['FKTABLE_OWNER', 'text'],
+      ['FKTABLE_NAME', 'text'],
+      ['FKCOLUMN_NAME', 'text'],
+      ['KEY_SEQ', 'integer'],
+      ['FK_NAME', 'text'],
+      ['PK_NAME', 'text'],
+    ]);
+  }
+  if (name === 'sp_statistics') {
+    return staticColumns([
+      ['TABLE_QUALIFIER', 'text'],
+      ['TABLE_OWNER', 'text'],
+      ['TABLE_NAME', 'text'],
+      ['NON_UNIQUE', 'integer'],
+      ['INDEX_QUALIFIER', 'text'],
+      ['INDEX_NAME', 'text'],
+      ['TYPE', 'integer'],
+      ['SEQ_IN_INDEX', 'integer'],
+      ['COLUMN_NAME', 'text'],
+      ['COLLATION', 'text'],
+      ['CARDINALITY', 'integer'],
+      ['PAGES', 'integer'],
+      ['FILTER_CONDITION', 'text'],
+    ]);
+  }
+  if (name === 'sp_special_columns') {
+    return staticColumns([
+      ['SCOPE', 'integer'],
+      ['COLUMN_NAME', 'text'],
+      ['DATA_TYPE', 'integer'],
+      ['TYPE_NAME', 'text'],
+      ['PRECISION', 'integer'],
+      ['LENGTH', 'integer'],
+      ['SCALE', 'integer'],
+      ['PSEUDO_COLUMN', 'integer'],
     ]);
   }
   return [];
@@ -4660,6 +5491,12 @@ function executeResultSetColumns(execute: Record<string, unknown>): OutputItem[]
     const type = dataTypeFromRawColumnSpec(column[2]) ?? 'unknown';
     return name ? staticColumns([[name, type]]) : [];
   });
+}
+
+function commandProcedureName(command: string | undefined): string | undefined {
+  if (!command) return undefined;
+  const match = command.trim().match(/^(?:call|exec(?:ute)?)\s+([^\s(;]+)/i);
+  return match ? cleanIdentifier(match[1]).toLowerCase() : undefined;
 }
 
 function outputItemsFromDescribe(describe: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
@@ -4729,6 +5566,12 @@ function describeStyleColumns(style: string): OutputItem[] {
 function describeObjectColumns(target: Record<string, unknown>): OutputItem[] {
   if (!isRecord(target.table)) return [];
   const name = identifierName(target.table.name)?.toLowerCase();
+  if (name === 'catalog') {
+    return staticColumns([
+      ['info_name', 'text'],
+      ['info_value', 'text'],
+    ]);
+  }
   if (name === 'database' || name === 'schema' || name === 'namespace') {
     return staticColumns([
       ['database_description_item', 'text'],
@@ -4741,7 +5584,7 @@ function describeObjectColumns(target: Record<string, unknown>): OutputItem[] {
 function snowflakeDescribeObjectColumns(target: Record<string, unknown>, dialect: string): OutputItem[] {
   if (dialect.toLowerCase() !== 'snowflake' || !isRecord(target.table)) return [];
   const name = identifierName(target.table.name)?.toLowerCase();
-  if (!name || !['warehouse', 'integration', 'stage', 'pipe', 'stream', 'task'].includes(name)) return [];
+  if (!name || !['alert', 'warehouse', 'integration', 'stage', 'pipe', 'stream', 'task', 'role', 'user', 'database', 'share'].includes(name)) return [];
   if (name === 'warehouse') {
     return staticColumns([
       ['property', 'text'],
@@ -4881,9 +5724,17 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
   }
   if (subject === 'grants') {
     return staticColumns([
-      ['Grants', 'text'],
+      ['created_on', 'timestamp'],
+      ['privilege', 'text'],
+      ['granted_on', 'text'],
+      ['name', 'text'],
+      ['granted_to', 'text'],
+      ['grantee_name', 'text'],
+      ['grant_option', 'boolean'],
+      ['granted_by', 'text'],
     ]);
   }
+  if (subject === 'future grants') return outputItemsFromShow({ this: 'grants' }, dialect);
   if (subject === 'engines') {
     return staticColumns([
       ['Engine', 'text'],
@@ -4923,7 +5774,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Comment', 'text'],
     ]);
   }
-  if (subject === 'character set' || subject === 'charset') {
+  if (subject === 'character set' || subject === 'character sets' || subject === 'charset' || subject === 'charsets') {
     return staticColumns([
       ['Charset', 'text'],
       ['Description', 'text'],
@@ -5092,6 +5943,15 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Replica_UUID', 'text'],
     ]);
   }
+  if (subject === 'slave hosts' || subject === 'replica hosts') {
+    return staticColumns([
+      ['Server_id', 'integer'],
+      ['Host', 'text'],
+      ['Port', 'integer'],
+      ['Master_id', 'integer'],
+      ['Slave_UUID', 'text'],
+    ]);
+  }
   if (subject === 'profiles') {
     return staticColumns([
       ['Query_ID', 'integer'],
@@ -5105,6 +5965,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Duration', 'decimal'],
     ]);
   }
+  if (subject.startsWith('profile ')) return outputItemsFromShow({ this: 'profile' }, dialect);
   if (subject === 'parameters') {
     return staticColumns([
       ['key', 'text'],
@@ -5130,6 +5991,20 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['is_current', 'boolean'],
       ['auto_suspend', 'integer'],
       ['auto_resume', 'boolean'],
+    ]);
+  }
+  if (subject === 'compute pools') {
+    return staticColumns([
+      ['name', 'text'],
+      ['state', 'text'],
+      ['min_nodes', 'integer'],
+      ['max_nodes', 'integer'],
+      ['instance_family', 'text'],
+      ['num_services', 'integer'],
+      ['num_jobs', 'integer'],
+      ['auto_resume', 'boolean'],
+      ['auto_suspend_secs', 'integer'],
+      ['comment', 'text'],
     ]);
   }
   if (subject === 'stages') {
@@ -5329,6 +6204,41 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['comment', 'text'],
     ]);
   }
+  if (subject === 'image repositories') {
+    return staticColumns([
+      ['created_on', 'timestamp'],
+      ['name', 'text'],
+      ['database_name', 'text'],
+      ['schema_name', 'text'],
+      ['repository_url', 'text'],
+      ['owner', 'text'],
+      ['comment', 'text'],
+    ]);
+  }
+  if (subject === 'network rules') {
+    return staticColumns([
+      ['created_on', 'timestamp'],
+      ['name', 'text'],
+      ['database_name', 'text'],
+      ['schema_name', 'text'],
+      ['type', 'text'],
+      ['mode', 'text'],
+      ['value_list', 'text'],
+      ['owner', 'text'],
+      ['comment', 'text'],
+    ]);
+  }
+  if (subject === 'secrets') {
+    return staticColumns([
+      ['created_on', 'timestamp'],
+      ['name', 'text'],
+      ['database_name', 'text'],
+      ['schema_name', 'text'],
+      ['secret_type', 'text'],
+      ['owner', 'text'],
+      ['comment', 'text'],
+    ]);
+  }
   if (subject === 'roles') {
     return staticColumns([
       ['created_on', 'timestamp'],
@@ -5394,6 +6304,32 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['comment', 'text'],
     ]);
   }
+  if (subject === 'dynamic tables') {
+    return staticColumns([
+      ['created_on', 'timestamp'],
+      ['name', 'text'],
+      ['database_name', 'text'],
+      ['schema_name', 'text'],
+      ['cluster_by', 'text'],
+      ['rows', 'integer'],
+      ['bytes', 'integer'],
+      ['owner', 'text'],
+      ['target_lag', 'text'],
+      ['warehouse', 'text'],
+      ['scheduling_state', 'text'],
+      ['comment', 'text'],
+    ]);
+  }
+  if (subject === 'notebooks' || subject === 'alerts') {
+    return staticColumns([
+      ['created_on', 'timestamp'],
+      ['name', 'text'],
+      ['database_name', 'text'],
+      ['schema_name', 'text'],
+      ['owner', 'text'],
+      ['comment', 'text'],
+    ]);
+  }
   if (subject === 'tasks') {
     return staticColumns([
       ['created_on', 'timestamp'],
@@ -5453,14 +6389,14 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Index_comment', 'text'],
     ]);
   }
-  if (subject === 'create table' || subject === 'create view') {
+  if (subject.startsWith('create table') || subject.startsWith('create view') || subject.startsWith('create schema')) {
     return staticColumns([
       ['Table', 'text'],
-      [showCreateStatementColumnName(subject), 'text'],
+      [showCreateStatementColumnName(subject.match(/^create\s+(table|view|schema)/)?.[0] ?? subject), 'text'],
     ]);
   }
-  if (/^create\s+(?:database|function|procedure|trigger)\b/.test(subject)) {
-    const createSubject = subject.match(/^create\s+(database|function|procedure|trigger)\b/)?.[0] ?? subject;
+  if (/^create\s+(?:database|event|function|procedure|trigger|user)\b/.test(subject)) {
+    const createSubject = subject.match(/^create\s+(database|event|function|procedure|trigger|user)\b/)?.[0] ?? subject;
     return staticColumns([
       ['Object', 'text'],
       [showCreateStatementColumnName(createSubject), 'text'],
@@ -5527,6 +6463,12 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
   const text = String(command.this ?? '').toLowerCase();
   const immediate = outputItemsFromExecuteImmediateCommand(command, schema, context, dialect);
   if (immediate.length > 0) return immediate;
+  const blockStart = outputItemsFromBeginSelectCommand(command, schema, context, dialect);
+  if (blockStart.length > 0) return blockStart;
+  const procedure = context.procedureResultSets.get(commandProcedureName(text) ?? '');
+  if (procedure) return cloneOutputItems(procedure);
+  const procedureColumns = staticProcedureColumns(commandProcedureName(text));
+  if (procedureColumns.length > 0) return procedureColumns;
   if (/^(optimize|repair|check|checksum)\s+table\b/.test(text)) return tableMaintenanceStatusColumns();
   if (/^(?:list|ls)\s+@/.test(text)) return snowflakeListColumns();
   if (/^get\s+@/.test(text)) return snowflakeGetColumns();
@@ -5539,15 +6481,68 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
   if (/^show\s+grants\b/.test(text)) return clickHouseGrantsColumns();
   if (/^show\s+settings\b/.test(text)) return clickHouseSettingsColumns();
   if (/^show\s+dictionaries\b/.test(text)) return clickHouseDictionariesColumns();
+  if (/^show\s+engines\b/.test(text)) return staticColumns([
+    ['name', 'text'],
+    ['value', 'text'],
+    ['comment', 'text'],
+  ]);
   if (/^show\s+functions\b/.test(text)) return staticColumns([['name', 'text']]);
   if (/^list\s+(?:file|jar|archive)\b/.test(text)) return sparkListResourceColumns();
   if (/^show\s+databases\b/.test(text)) return outputItemsFromShow({ this: 'databases' });
   if (/^show\s+schemas\b/.test(text)) return outputItemsFromShow({ this: 'schemas' });
   if (/^show\s+tables\b/.test(text)) return outputItemsFromShow({ this: 'tables' });
+  if (/^show\s+views\b/.test(text)) return outputItemsFromShow({ this: 'views' });
+  if (/^show\s+materialized\s+views\b/.test(text)) return outputItemsFromShow({ this: 'materialized views' });
+  if (/^show\s+table\b/.test(text)) return outputItemsFromShow({ this: 'tables' });
   if (/^show\s+columns\b/.test(text)) return outputItemsFromShow({ this: 'columns' });
-  if (/^show\s+create\s+(?:table|database|dictionary)\b/.test(text)) {
+  if (/^show\s+indexes\b/.test(text)) return outputItemsFromShow({ this: 'indexes' });
+  if (/^show\s+variables\b/.test(text)) return outputItemsFromShow({ this: 'variables' });
+  if (/^show\s+catalogs\b/.test(text)) return outputItemsFromShow({ this: 'catalogs' });
+  if (/^show\s+current\s+namespace\b/.test(text)) return outputItemsFromShow({ this: 'current namespace' });
+  if (/^show\s+create\s+(?:table|database|dictionary|view)\b/.test(text)) {
     return staticColumns([
       ['statement', 'text'],
+    ]);
+  }
+  if (/^show\s+named\s+collections\b/.test(text)) {
+    return staticColumns([
+      ['name', 'text'],
+      ['collection', 'text'],
+    ]);
+  }
+  if (/^show\s+row\s+polic(?:y|ies)\b/.test(text)) {
+    return staticColumns([
+      ['name', 'text'],
+      ['short_name', 'text'],
+      ['database', 'text'],
+      ['table', 'text'],
+      ['condition', 'text'],
+    ]);
+  }
+  if (/^show\s+quotas\b/.test(text)) {
+    return staticColumns([
+      ['name', 'text'],
+      ['id', 'uuid'],
+      ['storage', 'text'],
+      ['keys', 'text'],
+    ]);
+  }
+  if (/^show\s+quota\s+usage\b/.test(text)) {
+    return staticColumns([
+      ['quota_name', 'text'],
+      ['duration', 'text'],
+      ['queries', 'integer'],
+      ['errors', 'integer'],
+      ['result_rows', 'integer'],
+      ['read_rows', 'integer'],
+    ]);
+  }
+  if (/^show\s+access\b/.test(text)) return staticColumns([['ACCESS', 'text']]);
+  if (/^show\s+privileges\b/.test(text)) {
+    return staticColumns([
+      ['privilege', 'text'],
+      ['parent_group', 'text'],
+      ['description', 'text'],
     ]);
   }
   if (/^show\s+processlist\b/.test(text)) {
@@ -5563,7 +6558,10 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
       ['query_id', 'text'],
     ]);
   }
-  if (/^(?:describe|desc)\s+table\b/.test(text)) {
+  if (/^show\s+processes\b/.test(text)) return clickHouseProcessesColumns();
+  if (/^show\s+merges\b/.test(text)) return clickHouseMergesColumns();
+  if (/^show\s+mutations\b/.test(text)) return clickHouseMutationsColumns();
+  if (/^(?:describe|desc)(?:\s+table)?\s+\S+/.test(text)) {
     return staticColumns([
       ['name', 'text'],
       ['type', 'text'],
@@ -5616,6 +6614,20 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
 function outputItemsFromExecuteImmediateCommand(command: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect: string): OutputItem[] {
   const sql = executeImmediateSql(String(command.this ?? ''));
   if (!sql) return [];
+  try {
+    const parsed = parse(sql, dialect as never) as PolyglotParseResult;
+    if (!parsed.success) return [];
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    return statement ? outputItemsForStatement(statement, schema, context, dialect) : [];
+  } catch {
+    return [];
+  }
+}
+
+function outputItemsFromBeginSelectCommand(command: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect: string): OutputItem[] {
+  const sql = String(command.this ?? '').trim().replace(/^begin\s+/i, '');
+  if (!/^select\b/i.test(sql)) return [];
   try {
     const parsed = parse(sql, dialect as never) as PolyglotParseResult;
     if (!parsed.success) return [];
@@ -5690,6 +6702,49 @@ function clickHouseDictionariesColumns(): OutputItem[] {
   ]);
 }
 
+function clickHouseProcessesColumns(): OutputItem[] {
+  return staticColumns([
+    ['user', 'text'],
+    ['address', 'text'],
+    ['elapsed', 'integer'],
+    ['read_rows', 'integer'],
+    ['read_bytes', 'integer'],
+    ['total_rows_approx', 'integer'],
+    ['memory_usage', 'integer'],
+    ['query', 'text'],
+    ['query_id', 'text'],
+  ]);
+}
+
+function clickHouseMergesColumns(): OutputItem[] {
+  return staticColumns([
+    ['database', 'text'],
+    ['table', 'text'],
+    ['elapsed', 'integer'],
+    ['progress', 'decimal'],
+    ['num_parts', 'integer'],
+    ['source_part_names', 'array<text>'],
+    ['result_part_name', 'text'],
+    ['partition_id', 'text'],
+    ['is_mutation', 'boolean'],
+  ]);
+}
+
+function clickHouseMutationsColumns(): OutputItem[] {
+  return staticColumns([
+    ['database', 'text'],
+    ['table', 'text'],
+    ['mutation_id', 'text'],
+    ['command', 'text'],
+    ['create_time', 'timestamp'],
+    ['block_numbers.partition_id', 'array<text>'],
+    ['parts_to_do', 'integer'],
+    ['is_done', 'boolean'],
+    ['latest_failed_part', 'text'],
+    ['latest_fail_reason', 'text'],
+  ]);
+}
+
 function sparkListResourceColumns(): OutputItem[] {
   return staticColumns([
     ['resource', 'text'],
@@ -5745,9 +6800,11 @@ function tableMaintenanceStatusColumns(): OutputItem[] {
 
 function showCreateStatementColumnName(subject: string): string {
   if (subject === 'create database') return 'Create Database';
+  if (subject === 'create event') return 'Create Event';
   if (subject === 'create function') return 'Create Function';
   if (subject === 'create procedure') return 'Create Procedure';
   if (subject === 'create trigger') return 'Create Trigger';
+  if (subject === 'create user') return 'Create User';
   return subject === 'create view' ? 'Create View' : 'Create Table';
 }
 
@@ -5832,9 +6889,43 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
       ['memory_limit', 'text'],
     ]);
   }
+  if (name === 'storage_info') {
+    return staticColumns([
+      ['row_group_id', 'integer'],
+      ['column_name', 'text'],
+      ['column_id', 'integer'],
+      ['column_path', 'text'],
+      ['segment_id', 'integer'],
+      ['segment_type', 'text'],
+      ['start', 'integer'],
+      ['count', 'integer'],
+      ['compression', 'text'],
+      ['stats', 'text'],
+      ['has_updates', 'boolean'],
+      ['persistent', 'boolean'],
+      ['block_id', 'integer'],
+      ['block_offset', 'integer'],
+    ]);
+  }
   if (name === 'platform') {
     return staticColumns([
       ['platform', 'text'],
+    ]);
+  }
+  if (name === 'user_agent') {
+    return staticColumns([
+      ['user_agent', 'text'],
+    ]);
+  }
+  if (name === 'show') {
+    return staticColumns([
+      ['name', 'text'],
+      ['value', 'text'],
+    ]);
+  }
+  if (name === 'enable_profile' || name === 'enable_profiling') {
+    return staticColumns([
+      ['enable_profile', 'text'],
     ]);
   }
   if (name === 'foreign_key_list') {
@@ -6510,6 +7601,17 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
   if (name === 'generator') {
     return { name: alias, columns: [] };
   }
+  if (name === 'split_to_table') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'seq', type: 'integer' },
+        { name: 'index', type: 'integer' },
+        { name: 'value', type: 'text' },
+      ],
+    };
+  }
+  if (name === 'stack') return stackTable(fn, alias, schema);
   if (name === 'infer_schema') {
     return {
       name: alias,
@@ -6534,8 +7636,15 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] });
     return { name: alias, columns: [{ name: alias, type: type && /date|time|timestamp/i.test(type) ? type : 'integer' }] };
   }
+  if (name === 'fts5vocab') return sqliteFts5VocabTable(fn, alias);
+  if (name.startsWith('pragma_')) return sqlitePragmaFunctionTable(name, alias);
   if (name === 'numbers' || name === 'numbers_mt') {
     return { name: alias, columns: [{ name: alias, type: 'integer' }] };
+  }
+  if (['remote', 'remotesecure', 'cluster', 'clusterallreplicas'].includes(name)) {
+    const tableName = remoteTableFunctionTableName(functionArguments(fn));
+    const table = tableName ? schema.tables.find((candidate) => candidate.name.toLowerCase() === tableName.toLowerCase()) : undefined;
+    if (table) return { ...table, name: alias };
   }
   if (name === 'sequence') {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] }) ?? 'integer';
@@ -6570,6 +7679,9 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     return { name: alias, columns: [{ name: alias, type: 'json' }] };
   }
   if (['json_array_elements_text', 'jsonb_array_elements_text'].includes(name)) {
+    return { name: alias, columns: [{ name: alias, type: 'text' }] };
+  }
+  if (name === 'json_object_keys' || name === 'jsonb_object_keys') {
     return { name: alias, columns: [{ name: alias, type: 'text' }] };
   }
   if (['json_each_text', 'jsonb_each_text'].includes(name)) {
@@ -6667,7 +7779,7 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
   if (name === 'pg_read_file' || name === 'pg_read_binary_file') {
     return { name: alias, columns: [{ name: alias, type: name === 'pg_read_binary_file' ? 'bytes' : 'text' }] };
   }
-  if (['pg_ls_waldir', 'pg_ls_logdir', 'pg_ls_archive_statusdir'].includes(name)) {
+  if (['pg_ls_waldir', 'pg_ls_logdir', 'pg_ls_archive_statusdir', 'pg_ls_tmpdir'].includes(name)) {
     return {
       name: alias,
       columns: [
@@ -6676,6 +7788,9 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
         { name: 'modification', type: 'timestamp' },
       ],
     };
+  }
+  if (name === 'pg_stat_get_snapshot_timestamp') {
+    return { name: alias, columns: [{ name: alias, type: 'timestamp' }] };
   }
   if (name === 'pg_stat_file') {
     return {
@@ -6798,13 +7913,46 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
       ],
     };
   }
-  if (['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_parquet'].includes(name)) {
+  if (['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_ndjson', 'read_ndjson_auto', 'read_parquet', 'read_xlsx'].includes(name)) {
     const columns = tableFunctionColumnsArgument(fn);
     if (columns.length > 0) return { name: alias, columns };
   }
-  if (name === 'file' || name === 'url') {
+  if (['read_json_objects', 'read_ndjson_objects'].includes(name)) {
+    return { name: alias, columns: [{ name: 'json', type: 'json' }] };
+  }
+  if (name === 'parquet_file_metadata') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'file_name', type: 'text' },
+        { name: 'created_by', type: 'text' },
+        { name: 'num_rows', type: 'integer' },
+        { name: 'num_row_groups', type: 'integer' },
+        { name: 'format_version', type: 'text' },
+        { name: 'encryption_algorithm', type: 'text' },
+        { name: 'footer_signing_key_metadata', type: 'text' },
+      ],
+    };
+  }
+  if (name === 'parquet_kv_metadata') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'file_name', type: 'text' },
+        { name: 'key', type: 'text' },
+        { name: 'value', type: 'bytes' },
+      ],
+    };
+  }
+  if (['file', 'url', 's3', 's3cluster', 'hdfs', 'azureblobstorage', 'generaterandom'].includes(name)) {
     const columns = columnsFromSchemaString(lastSchemaLikeLiteral(functionArguments(fn)));
     if (columns.length > 0) return { name: alias, columns };
+  }
+  if (['mysql', 'postgresql', 'odbc', 'jdbc'].includes(name)) {
+    const args = functionArguments(fn);
+    const tableName = name === 'mysql' || name === 'postgresql' ? stringLiteralValue(args[2]) : lastStringLiteral(args);
+    const table = tableName ? schema.tables.find((candidate) => candidate.name.toLowerCase() === tableName.toLowerCase()) : undefined;
+    if (table) return { ...table, name: alias };
   }
   if (name === 'pragma_table_info') {
     return {
@@ -6930,6 +8078,21 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
       ],
     };
   }
+  if (name === 'duckdb_sequences') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'database_name', type: 'text' },
+        { name: 'schema_name', type: 'text' },
+        { name: 'sequence_name', type: 'text' },
+        { name: 'start_value', type: 'integer' },
+        { name: 'min_value', type: 'integer' },
+        { name: 'max_value', type: 'integer' },
+        { name: 'increment_by', type: 'integer' },
+        { name: 'cycle', type: 'boolean' },
+      ],
+    };
+  }
   if (name === 'duckdb_indexes') {
     return {
       name: alias,
@@ -7005,6 +8168,30 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
   return undefined;
 }
 
+function remoteTableFunctionTableName(args: AstExpression[]): string | undefined {
+  const tableArg = args[2] ?? args.at(-1);
+  if (!tableArg) return undefined;
+  const column = isRecord(tableArg) ? getAst(tableArg, 'column') : undefined;
+  return stringLiteralValue(tableArg) ?? (isRecord(column) ? identifierName(column.name) : undefined);
+}
+
+function stackTable(fn: Record<string, unknown>, alias: string, schema: ValidationSchema): SchemaTable {
+  const args = functionArguments(fn);
+  const rowCount = numericLiteralValue(args[0]) ?? 1;
+  const values = args.slice(1);
+  const columnCount = Math.max(1, Math.ceil(values.length / Math.max(1, rowCount)));
+  return {
+    name: alias,
+    columns: Array.from({ length: columnCount }, (_, index) => {
+      const columnValues = values.filter((_, valueIndex) => valueIndex % columnCount === index);
+      return {
+        name: `col${index}`,
+        type: commonArgumentType(columnValues, schema, { mode: 'none', binds: [] }) ?? 'unknown',
+      };
+    }),
+  };
+}
+
 function tableFunctionColumnsArgument(fn: Record<string, unknown>): SchemaColumn[] {
   for (const arg of functionArguments(fn)) {
     const eq = getAst(arg, 'eq');
@@ -7066,7 +8253,7 @@ function tableFromEmbeddedSqlTableFunction(fn: Record<string, unknown>, alias: s
     const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
     const statement = statements.find(isRecord);
     if (!statement) return undefined;
-    const items = outputItemsForStatement(statement, schema, { prepared: new Map() }, 'tsql');
+    const items = outputItemsForStatement(statement, schema, emptyStatementContext(), 'tsql');
     const columns = columnsFromOutputItems(items, [], schema);
     return columns.length > 0 ? { name: alias, columns } : undefined;
   } catch {
@@ -7077,6 +8264,14 @@ function tableFromEmbeddedSqlTableFunction(fn: Record<string, unknown>, alias: s
 function stringLiteralValue(expression: unknown): string | undefined {
   const literal = isRecord(expression) ? expression.literal : undefined;
   return isRecord(literal) && literal.literal_type === 'string' ? String(literal.value ?? '') : undefined;
+}
+
+function lastStringLiteral(expressions: unknown[]): string | undefined {
+  for (let index = expressions.length - 1; index >= 0; index -= 1) {
+    const value = stringLiteralValue(expressions[index]);
+    if (value) return value;
+  }
+  return undefined;
 }
 
 function unqualifiedFunctionName(fn: Record<string, unknown>): string {
@@ -7092,6 +8287,48 @@ function tableFunctionDefaultType(functionName: string, expression: unknown, sch
     return type && /date|time|timestamp/i.test(type) ? type : 'integer';
   }
   return 'unknown';
+}
+
+function sqliteFts5VocabTable(fn: Record<string, unknown>, alias: string): SchemaTable {
+  const mode = stringLiteralValue(functionArguments(fn)[1])?.toLowerCase();
+  const common = [
+    { name: 'term', type: 'text' },
+    { name: 'doc', type: 'integer' },
+    { name: 'cnt', type: 'integer' },
+  ];
+  if (mode === 'col') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'term', type: 'text' },
+        { name: 'col', type: 'text' },
+        { name: 'doc', type: 'integer' },
+        { name: 'cnt', type: 'integer' },
+      ],
+    };
+  }
+  if (mode === 'instance') {
+    return {
+      name: alias,
+      columns: [
+        { name: 'term', type: 'text' },
+        { name: 'doc', type: 'integer' },
+        { name: 'col', type: 'text' },
+        { name: 'offset', type: 'integer' },
+      ],
+    };
+  }
+  return { name: alias, columns: common };
+}
+
+function sqlitePragmaFunctionTable(name: string, alias: string): SchemaTable | undefined {
+  const pragmaName = name.replace(/^pragma_/, '');
+  const items = outputItemsFromPragma({ name: { name: pragmaName } });
+  if (items.length === 0) return undefined;
+  return {
+    name: alias,
+    columns: columnsFromOutputItems(items, [], { tables: [] }),
+  };
 }
 
 function oracleCollectionTableType(expression: unknown): string | undefined {
@@ -7140,8 +8377,12 @@ function defaultOpenJsonColumns(): SchemaColumn[] {
 
 function jsonTableAlias(source: Record<string, unknown>): SchemaTable | undefined {
   const alias = isRecord(source.alias) ? source.alias : undefined;
-  const jsonTable = alias && isRecord(alias.this) && isRecord(alias.this.j_s_o_n_table) ? alias.this.j_s_o_n_table : undefined;
-  const name = alias ? identifierName(alias.alias) : undefined;
+  const jsonTable = isRecord(source.j_s_o_n_table)
+    ? source.j_s_o_n_table
+    : alias && isRecord(alias.this) && isRecord(alias.this.j_s_o_n_table)
+      ? alias.this.j_s_o_n_table
+      : undefined;
+  const name = alias ? identifierName(alias.alias) : 'json_table';
   if (!jsonTable || !name) return undefined;
   const columns = jsonTableColumns(jsonTable);
   return columns.length > 0 ? { name, columns } : undefined;
@@ -7149,8 +8390,12 @@ function jsonTableAlias(source: Record<string, unknown>): SchemaTable | undefine
 
 function xmlTableAlias(source: Record<string, unknown>): SchemaTable | undefined {
   const alias = isRecord(source.alias) ? source.alias : undefined;
-  const xmlTable = alias && isRecord(alias.this) && isRecord(alias.this.x_m_l_table) ? alias.this.x_m_l_table : undefined;
-  const name = alias ? identifierName(alias.alias) : undefined;
+  const xmlTable = isRecord(source.x_m_l_table)
+    ? source.x_m_l_table
+    : alias && isRecord(alias.this) && isRecord(alias.this.x_m_l_table)
+      ? alias.this.x_m_l_table
+      : undefined;
+  const name = alias ? identifierName(alias.alias) : 'xmltable';
   if (!xmlTable || !name) return undefined;
   const columns = Array.isArray(xmlTable.columns)
     ? xmlTable.columns.flatMap((column) => {
@@ -7344,6 +8589,9 @@ function unnestElementType(expression: unknown, schema: ValidationSchema): strin
   if (isRecord(fn) && String(fn.name ?? '').toLowerCase() === 'array') {
     return commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
   }
+  if (isRecord(fn) && String(fn.name ?? '').toLowerCase() === 'sequence') {
+    return commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] }) ?? 'integer';
+  }
   const column = inferColumn(expression, 'unnest', schema, { mode: 'none', binds: [] }, 'generic');
   if (column.type !== 'unknown') return arrayElementType(column.type);
   return undefined;
@@ -7351,7 +8599,7 @@ function unnestElementType(expression: unknown, schema: ValidationSchema): strin
 
 function columnsFromOutputItems(items: OutputItem[], explicitColumns: unknown[], schema: ValidationSchema): SchemaColumn[] {
   return items.map((item, index) => {
-    const inferred = inferColumn(item.expression, item.name ?? `column_${index + 1}`, item.schema ?? schema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases);
+    const inferred = inferColumn(item.expression, item.name ?? `column_${index + 1}`, item.schema ?? schema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases, item.functionReturnTypes);
     return {
       name: columnDefinitionName(explicitColumns[index]) ?? item.name ?? `column_${index + 1}`,
       type: inferred.type,
@@ -7397,7 +8645,7 @@ function outputItemsFromOutputClause(output: unknown, schema: ValidationSchema, 
   return outputItemsFromExpressions(expressions, schema, owner);
 }
 
-function outputItemsFromExpressions(expressions: unknown, schema: ValidationSchema, owner?: Record<string, unknown>): OutputItem[] {
+function outputItemsFromExpressions(expressions: unknown, schema: ValidationSchema, owner?: Record<string, unknown>, context?: StatementContext): OutputItem[] {
   if (!Array.isArray(expressions)) return [];
   const expanded: OutputItem[] = [];
   const tableAliases = tableAliasesFromOwner(owner);
@@ -7409,7 +8657,7 @@ function outputItemsFromExpressions(expressions: unknown, schema: ValidationSche
       expanded.push(...expandStar(star, schema, owner, tableAliases));
       continue;
     }
-    expanded.push({ ...unwrapped, schema, tableAliases });
+    expanded.push({ ...unwrapped, schema, tableAliases, functionReturnTypes: context?.functionReturnTypes });
   }
   return expanded;
 }
@@ -7612,6 +8860,8 @@ function addTableAlias(aliases: TableAliasMap, source?: Record<string, unknown>)
   const unpivot = isRecord(source.unpivot) ? source.unpivot : undefined;
   const matchRecognize = isRecord(source.match_recognize) ? source.match_recognize : undefined;
   const openJson = isRecord(source.open_j_s_o_n) ? source.open_j_s_o_n : undefined;
+  const jsonTable = isRecord(source.j_s_o_n_table) ? source.j_s_o_n_table : undefined;
+  const xmlTable = isRecord(source.x_m_l_table) ? source.x_m_l_table : undefined;
   const fn = isRecord(source.function) ? source.function : undefined;
   const unnest = isRecord(source.unnest) ? source.unnest : undefined;
   const tupleAlias = tupleTableAliasName(source);
@@ -7631,7 +8881,7 @@ function addTableAlias(aliases: TableAliasMap, source?: Record<string, unknown>)
             ? columnAliasesFromRelation(unpivot)
             : matchRecognize
               ? columnAliasesFromRelation(matchRecognize)
-              : openJson || tupleAlias || fn || unnest
+              : openJson || jsonTable || xmlTable || tupleAlias || fn || unnest
                 ? emptyRelationColumnAliases()
               : aliasNode
                 ? columnAliasesFromRelation(aliasNode)
@@ -7676,6 +8926,8 @@ function sourceRelationName(source: Record<string, unknown>): string | undefined
   const matchRecognize = isRecord(source.match_recognize) ? source.match_recognize : undefined;
   if (matchRecognize) return identifierName(matchRecognize.alias) ?? relationTableName(isRecord(matchRecognize.this) ? matchRecognize.this : {});
   if (isRecord(source.open_j_s_o_n)) return 'openjson';
+  if (isRecord(source.j_s_o_n_table)) return 'json_table';
+  if (isRecord(source.x_m_l_table)) return 'xmltable';
   const tupleAlias = tupleTableAliasName(source);
   if (tupleAlias) return tupleAlias;
   const fn = isRecord(source.function) ? source.function : undefined;
@@ -7830,6 +9082,25 @@ interface PolyglotSchema {
 function dataTypeToString(dataType: unknown): string | undefined {
   if (!dataType || typeof dataType !== 'object') return undefined;
   const record = dataType as Record<string, unknown>;
+  if (record.data_type === 'nullable' || record.data_type === 'low_cardinality') {
+    return dataTypeToString(record.inner) ?? dataTypeToString(record.value) ?? 'unknown';
+  }
+  if (record.data_type === 'struct' && Array.isArray(record.fields)) {
+    const fields = record.fields.flatMap((field) => {
+      if (!field || typeof field !== 'object') return [];
+      const fieldRecord = field as Record<string, unknown>;
+      const name = identifierName(fieldRecord.name);
+      const type = dataTypeToString(fieldRecord.data_type) ?? 'unknown';
+      return name ? [`${name} ${type}`] : [];
+    });
+    return `struct<${fields.join(', ')}>`;
+  }
+  if (record.data_type === 'array') {
+    return `array<${dataTypeToString(record.element_type) ?? 'unknown'}>`;
+  }
+  if (record.data_type === 'map') {
+    return `map<${dataTypeToString(record.key_type) ?? 'unknown'}, ${dataTypeToString(record.value_type) ?? 'unknown'}>`;
+  }
   const value = record.data_type === 'custom' && typeof record.name === 'string'
     ? record.name
     : record.data_type ?? record.type ?? record.name;
@@ -7838,6 +9109,8 @@ function dataTypeToString(dataType: unknown): string | undefined {
 
 function normalizeDataTypeName(value: string): string {
   const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const parameterized = parseParameterizedType(lower);
+  if (parameterized) return parameterized;
   const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
   const compact = unparameterized.replace(/\s+/g, '');
   if (compact === 'serial' || compact === 'serial4') return 'integer';
@@ -7856,6 +9129,47 @@ function normalizeDataTypeName(value: string): string {
   if (compact === 'array') return 'array<variant>';
   if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
+}
+
+function parseParameterizedType(value: string): string | undefined {
+  const match = /^([a-z_][\w\s]*)\s*\(([\s\S]*)\)$/i.exec(value.trim());
+  if (!match) return undefined;
+  const name = match[1].replace(/\s+/g, '').toLowerCase();
+  const args = splitTopLevel(match[2], ',');
+  if (name === 'nullable' || name === 'lowcardinality') {
+    return args[0] ? normalizeDataTypeName(args[0]) : 'unknown';
+  }
+  if (name === 'array' || name === 'list') {
+    return `array<${args[0] ? normalizeDataTypeName(args[0]) : 'unknown'}>`;
+  }
+  if (name === 'map' && args.length >= 2) {
+    return `map<${normalizeDataTypeName(args[0])}, ${normalizeDataTypeName(args[1])}>`;
+  }
+  if (name === 'tuple' || name === 'row') {
+    const fields = args.map((arg, index) => {
+      const field = fieldFromTypeArgument(arg, index);
+      return `${field.name} ${field.type}`;
+    });
+    return `struct<${fields.join(', ')}>`;
+  }
+  if (name === 'nested') {
+    const fields = args.map((arg, index) => {
+      const field = fieldFromTypeArgument(arg, index);
+      return `${field.name} ${field.type}`;
+    });
+    return `array<struct<${fields.join(', ')}>>`;
+  }
+  return undefined;
+}
+
+function fieldFromTypeArgument(argument: string, index: number): { name: string; type: string } {
+  const trimmed = argument.trim();
+  const match = /^("[^"]+"|`[^`]+`|\[[^\]]+\]|[a-z_][\w$]*)\s+([\s\S]+)$/i.exec(trimmed);
+  if (!match) return { name: `field_${index + 1}`, type: normalizeDataTypeName(trimmed) };
+  return {
+    name: cleanIdentifier(match[1]),
+    type: normalizeDataTypeName(match[2]),
+  };
 }
 
 type AstExpression = Record<string, unknown>;
@@ -7880,4 +9194,39 @@ type NestedPathStep =
 
 interface StatementContext {
   prepared: Map<string, AstExpression>;
+  functionReturnTypes: Map<string, string>;
+  tableFunctions: Map<string, SchemaTable>;
+  procedureResultSets: Map<string, OutputItem[]>;
+  typeAliases: Map<string, string>;
+}
+
+function emptyStatementContext(): StatementContext {
+  return { prepared: new Map(), functionReturnTypes: new Map(), tableFunctions: new Map(), procedureResultSets: new Map(), typeAliases: new Map() };
+}
+
+function statementContextFromSchema(schema: ValidationSchema): StatementContext {
+  const context = emptyStatementContext();
+  for (const fn of schema.functions ?? []) {
+    for (const key of schemaFunctionKeys(fn)) {
+      context.functionReturnTypes.set(key, fn.returnType);
+    }
+  }
+  for (const procedure of schema.procedures ?? []) {
+    for (const key of schemaProcedureKeys(procedure)) {
+      context.procedureResultSets.set(key, staticColumns(procedure.columns.map((column) => [column.name, column.type])));
+    }
+  }
+  return context;
+}
+
+function schemaFunctionKeys(fn: SchemaFunction): string[] {
+  const name = fn.name.toLowerCase();
+  const schema = fn.schema?.toLowerCase();
+  return schema ? [`${schema}.${name}`, name] : [name];
+}
+
+function schemaProcedureKeys(procedure: SchemaProcedure): string[] {
+  const name = procedure.name.toLowerCase();
+  const schema = procedure.schema?.toLowerCase();
+  return schema ? [`${schema}.${name}`, name] : [name];
 }

@@ -2470,7 +2470,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | title | text | documents.title |
-| score | unknown | — |
+| score | decimal | expression |
 
 ---
 ## MATCH ... AGAINST（BOOLEAN MODE）
@@ -3961,7 +3961,6 @@ verify: true
 
 | カテゴリ | 例 | 期待される挙動 |
 |----------|-----|----------------|
-| 全文検索 | `MATCH ... AGAINST` のスコア列 | `unknown` になりやすい |
 | JSON_TABLE | テーブル関数の別名列 | `unknown` になりやすい |
 | SHOW TABLE STATUS | カタログ列 | 方言横断の列名になる場合あり |
 | データベース修飾（メタなし） | `mydb.users` エイリアス | `unknown` になりやすい（`Prepare-2` で解決） |

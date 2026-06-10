@@ -4,7 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { loadSchema, parseCreateAsTables, parseCreateSynonyms, parseCreateTables, parseCreateViews } from '../dist/schema.js';
+import { loadSchema, parseCreateAsTables, parseCreateProcedures, parseCreateScalarFunctions, parseCreateSynonyms, parseCreateTableFunctions, parseCreateTables, parseCreateViews } from '../dist/schema.js';
 
 describe('parseCreateTables', () => {
   it('extracts ordinary create table columns', () => {
@@ -83,6 +83,24 @@ describe('parseCreateTables', () => {
     ]);
   });
 
+  it('accepts common dialect aliases while parsing schema SQL', () => {
+    assert.deepStrictEqual(parseCreateTables(
+      'create table dbo.t ([id] int identity(1,1) primary key)',
+      'sqlserver',
+    ), [
+      {
+        name: 't',
+        schema: 'dbo',
+        columns: [
+          { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
+        ],
+        primaryKey: ['id'],
+        uniqueKeys: [],
+        foreignKeys: [],
+      },
+    ]);
+  });
+
   it('extracts Oracle global temporary table fallback columns', () => {
     assert.deepStrictEqual(parseCreateTables(
       'create global temporary table t(id number, name varchar2(20)) on commit preserve rows',
@@ -108,6 +126,46 @@ describe('parseCreateTables', () => {
       ['profile', 'struct<name text, age integer>'],
       ['addresses', 'array<struct<city text>>'],
       ['scores', 'array<integer>'],
+    ]);
+  });
+
+  it('preserves ClickHouse map type shapes', () => {
+    assert.deepStrictEqual(parseCreateTables(
+      'create table users(attrs Map(String, UInt64), label Nullable(String), category LowCardinality(String), pair Tuple(String, UInt64), events Nested(name String, count UInt64)) engine = MergeTree order by tuple()',
+      'clickhouse',
+    )[0]?.columns.map((column) => [column.name, column.type]), [
+      ['attrs', 'map<text, bigint>'],
+      ['label', 'text'],
+      ['category', 'text'],
+      ['pair', 'struct<field_1 text, field_2 bigint>'],
+      ['events', 'array<struct<name text, count bigint>>'],
+    ]);
+  });
+
+  it('preserves map/list/row shapes across common nested type syntaxes', () => {
+    assert.deepStrictEqual(parseCreateTables(
+      'create table t(a map(varchar, integer), b list(integer), c row(name varchar, age integer))',
+      'trino',
+    )[0]?.columns.map((column) => [column.name, column.type]), [
+      ['a', 'map<text, integer>'],
+      ['b', 'array<integer>'],
+      ['c', 'struct<name text, age integer>'],
+    ]);
+  });
+
+  it('resolves PostgreSQL user-defined type aliases while parsing CREATE TABLE', () => {
+    assert.deepStrictEqual(parseCreateTables(
+      [
+        'create domain positive_int as int check (value > 0)',
+        "create type mood as enum ('sad','ok','happy')",
+        'create type pair as (id int, name text)',
+        'create table t(id positive_int, m mood, p pair)',
+      ].join('; '),
+      'postgres',
+    )[0]?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['m', 'text'],
+      ['p', 'struct<id integer, name text>'],
     ]);
   });
 });
@@ -267,6 +325,85 @@ describe('parseCreateViews', () => {
         schema: 'public',
         columns: [
           { name: 'id', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+});
+
+describe('parseCreateTableFunctions', () => {
+  it('extracts table-valued function return columns', () => {
+    assert.deepStrictEqual(parseCreateTableFunctions(
+      "create function people() returns table(id int, name text) language sql as $$ select 1, 'a' $$",
+      'postgres',
+    ), [
+      {
+        name: 'people',
+        columns: [
+          { name: 'id', type: 'integer' },
+          { name: 'name', type: 'text' },
+        ],
+        uniqueKeys: [],
+        foreignKeys: [],
+      },
+    ]);
+  });
+});
+
+describe('parseCreateScalarFunctions', () => {
+  it('extracts scalar function return types', () => {
+    assert.deepStrictEqual(parseCreateScalarFunctions(
+      [
+        'create function public.label(x text) returns text language sql as $$ select x $$',
+        'create function score(x int) returns int language sql as $$ select x $$',
+        "create function people() returns table(id int, name text) language sql as $$ select 1, 'a' $$",
+      ].join('; '),
+      'postgres',
+    ), [
+      { name: 'label', schema: 'public', returnType: 'text' },
+      { name: 'score', returnType: 'integer' },
+    ]);
+  });
+});
+
+describe('parseCreateProcedures', () => {
+  it('extracts procedure result columns from body queries and return table declarations', () => {
+    const baseSchema = {
+      tables: [
+        {
+          name: 'users',
+          columns: [
+            { name: 'id', type: 'integer' },
+            { name: 'name', type: 'text' },
+          ],
+        },
+      ],
+    };
+
+    assert.deepStrictEqual(parseCreateProcedures(
+      'create procedure p() begin select id, name from users; end',
+      baseSchema,
+      'mysql',
+    ), [
+      {
+        name: 'p',
+        columns: [
+          { name: 'id', type: 'integer', nullable: undefined },
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
+
+    assert.deepStrictEqual(parseCreateProcedures(
+      'create procedure p() returns table(id number, name string) language sql as $$ select id, name from users $$',
+      baseSchema,
+      'snowflake',
+    ), [
+      {
+        name: 'p',
+        columns: [
+          { name: 'id', type: 'decimal' },
+          { name: 'name', type: 'text' },
         ],
       },
     ]);
@@ -487,6 +624,168 @@ describe('loadSchema', () => {
     assert.partialDeepStrictEqual(schema.tables.find((table) => table.name === 'events'), { schema: 'archive' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'event_ids')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
+    ]);
+  });
+
+  it('resolves user-defined type aliases across schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-types-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', '00-types.sql'), [
+      'create domain positive_int as int check (value > 0)',
+      "create type mood as enum ('sad','ok','happy')",
+      'create type pair as (id int, name text)',
+    ].join('; '));
+    await writeFile(path.join(cwd, 'schemas', '10-table.sql'), 'create table t(id positive_int, m mood, p pair);');
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 't')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['m', 'text'],
+      ['p', 'struct<id integer, name text>'],
+    ]);
+  });
+
+  it('resolves user-defined type aliases in ALTER TABLE schema mutations', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-alter-types-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', '00-types.sql'), [
+      'create domain positive_int as int check (value > 0)',
+      "create type mood as enum ('sad','ok','happy')",
+      'create type pair as (id int, name text)',
+    ].join('; '));
+    await writeFile(path.join(cwd, 'schemas', '10-table.sql'), [
+      'create table t(raw_id int)',
+      'alter table t add column id positive_int',
+      'alter table t add column m mood',
+      'alter table t alter column raw_id type positive_int',
+      'alter table t add column p pair',
+    ].join('; '));
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 't')?.columns.map((column) => [column.name, column.type]), [
+      ['raw_id', 'integer'],
+      ['id', 'integer'],
+      ['m', 'text'],
+      ['p', 'struct<id integer, name text>'],
+    ]);
+  });
+
+  it('loads table-valued function schemas from schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-table-functions-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(
+      path.join(cwd, 'schemas', 'functions.sql'),
+      "create function people() returns table(id int, name text) language sql as $$ select 1, 'a' $$",
+    );
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.tables.find((table) => table.name === 'people')?.columns.map((column) => [column.name, column.type]), [
+      ['id', 'integer'],
+      ['name', 'text'],
+    ]);
+  });
+
+  it('loads scalar function return types from schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-scalar-functions-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(
+      path.join(cwd, 'schemas', 'functions.sql'),
+      [
+        'create function public.label(x text) returns text language sql as $$ select x $$',
+        'create function score(x int) returns int language sql as $$ select x $$',
+      ].join('; '),
+    );
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'postgres' });
+    assert.deepStrictEqual(schema.functions, [
+      { name: 'label', schema: 'public', returnType: 'text' },
+      { name: 'score', returnType: 'integer' },
+    ]);
+  });
+
+  it('loads procedure result columns from schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-procedures-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), [
+      'create table users(id int, name text)',
+      'create procedure p() begin select id, name from users; end',
+    ].join('; '));
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.procedures, [
+      {
+        name: 'p',
+        columns: [
+          { name: 'id', type: 'integer', nullable: undefined },
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('resolves procedure result columns against views from later schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-procedure-view-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', '00-table.sql'), 'create table users(id int, name text);');
+    await writeFile(path.join(cwd, 'schemas', '10-procedure.sql'), 'create procedure p() begin select id, name from v; end;');
+    await writeFile(path.join(cwd, 'schemas', '20-view.sql'), 'create view v as select id, name from users;');
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.procedures, [
+      {
+        name: 'p',
+        columns: [
+          { name: 'id', type: 'integer', nullable: undefined },
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('uses scalar function return types while loading procedure result columns', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-procedure-functions-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), [
+      'create table users(age int, name text)',
+      'create function f(x int) returns int language sql as $$ select x $$',
+      'create procedure p() begin select f(age) as score from users; end',
+    ].join('; '));
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.procedures, [
+      {
+        name: 'p',
+        columns: [
+          { name: 'score', type: 'integer', nullable: undefined },
+        ],
+      },
+    ]);
+  });
+
+  it('applies drop function and drop procedure routine mutations from schema files', async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-drop-routines-${Date.now()}`);
+    await mkdir(path.join(cwd, 'schemas'), { recursive: true });
+    await writeFile(path.join(cwd, 'schemas', 'schema.sql'), [
+      'create table users(id int, name text)',
+      'create function label(x text) returns text language sql as $$ select x $$',
+      'create procedure p() begin select id from users; end',
+      'drop function label',
+      'drop procedure p',
+      'create function label(x text) returns int language sql as $$ select 1 $$',
+      'create procedure p() begin select name from users; end',
+    ].join('; '));
+
+    const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'mysql' });
+    assert.deepStrictEqual(schema.functions, [
+      { name: 'label', returnType: 'integer' },
+    ]);
+    assert.deepStrictEqual(schema.procedures, [
+      {
+        name: 'p',
+        columns: [
+          { name: 'name', type: 'text', nullable: undefined },
+        ],
+      },
     ]);
   });
 });

@@ -93,6 +93,125 @@ describe('sqldesc CLI', () => {
     assert.deepStrictEqual(json.diagnostics, []);
   });
 
+  it('loads user-defined type aliases from schema globs through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-schema-types-'));
+    await writeFile(path.join(dir, '00-types.sql'), [
+      'create domain positive_int as int check (value > 0)',
+      "create type mood as enum ('sad','ok','happy')",
+      'create type pair as (id int, name text)',
+    ].join('; '), 'utf8');
+    await writeFile(path.join(dir, '10-table.sql'), 'create table t(id positive_int, m mood, p pair);', 'utf8');
+
+    const result = await runCli([
+      '--sql',
+      'select id, m, p from t',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'postgres',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'id', type: 'integer', source: 't.id' },
+      { name: 'm', type: 'text', source: 't.m' },
+      { name: 'p', type: 'struct<id integer, name text>', source: 't.p' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('loads table-valued function schemas through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-table-functions-'));
+    await writeFile(
+      path.join(dir, 'functions.sql'),
+      "create function people() returns table(id int, name text) language sql as $$ select 1, 'a' $$",
+      'utf8',
+    );
+
+    const result = await runCli([
+      '--sql',
+      'select * from people()',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'postgres',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'id', type: 'integer', source: 'people.id' },
+      { name: 'name', type: 'text', source: 'people.name' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('loads scalar function return types through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-scalar-functions-'));
+    await writeFile(
+      path.join(dir, 'schema.sql'),
+      [
+        'create table users (name text)',
+        'create function label(x text) returns text language sql as $$ select x $$',
+      ].join('; '),
+      'utf8',
+    );
+
+    const result = await runCli([
+      '--sql',
+      'select label(name) as value from users',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'postgres',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'value', type: 'text', source: 'function' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('loads procedure result columns through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-procedures-'));
+    await writeFile(
+      path.join(dir, 'schema.sql'),
+      [
+        'create table users(id int, name text)',
+        'create procedure p() begin select id, name from users; end',
+      ].join('; '),
+      'utf8',
+    );
+
+    const result = await runCli([
+      '--sql',
+      'call p()',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'mysql',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'id', type: 'integer', source: 'cast' },
+      { name: 'name', type: 'text', source: 'cast' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
   it('uses named bind types for dialect-specific expressions', async () => {
     const result = await runCli([
       '--sql',
@@ -116,6 +235,97 @@ describe('sqldesc CLI', () => {
     });
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('accepts common dialect aliases through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-dialect-alias-'));
+    await writeFile(path.join(dir, 'schema.sql'), 'create table users(id integer primary key, name text);', 'utf8');
+
+    const result = await runCli([
+      '--sql',
+      'select rowid from users',
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'sqlite3',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [{ name: 'rowid', type: 'integer' }]);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('infers column-shaped positional bind placeholders through the CLI', async () => {
+    const result = await runCli([
+      '--sql',
+      'select $1 as v',
+      '--binds',
+      'integer',
+      '--dialect',
+      'clickhouse',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [{ name: 'v', type: 'integer', source: 'bind' }]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('prints static columns for result-producing DML through the CLI', async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), 'sqldesc-cli-dml-'));
+    await writeFile(path.join(dir, 'schema.sql'), 'create table users(id int, name text);', 'utf8');
+
+    const result = await runCli([
+      '--sql',
+      "insert into users(id,name) values (1,'a') returning id, name",
+      '--schema',
+      path.join(dir, '*.sql'),
+      '--dialect',
+      'postgres',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'id', type: 'integer', source: 'users.id' },
+      { name: 'name', type: 'text', source: 'users.name' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('tracks schema-producing DDL in inline SQL through the CLI', async () => {
+    const result = await runCli([
+      '--sql',
+      'create table t(id int, name varchar(20)); select id, name from t',
+      '--dialect',
+      'postgres',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0);
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.resultSets.at(-1).columns, [
+      { name: 'id', type: 'integer', source: 't.id' },
+      { name: 'name', type: 'text', source: 't.name' },
+    ]);
+    assert.deepStrictEqual(json.warnings, []);
+    assert.deepStrictEqual(json.diagnostics, []);
+  });
+
+  it('prints multiple result sets in text output', async () => {
+    const result = await runCli(['--sql', 'select 1 as one; select 2 as two']);
+
+    assert.strictEqual(result.code, 0);
+    assert.match(result.stdout, /Result set 1/);
+    assert.match(result.stdout, /one/);
+    assert.match(result.stdout, /Result set 2/);
+    assert.match(result.stdout, /two/);
   });
 
   it('prints a text table by default', async () => {

@@ -1,7 +1,8 @@
 import { glob, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, annotateTypes, ast } from '@polyglot-sql/sdk';
-import type { SchemaColumn, SchemaLoadOptions, SchemaTable, ValidationSchema } from './types.js';
+import { normalizeDialect } from './dialect.js';
+import type { SchemaColumn, SchemaFunction, SchemaLoadOptions, SchemaProcedure, SchemaTable, ValidationSchema } from './types.js';
 
 const TABLE_CONSTRAINT_RE = /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check)\b/i;
 
@@ -18,29 +19,36 @@ export async function loadSchema(patterns: string[], options: SchemaLoadOptions 
 }
 
 export async function loadSchemaFiles(files: string[], options: SchemaLoadOptions = {}): Promise<ValidationSchema> {
+  const dialect = normalizeDialect(options.dialect);
   const tables: SchemaTable[] = [];
   const sqlFiles: string[] = [];
+  const typeAliases = new Map<string, string>();
   for (const file of files) {
     const sql = await readFile(file, 'utf8');
     sqlFiles.push(sql);
-    tables.push(...parseCreateTables(sql, options.dialect ?? 'generic'));
+    const astTables = parseCreateTablesWithAst(sql, dialect, typeAliases);
+    tables.push(...(astTables.length > 0 ? astTables : parseCreateTablesFallback(sql)));
+    tables.push(...parseCreateTableFunctions(sql, dialect));
   }
-  let schema: ValidationSchema = { tables };
+  const functions = activeScalarFunctionsFromSqlFiles(sqlFiles, dialect);
+  let schema: ValidationSchema = { tables, ...(functions.length > 0 ? { functions } : {}) };
   for (const sql of sqlFiles) {
-    schema = applySchemaMutations(sql, schema, options.dialect ?? 'generic');
+    schema = applySchemaMutations(sql, schema, dialect, typeAliases);
   }
   for (const sql of sqlFiles) {
-    for (const table of parseCreateAsTables(sql, schema, options.dialect ?? 'generic')) {
+    for (const table of parseCreateAsTables(sql, schema, dialect)) {
       if (!schema.tables.some((existing) => sameTable(existing, table))) schema.tables.push(table);
     }
-    schema.tables.push(...parseCreateSynonyms(sql, schema, options.dialect ?? 'generic'));
-    schema.tables.push(...parseCreateViews(sql, schema, options.dialect ?? 'generic'));
+    schema.tables.push(...parseCreateSynonyms(sql, schema, dialect));
+    schema.tables.push(...parseCreateViews(sql, schema, dialect));
   }
   for (const sql of sqlFiles) {
-    schema = applySchemaMutations(sql, schema, options.dialect ?? 'generic');
+    schema = applySchemaMutations(sql, schema, dialect, typeAliases);
   }
+  const schemaWithFunctions = schema.functions ? schema : mergeSchemas(schema, { tables: [], functions });
+  const procedures = activeProceduresFromSqlFiles(sqlFiles, schemaWithFunctions, dialect);
 
-  return schema;
+  return mergeSchemas(schema, { tables: [], procedures });
 }
 
 async function globFiles(pattern: string, cwd: string): Promise<string[]> {
@@ -54,24 +62,30 @@ async function globFiles(pattern: string, cwd: string): Promise<string[]> {
 }
 
 export function parseCreateTables(sql: string, dialect = 'generic'): SchemaTable[] {
-  const astTables = parseCreateTablesWithAst(sql, dialect);
+  const normalizedDialect = normalizeDialect(dialect);
+  const astTables = parseCreateTablesWithAst(sql, normalizedDialect);
   if (astTables.length > 0) return astTables;
   return parseCreateTablesFallback(sql);
 }
 
-function parseCreateTablesWithAst(sql: string, dialect = 'generic'): SchemaTable[] {
+function parseCreateTablesWithAst(sql: string, dialect = 'generic', typeAliases = new Map<string, string>()): SchemaTable[] {
   const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
-  return parseResult.ast.flatMap(tableFromCreateTableStatement);
+  const tables: SchemaTable[] = [];
+  for (const statement of parseResult.ast) {
+    rememberTypeAlias(statement, typeAliases);
+    tables.push(...tableFromCreateTableStatement(statement, typeAliases));
+  }
+  return tables;
 }
 
-function tableFromCreateTableStatement(statement: unknown): SchemaTable[] {
+function tableFromCreateTableStatement(statement: unknown, typeAliases = new Map<string, string>()): SchemaTable[] {
   if (!isRecord(statement) || !isRecord(statement.create_table) || statement.create_table.as_select) return [];
   const createTable = statement.create_table;
   const tableName = tableNameFromRef(createTable.name);
   if (!tableName) return [];
   const schema = tableSchemaFromRef(createTable.name);
-  const columns = Array.isArray(createTable.columns) ? createTable.columns.map(schemaColumnFromColumnDef).filter((column): column is SchemaColumn => column !== null) : [];
+  const columns = Array.isArray(createTable.columns) ? createTable.columns.map((column) => schemaColumnFromColumnDef(column, typeAliases)).filter((column): column is SchemaColumn => column !== null) : [];
   const primaryKey = primaryKeyColumns(createTable, columns);
   const uniqueKeys = uniqueKeyColumns(createTable, columns);
   const foreignKeys = foreignKeyConstraints(createTable);
@@ -89,15 +103,16 @@ function tableFromCreateTableStatement(statement: unknown): SchemaTable[] {
   }];
 }
 
-function schemaColumnFromColumnDef(column: unknown): SchemaColumn | null {
+function schemaColumnFromColumnDef(column: unknown, typeAliases = new Map<string, string>()): SchemaColumn | null {
   if (!isRecord(column)) return null;
   const name = identifierName(column.name);
   if (!name) return null;
   const primaryKey = column.primary_key === true;
+  const nullableType = isRecord(column.data_type) && column.data_type.data_type === 'nullable';
   return {
     name,
-    type: dataTypeToString(column.data_type) ?? 'unknown',
-    nullable: primaryKey ? false : typeof column.nullable === 'boolean' ? column.nullable : undefined,
+    type: dataTypeToStringWithAliases(column.data_type, typeAliases) ?? 'unknown',
+    nullable: primaryKey ? false : nullableType ? true : typeof column.nullable === 'boolean' ? column.nullable : undefined,
     primaryKey,
     unique: column.unique === true,
   };
@@ -144,6 +159,54 @@ function foreignKeyConstraints(createTable: Record<string, unknown>): unknown[] 
   });
 }
 
+function rememberTypeAlias(statement: unknown, typeAliases: Map<string, string>): void {
+  if (!isRecord(statement) || !isRecord(statement.create_type)) return;
+  const name = tableNameFromRef(statement.create_type.name);
+  const type = typeFromCreateTypeDefinition(statement.create_type.definition);
+  if (name && type) typeAliases.set(name.toLowerCase(), type);
+}
+
+function typeFromCreateTypeDefinition(definition: unknown): string | undefined {
+  if (!isRecord(definition)) return undefined;
+  const domain = isRecord(definition.Domain) ? definition.Domain : undefined;
+  if (domain) return dataTypeToString(domain.base_type);
+  if (Array.isArray(definition.Enum)) return 'text';
+  if (Array.isArray(definition.Composite)) {
+    const fields = definition.Composite.flatMap((field) => {
+      if (!isRecord(field)) return [];
+      const name = identifierName(field.name);
+      const type = dataTypeToString(field.data_type) ?? 'unknown';
+      return name ? [`${name} ${type}`] : [];
+    });
+    return `struct<${fields.join(', ')}>`;
+  }
+  return undefined;
+}
+
+function tableFromCreateTableFunctionStatement(statement: unknown): SchemaTable[] {
+  if (!isRecord(statement) || !isRecord(statement.create_function)) return [];
+  const createFunction = statement.create_function;
+  const name = tableNameFromRef(createFunction.name);
+  if (!name) return [];
+  const body = typeof createFunction.returns_table_body === 'string' ? createFunction.returns_table_body : undefined;
+  const match = body?.match(/^table\s*\(([\s\S]*)\)$/i);
+  const columns = columnsFromSchemaString(match?.[1]);
+  if (columns.length === 0) return [];
+  const schema = tableSchemaFromRef(createFunction.name);
+  return [{ name, ...(schema ? { schema } : {}), columns, uniqueKeys: [], foreignKeys: [] }];
+}
+
+function columnsFromSchemaString(spec: string | undefined): SchemaColumn[] {
+  if (!spec) return [];
+  return splitTopLevel(spec, ',').flatMap((part) => {
+    const match = part.trim().match(/^([`"']?[\w$]+[`"']?)\s+(.+)$/);
+    if (!match) return [];
+    const name = cleanIdentifier(match[1]);
+    const type = dataTypeFromRawColumnSpec(match[2]) ?? 'unknown';
+    return name ? [{ name, type }] : [];
+  });
+}
+
 function parseCreateTablesFallback(sql: string): SchemaTable[] {
   const tables: SchemaTable[] = [];
   for (const statement of findCreateTableStatements(sql)) {
@@ -166,31 +229,166 @@ function parseCreateTablesFallback(sql: string): SchemaTable[] {
 }
 
 export function parseCreateViews(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
-  const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
-  const annotated = annotateViewTypes(sql, schema, dialect) ?? parseResult.ast;
+  const annotated = annotateViewTypes(sql, schema, normalizedDialect) ?? parseResult.ast;
   return annotated.flatMap((statement) => viewFromStatement(statement, schema));
 }
 
 export function parseCreateAsTables(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
-  const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
-  const annotated = annotateViewTypes(sql, schema, dialect) ?? parseResult.ast;
+  const annotated = annotateViewTypes(sql, schema, normalizedDialect) ?? parseResult.ast;
   return annotated.flatMap((statement) => tableFromCreateAsStatement(statement, schema));
 }
 
 export function parseCreateSynonyms(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaTable[] {
-  const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
   return parseResult.ast.flatMap((statement) => synonymFromStatement(statement, schema));
 }
 
-function applySchemaMutations(sql: string, schema: ValidationSchema, dialect = 'generic'): ValidationSchema {
-  const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+export function parseCreateTableFunctions(sql: string, dialect = 'generic'): SchemaTable[] {
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
+  return parseResult.ast.flatMap(tableFromCreateTableFunctionStatement);
+}
+
+export function parseCreateScalarFunctions(sql: string, dialect = 'generic'): SchemaFunction[] {
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
+  return parseResult.ast.flatMap(functionFromCreateFunctionStatement);
+}
+
+function activeScalarFunctionsFromSqlFiles(sqlFiles: string[], dialect: string): SchemaFunction[] {
+  const functions = new Map<string, SchemaFunction>();
+  for (const sql of sqlFiles) {
+    const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+    if (!parseResult.success || !Array.isArray(parseResult.ast)) continue;
+    for (const statement of parseResult.ast) {
+      for (const fn of functionFromCreateFunctionStatement(statement)) {
+        functions.set(schemaObjectKey(fn), fn);
+      }
+      const dropped = droppedRoutineRef(statement, 'drop_function');
+      if (dropped) functions.delete(dropped);
+    }
+  }
+  return [...functions.values()];
+}
+
+export function parseCreateProcedures(sql: string, schema: ValidationSchema = { tables: [] }, dialect = 'generic'): SchemaProcedure[] {
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
+  return parseResult.ast.flatMap((statement) => procedureFromCreateProcedureStatement(statement, schema, normalizedDialect));
+}
+
+function activeProceduresFromSqlFiles(sqlFiles: string[], schema: ValidationSchema, dialect: string): SchemaProcedure[] {
+  const procedures = new Map<string, SchemaProcedure>();
+  for (const sql of sqlFiles) {
+    const parseResult = parse(sql, dialect as never) as { success: boolean; ast?: unknown[] };
+    if (!parseResult.success || !Array.isArray(parseResult.ast)) continue;
+    for (const statement of parseResult.ast) {
+      for (const procedure of procedureFromCreateProcedureStatement(statement, schema, dialect)) {
+        procedures.set(schemaObjectKey(procedure), procedure);
+      }
+      const dropped = droppedRoutineRef(statement, 'drop_procedure');
+      if (dropped) procedures.delete(dropped);
+    }
+  }
+  return [...procedures.values()];
+}
+
+function droppedRoutineRef(statement: unknown, key: 'drop_function' | 'drop_procedure'): string | undefined {
+  if (!isRecord(statement) || !isRecord(statement[key])) return undefined;
+  const name = tableNameFromRef(statement[key].name);
+  if (!name) return undefined;
+  const schema = tableSchemaFromRef(statement[key].name);
+  return schemaObjectKey({ name, ...(schema ? { schema } : {}) });
+}
+
+function schemaObjectKey(object: { name: string; schema?: string }): string {
+  return `${object.schema ?? ''}.${object.name}`.toLowerCase();
+}
+
+function procedureFromCreateProcedureStatement(statement: unknown, schema: ValidationSchema, dialect: string): SchemaProcedure[] {
+  if (!isRecord(statement) || !isRecord(statement.create_procedure)) return [];
+  const createProcedure = statement.create_procedure;
+  const name = tableNameFromRef(createProcedure.name);
+  if (!name) return [];
+  const columns = columnsFromProcedureDefinition(createProcedure, schema, dialect);
+  if (columns.length === 0) return [];
+  const procedureSchema = tableSchemaFromRef(createProcedure.name);
+  return [{ name, ...(procedureSchema ? { schema: procedureSchema } : {}), columns }];
+}
+
+function columnsFromProcedureDefinition(createProcedure: Record<string, unknown>, schema: ValidationSchema, dialect: string): SchemaColumn[] {
+  const returnColumns = columnsFromProcedureReturnType(createProcedure.return_type);
+  if (returnColumns.length > 0) return returnColumns;
+  const body = isRecord(createProcedure.body) ? createProcedure.body : undefined;
+  if (body && isRecord(body.Expression)) {
+    const literal = findLiteral(body.Expression);
+    if (isRecord(literal) && literal.literal_type === 'dollar_string' && typeof literal.value === 'string') {
+      return columnsFromProcedureSql(literal.value, schema, dialect);
+    }
+    return columnsFromQuery(body.Expression, schema);
+  }
+  const rawBlock = body && typeof body.RawBlock === 'string' ? body.RawBlock : undefined;
+  return rawBlock ? columnsFromProcedureSql(rawBlock, schema, dialect) : [];
+}
+
+function columnsFromProcedureReturnType(returnType: unknown): SchemaColumn[] {
+  if (!isRecord(returnType)) return [];
+  const custom = returnType.data_type === 'custom' && typeof returnType.name === 'string' ? returnType.name : undefined;
+  const match = custom?.match(/^table\s*\(([\s\S]*)\)$/i);
+  return columnsFromSchemaString(match?.[1]);
+}
+
+function columnsFromProcedureSql(sql: string, schema: ValidationSchema, dialect: string): SchemaColumn[] {
+  const body = sql.trim().replace(/^begin\b/i, '').replace(/\bend\s*$/i, '').trim();
+  if (!/\bselect\b/i.test(body)) return [];
+  const parseResult = parse(body, dialect as never) as { success: boolean; ast?: unknown[] };
+  if (!parseResult.success || !Array.isArray(parseResult.ast)) return [];
+  for (const statement of parseResult.ast) {
+    const columns = columnsFromQuery(statement, schema);
+    if (columns.length > 0) return columns;
+  }
+  return [];
+}
+
+function findLiteral(expression: unknown): unknown {
+  if (!isRecord(expression)) return undefined;
+  if (isRecord(expression.literal)) return expression.literal;
+  for (const value of Object.values(expression)) {
+    const found = findLiteral(value);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+function functionFromCreateFunctionStatement(statement: unknown): SchemaFunction[] {
+  if (!isRecord(statement) || !isRecord(statement.create_function)) return [];
+  const createFunction = statement.create_function;
+  const name = tableNameFromRef(createFunction.name);
+  const returnType = dataTypeToString(createFunction.return_type);
+  if (!name || !returnType) return [];
+  const schema = tableSchemaFromRef(createFunction.name);
+  return [{ name, ...(schema ? { schema } : {}), returnType }];
+}
+
+function applySchemaMutations(sql: string, schema: ValidationSchema, dialect = 'generic', typeAliases = new Map<string, string>()): ValidationSchema {
+  const normalizedDialect = normalizeDialect(dialect);
+  const parseResult = parse(sql, normalizedDialect as never) as { success: boolean; ast?: unknown[] };
   if (!parseResult.success || !Array.isArray(parseResult.ast)) return schema;
   return parseResult.ast.reduce<ValidationSchema>((current, statement) => {
     if (!isRecord(statement)) return current;
-    if (isRecord(statement.alter_table)) return schemaAfterAlterTable(statement.alter_table, current);
+    rememberTypeAlias(statement, typeAliases);
+    if (isRecord(statement.alter_table)) return schemaAfterAlterTable(statement.alter_table, current, typeAliases);
     if (isRecord(statement.drop_table)) return schemaAfterDropTable(statement.drop_table, current);
     if (isRecord(statement.drop_view)) return dropSchemaRelations(current, [statement.drop_view.name]);
     if (isRecord(statement.drop_schema)) return schemaAfterDropSchema(statement.drop_schema, current);
@@ -209,8 +407,11 @@ function schemaAfterDropTable(dropTable: Record<string, unknown>, schema: Valida
 function schemaAfterDropSchema(dropSchema: Record<string, unknown>, schema: ValidationSchema): ValidationSchema {
   const name = identifierName(dropSchema.name);
   if (!name) return schema;
+  const matchesSchema = (schemaName: string | undefined) => schemaName?.toLowerCase() === name.toLowerCase();
   return {
-    tables: schema.tables.filter((table) => table.schema?.toLowerCase() !== name.toLowerCase()),
+    tables: schema.tables.filter((table) => !matchesSchema(table.schema)),
+    ...(schema.functions ? { functions: schema.functions.filter((fn) => !matchesSchema(fn.schema)) } : {}),
+    ...(schema.procedures ? { procedures: schema.procedures.filter((procedure) => !matchesSchema(procedure.schema)) } : {}),
   };
 }
 
@@ -225,6 +426,12 @@ function schemaAfterRawStatement(raw: Record<string, unknown>, schema: Validatio
       tables: schema.tables.map((table) => table.schema?.toLowerCase() === oldName.toLowerCase()
         ? { ...table, schema: newName }
         : table),
+      ...(schema.functions ? {
+        functions: schema.functions.map((fn) => fn.schema?.toLowerCase() === oldName.toLowerCase() ? { ...fn, schema: newName } : fn),
+      } : {}),
+      ...(schema.procedures ? {
+        procedures: schema.procedures.map((procedure) => procedure.schema?.toLowerCase() === oldName.toLowerCase() ? { ...procedure, schema: newName } : procedure),
+      } : {}),
     };
   }
   return schema;
@@ -246,7 +453,7 @@ function dropSchemaRelations(schema: ValidationSchema, refs: unknown[]): Validat
   };
 }
 
-function schemaAfterAlterTable(alterTable: Record<string, unknown>, schema: ValidationSchema): ValidationSchema {
+function schemaAfterAlterTable(alterTable: Record<string, unknown>, schema: ValidationSchema, typeAliases = new Map<string, string>()): ValidationSchema {
   const tableName = tableNameFromRef(alterTable.name);
   if (!tableName || !Array.isArray(alterTable.actions)) return schema;
   const schemaName = tableSchemaFromRef(alterTable.name);
@@ -254,22 +461,22 @@ function schemaAfterAlterTable(alterTable: Record<string, unknown>, schema: Vali
     tables: schema.tables.map((table) => {
       if (table.name.toLowerCase() !== tableName.toLowerCase()) return table;
       if (schemaName && table.schema?.toLowerCase() !== schemaName.toLowerCase()) return table;
-      return applyAlterActions(table, alterTable.actions as unknown[]);
+      return applyAlterActions(table, alterTable.actions as unknown[], typeAliases);
     }),
   };
 }
 
-function applyAlterActions(table: SchemaTable, actions: unknown[]): SchemaTable {
+function applyAlterActions(table: SchemaTable, actions: unknown[], typeAliases = new Map<string, string>()): SchemaTable {
   return actions.reduce<SchemaTable>((current, action) => {
     if (!isRecord(action)) return current;
     if (isRecord(action.RenameTable)) return renameAlterTable(current, action.RenameTable);
-    if (isRecord(action.AddColumn)) return addAlterColumn(current, action.AddColumn.column);
+    if (isRecord(action.AddColumn)) return addAlterColumn(current, action.AddColumn.column, typeAliases);
     if (isRecord(action.DropColumn)) return dropAlterColumn(current, action.DropColumn.name);
     if (isRecord(action.RenameColumn)) return renameAlterColumn(current, action.RenameColumn.old_name, action.RenameColumn.new_name);
-    if (isRecord(action.ChangeColumn)) return changeAlterColumn(current, action.ChangeColumn);
-    if (isRecord(action.AlterColumn)) return alterColumn(current, action.AlterColumn);
+    if (isRecord(action.ChangeColumn)) return changeAlterColumn(current, action.ChangeColumn, typeAliases);
+    if (isRecord(action.AlterColumn)) return alterColumn(current, action.AlterColumn, typeAliases);
     if (isRecord(action.AddConstraint)) return addAlterConstraint(current, action.AddConstraint);
-    if (isRecord(action.Raw)) return applyRawAlterAction(current, action.Raw);
+    if (isRecord(action.Raw)) return applyRawAlterAction(current, action.Raw, typeAliases);
     return current;
   }, { ...table, columns: [...table.columns] });
 }
@@ -281,8 +488,8 @@ function renameAlterTable(table: SchemaTable, tableRef: unknown): SchemaTable {
   return { ...table, name, ...(schemaName ? { schema: schemaName } : {}) };
 }
 
-function addAlterColumn(table: SchemaTable, columnDefinition: unknown): SchemaTable {
-  const column = schemaColumnFromColumnDef(columnDefinition);
+function addAlterColumn(table: SchemaTable, columnDefinition: unknown, typeAliases = new Map<string, string>()): SchemaTable {
+  const column = schemaColumnFromColumnDef(columnDefinition, typeAliases);
   if (!column) return table;
   const columns = table.columns.filter((existing) => existing.name.toLowerCase() !== column.name.toLowerCase());
   return { ...table, columns: [...columns, column] };
@@ -304,11 +511,11 @@ function renameAlterColumn(table: SchemaTable, oldColumnName: unknown, newColumn
   };
 }
 
-function changeAlterColumn(table: SchemaTable, changeColumn: Record<string, unknown>): SchemaTable {
+function changeAlterColumn(table: SchemaTable, changeColumn: Record<string, unknown>, typeAliases = new Map<string, string>()): SchemaTable {
   const oldName = identifierName(changeColumn.old_name);
   const newName = identifierName(changeColumn.new_name);
   if (!oldName || !newName) return table;
-  const type = dataTypeToString(changeColumn.data_type);
+  const type = dataTypeToStringWithAliases(changeColumn.data_type, typeAliases);
   return {
     ...table,
     columns: table.columns.map((column) => column.name.toLowerCase() === oldName.toLowerCase()
@@ -317,7 +524,7 @@ function changeAlterColumn(table: SchemaTable, changeColumn: Record<string, unkn
   };
 }
 
-function alterColumn(table: SchemaTable, alterColumnNode: Record<string, unknown>): SchemaTable {
+function alterColumn(table: SchemaTable, alterColumnNode: Record<string, unknown>, typeAliases = new Map<string, string>()): SchemaTable {
   const name = identifierName(alterColumnNode.name);
   if (!name) return table;
   const action = alterColumnNode.action;
@@ -328,7 +535,7 @@ function alterColumn(table: SchemaTable, alterColumnNode: Record<string, unknown
       if (action === 'SetNotNull') return { ...column, nullable: false };
       if (action === 'DropNotNull') return { ...column, nullable: true };
       if (isRecord(action) && isRecord(action.SetDataType)) {
-        const type = dataTypeToString(action.SetDataType.data_type);
+        const type = dataTypeToStringWithAliases(action.SetDataType.data_type, typeAliases);
         return type ? { ...column, type } : column;
       }
       return column;
@@ -366,12 +573,12 @@ function constraintColumns(constraint: Record<string, unknown>): string[] {
     : [];
 }
 
-function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>): SchemaTable {
+function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>, typeAliases = new Map<string, string>()): SchemaTable {
   const sql = typeof raw.sql === 'string' ? raw.sql : '';
   const modifyColumn = sql.match(/^modify\s+(?:column\s+)?("[^"]+"|`[^`]+`|\[[^\]]+\]|\w+)\s+(.+)$/i);
   if (modifyColumn) {
     const columnName = cleanIdentifier(modifyColumn[1]);
-    const type = dataTypeFromRawColumnSpec(modifyColumn[2]);
+    const type = dataTypeFromRawColumnSpec(modifyColumn[2], typeAliases);
     return {
       ...table,
       columns: table.columns.map((column) => column.name.toLowerCase() === columnName.toLowerCase()
@@ -384,9 +591,11 @@ function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>): 
   return table;
 }
 
-function dataTypeFromRawColumnSpec(spec: string): string | undefined {
+function dataTypeFromRawColumnSpec(spec: string, typeAliases = new Map<string, string>()): string | undefined {
   const type = spec.trim().split(/\s+/)[0];
-  return type ? cleanIdentifier(type).toLowerCase() : undefined;
+  if (!type) return undefined;
+  const normalized = normalizeDataTypeName(cleanIdentifier(type));
+  return typeAliases.get(normalized.toLowerCase()) ?? normalized;
 }
 
 function tableFromCreateAsStatement(statement: unknown, schema: ValidationSchema): SchemaTable[] {
@@ -503,10 +712,32 @@ function columnsFromQuery(query: unknown, schema: ValidationSchema, explicitColu
     const base = baseExpression(expression);
     return [{
       name: columnName,
-      type: inferredType(base) ?? schemaColumnType(base, effectiveSchema, fromTables) ?? literalType(base) ?? 'unknown',
+      type: schemaFunctionReturnType(base, effectiveSchema) ?? inferredType(base) ?? schemaColumnType(base, effectiveSchema, fromTables) ?? literalType(base) ?? 'unknown',
       nullable: schemaColumnNullable(base, effectiveSchema, fromTables, nullableRelations),
     }];
   });
+}
+
+function schemaFunctionReturnType(expression: unknown, schema: ValidationSchema): string | undefined {
+  const fn = findFunctionExpression(expression);
+  if (!fn) return undefined;
+  const name = typeof fn.name === 'string' ? fn.name : identifierName(fn.name);
+  if (!name) return undefined;
+  const normalizedName = name.toLowerCase();
+  return schema.functions?.find((candidate) => {
+    if (candidate.name.toLowerCase() === normalizedName) return true;
+    return candidate.schema ? `${candidate.schema}.${candidate.name}`.toLowerCase() === normalizedName : false;
+  })?.returnType;
+}
+
+function findFunctionExpression(expression: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(expression)) return undefined;
+  if (isRecord(expression.function)) return expression.function;
+  for (const value of Object.values(expression)) {
+    const found = findFunctionExpression(value);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function columnsFromStar(
@@ -745,6 +976,9 @@ function inferredType(expression: unknown): string | undefined {
 
 function dataTypeToString(dataType: unknown): string | undefined {
   if (!isRecord(dataType)) return undefined;
+  if (dataType.data_type === 'nullable' || dataType.data_type === 'low_cardinality') {
+    return dataTypeToString(dataType.inner) ?? dataTypeToString(dataType.value) ?? 'unknown';
+  }
   if (dataType.data_type === 'struct' && Array.isArray(dataType.fields)) {
     const fields = dataType.fields.flatMap((field) => {
       if (!isRecord(field)) return [];
@@ -757,14 +991,25 @@ function dataTypeToString(dataType: unknown): string | undefined {
   if (dataType.data_type === 'array') {
     return `array<${dataTypeToString(dataType.element_type) ?? 'unknown'}>`;
   }
+  if (dataType.data_type === 'map') {
+    return `map<${dataTypeToString(dataType.key_type) ?? 'unknown'}, ${dataTypeToString(dataType.value_type) ?? 'unknown'}>`;
+  }
   const value = dataType.data_type === 'custom' && typeof dataType.name === 'string'
     ? dataType.name
     : dataType.data_type ?? dataType.type ?? dataType.name;
   return typeof value === 'string' ? normalizeDataTypeName(value) : undefined;
 }
 
+function dataTypeToStringWithAliases(dataType: unknown, typeAliases: Map<string, string>): string | undefined {
+  const type = dataTypeToString(dataType);
+  if (!type) return undefined;
+  return typeAliases.get(type.toLowerCase()) ?? type;
+}
+
 function normalizeDataTypeName(value: string): string {
   const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
+  const parameterized = parseParameterizedType(lower);
+  if (parameterized) return parameterized;
   const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
   const compact = unparameterized.replace(/\s+/g, '');
   if (compact === 'serial' || compact === 'serial4') return 'integer';
@@ -783,6 +1028,47 @@ function normalizeDataTypeName(value: string): string {
   if (compact === 'array') return 'array<variant>';
   if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
+}
+
+function parseParameterizedType(value: string): string | undefined {
+  const match = /^([a-z_][\w\s]*)\s*\(([\s\S]*)\)$/i.exec(value.trim());
+  if (!match) return undefined;
+  const name = match[1].replace(/\s+/g, '').toLowerCase();
+  const args = splitTopLevel(match[2], ',');
+  if (name === 'nullable' || name === 'lowcardinality') {
+    return args[0] ? normalizeDataTypeName(args[0]) : 'unknown';
+  }
+  if (name === 'array' || name === 'list') {
+    return `array<${args[0] ? normalizeDataTypeName(args[0]) : 'unknown'}>`;
+  }
+  if (name === 'map' && args.length >= 2) {
+    return `map<${normalizeDataTypeName(args[0])}, ${normalizeDataTypeName(args[1])}>`;
+  }
+  if (name === 'tuple' || name === 'row') {
+    const fields = args.map((arg, index) => {
+      const field = fieldFromTypeArgument(arg, index);
+      return `${field.name} ${field.type}`;
+    });
+    return `struct<${fields.join(', ')}>`;
+  }
+  if (name === 'nested') {
+    const fields = args.map((arg, index) => {
+      const field = fieldFromTypeArgument(arg, index);
+      return `${field.name} ${field.type}`;
+    });
+    return `array<struct<${fields.join(', ')}>>`;
+  }
+  return undefined;
+}
+
+function fieldFromTypeArgument(argument: string, index: number): { name: string; type: string } {
+  const trimmed = argument.trim();
+  const match = /^("[^"]+"|`[^`]+`|\[[^\]]+\]|[a-z_][\w$]*)\s+([\s\S]+)$/i.exec(trimmed);
+  if (!match) return { name: `field_${index + 1}`, type: normalizeDataTypeName(trimmed) };
+  return {
+    name: cleanIdentifier(match[1]),
+    type: normalizeDataTypeName(match[2]),
+  };
 }
 
 function literalType(expression: unknown): string | undefined {
@@ -965,7 +1251,13 @@ export function splitTopLevel(input: string, delimiter: string): string[] {
 }
 
 export function mergeSchemas(...schemas: Array<ValidationSchema | undefined>): ValidationSchema {
-  return { tables: schemas.flatMap((schema) => schema?.tables ?? []) };
+  const functions = schemas.flatMap((schema) => schema?.functions ?? []);
+  const procedures = schemas.flatMap((schema) => schema?.procedures ?? []);
+  return {
+    tables: schemas.flatMap((schema) => schema?.tables ?? []),
+    ...(functions.length > 0 ? { functions } : {}),
+    ...(procedures.length > 0 ? { procedures } : {}),
+  };
 }
 
 function sameTable(left: SchemaTable, right: SchemaTable): boolean {

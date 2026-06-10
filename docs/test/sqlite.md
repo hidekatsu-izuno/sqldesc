@@ -2471,9 +2471,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| mi | unknown | expression |
-| ma | unknown | expression |
-| s | unknown | expression |
+| mi | integer | expression |
+| ma | integer | expression |
+| s | decimal | expression |
 
 ---
 
@@ -5884,8 +5884,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| loc | unknown | — |
-| it | unknown | — |
+| loc | text | expression |
+| it | text | expression |
 
 ---
 
@@ -6275,10 +6275,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jd | unknown | — |
-| p | unknown | — |
+| jd | decimal | expression |
+| p | decimal | expression |
 
-`warnings` が 2 件（各列について型推論不能）。
+型が安定している数学・日時関数として推論されます。
 
 ---
 
@@ -7720,7 +7720,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ue | unknown | — |
+| ue | integer | expression |
 
 ---
 
@@ -8411,7 +8411,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | unknown | — |
+| name | text | sqlite_temp_master.name |
 
 ---
 
@@ -9041,7 +9041,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sid | unknown | — |
+| sid | text | expression |
 
 ---
 
@@ -9450,7 +9450,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | unknown | — |
+| n | text | users.name |
 
 ---
 
@@ -10284,8 +10284,8 @@ reason: freeform expectation
 ```
 
 - 終了コード: `0`
-- 標準出力: ASCII テーブル形式で列一覧（`jd` / `unknown`）
-- 標準エラー: `warning: Could not infer type for result column "jd".`（`--json` 時は JSON 内 `warnings` に含まれ stderr は空）
+- 標準出力: ASCII テーブル形式で列一覧（`jd` / `decimal`）
+- 標準エラー: 空
 
 ---
 
@@ -10588,10 +10588,8 @@ verify: true
 | パーサ非対応 | `EXPLAIN QUERY PLAN`、`RELEASE SAVEPOINT`、`STRICT` テーブル、`WITHOUT ROWID` | パースエラー |
 | バインド | `?1`, `?2` 番号付きプレースホルダ | パースエラー（`?` 連続で代替） |
 | 結果なし DML | `UPDATE ... ORDER BY ... LIMIT ...`、`REPLACE INTO` | パース成功、`SQLDESC_NO_RESULT_COLUMNS` |
-| 型注釈なし関数 | `julianday()`, `pi()`, `mod()`, `unixepoch()`, `sqlite_source_id()`, `fts5_get_locale()` / `fts5_insttoken()` | `unknown` + warnings |
-| COLLATE 投影 | `name COLLATE NOCASE` | `unknown` |
+| 型注釈なし関数 | 拡張関数またはユーザー定義関数 | `unknown` + warnings |
 | スキーマ修飾 | `main.users`（`schema: 'main'` なし） | `unknown` |
-| カタログ | `sqlite_temp_master` | 列 `unknown` |
 | 拡張 | `load_extension()` | `unknown` |
 | メタデータ依存 | `DESCRIBE` 未存在オブジェクト | 空列 + `metadata` |
 | 実行時依存 | `CALL proc()` | 空列 + `runtime` |

@@ -1130,8 +1130,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| v | unknown | — |
-| s | unknown | — |
+| v | decimal | expression |
+| s | decimal | expression |
 
 ---
 ## GROUPING SETS
@@ -1775,7 +1775,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | adult | integer | expression |
-| c | unknown | — |
+| c | text | expression |
 
 ---
 ## LIKE
@@ -1927,7 +1927,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| c | unknown | — |
+| c | text | users.name |
 
 ---
 ## @@VERSION
@@ -2146,7 +2146,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| tz | unknown | — |
+| tz | datetimeoffset | expression |
 
 ---
 # 文字列・型
@@ -2309,7 +2309,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | l | integer | polyglot |
-| s | unknown | — |
+| s | text | expression |
 
 ---
 ## OBJECT_NAME / OBJECT_ID
@@ -2403,8 +2403,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| i | unknown | — |
-| si | unknown | — |
+| i | integer | expression |
+| si | integer | expression |
 
 ---
 # JSON
@@ -2534,7 +2534,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jm | unknown | — |
+| jm | text | expression |
 
 ---
 # PIVOT
