@@ -76,11 +76,10 @@ export interface Diagnostic {
 
 export interface DescribeColumn {
   index: number;
-  name: string | null;
+  name: string;
   type: string;
   nullable?: boolean;
   source?: string;
-  confidence: 'high' | 'medium' | 'low';
   note?: string;
 }
 

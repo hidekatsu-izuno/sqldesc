@@ -185,8 +185,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## `*` 全列展開
@@ -216,14 +216,14 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
-| age | decimal | users.age |
-| dept | text | users.dept |
-| data | text | users.data |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
+| age | number | users.age |
+| dept | varchar2(255) | users.dept |
+| data | varchar2(255) | users.data |
 | created_at | timestamp | users.created_at |
 | d | date | users.d |
-| parent_id | decimal | users.parent_id |
+| parent_id | number | users.parent_id |
 
 ---
 ## FETCH FIRST
@@ -253,7 +253,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## ROWNUM
@@ -283,7 +283,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## DISTINCT
@@ -313,7 +313,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
+| dept | varchar2(255) | users.dept |
 
 ---
 ## ORDER BY
@@ -343,7 +343,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## SAMPLE
@@ -373,7 +373,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## ROWID
@@ -403,7 +403,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| rid | text | expression |
+| rid | varchar2(255) | expression |
 
 ---
 # JOIN
@@ -439,9 +439,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
-| amount | decimal | orders.amount |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
+| amount | number | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -471,8 +471,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| amount | decimal | orders.amount |
+| id | number | users.id |
+| amount | number | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -502,8 +502,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| amount | decimal | orders.amount |
+| id | number | users.id |
+| amount | number | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -533,8 +533,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| amount | decimal | orders.amount |
+| id | number | users.id |
+| amount | number | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -564,8 +564,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| id | decimal | orders.id |
+| id | number | users.id |
+| id | number | orders.id |
 
 ---
 ## NATURAL JOIN
@@ -595,8 +595,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## JOIN USING
@@ -626,8 +626,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## (+) 外部結合
@@ -657,8 +657,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| amount | decimal | orders.amount |
+| id | number | users.id |
+| amount | number | orders.amount |
 
 ---
 # サブクエリ
@@ -694,8 +694,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## EXISTS
@@ -725,7 +725,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## NOT EXISTS
@@ -755,7 +755,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## スカラーサブクエリ
@@ -785,8 +785,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| max_amt | decimal | expression |
+| id | number | users.id |
+| max_amt | number | expression |
 
 ---
 ## 派生テーブル
@@ -816,7 +816,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | t.id |
+| id | number | t.id |
 
 ---
 ## 相関サブクエリ
@@ -846,7 +846,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 # 集約
@@ -882,8 +882,42 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| cnt | integer | expression |
+| dept | varchar2(255) | users.dept |
+| cnt | number(10) | expression |
+
+---
+## サーバー生成列名（alias なし）
+
+Docker image `gvenzl/oracle-xe:21-slim` で実測した未alias式の列名。
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT COUNT(*), id + 1, upper(name) FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| COUNT(*) | number(10) | expression |
+| ID+1 | number(10) | polyglot |
+| UPPER(NAME) | varchar2(255) | polyglot |
 
 ---
 ## MIN / MAX / AVG / SUM
@@ -913,10 +947,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| mi | decimal | expression |
-| ma | decimal | expression |
-| av | decimal | expression |
-| su | decimal | expression |
+| mi | number | expression |
+| ma | number | expression |
+| av | number | expression |
+| su | number | expression |
 
 ---
 ## COUNT DISTINCT
@@ -946,7 +980,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| cd | integer | expression |
+| cd | number(10) | expression |
 
 ---
 ## LISTAGG
@@ -976,8 +1010,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| names | text | expression |
+| dept | varchar2(255) | users.dept |
+| names | varchar2(255) | expression |
 
 ---
 ## GROUP BY ROLLUP
@@ -1007,8 +1041,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| cnt | integer | expression |
+| dept | varchar2(255) | users.dept |
+| cnt | number(10) | expression |
 
 ---
 ## GROUP BY CUBE
@@ -1038,8 +1072,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| cnt | integer | expression |
+| dept | varchar2(255) | users.dept |
+| cnt | number(10) | expression |
 
 ---
 ## GROUPING 関数
@@ -1069,9 +1103,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| g | integer | expression |
-| cnt | integer | expression |
+| dept | varchar2(255) | users.dept |
+| g | number(10) | expression |
+| cnt | number(10) | expression |
 
 ---
 ## KEEP 集約
@@ -1101,7 +1135,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| k | decimal | expression |
+| k | number | expression |
 
 ---
 ## stddev / variance
@@ -1131,8 +1165,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sd | decimal | expression |
-| v | decimal | expression |
+| sd | number | expression |
+| v | number | expression |
 
 ---
 # CTE
@@ -1168,8 +1202,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | active.id |
-| name | text | active.name |
+| id | number | active.id |
+| name | varchar2(255) | active.name |
 
 ---
 ## 再帰 CTE
@@ -1199,7 +1233,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | integer | t.n |
+| n | number(10) | t.n |
 
 ---
 # 複合 SELECT
@@ -1235,8 +1269,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | cast |
-| name | text | cast |
+| id | number | cast |
+| name | varchar2(255) | cast |
 
 ---
 ## UNION ALL
@@ -1266,7 +1300,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | cast |
+| id | number | cast |
 
 ---
 ## INTERSECT
@@ -1296,7 +1330,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | cast |
+| id | number | cast |
 
 ---
 ## MINUS
@@ -1326,7 +1360,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | cast |
+| id | number | cast |
 
 ---
 ## MINUS ALL
@@ -1356,7 +1390,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | cast |
+| id | number | cast |
 
 ---
 # ウィンドウ関数
@@ -1392,8 +1426,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| rn | integer | expression |
+| id | number | users.id |
+| rn | number(10) | expression |
 
 ---
 ## RANK / DENSE_RANK
@@ -1423,9 +1457,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| r | integer | expression |
-| dr | integer | expression |
+| id | number | users.id |
+| r | number(10) | expression |
+| dr | number(10) | expression |
 
 ---
 ## LAG / LEAD
@@ -1455,9 +1489,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| la | decimal | expression |
-| le | decimal | expression |
+| id | number | users.id |
+| la | number | expression |
+| le | number | expression |
 
 ---
 ## SUM OVER パーティション
@@ -1487,8 +1521,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | orders.id |
-| s | decimal | polyglot |
+| id | number | orders.id |
+| s | number | polyglot |
 
 ---
 ## NTILE
@@ -1518,8 +1552,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| nt | integer | expression |
+| id | number | users.id |
+| nt | number(10) | expression |
 
 ---
 ## RATIO_TO_REPORT
@@ -1549,8 +1583,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| rr | decimal | expression |
+| id | number | users.id |
+| rr | number | expression |
 
 ---
 ## CUME_DIST / PERCENT_RANK
@@ -1580,9 +1614,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| cd | decimal | expression |
-| pr | decimal | expression |
+| id | number | users.id |
+| cd | number | expression |
+| pr | number | expression |
 
 ---
 ## FIRST_VALUE
@@ -1612,8 +1646,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| fv | decimal | expression |
+| id | number | users.id |
+| fv | number | expression |
 
 ---
 ## 名前付き WINDOW 句
@@ -1643,8 +1677,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | orders.id |
-| s | decimal | polyglot |
+| id | number | orders.id |
+| s | number | polyglot |
 
 ---
 # 式・述語
@@ -1680,8 +1714,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| status | text | expression |
+| id | number | users.id |
+| status | varchar2(255) | expression |
 
 ---
 ## CAST
@@ -1711,7 +1745,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| age_text | text | polyglot |
+| age_text | varchar2(255) | polyglot |
 
 ---
 ## NVL / COALESCE
@@ -1741,8 +1775,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| a | decimal | expression |
-| c | decimal | expression |
+| a | number | expression |
+| c | number | expression |
 
 ---
 ## DECODE
@@ -1772,7 +1806,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| d | text | expression |
+| d | varchar2(255) | expression |
 
 ---
 ## LIKE
@@ -1802,7 +1836,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## REGEXP_LIKE
@@ -1832,7 +1866,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## BETWEEN
@@ -1862,7 +1896,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## バインド `:1`
@@ -1893,7 +1927,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## バインド `:name`
@@ -1924,7 +1958,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 ## NULLIF
@@ -1954,7 +1988,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | decimal | expression |
+| n | number | expression |
 
 ---
 ## TO_NUMBER
@@ -1984,7 +2018,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| tn | decimal | expression |
+| tn | number | expression |
 
 ---
 # DUAL
@@ -2020,10 +2054,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| one | integer | literal |
+| one | number(10) | literal |
 | sd | timestamp | expression |
 | st | timestamp | expression |
-| u | text | expression |
+| u | varchar2(255) | expression |
 
 ---
 ## SYS_GUID / USERENV
@@ -2053,8 +2087,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sg | bytes | expression |
-| ue | text | polyglot |
+| sg | raw(255) | expression |
+| ue | varchar2(255) | polyglot |
 
 ---
 ## SYS_CONTEXT
@@ -2084,7 +2118,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| su | text | polyglot |
+| su | varchar2(255) | polyglot |
 
 ---
 # 日付・時刻
@@ -2120,7 +2154,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| y | text | expression |
+| y | varchar2(255) | expression |
 
 ---
 ## TO_DATE
@@ -2271,7 +2305,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| mb | decimal | expression |
+| mb | number | expression |
 
 ---
 ## NUMTOYMINTERVAL
@@ -2331,7 +2365,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ey | integer | expression |
+| ey | number(10) | expression |
 
 ---
 # 文字列・型
@@ -2367,8 +2401,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| s | text | expression |
-| i | integer | expression |
+| s | varchar2(255) | expression |
+| i | number(10) | expression |
 
 ---
 ## REGEXP_COUNT
@@ -2398,7 +2432,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| rc | integer | expression |
+| rc | number(10) | expression |
 
 ---
 ## DUMP / TO_CLOB
@@ -2428,8 +2462,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dv | text | expression |
-| tc | text | expression |
+| dv | varchar2(255) | expression |
+| tc | varchar2(255) | expression |
 
 ---
 ## ORA_HASH
@@ -2459,7 +2493,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| oh | integer | expression |
+| oh | number(10) | expression |
 
 ---
 ## RAWTOHEX / HEXTORAW
@@ -2489,8 +2523,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| rh | text | expression |
-| hr | bytes | expression |
+| rh | varchar2(255) | expression |
+| hr | raw(255) | expression |
 
 ---
 # JSON
@@ -2526,7 +2560,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jv | text | expression |
+| jv | varchar2(255) | expression |
 | jq | json | expression |
 
 ---
@@ -2557,7 +2591,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | jt.id |
+| id | number | jt.id |
 
 ---
 ## JSON_TABLE（複数列）
@@ -2587,8 +2621,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | json_table.id |
-| name | text | json_table.name |
+| id | number | json_table.id |
+| name | varchar2(255) | json_table.name |
 
 ---
 ## JSON_OBJECT / JSON_ARRAY
@@ -2655,7 +2689,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | xt.id |
+| id | number | xt.id |
 
 ---
 ## XMLTABLE（単独）
@@ -2685,7 +2719,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | xmltable.id |
+| id | number | xmltable.id |
 
 ---
 ## XMLAGG
@@ -2715,7 +2749,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| x | xml | expression |
+| x | xmltype | expression |
 
 ---
 # テーブル関数
@@ -2751,7 +2785,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| t | text | t.t |
+| t | varchar2(255) | t.t |
 
 ---
 ## DBMS_XPLAN.DISPLAY
@@ -2781,7 +2815,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| plan_table_output | text | table.plan_table_output |
+| plan_table_output | varchar2(255) | table.plan_table_output |
 
 ---
 # 階層問合せ
@@ -2817,9 +2851,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
-| lvl | integer | expression |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
+| lvl | number(10) | expression |
 
 ---
 ## LEVEL from DUAL
@@ -2849,7 +2883,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| lvl | integer | expression |
+| lvl | number(10) | expression |
 
 ---
 # MATCH_RECOGNIZE
@@ -2885,15 +2919,15 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
-| age | decimal | users.age |
-| dept | text | users.dept |
-| data | text | users.data |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
+| age | number | users.age |
+| dept | varchar2(255) | users.dept |
+| data | varchar2(255) | users.data |
 | created_at | timestamp | users.created_at |
 | d | date | users.d |
-| parent_id | decimal | users.parent_id |
-| mn | integer | users.mn |
+| parent_id | number | users.parent_id |
+| mn | number(10) | users.mn |
 
 ---
 ## CLASSIFIER / MATCH_NUMBER
@@ -2923,16 +2957,16 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
-| age | decimal | users.age |
-| dept | text | users.dept |
-| data | text | users.data |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
+| age | number | users.age |
+| dept | varchar2(255) | users.dept |
+| data | varchar2(255) | users.data |
 | created_at | timestamp | users.created_at |
 | d | date | users.d |
-| parent_id | decimal | users.parent_id |
-| match_no | integer | users.match_no |
-| cls | text | users.cls |
+| parent_id | number | users.parent_id |
+| match_no | number(10) | users.match_no |
+| cls | varchar2(255) | users.cls |
 
 ---
 # LATERAL
@@ -2968,8 +3002,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| amount | decimal | o.amount |
+| id | number | users.id |
+| amount | number | o.amount |
 
 ---
 # DML
@@ -3125,8 +3159,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## UPDATE RETURNING
@@ -3156,8 +3190,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## DELETE RETURNING
@@ -3187,8 +3221,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
-| name | text | users.name |
+| id | number | users.id |
+| name | varchar2(255) | users.name |
 
 ---
 ## INSERT ... SELECT
@@ -3284,7 +3318,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | decimal | users.id |
+| id | number | users.id |
 
 ---
 # シーケンス
@@ -3322,8 +3356,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | integer | expression |
-| c | integer | expression |
+| n | number(10) | expression |
+| c | number(10) | expression |
 
 ---
 # スキーマ修飾
@@ -3359,8 +3393,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| employee_id | integer | hr.employees.employee_id |
-| first_name | text | hr.employees.first_name |
+| employee_id | number(10) | hr.employees.employee_id |
+| first_name | varchar2(255) | hr.employees.first_name |
 
 ---
 ## hr エイリアス
@@ -3390,8 +3424,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| employee_id | integer | hr.employees.employee_id |
-| last_name | text | hr.employees.last_name |
+| employee_id | number(10) | hr.employees.employee_id |
+| last_name | varchar2(255) | hr.employees.last_name |
 
 ---
 # カタログ
@@ -3427,7 +3461,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| username | text | all_users.username |
+| username | varchar2(255) | all_users.username |
 
 ---
 ## user_tables
@@ -3457,7 +3491,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| table_name | text | user_tables.table_name |
+| table_name | varchar2(255) | user_tables.table_name |
 
 ---
 ## dba_tables
@@ -3487,7 +3521,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| table_name | text | dba_tables.table_name |
+| table_name | varchar2(255) | dba_tables.table_name |
 
 ---
 ## all_tab_columns
@@ -3517,7 +3551,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| column_name | text | all_tab_columns.column_name |
+| column_name | varchar2(255) | all_tab_columns.column_name |
 
 ---
 ## all_objects
@@ -3547,7 +3581,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| object_name | text | all_objects.object_name |
+| object_name | varchar2(255) | all_objects.object_name |
 
 ---
 ## user_indexes
@@ -3577,7 +3611,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| index_name | text | user_indexes.index_name |
+| index_name | varchar2(255) | user_indexes.index_name |
 
 ---
 ## v$session
@@ -3607,8 +3641,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sid | integer | v$session.sid |
-| username | text | v$session.username |
+| sid | number(10) | v$session.sid |
+| username | varchar2(255) | v$session.username |
 
 ---
 ## all_views
@@ -3638,7 +3672,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| view_name | text | all_views.view_name |
+| view_name | varchar2(255) | all_views.view_name |
 
 ---
 ## all_constraints
@@ -3668,7 +3702,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| constraint_name | text | all_constraints.constraint_name |
+| constraint_name | varchar2(255) | all_constraints.constraint_name |
 
 ---
 ## user_constraints
@@ -3698,7 +3732,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| constraint_name | text | user_constraints.constraint_name |
+| constraint_name | varchar2(255) | user_constraints.constraint_name |
 
 ---
 ## user_objects
@@ -3728,7 +3762,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| object_name | text | user_objects.object_name |
+| object_name | varchar2(255) | user_objects.object_name |
 
 ---
 ## user_ind_columns
@@ -3758,7 +3792,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| column_name | text | user_ind_columns.column_name |
+| column_name | varchar2(255) | user_ind_columns.column_name |
 
 ---
 # スキーマ追跡
@@ -3796,7 +3830,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | active.name |
+| name | varchar2(255) | active.name |
 
 ---
 ## CREATE TABLE AS SELECT
@@ -3828,7 +3862,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | backup.name |
+| name | varchar2(255) | backup.name |
 
 ---
 ## GLOBAL TEMPORARY TABLE
@@ -3860,7 +3894,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | t.name |
+| name | varchar2(255) | t.name |
 
 ---
 ## ALTER TABLE ADD COLUMN
@@ -3893,7 +3927,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | t.name |
+| name | varchar2(255) | t.name |
 
 ---
 ## ALTER TABLE RENAME COLUMN
@@ -3926,7 +3960,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| full_name | text | t.full_name |
+| full_name | varchar2(255) | t.full_name |
 
 ---
 ## CREATE TABLE
@@ -3958,7 +3992,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | t.name |
+| name | varchar2(255) | t.name |
 
 ---
 ## CREATE MATERIALIZED VIEW
@@ -3990,7 +4024,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | mv.name |
+| name | varchar2(255) | mv.name |
 
 ---
 ## CREATE SYNONYM
@@ -4022,7 +4056,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | u.name |
+| name | varchar2(255) | u.name |
 
 ---
 # ストアド
@@ -4060,7 +4094,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | decimal | function |
+| n | number | function |
 
 ---
 # メンテナンス
@@ -4096,10 +4130,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | text | cast |
-| Op | text | cast |
-| Msg_type | text | cast |
-| Msg_text | text | cast |
+| Table | varchar2(255) | cast |
+| Op | varchar2(255) | cast |
+| Msg_type | varchar2(255) | cast |
+| Msg_text | varchar2(255) | cast |
 
 ---
 # 結果なし文

@@ -464,7 +464,7 @@ verify: true
 |------|------|--------|
 | id | integer | users.id |
 | name | text | users.name |
-| amount | decimal | orders.amount |
+| amount | numeric | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -495,7 +495,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | numeric | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -526,7 +526,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | numeric | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -557,7 +557,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | numeric | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -778,7 +778,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| max_amt | decimal | expression |
+| max_amt | numeric | expression |
 
 ---
 ## 派生テーブル
@@ -879,6 +879,40 @@ verify: true
 | cnt | integer | expression |
 
 ---
+## サーバー生成列名（alias なし）
+
+Docker image `postgres:16` で実測した未alias式の列名。
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT COUNT(*), id + 1, upper(name) FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| count | integer | expression |
+| ?column? | integer | polyglot |
+| upper | text | polyglot |
+
+---
 ## 集約関数 MIN / MAX / AVG / SUM
 
 ### Given
@@ -908,7 +942,7 @@ verify: true
 |------|------|--------|
 | mi | integer | expression |
 | ma | integer | expression |
-| av | decimal | expression |
+| av | numeric | expression |
 | su | integer | expression |
 
 ---
@@ -1481,7 +1515,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | orders.id |
-| s | decimal | polyglot |
+| s | numeric | polyglot |
 
 ---
 ## NTILE
@@ -1543,7 +1577,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | orders.id |
-| s | decimal | polyglot |
+| s | numeric | polyglot |
 
 ---
 # 式・述語
@@ -2871,7 +2905,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| p | decimal | expression |
+| p | numeric | expression |
 
 ---
 ## stddev / variance
@@ -2901,8 +2935,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sd | decimal | expression |
-| v | decimal | expression |
+| sd | numeric | expression |
+| v | numeric | expression |
 
 ---
 ## mode() WITHIN GROUP

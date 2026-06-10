@@ -166,7 +166,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## `*` 全列展開
@@ -196,9 +196,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 | age | integer | users.age |
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
@@ -233,7 +233,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | one | integer | literal |
-| msg | text | literal |
+| msg | varchar | literal |
 
 ---
 ## ORDER BY / LIMIT / OFFSET
@@ -291,7 +291,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 
 ---
 ## FETCH FIRST
@@ -409,7 +409,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
@@ -444,9 +444,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | expression |
+| name | varchar | expression |
 | age | integer | users.age |
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
@@ -487,8 +487,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
-| amount | decimal | orders.amount |
+| name | varchar | users.name |
+| amount | decimal(18, 3) | orders.amount |
 
 ---
 ## LEFT JOIN
@@ -518,7 +518,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | decimal(18, 3) | orders.amount |
 
 ---
 ## RIGHT JOIN
@@ -548,7 +548,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | decimal(18, 3) | orders.amount |
 
 ---
 ## FULL OUTER JOIN
@@ -578,7 +578,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | decimal(18, 3) | orders.amount |
 
 ---
 ## CROSS JOIN
@@ -638,7 +638,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## JOIN USING
@@ -668,7 +668,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## SEMI JOIN
@@ -785,7 +785,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | o.amount |
+| amount | decimal(18, 3) | o.amount |
 
 ---
 # サブクエリ
@@ -821,7 +821,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## EXISTS
@@ -909,7 +909,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| max_amt | decimal | expression |
+| max_amt | decimal(18, 3) | expression |
 
 ---
 ## 派生テーブル
@@ -1002,8 +1002,41 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 | cnt | integer | expression |
+
+---
+## サーバー生成列名（alias なし）
+
+Docker image `duckdb/duckdb:latest` で実測した未alias式の列名。
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT COUNT(*), id + 1, upper(name) FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| count_star() | integer | expression |
+| (id + 1) | integer | polyglot |
+| upper("name") | varchar | polyglot |
 
 ---
 ## string_agg
@@ -1032,8 +1065,8 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| names | text | expression |
+| dept | varchar | users.dept |
+| names | varchar | expression |
 
 ---
 ## group_concat
@@ -1062,7 +1095,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| gc | text | expression |
+| gc | varchar | expression |
 
 ---
 ## FILTER 句
@@ -1120,7 +1153,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 | cnt | integer | expression |
 
 ---
@@ -1215,7 +1248,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | active.id |
-| name | text | active.name |
+| name | varchar | active.name |
 
 ---
 ## 再帰 CTE
@@ -1309,7 +1342,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | cast |
-| name | text | cast |
+| name | varchar | cast |
 
 ---
 ## UNION ALL
@@ -1522,7 +1555,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | orders.id |
-| s | decimal | polyglot |
+| s | decimal(18, 3) | polyglot |
 
 ---
 ## 名前付き WINDOW 句
@@ -1552,7 +1585,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | orders.id |
-| s | decimal | polyglot |
+| s | decimal(18, 3) | polyglot |
 
 ---
 # 式・述語
@@ -1588,7 +1621,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| status | text | expression |
+| status | varchar | expression |
 
 ---
 ## CAST
@@ -1617,7 +1650,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| age_text | text | polyglot |
+| age_text | varchar | polyglot |
 
 ---
 ## COALESCE
@@ -1734,7 +1767,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| t | text | expression |
+| t | varchar | expression |
 
 ---
 ## version
@@ -1763,7 +1796,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| v | text | expression |
+| v | varchar | expression |
 
 ---
 ## current_schema
@@ -1792,7 +1825,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| cs | text | expression |
+| cs | varchar | expression |
 
 ---
 ## contains
@@ -1850,7 +1883,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| r | text | expression |
+| r | varchar | expression |
 
 ---
 ## epoch
@@ -1943,7 +1976,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| t | text | expression |
+| t | varchar | expression |
 
 ---
 ## list_contains
@@ -2094,7 +2127,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| key | text | j.key |
+| key | varchar | j.key |
 | value | json | j.value |
 
 ---
@@ -2188,7 +2221,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| file | text | glob.file |
+| file | varchar | glob.file |
 
 ---
 ## read_csv
@@ -2218,7 +2251,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | t.id |
-| name | text | t.name |
+| name | varchar | t.name |
 
 ---
 ## read_parquet
@@ -2248,7 +2281,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | t.id |
-| name | text | t.name |
+| name | varchar | t.name |
 
 ---
 ## read_json
@@ -2278,7 +2311,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | t.id |
-| name | text | t.name |
+| name | varchar | t.name |
 
 ---
 ## read_text
@@ -2307,8 +2340,8 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| filename | text | read_text.filename |
-| content | text | read_text.content |
+| filename | varchar | read_text.filename |
+| content | varchar | read_text.content |
 
 ---
 ## parquet_schema
@@ -2337,7 +2370,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | parquet_schema.name |
+| name | varchar | parquet_schema.name |
 
 ---
 # PIVOT / UNPIVOT
@@ -2373,7 +2406,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
@@ -2408,13 +2441,13 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
 | created_at | timestamp | users.created_at |
 | d | date | users.d |
-| k | text | users.k |
+| k | varchar | users.k |
 | v | integer | users.v |
 
 ---
@@ -2538,7 +2571,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## UPDATE RETURNING
@@ -2568,7 +2601,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## DELETE RETURNING
@@ -2598,7 +2631,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## ON CONFLICT DO UPDATE RETURNING
@@ -2628,7 +2661,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 
 ---
 ## MERGE
@@ -2693,7 +2726,7 @@ target: last
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | active.name |
+| name | varchar | active.name |
 
 ---
 ## CREATE TABLE AS SELECT
@@ -2723,7 +2756,7 @@ target: last
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | backup.name |
+| name | varchar | backup.name |
 
 ---
 ## ALTER TABLE ADD COLUMN
@@ -2753,7 +2786,7 @@ target: last
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | t.name |
+| name | varchar | t.name |
 
 ---
 ## ALTER TABLE RENAME COLUMN
@@ -2783,7 +2816,7 @@ target: last
 ```
 | name | type | source |
 |------|------|--------|
-| full_name | text | t.full_name |
+| full_name | varchar | t.full_name |
 
 ---
 # スキーマ修飾
@@ -2819,7 +2852,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | main.users.id |
-| name | text | main.users.name |
+| name | varchar | main.users.name |
 
 ---
 # マクロ
@@ -2856,7 +2889,7 @@ target: last
 | name | type | source |
 |------|------|--------|
 | id | integer | pair.id |
-| label | text | pair.label |
+| label | varchar | pair.label |
 
 ---
 # シーケンス
@@ -2927,7 +2960,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| table_name | text | duckdb_tables.table_name |
+| table_name | varchar | duckdb_tables.table_name |
 
 ---
 ## duckdb_columns
@@ -2956,7 +2989,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| column_name | text | duckdb_columns.column_name |
+| column_name | varchar | duckdb_columns.column_name |
 
 ---
 ## duckdb_settings
@@ -2985,8 +3018,8 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | duckdb_settings.name |
-| value | text | duckdb_settings.value |
+| name | varchar | duckdb_settings.name |
+| value | varchar | duckdb_settings.value |
 
 ---
 ## duckdb_extensions
@@ -3015,7 +3048,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| extension_name | text | duckdb_extensions.extension_name |
+| extension_name | varchar | duckdb_extensions.extension_name |
 
 ---
 # PRAGMA / メタ
@@ -3051,8 +3084,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | cid | integer | pragma_table_info.cid |
-| name | text | pragma_table_info.name |
-| type | text | pragma_table_info.type |
+| name | varchar | pragma_table_info.name |
+| type | varchar | pragma_table_info.type |
 
 ---
 ## PRAGMA show_tables
@@ -3081,7 +3114,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| name | text | cast |
+| name | varchar | cast |
 
 ---
 ## SUMMARIZE
@@ -3110,18 +3143,18 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| column_name | text | cast |
-| column_type | text | cast |
-| min | text | cast |
-| max | text | cast |
+| column_name | varchar | cast |
+| column_type | varchar | cast |
+| min | varchar | cast |
+| max | varchar | cast |
 | approx_unique | integer | cast |
-| avg | text | cast |
-| std | text | cast |
-| q25 | text | cast |
-| q50 | text | cast |
-| q75 | text | cast |
+| avg | varchar | cast |
+| std | varchar | cast |
+| q25 | varchar | cast |
+| q50 | varchar | cast |
+| q75 | varchar | cast |
 | count | integer | cast |
-| null_percentage | decimal | cast |
+| null_percentage | decimal(18, 3) | cast |
 
 ---
 ## DESCRIBE
@@ -3151,9 +3184,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| name | text | users.name |
+| name | varchar | users.name |
 | age | integer | users.age |
-| dept | text | users.dept |
+| dept | varchar | users.dept |
 | data | json | users.data |
 | tags | array<text> | users.tags |
 | attrs | map<text, text> | users.attrs |
@@ -3187,7 +3220,7 @@ verify: true
 ```
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | text | cast |
+| QUERY PLAN | varchar | cast |
 
 ---
 # 結果なし文

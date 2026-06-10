@@ -274,20 +274,16 @@ function parseColumnTable(body: string): ExpectedColumn[] {
     if (cells.length < 2) continue;
 
     const [name, type, sourceRaw] = cells;
-    if (!name || !type || (name === 'name' && type === 'type')) continue;
+    if (!type || (name === 'name' && type === 'type')) continue;
 
     columns.push({
-      name: normalizeColumnName(name),
+      name,
       type,
       source: normalizeSource(sourceRaw),
     });
   }
 
   return columns;
-}
-
-function normalizeColumnName(name: string): string | null {
-  return name === 'null' ? null : name;
 }
 
 function normalizeSource(source?: string): string | undefined {

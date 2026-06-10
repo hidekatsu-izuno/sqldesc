@@ -22,7 +22,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'integer' }]);
+    assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'INTEGER' }]);
     assert.partialDeepStrictEqual(json.binds, { mode: 'positional', binds: [{ index: 1, type: 'int' }] });
   });
 
@@ -43,7 +43,7 @@ describe('sqldesc CLI', () => {
     assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'label', type: 'text' }]);
   });
 
-  it('prints null for dynamic result column names in JSON output', async () => {
+  it('prints empty strings for dynamic result column names in JSON output', async () => {
     const result = await runCli([
       '--sql',
       'select id, name from users for json path',
@@ -55,7 +55,7 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0, result.stderr);
     const json = JSON.parse(result.stdout);
     assert.deepStrictEqual(json.columns.map((column: Record<string, unknown>) => [column.name, column.type]), [
-      [null, 'text'],
+      ['', 'nvarchar(max)'],
     ]);
   });
 
@@ -84,7 +84,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns[0], { name: 'file_value', type: 'integer' });
+    assert.partialDeepStrictEqual(json.columns[0], { name: 'file_value', type: 'INTEGER' });
   });
 
   it('reads SQL from stdin when no file or inline SQL is provided', async () => {
@@ -92,7 +92,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns[0], { name: 'stdin_value', type: 'integer' });
+    assert.partialDeepStrictEqual(json.columns[0], { name: 'stdin_value', type: 'INTEGER' });
   });
 
   it('loads schema SQL from glob patterns', async () => {
@@ -110,8 +110,8 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
-      { name: 'id', type: 'integer', source: 'users.id' },
-      { name: 'name', type: 'text', source: 'users.name' },
+      { name: 'id', type: 'INTEGER', source: 'users.id' },
+      { name: 'name', type: 'VARCHAR(255)', source: 'users.name' },
     ]);
   });
 
@@ -136,8 +136,8 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
-      { name: 'id', type: 'decimal', source: 't.id' },
-      { name: 'name', type: 'text', source: 't.name' },
+      { name: 'id', type: 'number', source: 't.id' },
+      { name: 'name', type: 'varchar2(255)', source: 't.name' },
     ]);
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);
@@ -255,8 +255,8 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
-      { name: 'id', type: 'integer', source: 'cast' },
-      { name: 'name', type: 'text', source: 'cast' },
+      { name: 'id', type: 'int', source: 'cast' },
+      { name: 'name', type: 'varchar(255)', source: 'cast' },
     ]);
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);
@@ -275,7 +275,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns, [{ name: 'label', type: 'text' }]);
+    assert.partialDeepStrictEqual(json.columns, [{ name: 'label', type: 'VARCHAR(255)' }]);
     assert.partialDeepStrictEqual(json.binds, {
       mode: 'named',
       binds: [
@@ -320,7 +320,7 @@ describe('sqldesc CLI', () => {
 
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
-    assert.partialDeepStrictEqual(json.columns, [{ name: 'v', type: 'integer', source: 'bind' }]);
+    assert.partialDeepStrictEqual(json.columns, [{ name: 'v', type: 'INTEGER', source: 'bind' }]);
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);
   });
@@ -382,19 +382,19 @@ describe('sqldesc CLI', () => {
     const result = await runCli(['--sql', 'select 1 as one']);
 
     assert.strictEqual(result.code, 0);
-    assert.match(result.stdout, /^index  name  type\s+nullable  confidence  source\s+note$/m);
+    assert.match(result.stdout, /^index  name  type\s+nullable  source\s+note$/m);
     assert.match(result.stdout, /^-----  ----  ----/m);
-    assert.match(result.stdout, /^1\s+one\s+integer\s+high\s+literal$/m);
+    assert.match(result.stdout, /^1\s+one\s+INTEGER\s+literal$/m);
   });
 
   it('pads text table columns using the widest cell', async () => {
     const result = await runCli(['--sql', "select 1 as short, 'abcdef' as very_long_column_name"]);
 
     assert.strictEqual(result.code, 0);
-    assert.match(result.stdout, /^index  name\s+type\s+nullable  confidence  source\s+note$/m);
+    assert.match(result.stdout, /^index  name\s+type\s+nullable  source\s+note$/m);
     assert.match(result.stdout, /^-----  ---------------------  -------/m);
-    assert.match(result.stdout, /^1\s+short\s+integer\s+high\s+literal$/m);
-    assert.match(result.stdout, /^2\s+very_long_column_name\s+text\s+high\s+literal$/m);
+    assert.match(result.stdout, /^1\s+short\s+INTEGER\s+literal$/m);
+    assert.match(result.stdout, /^2\s+very_long_column_name\s+VARCHAR\(255\)\s+literal$/m);
   });
 
   it('returns structured diagnostics for no-result SQL in JSON output', async () => {
@@ -423,7 +423,7 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.stderr, '');
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [
-      { name: 'one', type: 'integer' },
+      { name: 'one', type: 'INTEGER' },
     ]);
     assert.partialDeepStrictEqual(json.statements, [
       { index: 1, kind: 'describe', resultKind: 'metadata' },

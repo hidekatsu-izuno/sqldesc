@@ -330,7 +330,7 @@ verify: true
 |------|------|--------|
 | id | integer | users.id |
 | name | text | users.name |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 ---
 
@@ -373,7 +373,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 ---
 
@@ -455,7 +455,43 @@ verify: true
 |------|------|--------|
 | dept | text | users.dept |
 | cnt | integer | expression |
-| avg_age | decimal | expression |
+| avg_age | real | expression |
+
+---
+## サーバー生成列名（alias なし）
+
+Docker image `nouchka/sqlite3:latest` で実測した未alias式の列名。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT COUNT(*), id + 1, upper(name)
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| count(*) | integer | expression |
+| id+1 | integer | polyglot |
+| upper(name) | text | polyglot |
 
 ---
 
@@ -1378,7 +1414,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | key | text | j.key |
-| value | json | j.value |
+| value | text | j.value |
 
 ---
 
@@ -1409,9 +1445,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | key | text | j.key |
-| value | json | j.value |
+| value | text | j.value |
 | type | text | j.type |
-| atom | json | j.atom |
+| atom | text | j.atom |
 | id | integer | j.id |
 | parent | integer | j.parent |
 | fullkey | text | j.fullkey |
@@ -1446,9 +1482,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | key | text | j.key |
-| value | json | j.value |
+| value | text | j.value |
 | type | text | j.type |
-| atom | json | j.atom |
+| atom | text | j.atom |
 | id | integer | j.id |
 | parent | integer | j.parent |
 | fullkey | text | j.fullkey |
@@ -1570,7 +1606,7 @@ verify: true
 |------|------|--------|
 | t | text | expression |
 | q | text | expression |
-| zb | bytes | expression |
+| zb | blob | expression |
 
 ---
 
@@ -1629,8 +1665,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| t | boolean | expression |
-| f | boolean | expression |
+| t | integer | expression |
+| f | integer | expression |
 | n | null | literal |
 
 ---
@@ -1664,7 +1700,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 ---
 
@@ -1697,7 +1733,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 ---
 
@@ -1773,7 +1809,7 @@ verify: true
 |------|------|--------|
 | id | integer | users.id |
 | name | text | users.name |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 ---
 
@@ -1837,7 +1873,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| max_amt | decimal | expression |
+| max_amt | real | expression |
 
 ---
 
@@ -1868,7 +1904,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| oc | bigint | polyglot |
+| oc | integer | polyglot |
 
 ---
 
@@ -1997,9 +2033,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -2251,9 +2287,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| adult | boolean | polyglot |
-| nnull | boolean | expression |
-| bw | boolean | expression |
+| adult | integer | polyglot |
+| nnull | integer | expression |
+| bw | integer | expression |
 
 ---
 
@@ -2438,8 +2474,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| b | bytes | polyglot |
-| r | decimal | polyglot |
+| b | blob | polyglot |
+| r | real | polyglot |
 
 ---
 
@@ -2473,7 +2509,7 @@ verify: true
 |------|------|--------|
 | mi | integer | expression |
 | ma | integer | expression |
-| s | decimal | expression |
+| s | real | expression |
 
 ---
 
@@ -2853,7 +2889,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| pr | decimal | expression |
+| pr | real | expression |
 
 ---
 
@@ -2883,7 +2919,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | orders.id |
-| s | decimal | polyglot |
+| s | real | polyglot |
 
 ---
 
@@ -2916,7 +2952,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| s | decimal | polyglot |
+| s | real | polyglot |
 
 ---
 
@@ -3017,10 +3053,10 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | s | integer | expression |
-| a | decimal | polyglot |
-| r | decimal | polyglot |
-| sq | decimal | polyglot |
-| p | decimal | polyglot |
+| a | real | polyglot |
+| r | real | polyglot |
+| sq | real | polyglot |
+| p | real | polyglot |
 
 ---
 
@@ -3049,7 +3085,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | h | text | expression |
-| u | bytes | expression |
+| u | blob | expression |
 
 ---
 
@@ -3107,7 +3143,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | decimal | expression |
+| r | real | expression |
 
 ---
 
@@ -3140,9 +3176,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| d | date | polyglot |
-| t | time | expression |
-| dt | datetime | expression |
+| d | text | polyglot |
+| t | text | expression |
+| dt | text | expression |
 
 ---
 
@@ -3200,9 +3236,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ct | timestamp | expression |
-| cd | date | polyglot |
-| ctm | time | polyglot |
+| ct | text | expression |
+| cd | text | polyglot |
+| ctm | text | polyglot |
 
 ---
 
@@ -3232,7 +3268,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| x | json | expression |
+| x | text | expression |
 
 ---
 
@@ -3262,8 +3298,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| o | json | expression |
-| a | json | expression |
+| o | text | expression |
+| a | text | expression |
 
 ---
 
@@ -3294,9 +3330,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| s | json | expression |
+| s | text | expression |
 | t | text | expression |
-| v | boolean | expression |
+| v | integer | expression |
 
 ---
 
@@ -3329,7 +3365,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| a | json | expression |
+| a | text | expression |
 
 ---
 
@@ -3360,7 +3396,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| value | json | e.value |
+| value | text | e.value |
 
 ---
 
@@ -3453,9 +3489,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -3487,9 +3523,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -3521,9 +3557,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -3555,9 +3591,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -3620,9 +3656,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -3725,9 +3761,9 @@ verify: true
 | name | text | v.name |
 | age | integer | v.age |
 | dept | text | v.dept |
-| data | json | v.data |
-| created_at | timestamp | v.created_at |
-| blob_col | bytes | v.blob_col |
+| data | text | v.data |
+| created_at | text | v.created_at |
+| blob_col | blob | v.blob_col |
 
 ---
 
@@ -4202,7 +4238,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| foreign_keys | boolean | cast |
+| foreign_keys | integer | cast |
 
 ---
 
@@ -4296,7 +4332,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| reverse_unordered_selects | boolean | cast |
+| reverse_unordered_selects | integer | cast |
 
 ---
 
@@ -4360,9 +4396,9 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
 
 ---
 
@@ -4548,7 +4584,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| a | decimal | expression |
+| a | real | expression |
 | c | integer | expression |
 | cd | integer | expression |
 | s | integer | expression |
@@ -4610,7 +4646,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| t | decimal | expression |
+| t | real | expression |
 
 ---
 
@@ -4642,8 +4678,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| a | decimal | polyglot |
-| r | decimal | polyglot |
+| a | real | polyglot |
+| r | real | polyglot |
 | f | integer | expression |
 | c | integer | expression |
 
@@ -4678,9 +4714,9 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | s | integer | expression |
-| sq | decimal | polyglot |
-| e | decimal | polyglot |
-| l | decimal | polyglot |
+| sq | real | polyglot |
+| e | real | polyglot |
+| l | real | polyglot |
 
 ---
 
@@ -4708,8 +4744,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| d | decimal | expression |
-| r | decimal | expression |
+| d | real | expression |
+| r | real | expression |
 
 ---
 
@@ -4914,7 +4950,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| l | boolean | polyglot |
+| l | integer | polyglot |
 
 ---
 
@@ -4945,9 +4981,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ni | boolean | expression |
-| nn | boolean | expression |
-| ai | boolean | expression |
+| ni | integer | expression |
+| nn | integer | expression |
+| ai | integer | expression |
 
 ---
 
@@ -4979,7 +5015,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | h | text | expression |
-| u | bytes | expression |
+| u | blob | expression |
 | z | integer | polyglot |
 
 ---
@@ -5015,7 +5051,7 @@ verify: true
 |------|------|--------|
 | n | text | polyglot |
 | nd | text | polyglot |
-| sm | date | polyglot |
+| sm | text | polyglot |
 
 ---
 
@@ -5045,8 +5081,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ji | json | expression |
-| jrm | json | expression |
+| ji | text | expression |
+| jrm | text | expression |
 
 ---
 
@@ -5104,7 +5140,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| value | json | json_each.value |
+| value | text | json_each.value |
 
 ---
 
@@ -5132,7 +5168,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| c | bigint | polyglot |
+| c | integer | polyglot |
 
 ---
 
@@ -5199,8 +5235,8 @@ verify: true
 | id | integer | users.id |
 | r | integer | expression |
 | dr | integer | expression |
-| pr | decimal | expression |
-| cd | decimal | expression |
+| pr | real | expression |
+| cd | real | expression |
 
 ---
 
@@ -5300,8 +5336,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| s | decimal | polyglot |
-| a | decimal | polyglot |
+| s | real | polyglot |
+| a | real | polyglot |
 
 ---
 
@@ -5402,7 +5438,7 @@ verify: true
 | sender | text | email.sender |
 | title | text | email.title |
 | body | text | email.body |
-| rank | decimal | email.rank |
+| rank | real | email.rank |
 
 ---
 
@@ -5436,7 +5472,7 @@ verify: true
 | sender | text | email.sender |
 | title | text | email.title |
 | body | text | email.body |
-| rank | decimal | email.rank |
+| rank | real | email.rank |
 
 ---
 
@@ -5538,7 +5574,7 @@ verify: true
 | sender | text | email.sender |
 | title | text | email.title |
 | body | text | email.body |
-| rank | decimal | email.rank |
+| rank | real | email.rank |
 
 ---
 
@@ -5852,7 +5888,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| score | decimal | expression |
+| score | real | expression |
 
 ---
 
@@ -6275,8 +6311,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jd | decimal | expression |
-| p | decimal | expression |
+| jd | real | expression |
+| p | real | expression |
 
 型が安定している数学・日時関数として推論されます。
 
@@ -7187,7 +7223,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| m | bytes | expression |
+| m | blob | expression |
 
 ---
 
@@ -7408,7 +7444,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| s | decimal | polyglot |
+| s | real | polyglot |
 
 ---
 
@@ -7470,10 +7506,10 @@ verify: true
 | name | text | users.name |
 | age | integer | users.age |
 | dept | text | users.dept |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
-| blob_col | bytes | users.blob_col |
-| amount | decimal | orders.amount |
+| data | text | users.data |
+| created_at | text | users.created_at |
+| blob_col | blob | users.blob_col |
+| amount | real | orders.amount |
 
 ---
 
@@ -7599,9 +7635,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | boolean | expression |
-| m | boolean | expression |
-| g | boolean | expression |
+| r | integer | expression |
+| m | integer | expression |
+| g | integer | expression |
 
 ---
 
@@ -7633,7 +7669,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| p | json | expression |
+| p | text | expression |
 
 ---
 
@@ -7661,7 +7697,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | json | expression |
+| r | text | expression |
 
 ---
 
@@ -7692,7 +7728,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | dept | text | users.dept |
-| o | json | expression |
+| o | text | expression |
 
 ---
 
@@ -8477,7 +8513,7 @@ verify: true
 |------|------|--------|
 | rowid | integer | expression |
 | sender | text | email.sender |
-| rank | decimal | email.rank |
+| rank | real | email.rank |
 
 ---
 
@@ -8510,7 +8546,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| value | json | j.value |
+| value | text | j.value |
 
 ---
 
@@ -8802,7 +8838,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| s | decimal | polyglot |
+| s | real | polyglot |
 
 ---
 
@@ -8836,7 +8872,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| s | decimal | polyglot |
+| s | real | polyglot |
 
 ---
 
@@ -9986,7 +10022,7 @@ kind: columns
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| amount | decimal | orders.amount |
+| amount | real | orders.amount |
 
 返却 JSON の `schema.tables` に `users` / `orders` が含まれます。
 
@@ -10539,9 +10575,8 @@ verify: true
     {
       "index": 1,
       "name": "id",
-      "type": "integer",
+      "type": "INTEGER",
       "nullable": true,
-      "confidence": "high",
       "source": "users.id"
     }
   ],

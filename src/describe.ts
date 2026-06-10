@@ -102,17 +102,23 @@ function describeOutputItems(
   warnings: string[],
 ): DescribeColumn[] {
   return outputItems.map((item, index) => {
-    const name = item.name === null ? null : item.name ?? inferNameFromAst(item.expression, index + 1);
-    const inferenceName = name ?? `column_${index + 1}`;
+    const name = item.name ?? inferNameFromAst(item.expression, index + 1);
+    const inferenceName = name || `column_${index + 1}`;
     const inferred = inferColumn(item.expression, inferenceName, item.schema ?? schema, binds, dialect, item.source, item.tableAliases, item.functionReturnTypes);
     if (inferred.type === 'unknown' && inferred.note) warnings.push(inferred.note);
+    const { confidence: _confidence, ...column } = inferred;
     return {
       index: index + 1,
       name,
-      ...inferred,
+      ...column,
+      type: displayTypeName(column.type, dialect),
     };
   });
 }
+
+type ColumnInference = Omit<DescribeColumn, 'index' | 'name'> & {
+  confidence?: 'high' | 'medium' | 'low';
+};
 
 function inferColumn(
   expression: AstExpression,
@@ -123,7 +129,7 @@ function inferColumn(
   explicitSource?: string,
   tableAliases?: TableAliasMap,
   functionReturnTypes?: Map<string, string>,
-): Omit<DescribeColumn, 'index' | 'name'> {
+): ColumnInference {
   const collation = getAst(expression, 'collation');
   if (isRecord(collation) && isRecord(collation.this)) {
     return inferColumn(collation.this, name, schema, binds, dialect, explicitSource, tableAliases, functionReturnTypes);
@@ -3830,7 +3836,7 @@ function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): s
 
 interface OutputItem {
   expression: AstExpression;
-  name?: string | null;
+  name?: string;
   source?: string;
   schema?: ValidationSchema;
   tableAliases?: TableAliasMap;
@@ -4648,7 +4654,7 @@ function outputItemsForStatement(statement: unknown, schema: ValidationSchema, c
     const schemaWithFunctions = mergeSchemas({ tables: [...context.tableFunctions.values()] }, schema);
     const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schemaWithFunctions), schemaWithFunctions);
     const scopedSchema = mergeSchemas(schemaFromDerivedTables(statement.select, localSchema, dialect), localSchema);
-    return outputItemsFromExpressions(statement.select.expressions, scopedSchema, statement.select, context);
+    return outputItemsFromExpressions(statement.select.expressions, scopedSchema, statement.select, context, dialect);
   }
   if (isRecord(statement.values)) return outputItemsFromValues(statement.values, schema);
   if (isRecord(statement.union)) return outputItemsFromSetOperation(statement.union, schema, context, dialect);
@@ -7241,15 +7247,15 @@ function isMysqlLikeDialect(dialect: string): boolean {
 function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
   if (dialect !== 'tsql') return [];
   if (Array.isArray(select.for_json) && select.for_json.length > 0) {
-    return staticColumns([[null, 'text']]);
+    return staticColumns([['', 'json']]);
   }
   if (Array.isArray(select.for_xml) && select.for_xml.length > 0) {
-    return staticColumns([[null, 'xml']]);
+    return staticColumns([['', 'xml']]);
   }
   return [];
 }
 
-function staticColumns(columns: Array<[name: string | null, type: string]>): OutputItem[] {
+function staticColumns(columns: Array<[name: string, type: string]>): OutputItem[] {
   return columns.map(([name, type]) => ({
     expression: {
       cast: {
@@ -8853,13 +8859,13 @@ function outputItemsFromOutputClause(output: unknown, schema: ValidationSchema, 
   return outputItemsFromExpressions(expressions, schema, owner);
 }
 
-function outputItemsFromExpressions(expressions: unknown, schema: ValidationSchema, owner?: Record<string, unknown>, context?: StatementContext): OutputItem[] {
+function outputItemsFromExpressions(expressions: unknown, schema: ValidationSchema, owner?: Record<string, unknown>, context?: StatementContext, dialect?: string): OutputItem[] {
   if (!Array.isArray(expressions)) return [];
   const expanded: OutputItem[] = [];
   const tableAliases = tableAliasesFromOwner(owner);
   for (const expression of expressions) {
     if (!isRecord(expression)) continue;
-    const unwrapped = unwrapAlias(expression);
+    const unwrapped = unwrapAlias(expression, dialect);
     const star = getAst(unwrapped.expression, 'star');
     if (isRecord(star)) {
       expanded.push(...expandStar(star, schema, owner, tableAliases));
@@ -8870,7 +8876,7 @@ function outputItemsFromExpressions(expressions: unknown, schema: ValidationSche
   return expanded;
 }
 
-function unwrapAlias(expression: AstExpression): OutputItem {
+function unwrapAlias(expression: AstExpression, dialect?: string): OutputItem {
   const alias = getAst(expression, 'alias');
   if (isRecord(alias) && isRecord(alias.this)) {
     return {
@@ -8884,7 +8890,12 @@ function unwrapAlias(expression: AstExpression): OutputItem {
       name: identifierName(expression.alias),
     };
   }
-  return { expression, name: inferNameFromAst(expression, 0) };
+  if (getAst(expression, 'column') || getAst(expression, 'dot') || getAst(expression, 'star')) {
+    return { expression, name: inferNameFromAst(expression, 0) };
+  }
+  if (!dialect) return { expression, name: inferNameFromAst(expression, 0) };
+  const generated = generatedExpressionName(expression, dialect);
+  return { expression, name: generated === undefined ? inferNameFromAst(expression, 0) : generated };
 }
 
 function expandStar(star: Record<string, unknown>, schema: ValidationSchema, owner?: Record<string, unknown>, tableAliases = tableAliasesFromOwner(owner)): OutputItem[] {
@@ -9188,6 +9199,48 @@ function inferNameFromAst(expression: AstExpression, index: number): string {
   return `column_${index || 1}`;
 }
 
+function generatedExpressionName(expression: AstExpression, dialect: string): string | undefined {
+  const count = getAst(expression, 'count');
+  if (isRecord(count) && count.star === true) {
+    if (dialect === 'tsql') return '';
+    if (dialect === 'postgresql') return 'count';
+    if (dialect === 'duckdb') return 'count_star()';
+    if (dialect === 'oracle') return 'COUNT(*)';
+    return 'count(*)';
+  }
+  const add = getAst(expression, 'add');
+  if (isRecord(add)) {
+    const left = simpleGeneratedExpressionPart(add.left, dialect);
+    const right = simpleGeneratedExpressionPart(add.right, dialect);
+    if (left && right) {
+      if (dialect === 'tsql') return '';
+      if (dialect === 'postgresql') return '?column?';
+      if (dialect === 'duckdb') return `(${left} + ${right})`;
+      return dialect === 'oracle' ? `${left.toUpperCase()}+${right.toUpperCase()}` : `${left}+${right}`;
+    }
+  }
+  const upper = getAst(expression, 'upper');
+  if (isRecord(upper) && isRecord(upper.this)) {
+    const arg = simpleGeneratedExpressionPart(upper.this, dialect);
+    if (arg) {
+      if (dialect === 'tsql') return '';
+      if (dialect === 'postgresql') return 'upper';
+      if (dialect === 'oracle') return `UPPER(${arg.toUpperCase()})`;
+      if (dialect === 'duckdb') return `upper("${arg}")`;
+      return `upper(${arg})`;
+    }
+  }
+  return dialect === 'tsql' ? '' : undefined;
+}
+
+function simpleGeneratedExpressionPart(expression: unknown, dialect: string): string | undefined {
+  const column = getAst(expression, 'column');
+  if (isRecord(column)) return identifierName(column.name);
+  const literal = getAst(expression, 'literal');
+  if (isRecord(literal) && typeof literal.value === 'string') return literal.value;
+  return undefined;
+}
+
 function firstExpression(values: unknown[]): AstExpression | undefined {
   return values.find(isRecord);
 }
@@ -9338,6 +9391,160 @@ function normalizeDataTypeName(value: string): string {
   if (compact === 'uniqueidentifier') return 'uuid';
   if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
   return unparameterized;
+}
+
+function displayTypeName(type: string, dialect: string): string {
+  const normalized = normalizeDataTypeName(type);
+  if (normalized === 'unknown') return 'unknown';
+  if (normalized.startsWith('array<')) return displayComplexType(normalized, dialect);
+  if (normalized.startsWith('map<')) return displayComplexType(normalized, dialect);
+  if (normalized.startsWith('struct<')) return displayComplexType(normalized, dialect);
+
+  const family = dialectTypeFamily(dialect);
+  const maps: Record<string, Record<string, string>> = {
+    postgresql: {
+      integer: 'integer',
+      bigint: 'bigint',
+      decimal: 'numeric',
+      boolean: 'boolean',
+      text: 'text',
+      bytes: 'bytea',
+      json: 'json',
+      jsonb: 'jsonb',
+      date: 'date',
+      time: 'time',
+      timestamp: 'timestamp',
+      datetime: 'timestamp',
+      uuid: 'uuid',
+    },
+    mysql: {
+      integer: 'int',
+      bigint: 'bigint',
+      decimal: 'decimal',
+      boolean: 'tinyint(1)',
+      text: 'varchar(255)',
+      bytes: 'varbinary(255)',
+      json: 'json',
+      jsonb: 'json',
+      date: 'date',
+      time: 'time',
+      timestamp: 'timestamp',
+      datetime: 'datetime',
+      uuid: 'char(36)',
+    },
+    sqlite: {
+      integer: 'integer',
+      bigint: 'integer',
+      decimal: 'real',
+      boolean: 'integer',
+      text: 'text',
+      bytes: 'blob',
+      json: 'text',
+      jsonb: 'blob',
+      date: 'text',
+      time: 'text',
+      timestamp: 'text',
+      datetime: 'text',
+      uuid: 'text',
+    },
+    tsql: {
+      integer: 'int',
+      bigint: 'bigint',
+      decimal: 'decimal(38, 10)',
+      boolean: 'bit',
+      text: 'nvarchar(max)',
+      bytes: 'varbinary(255)',
+      json: 'nvarchar(max)',
+      jsonb: 'nvarchar(max)',
+      xml: 'xml',
+      date: 'date',
+      time: 'time',
+      timestamp: 'datetime2',
+      datetime: 'datetime2',
+      uuid: 'uniqueidentifier',
+    },
+    oracle: {
+      integer: 'number(10)',
+      bigint: 'number(19)',
+      decimal: 'number',
+      boolean: 'number(1)',
+      text: 'varchar2(255)',
+      bytes: 'raw(255)',
+      json: 'json',
+      jsonb: 'json',
+      xml: 'xmltype',
+      date: 'date',
+      time: 'timestamp',
+      timestamp: 'timestamp',
+      datetime: 'timestamp',
+      uuid: 'raw(16)',
+    },
+    duckdb: {
+      integer: 'integer',
+      bigint: 'bigint',
+      decimal: 'decimal(18, 3)',
+      boolean: 'boolean',
+      text: 'varchar',
+      bytes: 'blob',
+      json: 'json',
+      jsonb: 'json',
+      date: 'date',
+      time: 'time',
+      timestamp: 'timestamp',
+      datetime: 'timestamp',
+      uuid: 'uuid',
+    },
+    bigquery: {
+      integer: 'int64',
+      bigint: 'int64',
+      decimal: 'numeric',
+      boolean: 'bool',
+      text: 'string',
+      bytes: 'bytes',
+      json: 'json',
+      jsonb: 'json',
+      date: 'date',
+      time: 'time',
+      timestamp: 'timestamp',
+      datetime: 'datetime',
+      uuid: 'string',
+    },
+    generic: {
+      integer: 'INTEGER',
+      bigint: 'BIGINT',
+      decimal: 'DECIMAL',
+      boolean: 'BOOLEAN',
+      text: 'VARCHAR(255)',
+      bytes: 'VARBINARY(255)',
+      json: 'VARCHAR(4000)',
+      jsonb: 'VARCHAR(4000)',
+      xml: 'SQLXML',
+      date: 'DATE',
+      time: 'TIME',
+      timestamp: 'TIMESTAMP',
+      datetime: 'TIMESTAMP',
+      uuid: 'VARCHAR(36)',
+    },
+  };
+  return maps[family]?.[normalized] ?? normalized;
+}
+
+function dialectTypeFamily(dialect: string): string {
+  if (dialect === 'postgresql' || dialect === 'redshift' || dialect === 'cockroachdb') return 'postgresql';
+  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return 'mysql';
+  if (dialect === 'sqlite') return 'sqlite';
+  if (dialect === 'tsql') return 'tsql';
+  if (dialect === 'oracle') return 'oracle';
+  if (dialect === 'duckdb') return 'duckdb';
+  if (dialect === 'bigquery') return 'bigquery';
+  return 'generic';
+}
+
+function displayComplexType(type: string, dialect: string): string {
+  if (dialectTypeFamily(dialect) === 'bigquery') {
+    return type.replace(/^array</, 'array<').replace(/^struct</, 'struct<');
+  }
+  return type;
 }
 
 function parseParameterizedType(value: string): string | undefined {

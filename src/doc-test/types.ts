@@ -19,7 +19,7 @@ export interface GivenSpec {
 export type ThenKind = 'columns' | 'error' | 'none' | 'skip';
 
 export interface ExpectedColumn {
-  name: string | null;
+  name: string;
   type: string;
   source?: string;
 }
