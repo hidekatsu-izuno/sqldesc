@@ -30,7 +30,7 @@ dialect: mysql
 | JSON | JSON_EXTRACT / JSON_UNQUOTE、JSON_OBJECT / JSON_ARRAY、JSON_SET / JSON_REMOVE、JSON_VALID / JSON_TYPE、JSON_KEYS / JSON_SEARCH、JSON_CONTAINS / JSON_LENGTH、JSON_INSERT / JSON_MERGE_PATCH、JSON_PRETTY、JSON_TABLE |
 | 全文検索 | MATCH ... AGAINST（NATURAL LANGUAGE）、MATCH ... AGAINST（BOOLEAN MODE） |
 | DUAL | SELECT FROM DUAL |
-| DML | INSERT、ON DUPLICATE KEY UPDATE、REPLACE INTO、UPDATE、DELETE、INSERT ... SELECT、INSERT RETURNING |
+| DML | INSERT、ON DUPLICATE KEY UPDATE、REPLACE INTO、UPDATE、DELETE、INSERT ... SELECT、INSERT 後の LAST_INSERT_ID |
 | LATERAL | LATERAL 派生テーブル |
 | スキーマ修飾 | mydb.users、mydb エイリアス |
 | カタログ | information_schema.tables、information_schema.columns、performance_schema.global_variables、information_schema.processlist、events_statements_summary_by_digest |
@@ -113,6 +113,24 @@ CREATE TABLE documents (
   title VARCHAR(200),
   body TEXT,
   FULLTEXT KEY ft_body (body)
+);
+```
+
+## Prepare-3: mydb.users テーブル
+
+```yaml
+kind: schema-ddl
+dialect: mysql
+```
+
+```sql
+CREATE DATABASE IF NOT EXISTS mydb;
+DROP TABLE IF EXISTS mydb.users;
+CREATE TABLE mydb.users (
+  id   INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  age  INT,
+  dept VARCHAR(50)
 );
 ```
 
@@ -527,7 +545,7 @@ dialect: mysql
 ```
 
 ```sql
-SELECT id, name FROM users JOIN active_users USING (id)
+SELECT id, users.name FROM users JOIN active_users USING (id)
 ```
 
 ### Then
@@ -2726,7 +2744,7 @@ verify: true
 - `diagnostics`: `SQLDESC_NO_RESULT_COLUMNS`
 
 ---
-## INSERT RETURNING
+## INSERT 後の LAST_INSERT_ID
 
 ### Given
 
@@ -2741,20 +2759,22 @@ dialect: mysql
 ```
 
 ```sql
-INSERT INTO users(name) VALUES ('alice') RETURNING id, name
+INSERT INTO users(name) VALUES ('alice');
+SELECT LAST_INSERT_ID() AS id, 'alice' AS name
 ```
 
 ### Then
 
 ```yaml
 kind: columns
+target: last
 verify: true
 ```
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
+| id | integer | expression |
+| name | text | literal |
 
 ---
 # LATERAL
@@ -2805,7 +2825,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2
+prepare: Prepare-2, Prepare-3
 ```
 
 ### When
@@ -2836,7 +2856,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2
+prepare: Prepare-2, Prepare-3
 ```
 
 ### When
@@ -3481,6 +3501,7 @@ dialect: mysql
 ```
 
 ```sql
+DROP TABLE IF EXISTS backup;
 CREATE TABLE backup AS SELECT id, name FROM users;
 SELECT id FROM backup
 ```
@@ -3817,6 +3838,7 @@ dialect: mysql
 ```
 
 ```sql
+CREATE INDEX idx_users_name ON users(name);
 DROP INDEX idx_users_name ON users
 ```
 
@@ -3907,7 +3929,7 @@ dialect: mysql
 ```
 
 ```sql
-KILL 1
+KILL CONNECTION CONNECTION_ID()
 ```
 
 ### Then
@@ -3961,6 +3983,9 @@ verify: true
 
 | カテゴリ | 例 | 期待される挙動 |
 |----------|-----|----------------|
+| RETURNING 句 | `INSERT ... RETURNING` | MySQL 非対応。`LAST_INSERT_ID()` 等で代替する |
+| CREATE PROCEDURE | `BEGIN ... END` 内の `;` | mysql クライアントでは `DELIMITER` 変更が必要な場合あり |
+| KILL | `KILL thread_id` | 実在する接続 ID を指定する必要がある |
 | SHOW TABLE STATUS | カタログ列 | 方言横断の列名になる場合あり |
 | データベース修飾（メタなし） | `mydb.users` エイリアス | `unknown` になりやすい（`Prepare-2` で解決） |
 | DML | `INSERT` / `UPDATE` / `DELETE`（RETURNING なし） | 結果列なし |

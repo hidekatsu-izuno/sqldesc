@@ -80,6 +80,9 @@ multi-statement SQL. `DescribeResult.statements` records each parsed statement's
 result-shape classification: statically described, no result columns, runtime
 dependent, metadata dependent, or unknown. Result column `source` values include
 schema-qualified table names when schema metadata provides them.
+In CLI JSON mode these `statements`, `warnings`, and `diagnostics` fields are
+emitted unchanged, so automation can distinguish no-result SQL from
+runtime-dependent or metadata-dependent result shapes.
 
 ## Scope
 

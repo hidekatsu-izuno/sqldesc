@@ -26,8 +26,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@polyglot-sql/sdk": "^0.4.3",
-    "easy-table": "^1.2.0"
+    "@polyglot-sql/sdk": "^0.4.3"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

@@ -353,6 +353,66 @@ describe('sqldesc CLI', () => {
     assert.ok(result.stdout.includes('integer'));
   });
 
+  it('returns structured diagnostics for no-result SQL in JSON output', async () => {
+    const result = await runCli(['--sql', 'create table t(id int)', '--dialect', 'postgres', '--json']);
+
+    assert.strictEqual(result.code, 0);
+    assert.strictEqual(result.stderr, '');
+    const json = JSON.parse(result.stdout);
+    assert.deepStrictEqual(json.columns, []);
+    assert.deepStrictEqual(json.resultSets, []);
+    assert.partialDeepStrictEqual(json.statements, [
+      { index: 1, kind: 'create_table', resultKind: 'none' },
+    ]);
+    assert.partialDeepStrictEqual(json.diagnostics, [
+      {
+        code: 'SQLDESC_NO_RESULT_COLUMNS',
+        severity: 'info',
+      },
+    ]);
+  });
+
+  it('returns structured diagnostics for metadata-dependent SQL in JSON output', async () => {
+    const result = await runCli(['--sql', 'describe missing_table; select 1 as one', '--json']);
+
+    assert.strictEqual(result.code, 0);
+    assert.strictEqual(result.stderr, '');
+    const json = JSON.parse(result.stdout);
+    assert.partialDeepStrictEqual(json.columns, [
+      { name: 'one', type: 'integer' },
+    ]);
+    assert.partialDeepStrictEqual(json.statements, [
+      { index: 1, kind: 'describe', resultKind: 'metadata' },
+      { index: 2, kind: 'select', resultKind: 'static' },
+    ]);
+    assert.ok(json.diagnostics.some((entry: Record<string, unknown>) => (
+      entry.code === 'SQLDESC_METADATA_RESULT_SHAPE' && entry.severity === 'warning'
+    )));
+  });
+
+  it('prints runtime-dependent result-shape diagnostics in text output', async () => {
+    const result = await runCli(['--sql', 'call missing_proc()', '--dialect', 'mysql']);
+
+    assert.strictEqual(result.code, 0);
+    assert.match(result.stderr, /warning: SQLDESC_RUNTIME_RESULT_SHAPE: COMMAND parses successfully/);
+    assert.strictEqual(
+      result.stderr.match(/COMMAND parses successfully, but its result-set shape depends on runtime database behavior\./g)?.length,
+      1,
+    );
+  });
+
+  it('prints metadata-dependent result-shape diagnostics once in text output', async () => {
+    const result = await runCli(['--sql', 'describe missing_table; select 1 as one']);
+
+    assert.strictEqual(result.code, 0);
+    assert.match(result.stdout, /one/);
+    assert.match(result.stderr, /warning: SQLDESC_METADATA_RESULT_SHAPE: DESCRIBE parses successfully/);
+    assert.strictEqual(
+      result.stderr.match(/DESCRIBE parses successfully, but its result-set shape is dialect-specific metadata and cannot be inferred statically\./g)?.length,
+      1,
+    );
+  });
+
   it('returns a clear error for mixed bind syntax', async () => {
     const result = await runCli(['--sql', 'select :id as id', '--binds', 'id=int,text', '--json']);
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import Table from 'easy-table';
 import { describeQuery } from './describe.js';
 import { getSupportedDialects } from './dialect.js';
 import { resolveSchemaGlobPatterns } from './schema.js';
@@ -91,7 +91,8 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
       io.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     } else {
       io.stdout.write(`${formatResultSets(result.resultSets)}\n`);
-      for (const warning of result.warnings) {
+      const diagnosticMessages = new Set(result.diagnostics.map((diagnostic) => diagnostic.message));
+      for (const warning of result.warnings.filter((warning) => !diagnosticMessages.has(warning))) {
         io.stderr.write(`warning: ${warning}\n`);
       }
       for (const diagnostic of result.diagnostics) {
@@ -154,17 +155,35 @@ function formatResultSets(resultSets: Array<{ index: number; columns: Array<{ in
 }
 
 function formatTable(columns: Array<{ index: number; name: string; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }>): string {
-  return Table.print(columns.map((column) => ({
-    index: String(column.index),
-    name: column.name,
-    type: column.type,
-    nullable: column.nullable === undefined ? '' : String(column.nullable),
-    confidence: column.confidence,
-    source: column.source ?? '',
-    note: column.note ?? '',
-  })));
+  const headers = ['index', 'name', 'type', 'nullable', 'confidence', 'source', 'note'];
+  const rows = columns.map((column) => [
+    String(column.index),
+    column.name,
+    column.type,
+    column.nullable === undefined ? '' : String(column.nullable),
+    column.confidence,
+    column.source ?? '',
+    column.note ?? '',
+  ]);
+  if (rows.length === 0) return '\n';
+  const widths = headers.map((header, index) => Math.max(
+    header.length,
+    ...rows.map((row) => row[index]?.length ?? 0),
+  ));
+  const formatRow = (row: string[]) => row.map((cell, index) => cell.padEnd(widths[index] ?? 0)).join('  ').trimEnd();
+  const separator = widths.map((width) => '-'.repeat(width)).join('  ');
+  return [
+    formatRow(headers),
+    separator,
+    ...rows.map(formatRow),
+  ].join('\n');
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (isCliEntrypoint()) {
   process.exitCode = await main();
+}
+
+function isCliEntrypoint(): boolean {
+  if (!process.argv[1]) return false;
+  return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(path.resolve(process.argv[1]));
 }
