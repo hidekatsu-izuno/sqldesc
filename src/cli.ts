@@ -148,7 +148,7 @@ async function readSql(file?: string, inlineSql?: string, stdin: NodeJS.ReadStre
   throw new Error('No SQL input. Provide a file, --sql, or stdin.');
 }
 
-function formatResultSets(resultSets: Array<{ index: number; columns: Array<{ index: number; name: string; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }> }>): string {
+function formatResultSets(resultSets: Array<{ index: number; columns: Array<{ index: number; name: string | null; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }> }>): string {
   if (resultSets.length === 0) {
     return formatTable([]);
   }
@@ -158,11 +158,11 @@ function formatResultSets(resultSets: Array<{ index: number; columns: Array<{ in
   return resultSets.map((resultSet) => `Result set ${resultSet.index}\n${formatTable(resultSet.columns)}`).join('\n');
 }
 
-function formatTable(columns: Array<{ index: number; name: string; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }>): string {
+function formatTable(columns: Array<{ index: number; name: string | null; type: string; nullable?: boolean; confidence: string; source?: string; note?: string }>): string {
   const headers = ['index', 'name', 'type', 'nullable', 'confidence', 'source', 'note'];
   const rows = columns.map((column) => [
     String(column.index),
-    column.name,
+    column.name ?? '',
     column.type,
     column.nullable === undefined ? '' : String(column.nullable),
     column.confidence,

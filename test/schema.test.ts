@@ -212,6 +212,26 @@ describe('parseCreateViews', () => {
         ],
       },
     ]);
+
+    assert.deepStrictEqual(parseCreateViews('create materialized view v(a, b) as select * from users', {
+      tables: [
+        {
+          name: 'users',
+          columns: [
+            { name: 'id', type: 'integer' },
+            { name: 'name', type: 'text' },
+          ],
+        },
+      ],
+    }, 'postgres'), [
+      {
+        name: 'v',
+        columns: [
+          { name: 'a', type: 'integer', nullable: undefined },
+          { name: 'b', type: 'text', nullable: undefined },
+        ],
+      },
+    ]);
   });
 
   it('extracts VALUES-backed view and CTAS columns when Polyglot omits CREATE AST', () => {
@@ -605,6 +625,16 @@ describe('parseCreateAsTables', () => {
         columns: [
           { name: 'id', type: 'integer' },
           { name: 'name', type: 'text' },
+        ],
+      },
+    ]);
+    assert.deepStrictEqual(parseCreateAsTables('create table expanded_users (like users, age int)', baseSchema, 'postgres'), [
+      {
+        name: 'expanded_users',
+        columns: [
+          { name: 'id', type: 'integer' },
+          { name: 'name', type: 'text' },
+          { name: 'age', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
         ],
       },
     ]);

@@ -1002,7 +1002,10 @@ function tableFromCreateAsStatement(statement: unknown, schema: ValidationSchema
   const schemaName = tableSchemaFromRef(createTable.name);
   if (!createTable.as_select) {
     const copied = copiedTableColumns(createTable, schema);
-    return copied ? [{ name, ...(schemaName ? { schema: schemaName } : {}), columns: copied }] : [];
+    const explicitColumns = Array.isArray(createTable.columns)
+      ? createTable.columns.map((column) => schemaColumnFromColumnDef(column)).filter((column): column is SchemaColumn => column !== null)
+      : [];
+    return copied ? [{ name, ...(schemaName ? { schema: schemaName } : {}), columns: mergeSchemaColumns(copied, explicitColumns) }] : [];
   }
   const explicitColumns = Array.isArray(createTable.columns) ? createTable.columns : [];
   if (explicitColumns.length > 0) {
@@ -1046,6 +1049,19 @@ function copiedTableColumns(createTable: Record<string, unknown>, schema: Valida
     return true;
   });
   return source ? source.columns.map((column) => ({ ...column })) : undefined;
+}
+
+function mergeSchemaColumns(baseColumns: SchemaColumn[], extraColumns: SchemaColumn[]): SchemaColumn[] {
+  const columns = baseColumns.map((column) => ({ ...column }));
+  for (const column of extraColumns) {
+    const existingIndex = columns.findIndex((candidate) => candidate.name.toLowerCase() === column.name.toLowerCase());
+    if (existingIndex >= 0) {
+      columns[existingIndex] = column;
+    } else {
+      columns.push(column);
+    }
+  }
+  return columns;
 }
 
 function synonymFromStatement(statement: unknown, schema: ValidationSchema): SchemaTable[] {
@@ -1096,7 +1112,7 @@ function viewFromStatement(statement: unknown, schema: ValidationSchema): Schema
   const name = tableNameFromRef(view.name);
   if (!name) return [];
   const schemaName = tableSchemaFromRef(view.name);
-  const explicitColumns = Array.isArray(view.columns) ? view.columns : [];
+  const explicitColumns = definitionColumns(view);
   const columns = columnsFromQuery(view.query, schema, explicitColumns);
   return [{ name, ...(schemaName ? { schema: schemaName } : {}), columns }];
 }
@@ -1154,7 +1170,7 @@ function columnsFromQuery(query: unknown, schema: ValidationSchema, explicitColu
     if (isRecord(star)) {
       return applyExplicitColumnNames(columnsFromStar(star, effectiveSchema, fromTables, select, nullableRelations), explicitColumns, index);
     }
-    const columnName = cleanIdentifier(identifierName(explicitColumns[index]) ?? outputName(expression, index + 1));
+    const columnName = cleanIdentifier(definitionColumnName(explicitColumns[index]) ?? outputName(expression, index + 1));
     const base = baseExpression(expression);
     return [{
       name: columnName,
@@ -1168,8 +1184,19 @@ function applyExplicitColumnNames(columns: SchemaColumn[], explicitColumns: unkn
   if (explicitColumns.length === 0) return columns;
   return columns.map((column, index) => ({
     ...column,
-    name: cleanIdentifier(identifierName(explicitColumns[offset + index]) ?? column.name),
+    name: cleanIdentifier(definitionColumnName(explicitColumns[offset + index]) ?? column.name),
   }));
+}
+
+function definitionColumns(definition: Record<string, unknown>): unknown[] {
+  if (Array.isArray(definition.columns) && definition.columns.length > 0) return definition.columns;
+  if (isRecord(definition.schema) && Array.isArray(definition.schema.expressions)) return definition.schema.expressions;
+  return [];
+}
+
+function definitionColumnName(column: unknown): string | undefined {
+  if (isRecord(column) && isRecord(column.column_def)) return definitionColumnName(column.column_def);
+  return isRecord(column) ? identifierName(column.name) ?? identifierName(column) : identifierName(column);
 }
 
 function schemaFunctionReturnType(expression: unknown, schema: ValidationSchema): string | undefined {

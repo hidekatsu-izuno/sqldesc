@@ -800,6 +800,42 @@ describe('describeQuery', () => {
       ['n', 'integer', 'function'],
     ]);
 
+    const bigqueryExpressionBodyResult = await describeQuery({
+      dialect: 'bigquery',
+      schema,
+      sql: 'create temp function f(x int64) as (x + 1); select f(age) as n from users',
+    });
+    assert.deepStrictEqual(bigqueryExpressionBodyResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['n', 'integer', 'function'],
+    ]);
+
+    const duckdbMacroResult = await describeQuery({
+      dialect: 'duckdb',
+      schema,
+      sql: 'create macro add_one(x) as x + 1; select add_one(age) as n from users',
+    });
+    assert.deepStrictEqual(duckdbMacroResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['n', 'integer', 'function'],
+    ]);
+
+    const droppedFunctionResult = await describeQuery({
+      dialect: 'postgres',
+      sql: 'create function f(x int) returns int language sql as $$ select x $$; select f(1) as before_drop; drop function f; select f(1) as after_drop',
+    });
+    assert.deepStrictEqual(droppedFunctionResult.resultSets.map((resultSet) => resultSet.index), [2, 4]);
+    assert.deepStrictEqual(droppedFunctionResult.statements.map((statement) => [statement.kind, statement.resultKind]), [
+      ['create_function', 'none'],
+      ['select', 'static'],
+      ['drop_function', 'none'],
+      ['select', 'static'],
+    ]);
+    assert.deepStrictEqual(droppedFunctionResult.resultSets[0]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['before_drop', 'integer', 'function'],
+    ]);
+    assert.deepStrictEqual(droppedFunctionResult.resultSets[1]?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['after_drop', 'unknown', undefined],
+    ]);
+
     const ctasResult = await describeQuery({
       dialect: 'postgres',
       schema,
@@ -2758,6 +2794,15 @@ describe('describeQuery', () => {
       ['user_id', 'integer', 'users.id'],
       ['label', 'text', 'users.name'],
     ]);
+
+    const materializedResult = await describeQuery({
+      sql: 'create table t(id int, name text); create materialized view v(a, b) as select * from t; select a, b from v',
+      dialect: 'postgres',
+    });
+    assert.deepStrictEqual(materializedResult.resultSets.at(-1)?.columns.map((column) => [column.name, column.type, column.source]), [
+      ['a', 'integer', 'v.a'],
+      ['b', 'text', 'v.b'],
+    ]);
   });
 
   it('describes create table as select query shapes', async () => {
@@ -3158,7 +3203,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(jsonResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['JSON_F52E2B61-18A1-11d1-B105-00805F49916B', 'text', 'cast'],
+      [null, 'text', 'cast'],
     ]);
 
     const xmlResult = await describeQuery({
@@ -3167,7 +3212,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(xmlResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['XML_F52E2B61-18A1-11d1-B105-00805F49916B', 'xml', 'cast'],
+      [null, 'xml', 'cast'],
     ]);
   });
 
@@ -3564,6 +3609,22 @@ describe('describeQuery', () => {
       ['id', 'decimal', 'cast'],
       ['name', 'text', 'cast'],
     ]);
+
+    const droppedProcedureResult = await describeQuery({
+      sql: "create procedure p() language sql as $$ select 1 as id $$; call p(); drop procedure p; call p()",
+      dialect: 'postgres',
+    });
+    assert.deepStrictEqual(droppedProcedureResult.resultSets.map((resultSet) => resultSet.index), [2]);
+    assert.deepStrictEqual(droppedProcedureResult.statements.map((statement) => [statement.kind, statement.resultKind]), [
+      ['create_procedure', 'none'],
+      ['command', 'static'],
+      ['drop_procedure', 'none'],
+      ['command', 'runtime'],
+    ]);
+    assert.ok(droppedProcedureResult.diagnostics.some((entry) => matchesPartial(entry, {
+      code: 'SQLDESC_RUNTIME_RESULT_SHAPE',
+      severity: 'warning',
+    })));
   });
 
   it('uses procedure result columns from the supplied schema', async () => {

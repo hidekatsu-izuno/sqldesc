@@ -1,7 +1,7 @@
 export { parseBinds } from './binds.js';
 export { describeQuery } from './describe.js';
 export { assertSupportedDialect, getSupportedDialects, isSupportedDialect, normalizeDialect } from './dialect.js';
-export { transformJdbcSql } from './jdbc.js';
+export { normalizeJdbcBindTypes, transformJdbcSql } from './jdbc.js';
 export { loadSchema, parseCreateTables } from './schema.js';
 export type {
   BindSpec,

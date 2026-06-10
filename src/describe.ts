@@ -1,7 +1,7 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
 import { assertSupportedDialect } from './dialect.js';
-import { transformJdbcSql } from './jdbc.js';
+import { normalizeJdbcBindTypes, transformJdbcSql } from './jdbc.js';
 import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import type {
   BindSpec,
@@ -21,7 +21,8 @@ import type {
 export async function describeQuery(input: DescribeInput): Promise<DescribeResult> {
   const dialect = assertSupportedDialect(input.dialect);
   const sql = input.jdbc ? transformJdbcSql(input.sql, dialect) : input.sql;
-  const binds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
+  const parsedBinds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
+  const binds = input.jdbc ? normalizeJdbcBindTypes(parsedBinds, dialect) : parsedBinds;
   const loadedSchema = input.schemaFiles?.length
     ? await loadSchemaFiles(input.schemaFiles, { dialect })
     : input.schemaPatterns?.length
@@ -101,8 +102,9 @@ function describeOutputItems(
   warnings: string[],
 ): DescribeColumn[] {
   return outputItems.map((item, index) => {
-    const name = item.name ?? inferNameFromAst(item.expression, index + 1);
-    const inferred = inferColumn(item.expression, name, item.schema ?? schema, binds, dialect, item.source, item.tableAliases, item.functionReturnTypes);
+    const name = item.name === null ? null : item.name ?? inferNameFromAst(item.expression, index + 1);
+    const inferenceName = name ?? `column_${index + 1}`;
+    const inferred = inferColumn(item.expression, inferenceName, item.schema ?? schema, binds, dialect, item.source, item.tableAliases, item.functionReturnTypes);
     if (inferred.type === 'unknown' && inferred.note) warnings.push(inferred.note);
     return {
       index: index + 1,
@@ -3828,7 +3830,7 @@ function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): s
 
 interface OutputItem {
   expression: AstExpression;
-  name?: string;
+  name?: string | null;
   source?: string;
   schema?: ValidationSchema;
   tableAliases?: TableAliasMap;
@@ -3847,9 +3849,11 @@ function extractResultSets(parsedAst: unknown, schema: ValidationSchema, dialect
     const items = outputItemsForStatement(statement, currentSchema, context, dialect);
     rememberPreparedStatement(statement, context);
     rememberFunctionDefinition(statement, context);
+    rememberRawScalarMacroDefinition(statement, currentSchema, context, dialect);
     rememberProcedureDefinition(statement, currentSchema, context, dialect);
     rememberTypeDefinition(statement, context);
     forgetPreparedStatement(statement, context);
+    forgetRoutineDefinition(statement, context);
     currentSchema = schemaAfterStatement(statement, currentSchema, context);
     return items;
   });
@@ -4387,7 +4391,7 @@ function visitAst(value: unknown, visitor: (node: Record<string, unknown>) => vo
 }
 
 function suppressResolvedColumnDiagnostics(diagnostics: Diagnostic[], columns: DescribeColumn[]): Diagnostic[] {
-  const resolvedColumnNames = new Set(columns.flatMap((column) => column.source ? [column.name.toLowerCase()] : []));
+  const resolvedColumnNames = new Set(columns.flatMap((column) => column.source && column.name ? [column.name.toLowerCase()] : []));
   if (resolvedColumnNames.size === 0) return diagnostics;
   return diagnostics.filter((diagnostic) => {
     const match = diagnostic.message.match(/Unknown column '([^']+)'/);
@@ -5080,7 +5084,7 @@ function tableFromCreateViewDefinition(createView: Record<string, unknown>, sche
   const name = relationNameFromRef(createView.name);
   if (!name || !isRecord(createView.query)) return undefined;
   const schemaName = relationSchemaFromRef(createView.name);
-  const explicitColumns = Array.isArray(createView.columns) ? createView.columns : [];
+  const explicitColumns = definitionColumns(createView);
   const items = outputItemsForStatement(createView.query, schema, context);
   return {
     name,
@@ -5103,11 +5107,25 @@ function tableFromCreateTableDefinition(createTable: Record<string, unknown>, sc
     };
   }
   const copied = copiedTableColumns(createTable, schema);
-  if (copied) return { name, ...(schemaName ? { schema: schemaName } : {}), columns: copied };
-  const columns = Array.isArray(createTable.columns)
+  const explicitColumns = Array.isArray(createTable.columns)
     ? createTable.columns.map((column) => schemaColumnFromDefinition(column, context)).filter((column): column is SchemaColumn => column !== undefined)
     : [];
+  if (copied) return { name, ...(schemaName ? { schema: schemaName } : {}), columns: mergeSchemaColumns(copied, explicitColumns) };
+  const columns = explicitColumns;
   return columns.length > 0 ? { name, ...(schemaName ? { schema: schemaName } : {}), columns } : undefined;
+}
+
+function mergeSchemaColumns(baseColumns: SchemaColumn[], extraColumns: SchemaColumn[]): SchemaColumn[] {
+  const columns = baseColumns.map((column) => ({ ...column }));
+  for (const column of extraColumns) {
+    const existingIndex = columns.findIndex((candidate) => candidate.name.toLowerCase() === column.name.toLowerCase());
+    if (existingIndex >= 0) {
+      columns[existingIndex] = column;
+    } else {
+      columns.push(column);
+    }
+  }
+  return columns;
 }
 
 function tableFromCreateSynonymDefinition(createSynonym: Record<string, unknown>, schema: ValidationSchema): SchemaTable | undefined {
@@ -5199,9 +5217,7 @@ function rememberFunctionDefinition(statement: unknown, context: StatementContex
 }
 
 function inferCreateFunctionBodyReturnType(createFunction: Record<string, unknown>): string | undefined {
-  const returnExpression = isRecord(createFunction.body) && isRecord(createFunction.body.Return)
-    ? createFunction.body.Return
-    : undefined;
+  const returnExpression = createFunctionReturnExpression(createFunction);
   if (!returnExpression) return undefined;
   const parameterColumns = Array.isArray(createFunction.parameters)
     ? createFunction.parameters.flatMap((parameter): SchemaColumn[] => {
@@ -5212,6 +5228,54 @@ function inferCreateFunctionBodyReturnType(createFunction: Record<string, unknow
       })
     : [];
   return inferColumn(returnExpression, 'return', { tables: [{ name: '__function_parameters', columns: parameterColumns }] }, { mode: 'none', binds: [] }, 'generic').type;
+}
+
+function createFunctionReturnExpression(createFunction: Record<string, unknown>): Record<string, unknown> | undefined {
+  const body = isRecord(createFunction.body) ? createFunction.body : undefined;
+  if (!body) return undefined;
+  if (isRecord(body.Return)) return body.Return;
+  if (isRecord(body.Expression)) return body.Expression;
+  return undefined;
+}
+
+function rememberRawScalarMacroDefinition(statement: unknown, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): void {
+  if (!isRecord(statement) || !isRecord(statement.raw)) return;
+  const sql = typeof statement.raw.sql === 'string' ? statement.raw.sql : '';
+  const definition = rawScalarMacroDefinition(sql);
+  if (!definition) return;
+  const type = inferRawScalarMacroReturnType(definition, schema, context, dialect);
+  if (type) context.functionReturnTypes.set(definition.name.toLowerCase(), type);
+}
+
+function rawScalarMacroDefinition(sql: string): { name: string; parameters: string[]; expression: string } | undefined {
+  const create = sql.match(/^create\s+(?:or\s+replace\s+)?macro\s+([`"[\]\w$]+)\s*\(([^)]*)\)\s+as\s+(?!table\b)([\s\S]+)$/i);
+  if (!create) return undefined;
+  const name = cleanIdentifier(create[1]);
+  const expression = create[3]?.trim();
+  if (!name || !expression) return undefined;
+  return {
+    name,
+    parameters: splitTopLevel(create[2] ?? '', ',').map((parameter) => cleanIdentifier(parameter.trim().split(/\s+/)[0] ?? '')).filter(Boolean),
+    expression,
+  };
+}
+
+function inferRawScalarMacroReturnType(definition: { parameters: string[]; expression: string }, schema: ValidationSchema, context: StatementContext, dialect: string): string | undefined {
+  const parameterColumns = definition.parameters.map((name) => ({ name, type: 'unknown' }));
+  const parameterSchema = mergeSchemas({ tables: [{ name: '__macro_parameters', columns: parameterColumns }] }, schema);
+  try {
+    const parsed = parse(`select ${definition.expression} as __sqldesc_macro_return from __macro_parameters`, dialect as never) as PolyglotParseResult;
+    if (!parsed.success) return undefined;
+    const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
+    const statement = statements.find(isRecord);
+    if (!statement) return undefined;
+    const item = outputItemsForStatement(statement, parameterSchema, context, dialect)[0];
+    if (!item) return undefined;
+    const inferred = inferColumn(item.expression, item.name ?? 'return', item.schema ?? parameterSchema, { mode: 'none', binds: [] }, dialect, item.source, item.tableAliases, item.functionReturnTypes);
+    return inferred.type === 'unknown' ? undefined : inferred.type;
+  } catch {
+    return undefined;
+  }
 }
 
 function rememberProcedureDefinition(statement: unknown, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): void {
@@ -5315,6 +5379,34 @@ function forgetPreparedStatement(statement: unknown, context: StatementContext):
     return;
   }
   context.prepared.delete(cleanIdentifier(name).toLowerCase());
+}
+
+function forgetRoutineDefinition(statement: unknown, context: StatementContext): void {
+  if (!isRecord(statement)) return;
+  if (isRecord(statement.drop_function)) {
+    deleteRoutineKeys(context.functionReturnTypes, routineDropKeys(statement.drop_function.name));
+  }
+  if (isRecord(statement.drop_procedure)) {
+    deleteRoutineKeys(context.procedureResultSets, routineDropKeys(statement.drop_procedure.name));
+  }
+}
+
+function routineDropKeys(nameRef: unknown): string[] {
+  const name = relationNameFromRef(nameRef)?.toLowerCase();
+  if (!name) return [];
+  const schema = isRecord(nameRef) ? identifierName(nameRef.schema)?.toLowerCase() : undefined;
+  return schema ? [`${schema}.${name}`, name] : [name];
+}
+
+function deleteRoutineKeys<T>(map: Map<string, T>, keys: string[]): void {
+  for (const key of keys) {
+    map.delete(key);
+    if (!key.includes('.')) {
+      for (const existing of [...map.keys()]) {
+        if (existing.endsWith(`.${key}`)) map.delete(existing);
+      }
+    }
+  }
 }
 
 function outputItemsFromExecute(execute: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
@@ -7149,15 +7241,15 @@ function isMysqlLikeDialect(dialect: string): boolean {
 function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
   if (dialect !== 'tsql') return [];
   if (Array.isArray(select.for_json) && select.for_json.length > 0) {
-    return staticColumns([['JSON_F52E2B61-18A1-11d1-B105-00805F49916B', 'text']]);
+    return staticColumns([[null, 'text']]);
   }
   if (Array.isArray(select.for_xml) && select.for_xml.length > 0) {
-    return staticColumns([['XML_F52E2B61-18A1-11d1-B105-00805F49916B', 'xml']]);
+    return staticColumns([[null, 'xml']]);
   }
   return [];
 }
 
-function staticColumns(columns: Array<[name: string, type: string]>): OutputItem[] {
+function staticColumns(columns: Array<[name: string | null, type: string]>): OutputItem[] {
   return columns.map(([name, type]) => ({
     expression: {
       cast: {
@@ -7237,7 +7329,7 @@ function executeName(execute: Record<string, unknown>): string | undefined {
 
 function outputItemsFromCreateView(createView: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
   if (!isRecord(createView.query)) return [];
-  return applyDefinitionColumnNames(outputItemsForStatement(createView.query, schema, context, dialect), createView.columns);
+  return applyDefinitionColumnNames(outputItemsForStatement(createView.query, schema, context, dialect), definitionColumns(createView));
 }
 
 function outputItemsFromCreateTable(createTable: Record<string, unknown>, schema: ValidationSchema, context: StatementContext, dialect = 'generic'): OutputItem[] {
@@ -7255,7 +7347,14 @@ function applyDefinitionColumnNames(items: OutputItem[], columnDefinitions: unkn
 }
 
 function columnDefinitionName(column: unknown): string | undefined {
+  if (isRecord(column) && isRecord(column.column_def)) return columnDefinitionName(column.column_def);
   return isRecord(column) ? identifierName(column.name) ?? identifierName(column) : identifierName(column);
+}
+
+function definitionColumns(definition: Record<string, unknown>): unknown[] {
+  if (Array.isArray(definition.columns) && definition.columns.length > 0) return definition.columns;
+  if (isRecord(definition.schema) && Array.isArray(definition.schema.expressions)) return definition.schema.expressions;
+  return [];
 }
 
 function outputItemsFromValues(values: Record<string, unknown>, schema: ValidationSchema): OutputItem[] {

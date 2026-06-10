@@ -43,6 +43,22 @@ describe('sqldesc CLI', () => {
     assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'label', type: 'text' }]);
   });
 
+  it('prints null for dynamic result column names in JSON output', async () => {
+    const result = await runCli([
+      '--sql',
+      'select id, name from users for json path',
+      '--dialect',
+      'tsql',
+      '--json',
+    ]);
+
+    assert.strictEqual(result.code, 0, result.stderr);
+    const json = JSON.parse(result.stdout);
+    assert.deepStrictEqual(json.columns.map((column: Record<string, unknown>) => [column.name, column.type]), [
+      [null, 'text'],
+    ]);
+  });
+
   it('prints supported dialects without SQL input', async () => {
     const result = await runCli(['--dialects']);
 

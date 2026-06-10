@@ -76,7 +76,7 @@ export interface Diagnostic {
 
 export interface DescribeColumn {
   index: number;
-  name: string;
+  name: string | null;
   type: string;
   nullable?: boolean;
   source?: string;
