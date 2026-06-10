@@ -21,7 +21,7 @@ describe('parseCreateTables', () => {
         schema: 'public',
         columns: [
           { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
-          { name: 'name', type: 'text', nullable: false, primaryKey: false, unique: true },
+          { name: 'name', type: 'varchar(255)', nullable: false, primaryKey: false, unique: true },
           { name: 'age', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
@@ -47,7 +47,7 @@ describe('parseCreateTables', () => {
         columns: [
           { name: 'id', type: 'integer', nullable: undefined, primaryKey: true, unique: false },
           { name: 'user_id', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
-          { name: 'total', type: 'decimal', nullable: undefined, primaryKey: false, unique: false },
+          { name: 'total', type: 'decimal(10,2)', nullable: undefined, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
         uniqueKeys: [['user_id', 'total']],
@@ -74,7 +74,7 @@ describe('parseCreateTables', () => {
         schema: 'dbo',
         columns: [
           { name: 'id', type: 'integer', nullable: false, primaryKey: true, unique: false },
-          { name: 'name', type: 'text', nullable: false, primaryKey: false, unique: false },
+          { name: 'name', type: 'nvarchar(20)', nullable: false, primaryKey: false, unique: false },
         ],
         primaryKey: ['id'],
         uniqueKeys: [],
@@ -110,7 +110,7 @@ describe('parseCreateTables', () => {
         name: 't',
         columns: [
           { name: 'id', type: 'decimal', nullable: true, primaryKey: false, unique: false },
-          { name: 'name', type: 'text', nullable: true, primaryKey: false, unique: false },
+          { name: 'name', type: 'varchar2(20)', nullable: true, primaryKey: false, unique: false },
         ],
         uniqueKeys: [],
         foreignKeys: [],
@@ -187,7 +187,7 @@ describe('parseCreateViews', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer', nullable: false },
-            { name: 'name', type: 'text', nullable: false },
+            { name: 'name', type: 'varchar(255)', nullable: false },
           ],
         },
       ],
@@ -197,7 +197,7 @@ describe('parseCreateViews', () => {
         name: 'active_users',
         columns: [
           { name: 'id', type: 'integer', nullable: false },
-          { name: 'name', type: 'text', nullable: false },
+          { name: 'name', type: 'varchar(255)', nullable: false },
         ],
       },
     ]);
@@ -219,7 +219,7 @@ describe('parseCreateViews', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer' },
-            { name: 'name', type: 'text' },
+            { name: 'name', type: 'varchar(255)' },
           ],
         },
       ],
@@ -228,7 +228,7 @@ describe('parseCreateViews', () => {
         name: 'v',
         columns: [
           { name: 'a', type: 'integer', nullable: undefined },
-          { name: 'b', type: 'text', nullable: undefined },
+          { name: 'b', type: 'varchar(255)', nullable: undefined },
         ],
       },
     ]);
@@ -292,8 +292,8 @@ describe('parseCreateViews', () => {
         {
           name: 'users',
           columns: [
-            { name: 'id', type: 'text' },
-            { name: 'name', type: 'text' },
+            { name: 'id', type: 'varchar(255)' },
+            { name: 'name', type: 'varchar(255)' },
           ],
         },
       ],
@@ -323,7 +323,7 @@ describe('parseCreateViews', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer' },
-            { name: 'name', type: 'text' },
+            { name: 'name', type: 'varchar(255)' },
             { name: 'age', type: 'integer' },
           ],
         },
@@ -358,7 +358,7 @@ describe('parseCreateViews', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer' },
-            { name: 'name', type: 'text' },
+            { name: 'name', type: 'varchar(255)' },
             { name: 'age', type: 'integer' },
           ],
         },
@@ -433,14 +433,14 @@ describe('parseCreateViews', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer', nullable: false },
-            { name: 'name', type: 'text', nullable: false },
+            { name: 'name', type: 'varchar(255)', nullable: false },
           ],
         },
         {
           name: 'orders',
           columns: [
             { name: 'id', type: 'integer', nullable: false },
-            { name: 'total', type: 'decimal', nullable: false },
+            { name: 'total', type: 'decimal(10,2)', nullable: false },
           ],
         },
       ],
@@ -451,8 +451,8 @@ describe('parseCreateViews', () => {
         name: 'joined_view',
         columns: [
           { name: 'id', type: 'integer', nullable: false },
-          { name: 'name', type: 'text', nullable: false },
-          { name: 'total', type: 'decimal', nullable: false },
+          { name: 'name', type: 'varchar(255)', nullable: false },
+          { name: 'total', type: 'decimal(10,2)', nullable: false },
         ],
       },
     ]);
@@ -462,8 +462,8 @@ describe('parseCreateViews', () => {
         name: 'natural_view',
         columns: [
           { name: 'id', type: 'integer', nullable: false },
-          { name: 'name', type: 'text', nullable: false },
-          { name: 'total', type: 'decimal', nullable: false },
+          { name: 'name', type: 'varchar(255)', nullable: false },
+          { name: 'total', type: 'decimal(10,2)', nullable: false },
         ],
       },
     ]);
@@ -473,7 +473,7 @@ describe('parseCreateViews', () => {
         name: 'left_join_view',
         columns: [
           { name: 'id', type: 'integer', nullable: false },
-          { name: 'total', type: 'decimal', nullable: true },
+          { name: 'total', type: 'decimal(10,2)', nullable: true },
         ],
       },
     ]);
@@ -483,9 +483,9 @@ describe('parseCreateViews', () => {
         name: 'full_join_view',
         columns: [
           { name: 'id', type: 'integer', nullable: true },
-          { name: 'name', type: 'text', nullable: true },
+          { name: 'name', type: 'varchar(255)', nullable: true },
           { name: 'id', type: 'integer', nullable: true },
-          { name: 'total', type: 'decimal', nullable: true },
+          { name: 'total', type: 'decimal(10,2)', nullable: true },
         ],
       },
     ]);
@@ -547,7 +547,7 @@ describe('parseCreateProcedures', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer' },
-            { name: 'name', type: 'text' },
+            { name: 'name', type: 'varchar(255)' },
           ],
         },
       ],
@@ -562,7 +562,7 @@ describe('parseCreateProcedures', () => {
         name: 'p',
         columns: [
           { name: 'id', type: 'integer', nullable: undefined },
-          { name: 'name', type: 'text', nullable: undefined },
+          { name: 'name', type: 'varchar(255)', nullable: undefined },
         ],
       },
     ]);
@@ -614,7 +614,7 @@ describe('parseCreateAsTables', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer' },
-            { name: 'name', type: 'text' },
+            { name: 'name', type: 'varchar(255)' },
           ],
         },
       ],
@@ -624,7 +624,7 @@ describe('parseCreateAsTables', () => {
         name: 'new_users',
         columns: [
           { name: 'id', type: 'integer' },
-          { name: 'name', type: 'text' },
+          { name: 'name', type: 'varchar(255)' },
         ],
       },
     ]);
@@ -633,7 +633,7 @@ describe('parseCreateAsTables', () => {
         name: 'expanded_users',
         columns: [
           { name: 'id', type: 'integer' },
-          { name: 'name', type: 'text' },
+          { name: 'name', type: 'varchar(255)' },
           { name: 'age', type: 'integer', nullable: undefined, primaryKey: false, unique: false },
         ],
       },
@@ -643,7 +643,7 @@ describe('parseCreateAsTables', () => {
         name: 'cloned_users',
         columns: [
           { name: 'id', type: 'integer' },
-          { name: 'name', type: 'text' },
+          { name: 'name', type: 'varchar(255)' },
         ],
       },
     ]);
@@ -702,7 +702,7 @@ describe('parseCreateSynonyms', () => {
           name: 'users',
           columns: [
             { name: 'id', type: 'integer', nullable: false },
-            { name: 'name', type: 'text', nullable: false },
+            { name: 'name', type: 'varchar(255)', nullable: false },
           ],
           primaryKey: ['id'],
         },
@@ -713,7 +713,7 @@ describe('parseCreateSynonyms', () => {
         name: 'user_syn',
         columns: [
           { name: 'id', type: 'integer', nullable: false },
-          { name: 'name', type: 'text', nullable: false },
+          { name: 'name', type: 'varchar(255)', nullable: false },
         ],
         primaryKey: ['id'],
       },
@@ -764,11 +764,11 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'oracle' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'decimal'],
-      ['name', 'text'],
+      ['name', 'varchar2(20)'],
     ]);
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'decimal'],
-      ['name', 'text'],
+      ['name', 'varchar2(20)'],
     ]);
   });
 
@@ -788,7 +788,7 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'oracle' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'decimal'],
-      ['name', 'text'],
+      ['name', 'varchar2(20)'],
     ]);
   });
 
@@ -806,11 +806,11 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'oracle' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'users' && table.schema === 'APP')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'decimal'],
-      ['name', 'text'],
+      ['name', 'varchar2(20)'],
     ]);
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'APP')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'decimal'],
-      ['name', 'text'],
+      ['name', 'varchar2(20)'],
     ]);
   });
 
@@ -888,7 +888,7 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'tsql' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
-      ['name', 'text'],
+      ['name', 'nvarchar(20)'],
     ]);
   });
 
@@ -906,7 +906,7 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'sqlserver' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
-      ['name', 'text'],
+      ['name', 'nvarchar(20)'],
     ]);
   });
 
@@ -1001,7 +1001,7 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/**/*.sql'], { cwd, dialect: 'sqlserver' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
-      ['name', 'text'],
+      ['name', 'nvarchar(20)'],
     ]);
   });
 
@@ -1023,7 +1023,7 @@ describe('loadSchema', () => {
     const schema = await loadSchema(['schemas/schema.sql'], { cwd, dialect: 'sqlserver' });
     assert.deepStrictEqual(schema.tables.find((table) => table.name === 'user_names' && table.schema === 'dbo')?.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],
-      ['name', 'text'],
+      ['name', 'nvarchar(20)'],
     ]);
   });
 

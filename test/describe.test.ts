@@ -21,17 +21,17 @@ const schema: ValidationSchema = {
     {
       name: 'users',
       columns: [
-        { name: 'id', type: 'INTEGER', nullable: false },
-        { name: 'name', type: 'VARCHAR(255)', nullable: false },
-        { name: 'age', type: 'INTEGER', nullable: true },
+        { name: 'id', type: 'integer', nullable: false },
+        { name: 'name', type: 'text', nullable: false },
+        { name: 'age', type: 'integer', nullable: true },
       ],
     },
     {
       name: 'orders',
       columns: [
-        { name: 'id', type: 'INTEGER', nullable: false },
-        { name: 'user_id', type: 'INTEGER', nullable: false },
-        { name: 'total', type: 'DECIMAL', nullable: false },
+        { name: 'id', type: 'integer', nullable: false },
+        { name: 'user_id', type: 'integer', nullable: false },
+        { name: 'total', type: 'decimal', nullable: false },
       ],
     },
   ],
@@ -91,8 +91,8 @@ describe('describeQuery', () => {
           name: 'users',
           schema: 'public',
           columns: [
-            { name: 'id', type: 'INTEGER', nullable: false },
-            { name: 'name', type: 'VARCHAR(255)', nullable: false },
+            { name: 'id', type: 'integer', nullable: false },
+            { name: 'name', type: 'text', nullable: false },
           ],
         },
       ],
@@ -354,16 +354,16 @@ describe('describeQuery', () => {
 
     const renameResult = await describeQuery({ sql: 'select * rename(name as full_name) from users', dialect: 'bigquery', schema });
     assert.deepStrictEqual(renameResult.columns.map((column) => [column.name, column.type]), [
-      ['id', 'INTEGER'],
-      ['full_name', 'VARCHAR(255)'],
-      ['age', 'INTEGER'],
+      ['id', 'int64'],
+      ['full_name', 'string'],
+      ['age', 'int64'],
     ]);
 
     const replaceResult = await describeQuery({ sql: 'select * replace(42 as age) from users', dialect: 'bigquery', schema });
     assert.deepStrictEqual(replaceResult.columns.map((column) => [column.name, column.type]), [
-      ['id', 'INTEGER'],
-      ['name', 'VARCHAR(255)'],
-      ['age', 'INTEGER'],
+      ['id', 'int64'],
+      ['name', 'string'],
+      ['age', 'int64'],
     ]);
     assert.strictEqual(replaceResult.columns[2].source, 'literal');
   });
@@ -371,14 +371,14 @@ describe('describeQuery', () => {
   it('honors qualified star except modifiers', async () => {
     const tableResult = await describeQuery({ sql: 'select * except(users.age) from users', dialect: 'bigquery', schema });
     assert.deepStrictEqual(tableResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'int64', 'users.id'],
+      ['name', 'string', 'users.name'],
     ]);
 
     const aliasResult = await describeQuery({ sql: 'select * except(u.age) from users u', dialect: 'bigquery', schema });
     assert.deepStrictEqual(aliasResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'int64', 'users.id'],
+      ['name', 'string', 'users.name'],
     ]);
   });
 
@@ -408,11 +408,11 @@ describe('describeQuery', () => {
       sql: 'insert into users(id, name) values (1, ?) returning id, name',
       dialect: 'postgres',
       schema,
-      binds: 'VARCHAR(255)',
+      binds: 'text',
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
-      ['id', 'INTEGER'],
-      ['name', 'VARCHAR(255)'],
+      ['id', 'integer'],
+      ['name', 'text'],
     ]);
 
     const fullValueResult = await describeQuery({
@@ -421,8 +421,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(fullValueResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'integer', 'users.id'],
+      ['name', 'text', 'users.name'],
     ]);
     assert.deepStrictEqual(fullValueResult.diagnostics, []);
 
@@ -432,7 +432,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(conflictResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['name', 'text', 'users.name'],
     ]);
 
     const excludedStarResult = await describeQuery({
@@ -441,9 +441,9 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(excludedStarResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
-      ['age', 'INTEGER', 'users.age'],
+      ['id', 'integer', 'users.id'],
+      ['name', 'text', 'users.name'],
+      ['age', 'integer', 'users.age'],
     ]);
   });
 
@@ -454,8 +454,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
-      ['id', 'INTEGER'],
-      ['name', 'VARCHAR(255)'],
+      ['id', 'integer'],
+      ['name', 'text'],
     ]);
   });
 
@@ -466,7 +466,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
-      ['id', 'INTEGER'],
+      ['id', 'integer'],
     ]);
   });
 
@@ -477,8 +477,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(insertResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'int', 'users.id'],
+      ['name', 'nvarchar(max)', 'users.name'],
     ]);
 
     const updateResult = await describeQuery({
@@ -487,8 +487,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(updateResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'int', 'users.id'],
+      ['name', 'nvarchar(max)', 'users.name'],
     ]);
 
     const deleteResult = await describeQuery({
@@ -497,7 +497,7 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(deleteResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
+      ['id', 'int', 'users.id'],
     ]);
   });
 
@@ -511,17 +511,17 @@ describe('describeQuery', () => {
           {
             name: 'active_users',
             columns: [
-              { name: 'id', type: 'INTEGER', nullable: false },
-              { name: 'name', type: 'VARCHAR(255)', nullable: false },
+              { name: 'id', type: 'integer', nullable: false },
+              { name: 'name', type: 'text', nullable: false },
             ],
           },
         ],
       },
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
-      ['age', 'INTEGER', 'users.age'],
+      ['id', 'integer', 'users.id'],
+      ['name', 'text', 'users.name'],
+      ['age', 'integer', 'users.age'],
     ]);
   });
 
@@ -532,9 +532,9 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
-      ['age', 'INTEGER', 'users.age'],
+      ['id', 'integer', 'users.id'],
+      ['name', 'text', 'users.name'],
+      ['age', 'integer', 'users.age'],
     ]);
   });
 
@@ -545,8 +545,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'integer', 'users.id'],
+      ['name', 'text', 'users.name'],
     ]);
   });
 
@@ -557,8 +557,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
+      ['id', 'int', 'users.id'],
+      ['name', 'nvarchar(max)', 'users.name'],
     ]);
   });
 
@@ -569,9 +569,9 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['id', 'INTEGER', 'users.id'],
-      ['name', 'VARCHAR(255)', 'users.name'],
-      ['age', 'INTEGER', 'users.age'],
+      ['id', 'int', 'users.id'],
+      ['name', 'nvarchar(max)', 'users.name'],
+      ['age', 'int', 'users.age'],
     ]);
   });
 
@@ -634,28 +634,28 @@ describe('describeQuery', () => {
     const analyzeResult = await describeQuery({ sql: 'analyze table users', dialect: 'mysql' });
     assert.partialDeepStrictEqual(analyzeResult.statements[0], { kind: 'analyze', resultKind: 'static' });
     assert.deepStrictEqual(analyzeResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['Table', 'VARCHAR(255)', 'cast'],
-      ['Op', 'VARCHAR(255)', 'cast'],
-      ['Msg_type', 'VARCHAR(255)', 'cast'],
-      ['Msg_text', 'VARCHAR(255)', 'cast'],
+      ['Table', 'varchar(255)', 'cast'],
+      ['Op', 'varchar(255)', 'cast'],
+      ['Msg_type', 'varchar(255)', 'cast'],
+      ['Msg_text', 'varchar(255)', 'cast'],
     ]);
 
     const optimizeResult = await describeQuery({ sql: 'optimize table users', dialect: 'mysql' });
     assert.partialDeepStrictEqual(optimizeResult.statements[0], { kind: 'command', resultKind: 'static' });
     assert.deepStrictEqual(optimizeResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['Table', 'VARCHAR(255)', 'cast'],
-      ['Op', 'VARCHAR(255)', 'cast'],
-      ['Msg_type', 'VARCHAR(255)', 'cast'],
-      ['Msg_text', 'VARCHAR(255)', 'cast'],
+      ['Table', 'varchar(255)', 'cast'],
+      ['Op', 'varchar(255)', 'cast'],
+      ['Msg_type', 'varchar(255)', 'cast'],
+      ['Msg_text', 'varchar(255)', 'cast'],
     ]);
 
     const postgresAnalyzeResult = await describeQuery({ sql: 'analyze verbose users', dialect: 'postgres' });
     assert.partialDeepStrictEqual(postgresAnalyzeResult.statements[0], { kind: 'analyze', resultKind: 'static' });
     assert.deepStrictEqual(postgresAnalyzeResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['Table', 'VARCHAR(255)', 'cast'],
-      ['Op', 'VARCHAR(255)', 'cast'],
-      ['Msg_type', 'VARCHAR(255)', 'cast'],
-      ['Msg_text', 'VARCHAR(255)', 'cast'],
+      ['Table', 'text', 'cast'],
+      ['Op', 'text', 'cast'],
+      ['Msg_type', 'text', 'cast'],
+      ['Msg_text', 'text', 'cast'],
     ]);
   });
 

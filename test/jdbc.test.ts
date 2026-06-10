@@ -61,7 +61,7 @@ describe('JDBC SQL transformation', () => {
     });
 
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-      ['label', 'text', 'bind'],
+      ['label', 'nvarchar(max)', 'bind'],
     ]);
     assert.deepStrictEqual(result.warnings, []);
   });
@@ -98,7 +98,7 @@ describe('JDBC SQL transformation', () => {
       jdbc: true,
     });
     assert.deepStrictEqual(sqlServerResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['label', 'text', 'bind'],
+      ['label', 'nvarchar(max)', 'bind'],
     ]);
 
     const oracleResult = await describeQuery({
@@ -108,7 +108,7 @@ describe('JDBC SQL transformation', () => {
       jdbc: true,
     });
     assert.deepStrictEqual(oracleResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['n', 'decimal', 'bind'],
+      ['n', 'number', 'bind'],
     ]);
 
     const plainResult = await describeQuery({
