@@ -2,6 +2,7 @@ import { glob, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { assertSupportedDialect, normalizeDialect } from './dialect.js';
+import { normalizeTypeName } from './sql-type.js';
 import type { SchemaColumn, SchemaFunction, SchemaLoadOptions, SchemaProcedure, SchemaTable, ValidationSchema } from './types.js';
 
 const TABLE_CONSTRAINT_RE = /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check|period\s+for)\b/i;
@@ -1516,73 +1517,7 @@ function dataTypeToStringWithAliases(dataType: unknown, typeAliases: Map<string,
 }
 
 function normalizeDataTypeName(value: string): string {
-  const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
-  const parameterized = parseParameterizedType(lower);
-  if (parameterized) return parameterized;
-  const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
-  const compact = unparameterized.replace(/\s+/g, '');
-  if (compact === 'serial' || compact === 'serial4') return 'integer';
-  if (compact === 'bigserial' || compact === 'serial8') return 'bigint';
-  if (compact === 'smallserial' || compact === 'serial2') return 'integer';
-  if (['int', 'int2', 'int4', 'int16', 'int32', 'integer', 'smallint', 'tinyint', 'small_int', 'tiny_int', 'uint8', 'uint16', 'uint32'].includes(compact)) return 'integer';
-  if (['int8', 'int64', 'bigint', 'big_int', 'uint64'].includes(compact)) return 'bigint';
-  if (['decimal', 'dec', 'numeric', 'number'].includes(compact)) return 'decimal';
-  if (['float', 'float4', 'float8', 'double', 'doubleprecision', 'real'].includes(compact)) return 'decimal';
-  if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
-  if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
-  if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
-  if (compact === 'json_b') return 'jsonb';
-  if (compact === 'datetime2') return 'datetime2';
-  if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
-  if (compact === 'timestampntz' || compact === 'timestampltz' || compact.startsWith('timestamp')) return 'timestamp';
-  if (compact === 'array') return 'array<variant>';
-  if (compact === 'uniqueidentifier') return 'uuid';
-  if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'datetime2', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
-  return unparameterized;
-}
-
-function parseParameterizedType(value: string): string | undefined {
-  const match = /^([a-z_][\w\s]*)\s*\(([\s\S]*)\)$/i.exec(value.trim());
-  if (!match) return undefined;
-  const name = match[1].replace(/\s+/g, '').toLowerCase();
-  const args = splitTopLevel(match[2], ',');
-  if (name === 'nullable' || name === 'lowcardinality') {
-    return args[0] ? normalizeDataTypeName(args[0]) : 'unknown';
-  }
-  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'decimal', 'dec', 'numeric', 'number', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
-    return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
-  }
-  if (name === 'array' || name === 'list') {
-    return `array<${args[0] ? normalizeDataTypeName(args[0]) : 'unknown'}>`;
-  }
-  if (name === 'map' && args.length >= 2) {
-    return `map<${normalizeDataTypeName(args[0])}, ${normalizeDataTypeName(args[1])}>`;
-  }
-  if (name === 'tuple' || name === 'row') {
-    const fields = args.map((arg, index) => {
-      const field = fieldFromTypeArgument(arg, index);
-      return `${field.name} ${field.type}`;
-    });
-    return `struct<${fields.join(', ')}>`;
-  }
-  if (name === 'nested') {
-    const fields = args.map((arg, index) => {
-      const field = fieldFromTypeArgument(arg, index);
-      return `${field.name} ${field.type}`;
-    });
-    return `array<struct<${fields.join(', ')}>>`;
-  }
-  return undefined;
-}
-
-function fieldFromTypeArgument(argument: string, index: number): { name: string; type: string } {
-  const trimmed = argument.trim();
-  const match = /^("[^"]+"|`[^`]+`|\[[^\]]+\]|[a-z_][\w$]*)\s+([\s\S]+)$/i.exec(trimmed);
-  if (!match) return { name: `field_${index + 1}`, type: normalizeDataTypeName(trimmed) };
-  return {
-    name: cleanIdentifier(match[1]),
-    type: normalizeDataTypeName(match[2]),
-  };
+  return normalizeTypeName(value);
 }
 
 function literalType(expression: unknown): string | undefined {

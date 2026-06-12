@@ -1,4 +1,5 @@
 import { normalizeDialect } from './dialect.js';
+import { createSqlType } from './sql-type.js';
 import type { BindSpec } from './types.js';
 
 type Quote = "'" | '"' | '`' | '[';
@@ -41,6 +42,10 @@ export function normalizeJdbcBindTypes(binds: BindSpec, dialect?: string): BindS
     mode: 'named',
     binds: binds.binds.map((bind) => ({ ...bind, type: jdbcBindType(bind.type, normalizedDialect) })),
   };
+}
+
+export function sqlTypeToJdbcType(type: string, dialect?: string): string {
+  return createSqlType(type, dialect).toJdbcType();
 }
 
 function jdbcBindType(type: string, dialect: string): string {
