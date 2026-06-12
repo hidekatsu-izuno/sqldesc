@@ -77,6 +77,14 @@ select
   typeof(row_number() over ()) as rn,
   typeof(sum(cast(1.25 as numeric)) over ()) as win_sum,
   typeof(avg(cast(1 as integer)) over ()) as win_avg;
+select
+  typeof(coalesce(null, cast(1 as integer), cast(1.25 as numeric))) as co_num,
+  typeof(coalesce(null, cast('x' as text), cast('yy' as text))) as co_text,
+  typeof(nullif(cast(1.25 as numeric), cast(1 as integer))) as nullif_num,
+  typeof(1) as lit_int,
+  typeof(1.25) as lit_decimal,
+  typeof('abc') as lit_text,
+  typeof(null) as lit_null;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -116,6 +124,16 @@ describe select
   row_number() over () as rn,
   sum(cast(1.25 as decimal(6,2))) over () as win_sum,
   avg(cast(1 as integer)) over () as win_avg;
+describe select
+  coalesce(null, cast(1 as integer), cast(1.25 as decimal(6,2))) as co_num,
+  coalesce(null, cast('x' as char(3)), cast('yy' as varchar)) as co_text,
+  nullif(cast(1.25 as decimal(6,2)), cast(1 as integer)) as nullif_num,
+  1 as lit_int,
+  1.25 as lit_decimal,
+  'abc' as lit_text,
+  null as lit_null,
+  date '2020-01-01' as lit_date,
+  timestamp '2020-01-01 00:00:00.123' as lit_ts;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -133,6 +151,7 @@ drop view if exists v_union_num_probe;
 drop view if exists v_agg_probe;
 drop view if exists v_concat_temporal_probe;
 drop view if exists v_more_probe;
+drop view if exists v_priority_literal_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
@@ -163,6 +182,16 @@ create view v_more_probe as select
   row_number() over () as rn,
   sum(cast(1.25 as numeric(6,2))) over () as win_sum,
   avg(cast(1 as integer)) over () as win_avg;
+create view v_priority_literal_probe as select
+  coalesce(null, cast(1 as integer), cast(1.25 as numeric(6,2))) as co_num,
+  coalesce(null, cast('x' as char(3)), cast('yy' as varchar(7))) as co_text,
+  nullif(cast(1.25 as numeric(6,2)), cast(1 as integer)) as nullif_num,
+  1 as lit_int,
+  1.25 as lit_decimal,
+  'abc' as lit_text,
+  null as lit_null,
+  date '2020-01-01' as lit_date,
+  timestamp '2020-01-01 00:00:00.123' as lit_ts;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -173,7 +202,7 @@ where table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe')
+where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe')
 order by table_name, ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -194,6 +223,7 @@ drop view if exists v_union_num_probe;
 drop view if exists v_agg_probe;
 drop view if exists v_concat_temporal_probe;
 drop view if exists v_more_probe;
+drop view if exists v_priority_literal_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
@@ -224,6 +254,17 @@ create view v_more_probe as select
   row_number() over () as rn,
   sum(cast(1.25 as decimal(6,2))) over () as win_sum,
   avg(cast(1 as signed)) over () as win_avg;
+create view v_priority_literal_probe as select
+  coalesce(null, cast(1 as signed), cast(1.25 as decimal(6,2))) as co_num,
+  coalesce(null, cast('x' as char(3)), cast('yy' as char(7))) as co_text,
+  nullif(cast(1.25 as decimal(6,2)), cast(1 as signed)) as nullif_num,
+  ifnull(cast(null as char(3)), cast('x' as char(7))) as ifnull_text,
+  1 as lit_int,
+  1.25 as lit_decimal,
+  'abc' as lit_text,
+  null as lit_null,
+  date '2020-01-01' as lit_date,
+  timestamp '2020-01-01 00:00:00.123' as lit_ts;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
@@ -234,7 +275,7 @@ where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe')
+where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe')
 order by table_name, ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -294,6 +335,12 @@ from sys.dm_exec_describe_first_result_set(
   null,
   0
 );
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select coalesce(null, cast(1 as int), cast(1.25 as decimal(6,2))) as co_num, coalesce(null, cast(N''x'' as nchar(3)), cast(N''yy'' as nvarchar(7))) as co_text, nullif(cast(1.25 as decimal(6,2)), cast(1 as int)) as nullif_num, isnull(cast(null as nchar(3)), cast(N''x'' as nvarchar(7))) as isnull_text, 1 as lit_int, 1.25 as lit_decimal, N''abc'' as lit_text, null as lit_null, cast(''2020-01-01'' as date) as lit_date, cast(''2020-01-01T00:00:00.123'' as datetime2(3)) as lit_ts',
+  null,
+  0
+);
 `;
   printSection('sqlserver cast metadata', docker(['exec', '-i', name, '/opt/mssql-tools18/bin/sqlcmd', '-S', 'localhost', '-U', 'sa', '-P', 'Str0ngPass!234', '-C', '-W', '-h', '-1'], { input: sql }));
 }
@@ -349,6 +396,18 @@ create or replace view v_more_probe as select
   sum(cast(1.25 as number(6,2))) over () win_sum,
   avg(cast(1 as number(6,0))) over () win_avg
 from dual;
+create or replace view v_priority_literal_probe as select
+  coalesce(null, cast(1 as number(6,0)), cast(1.25 as number(6,2))) co_num,
+  coalesce(null, cast('x' as char(3)), cast('yy' as varchar2(7))) co_text,
+  nullif(cast(1.25 as number(6,2)), cast(1 as number(6,0))) nullif_num,
+  nvl(cast(null as char(3)), cast('x' as varchar2(7))) nvl_text,
+  1 lit_int,
+  1.25 lit_decimal,
+  'abc' lit_text,
+  null lit_null,
+  date '2020-01-01' lit_date,
+  timestamp '2020-01-01 00:00:00.123' lit_ts
+from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
@@ -359,7 +418,7 @@ where table_name = 'V_EDGE_PROBE'
 order by column_id;
 select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
-where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE')
+where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE')
 order by table_name, column_id;
 exit
 `;

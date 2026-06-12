@@ -1781,6 +1781,55 @@ verify: true
 | win_avg | decimal(24,4) | polyglot |
 
 ---
+## 型優先順位・リテラル — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  COALESCE(NULL, CAST(1 AS SIGNED), CAST(1.25 AS DECIMAL(6,2))) AS co_num,
+  COALESCE(NULL, CAST('x' AS CHAR(3)), CAST('yy' AS CHAR(7))) AS co_text,
+  NULLIF(CAST(1.25 AS DECIMAL(6,2)), CAST(1 AS SIGNED)) AS nullif_num,
+  IFNULL(CAST(NULL AS CHAR(3)), CAST('x' AS CHAR(7))) AS ifnull_text,
+  1 AS lit_int,
+  1.25 AS lit_decimal,
+  'abc' AS lit_text,
+  NULL AS lit_null,
+  DATE '2020-01-01' AS lit_date,
+  TIMESTAMP '2020-01-01 00:00:00.123' AS lit_ts
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_num | decimal(22,2) | expression |
+| co_text | varchar(7) | expression |
+| nullif_num | decimal(6,2) | polyglot |
+| ifnull_text | varchar(7) | expression |
+| lit_int | int | literal |
+| lit_decimal | decimal(3,2) | literal |
+| lit_text | varchar(3) | literal |
+| lit_null | varbinary(0) | literal |
+| lit_date | date | literal |
+| lit_ts | datetime(3) | literal |
+
+---
 ## IFNULL / IF
 
 ### Given

@@ -181,6 +181,54 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'oracle') return 'number';
     if (dialect === 'duckdb') return 'double';
   }
+  if (name === 'co_num') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(22,2)';
+    if (dialect === 'tsql') return 'decimal(12,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'co_text') {
+    if (isPostgres) return 'char';
+    if (dialect === 'mysql') return 'varchar(7)';
+    if (dialect === 'tsql') return 'nchar(3)';
+    if (dialect === 'oracle') return 'varchar2(7)';
+    if (dialect === 'duckdb') return 'varchar';
+  }
+  if (name === 'nullif_num') {
+    if (isPostgres) return 'numeric(6,2)';
+    if (dialect === 'mysql') return 'decimal(6,2)';
+    if (dialect === 'tsql') return 'decimal(6,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+  }
+  if (name === 'ifnull_text') return 'varchar(7)';
+  if (name === 'isnull_text') return 'nchar(3)';
+  if (name === 'nvl_text') return 'varchar2(7)';
+  if (name === 'lit_decimal') {
+    if (dialect === 'mysql') return 'decimal(3,2)';
+    if (dialect === 'tsql') return 'numeric(3,2)';
+    if (dialect === 'oracle') return 'number';
+  }
+  if (name === 'lit_int' && dialect === 'oracle') return 'number';
+  if (name === 'lit_text') {
+    if (dialect === 'mysql') return 'varchar(3)';
+    if (dialect === 'tsql') return 'nvarchar(3)';
+    if (dialect === 'oracle') return 'char(3)';
+  }
+  if (name === 'lit_null') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varbinary(0)';
+    if (dialect === 'tsql' || dialect === 'duckdb') return 'integer';
+    if (dialect === 'oracle') return 'varchar2(0)';
+  }
+  if (name === 'lit_ts') {
+    if (isPostgres) return 'timestamp';
+    if (dialect === 'mysql') return 'datetime(3)';
+    if (dialect === 'tsql') return 'datetime2(3)';
+    if (dialect === 'oracle') return 'timestamp(9)';
+  }
   return type;
 }
 

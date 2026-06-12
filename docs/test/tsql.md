@@ -2022,6 +2022,55 @@ verify: true
 | win_avg | int | polyglot |
 
 ---
+## 型優先順位・リテラル — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  COALESCE(NULL, CAST(1 AS INT), CAST(1.25 AS DECIMAL(6,2))) AS co_num,
+  COALESCE(NULL, CAST(N'x' AS NCHAR(3)), CAST(N'yy' AS NVARCHAR(7))) AS co_text,
+  NULLIF(CAST(1.25 AS DECIMAL(6,2)), CAST(1 AS INT)) AS nullif_num,
+  ISNULL(CAST(NULL AS NCHAR(3)), CAST(N'x' AS NVARCHAR(7))) AS isnull_text,
+  1 AS lit_int,
+  1.25 AS lit_decimal,
+  N'abc' AS lit_text,
+  NULL AS lit_null,
+  CAST('2020-01-01' AS DATE) AS lit_date,
+  CAST('2020-01-01T00:00:00.123' AS DATETIME2(3)) AS lit_ts
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_num | decimal(12,2) | expression |
+| co_text | nchar(3) | expression |
+| nullif_num | decimal(6,2) | polyglot |
+| isnull_text | nchar(3) | polyglot |
+| lit_int | int | literal |
+| lit_decimal | decimal(3,2) | literal |
+| lit_text | nvarchar(3) |  |
+| lit_null | int | literal |
+| lit_date | date | polyglot |
+| lit_ts | datetime2(3) | polyglot |
+
+---
 ## ISNULL / COALESCE
 
 ### Given

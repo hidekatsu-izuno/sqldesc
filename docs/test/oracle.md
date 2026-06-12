@@ -2011,6 +2011,56 @@ verify: true
 | win_avg | number | polyglot |
 
 ---
+## 型優先順位・リテラル — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  COALESCE(NULL, CAST(1 AS NUMBER(6,0)), CAST(1.25 AS NUMBER(6,2))) AS co_num,
+  COALESCE(NULL, CAST('x' AS CHAR(3)), CAST('yy' AS VARCHAR2(7))) AS co_text,
+  NULLIF(CAST(1.25 AS NUMBER(6,2)), CAST(1 AS NUMBER(6,0))) AS nullif_num,
+  NVL(CAST(NULL AS CHAR(3)), CAST('x' AS VARCHAR2(7))) AS nvl_text,
+  1 AS lit_int,
+  1.25 AS lit_decimal,
+  'abc' AS lit_text,
+  NULL AS lit_null,
+  DATE '2020-01-01' AS lit_date,
+  TIMESTAMP '2020-01-01 00:00:00.123' AS lit_ts
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_num | number | expression |
+| co_text | varchar2(7) | expression |
+| nullif_num | number | polyglot |
+| nvl_text | varchar2(7) | expression |
+| lit_int | number | literal |
+| lit_decimal | number | literal |
+| lit_text | char(3) | literal |
+| lit_null | varchar2(0) | literal |
+| lit_date | date | literal |
+| lit_ts | timestamp(9) | literal |
+
+---
 ## NVL / COALESCE
 
 ### Given

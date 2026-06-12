@@ -1904,6 +1904,52 @@ verify: true
 | win_avg | double | polyglot |
 
 ---
+## 型優先順位・リテラル — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  COALESCE(NULL, CAST(1 AS INTEGER), CAST(1.25 AS DECIMAL(6,2))) AS co_num,
+  COALESCE(NULL, CAST('x' AS CHAR(3)), CAST('yy' AS VARCHAR)) AS co_text,
+  NULLIF(CAST(1.25 AS DECIMAL(6,2)), CAST(1 AS INTEGER)) AS nullif_num,
+  1 AS lit_int,
+  1.25 AS lit_decimal,
+  'abc' AS lit_text,
+  NULL AS lit_null,
+  DATE '2020-01-01' AS lit_date,
+  TIMESTAMP '2020-01-01 00:00:00.123' AS lit_ts
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| co_num | decimal(18, 3) | expression |
+| co_text | varchar | expression |
+| nullif_num | decimal(18, 3) | polyglot |
+| lit_int | integer | literal |
+| lit_decimal | decimal(18, 3) | literal |
+| lit_text | varchar | literal |
+| lit_null | integer | literal |
+| lit_date | date | literal |
+| lit_ts | timestamp | literal |
+
+---
 ## COALESCE
 
 ### Given

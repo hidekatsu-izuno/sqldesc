@@ -1118,6 +1118,53 @@ verify: true
 | win_avg | real | polyglot |
 
 ---
+## 型優先順位・リテラル — storage class metadata
+
+[COALESCE / NULLIF](https://sqlite.org/lang_corefunc.html) とリテラルの実行時 storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  COALESCE(NULL, CAST(1 AS INTEGER), CAST(1.25 AS NUMERIC)) AS co_num,
+  COALESCE(NULL, CAST('x' AS TEXT), CAST('yy' AS TEXT)) AS co_text,
+  NULLIF(CAST(1.25 AS NUMERIC), CAST(1 AS INTEGER)) AS nullif_num,
+  1 AS lit_int,
+  1.25 AS lit_decimal,
+  'abc' AS lit_text,
+  NULL AS lit_null
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_num | integer | expression |
+| co_text | text | expression |
+| nullif_num | real | polyglot |
+| lit_int | integer | literal |
+| lit_decimal | real | literal |
+| lit_text | text | literal |
+| lit_null | null | literal |
+
+---
 
 ## DISTINCT
 
