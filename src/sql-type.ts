@@ -140,6 +140,8 @@ export function normalizeTypeName(value: string): string {
   const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
   if (/^interval day\(\d+\) to second\(\d+\)$/.test(lower)) return lower;
   if (/^interval year\(\d+\) to month$/.test(lower)) return lower;
+  const timestampWithLocalTimeZone = /^timestamp\s*\(([^)]+)\)\s+with\s+local\s+time\s+zone$/.exec(lower);
+  if (timestampWithLocalTimeZone?.[1]) return `timestampltz(${timestampWithLocalTimeZone[1].trim()})`;
   const timestampWithTimeZone = /^timestamp\s*\(([^)]+)\)\s+with\s+time\s+zone$/.exec(lower);
   if (timestampWithTimeZone?.[1]) return `timestamptz(${timestampWithTimeZone[1].trim()})`;
   const parameterized = parseParameterizedType(lower);
@@ -163,7 +165,9 @@ export function normalizeTypeName(value: string): string {
   if (compact === 'json_b') return 'jsonb';
   if (compact === 'datetime2') return 'datetime2';
   if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
-  if (compact === 'timestampntz' || compact === 'timestampltz' || compact.startsWith('timestamp')) return 'timestamp';
+  if (compact === 'timestampwithlocaltimezone' || compact === 'timestampltz') return 'timestampltz';
+  if (['timestamp_s', 'timestamp_ms', 'timestamp_ns'].includes(compact)) return compact;
+  if (compact === 'timestampntz' || compact.startsWith('timestamp')) return 'timestamp';
   if (compact === 'array') return 'array<variant>';
   if (compact === 'uniqueidentifier') return 'uuid';
   if (['variant', 'object', 'json', 'jsonb', 'date', 'time', 'datetime', 'datetime2', 'interval', 'uuid', 'geography', 'geometry'].includes(compact)) return compact;
@@ -205,6 +209,7 @@ function displayByFamily(normalized: string, family: TypeFamily): string {
     }
     if (base === 'datetime2' && family === 'tsql') return `datetime2(${args})`;
     if (base === 'timestamptz' && (family === 'postgresql' || family === 'oracle')) return `timestamp(${args}) with time zone`;
+    if (base === 'timestampltz' && family === 'oracle') return `timestamp(${args}) with local time zone`;
     return normalized;
   }
 
@@ -294,7 +299,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     timestamp: 'datetime2(7)',
     timestamptz: 'datetimeoffset',
     datetime2: 'datetime2(7)',
-    datetime: 'datetime2',
+    datetime: 'datetime',
     uuid: 'uniqueidentifier',
   },
   oracle: {
@@ -314,6 +319,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     time: 'timestamp',
     timestamp: 'timestamp(6)',
     timestamptz: 'timestamp(6) with time zone',
+    timestampltz: 'timestamp(6) with local time zone',
     datetime: 'timestamp',
     uuid: 'raw(16)',
   },
@@ -333,6 +339,9 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     date: 'date',
     time: 'time',
     timestamp: 'timestamp',
+    timestamp_s: 'timestamp_s',
+    timestamp_ms: 'timestamp_ms',
+    timestamp_ns: 'timestamp_ns',
     timestamptz: 'timestamp with time zone',
     datetime: 'timestamp',
     uuid: 'uuid',
@@ -388,6 +397,7 @@ function parseParameterizedType(value: string): string | undefined {
   if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'bit', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp', 'timestamptz'].includes(name)) {
     return `${name === 'var_binary' ? 'varbinary' : name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
+  if (name === 'varbit' || name === 'bitvarying') return `bit varying(${args.map((arg) => arg.trim()).join(',')})`;
   if (name === 'enum' || name === 'set') return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
   if (name === 'array' || name === 'list') return `array<${args[0] ? normalizeTypeName(args[0]) : 'unknown'}>`;
   if (name === 'map' && args.length >= 2) return `map<${normalizeTypeName(args[0])}, ${normalizeTypeName(args[1])}>`;

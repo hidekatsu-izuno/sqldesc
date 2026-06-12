@@ -2275,7 +2275,11 @@ SELECT
   1::HUGEINT AS hugeint_value,
   CAST('a' AS VARCHAR) COLLATE NOCASE = CAST('A' AS VARCHAR) COLLATE NOCASE AS collated_equal,
   [[1, 2], [3, 4]] AS nested_int_array,
-  MAP(['a', 'b'], [1, 2]) AS map_value
+  MAP(['a', 'b'], [1, 2]) AS map_value,
+  CAST('12:34:56.123456' AS TIME) AS duck_time_value,
+  INTERVAL '1 month 2 days 03:04:05' AS duck_interval_value,
+  CAST('2020-01-01 00:00:00' AS TIMESTAMP_S) AS duck_timestamp_s_value,
+  CAST('2020-01-01 00:00:00.123' AS TIMESTAMP_MS) AS duck_timestamp_ms_value
 ```
 
 ### Then
@@ -2297,6 +2301,40 @@ verify: true
 | collated_equal | boolean | polyglot |
 | nested_int_array | integer[][] | expression |
 | map_value | map<text, integer> | expression |
+| duck_time_value | time | polyglot |
+| duck_interval_value | interval | expression |
+| duck_timestamp_s_value | timestamp_s | polyglot |
+| duck_timestamp_ms_value | timestamp_ms | polyglot |
+
+---
+## ENUM 型 — result metadata
+
+### Given
+
+```sql
+CREATE TYPE mood AS ENUM ('sad', 'ok');
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT 'ok'::mood AS duck_enum_value
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| duck_enum_value | enum('sad','ok') | polyglot |
 
 ---
 ## bind placeholder — result metadata

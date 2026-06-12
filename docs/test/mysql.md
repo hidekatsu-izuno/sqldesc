@@ -2145,8 +2145,13 @@ CREATE TABLE special_values (
   set_value SET('a','b'),
   unicode_large_text MEDIUMTEXT CHARACTER SET utf8mb4,
   medium_bytes MEDIUMBLOB,
+  tiny_bytes TINYBLOB,
+  fixed_bytes BINARY(4),
+  var_bytes VARBINARY(8),
   bit_flags BIT(8),
-  year_value YEAR
+  year_value YEAR,
+  geom_value GEOMETRY,
+  point_value POINT
 );
 ```
 
@@ -2165,8 +2170,13 @@ SELECT
   set_value,
   unicode_large_text,
   medium_bytes,
+  tiny_bytes,
+  fixed_bytes,
+  var_bytes,
   bit_flags,
   year_value,
+  geom_value,
+  point_value,
   JSON_ARRAY(1, 2) AS json_array_value,
   JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
   UUID() AS uuid_value,
@@ -2190,8 +2200,13 @@ verify: true
 | set_value | set('a','b') | special_values.set_value |
 | unicode_large_text | mediumtext | special_values.unicode_large_text |
 | medium_bytes | mediumblob | special_values.medium_bytes |
+| tiny_bytes | tinyblob | special_values.tiny_bytes |
+| fixed_bytes | binary(4) | special_values.fixed_bytes |
+| var_bytes | varbinary(8) | special_values.var_bytes |
 | bit_flags | bit(8) | special_values.bit_flags |
 | year_value | year | special_values.year_value |
+| geom_value | geometry | special_values.geom_value |
+| point_value | point | special_values.point_value |
 | json_array_value | json | expression |
 | json_object_value | json | expression |
 | uuid_value | varchar(36) | expression |

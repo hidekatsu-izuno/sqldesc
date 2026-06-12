@@ -2398,6 +2398,12 @@ SELECT
   CAST('<a />' AS XML) AS xml_value,
   CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) AS uuid_value,
   CAST(1.23 AS MONEY) AS money_value,
+  CAST(1.23 AS SMALLMONEY) AS smallmoney_value,
+  CAST(CAST('AB' AS BINARY(4)) AS BINARY(4)) AS fixed_binary,
+  CAST('2020-01-01T00:00:00+09:00' AS DATETIMEOFFSET(3)) AS dto_precision_value,
+  CAST('12:34:56.1234' AS TIME(4)) AS time_precision_value,
+  CAST('2020-01-01T00:00:00' AS DATETIME) AS legacy_datetime_value,
+  CAST('2020-01-01T00:00:00' AS SMALLDATETIME) AS smalldatetime_value,
   CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS = CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS AS collated_equal
 ```
 
@@ -2417,6 +2423,12 @@ verify: true
 | xml_value | xml | polyglot |
 | uuid_value | uniqueidentifier | polyglot |
 | money_value | money | polyglot |
+| smallmoney_value | smallmoney | polyglot |
+| fixed_binary | binary(4) | polyglot |
+| dto_precision_value | datetimeoffset(3) | polyglot |
+| time_precision_value | time(4) | polyglot |
+| legacy_datetime_value | datetime | polyglot |
+| smalldatetime_value | smalldatetime | polyglot |
 | collated_equal | bit | polyglot |
 
 ---

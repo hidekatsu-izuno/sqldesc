@@ -273,7 +273,13 @@ describe select
 describe select
   cast('a' as varchar) collate nocase = cast('A' as varchar) collate nocase as collated_equal,
   [[1, 2], [3, 4]] as nested_int_array,
-  map(['a', 'b'], [1, 2]) as map_value;
+  map(['a', 'b'], [1, 2]) as map_value,
+  cast('12:34:56.123456' as time) as duck_time_value,
+  interval '1 month 2 days 03:04:05' as duck_interval_value,
+  cast('2020-01-01 00:00:00' as timestamp_s) as duck_timestamp_s_value,
+  cast('2020-01-01 00:00:00.123' as timestamp_ms) as duck_timestamp_ms_value;
+create type mood as enum ('sad', 'ok');
+describe select 'ok'::mood as duck_enum_value;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -416,7 +422,15 @@ create view v_special_probe as select
   inet '127.0.0.1' as inet_value,
   cast('a' as text) collate "C" = cast('a' as text) collate "C" as collated_equal,
   int4range(1, 5) as range_value,
-  xmlparse(document '<a />') as xml_value;
+  xmlparse(document '<a />') as xml_value,
+  macaddr '08:00:2b:01:02:03' as macaddr_value,
+  cidr '192.168.0.0/24' as cidr_value,
+  B'1010'::bit(4) as bit_value,
+  int4multirange(int4range(1, 5)) as multirange_value,
+  '$.a'::jsonpath as jsonpath_value,
+  cast(B'101010' as bit varying(8)) as varbit_value,
+  cast('(1,2)' as point) as pg_point_value,
+  cast('<(0,0),1>' as circle) as pg_circle_value;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -571,8 +585,13 @@ create table t_special_probe(
   set_value set('a','b'),
   unicode_large_text mediumtext character set utf8mb4,
   medium_bytes mediumblob,
+  tiny_bytes tinyblob,
+  fixed_bytes binary(4),
+  var_bytes varbinary(8),
   bit_flags bit(8),
-  year_value year
+  year_value year,
+  geom_value geometry,
+  point_value point
 );
 create view v_special_probe as select
   unicode_text,
@@ -582,8 +601,13 @@ create view v_special_probe as select
   set_value,
   unicode_large_text,
   medium_bytes,
+  tiny_bytes,
+  fixed_bytes,
+  var_bytes,
   bit_flags,
   year_value,
+  geom_value,
+  point_value,
   json_array(1, 2) as json_array_value,
   json_object('id', 1, 'name', 'x') as json_object_value,
   uuid() as uuid_value,
@@ -715,7 +739,7 @@ from sys.dm_exec_describe_first_result_set(
 );
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
-  N'select cast(N''あ'' as nvarchar(4)) collate Japanese_CI_AS as unicode_text, cast(N''x'' as nvarchar(max)) as large_text, cast(0xAB as varbinary(max)) as large_bytes, json_query(N''[1,2]'') as json_array_value, cast(''<a />'' as xml) as xml_value, cast(''00000000-0000-0000-0000-000000000000'' as uniqueidentifier) as uuid_value, cast(1.23 as money) as money_value',
+  N'select cast(N''あ'' as nvarchar(4)) collate Japanese_CI_AS as unicode_text, cast(N''x'' as nvarchar(max)) as large_text, cast(0xAB as varbinary(max)) as large_bytes, json_query(N''[1,2]'') as json_array_value, cast(''<a />'' as xml) as xml_value, cast(''00000000-0000-0000-0000-000000000000'' as uniqueidentifier) as uuid_value, cast(1.23 as money) as money_value, cast(1.23 as smallmoney) as smallmoney_value, cast(0xAB as binary(4)) as fixed_binary, cast(''2020-01-01T00:00:00+09:00'' as datetimeoffset(3)) as dto_precision_value, cast(''12:34:56.1234'' as time(4)) as time_precision_value, cast(''2020-01-01T00:00:00'' as datetime) as legacy_datetime_value, cast(''2020-01-01T00:00:00'' as smalldatetime) as smalldatetime_value',
   null,
   0
 );
@@ -864,7 +888,14 @@ create or replace view v_special_probe as select
   systimestamp timestamp_tz_value,
   to_nclob(N'x') unicode_large_text,
   xmltype('<a />') xml_value,
-  nls_upper(N'a', 'NLS_SORT = BINARY_CI') collated_text
+  nls_upper(N'a', 'NLS_SORT = BINARY_CI') collated_text,
+  chartorowid('AAAEpTAAFAAAABSAAA') rowid_value,
+  cast('AAAEpTAAFAAAABSAAA' as urowid) urowid_value,
+  interval '1-2' year(1) to month interval_ym_value,
+  interval '3 04:05:06.789' day(1) to second(3) interval_ds_value,
+  cast(1.25 as binary_float) binary_float_value,
+  cast(1.25 as binary_double) binary_double_value,
+  cast(timestamp '2020-01-01 00:00:00' as timestamp with local time zone) timestamp_ltz_value
 from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns

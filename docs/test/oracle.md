@@ -2391,7 +2391,14 @@ SELECT
   SYSTIMESTAMP timestamp_tz_value,
   TO_NCLOB(N'x') unicode_large_text,
   XMLTYPE('<a />') xml_value,
-  NLS_UPPER(N'a', 'NLS_SORT = BINARY_CI') collated_text
+  NLS_UPPER(N'a', 'NLS_SORT = BINARY_CI') collated_text,
+  CHARTOROWID('AAAEpTAAFAAAABSAAA') rowid_value,
+  CAST('AAAEpTAAFAAAABSAAA' AS UROWID) urowid_value,
+  NUMTOYMINTERVAL(14, 'MONTH') interval_ym_value,
+  NUMTODSINTERVAL(3, 'DAY') interval_ds_value,
+  CAST(1.25 AS BINARY_FLOAT) binary_float_value,
+  CAST(1.25 AS BINARY_DOUBLE) binary_double_value,
+  CAST(TIMESTAMP '2020-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE) timestamp_ltz_value
 FROM dual
 ```
 
@@ -2413,6 +2420,13 @@ verify: true
 | unicode_large_text | nclob | polyglot |
 | xml_value | xmltype | polyglot |
 | collated_text | nvarchar2(1) | polyglot |
+| rowid_value | rowid | polyglot |
+| urowid_value | urowid | polyglot |
+| interval_ym_value | interval year(1) to month | expression |
+| interval_ds_value | interval day(1) to second(3) | expression |
+| binary_float_value | binary_float | polyglot |
+| binary_double_value | binary_double | polyglot |
+| timestamp_ltz_value | timestamp(6) with local time zone | polyglot |
 
 ---
 ## bind placeholder — result metadata

@@ -2278,7 +2278,15 @@ SELECT
   INET '127.0.0.1' AS inet_value,
   CAST('a' AS TEXT) COLLATE "C" = CAST('a' AS TEXT) COLLATE "C" AS collated_equal,
   INT4RANGE(1, 5) AS range_value,
-  CAST('<a />' AS XML) AS xml_value
+  CAST('<a />' AS XML) AS xml_value,
+  MACADDR '08:00:2b:01:02:03' AS macaddr_value,
+  CIDR '192.168.0.0/24' AS cidr_value,
+  CAST('1010' AS BIT(4)) AS bit_value,
+  INT4MULTIRANGE(INT4RANGE(1, 5)) AS multirange_value,
+  '$.a'::JSONPATH AS jsonpath_value,
+  CAST('101010' AS VARBIT(8)) AS varbit_value,
+  CAST('(1,2)' AS POINT) AS pg_point_value,
+  CAST('<(0,0),1>' AS CIRCLE) AS pg_circle_value
 ```
 
 ### Then
@@ -2300,6 +2308,14 @@ verify: true
 | collated_equal | boolean | polyglot |
 | range_value | int4range | polyglot |
 | xml_value | xml | polyglot |
+| macaddr_value | macaddr | polyglot |
+| cidr_value | cidr | polyglot |
+| bit_value | bit(4) | polyglot |
+| multirange_value | int4multirange | polyglot |
+| jsonpath_value | jsonpath | polyglot |
+| varbit_value | bit varying(8) | polyglot |
+| pg_point_value | point | polyglot |
+| pg_circle_value | circle | polyglot |
 
 ---
 ## bind placeholder — result metadata
