@@ -277,7 +277,8 @@ describe select
   cast('12:34:56.123456' as time) as duck_time_value,
   interval '1 month 2 days 03:04:05' as duck_interval_value,
   cast('2020-01-01 00:00:00' as timestamp_s) as duck_timestamp_s_value,
-  cast('2020-01-01 00:00:00.123' as timestamp_ms) as duck_timestamp_ms_value;
+  cast('2020-01-01 00:00:00.123' as timestamp_ms) as duck_timestamp_ms_value,
+  cast('2020-01-01 00:00:00.123456789' as timestamp_ns) as duck_timestamp_ns_value;
 create type mood as enum ('sad', 'ok');
 describe select 'ok'::mood as duck_enum_value;
 `;
@@ -430,7 +431,9 @@ create view v_special_probe as select
   '$.a'::jsonpath as jsonpath_value,
   cast(B'101010' as bit varying(8)) as varbit_value,
   cast('(1,2)' as point) as pg_point_value,
-  cast('<(0,0),1>' as circle) as pg_circle_value;
+  cast('<(0,0),1>' as circle) as pg_circle_value,
+  cast('{1,2,3}' as line) as pg_line_value,
+  cast('((0,0),(1,1))' as box) as pg_box_value;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -591,7 +594,9 @@ create table t_special_probe(
   bit_flags bit(8),
   year_value year,
   geom_value geometry,
-  point_value point
+  point_value point,
+  line_value linestring,
+  polygon_value polygon
 );
 create view v_special_probe as select
   unicode_text,
@@ -608,6 +613,8 @@ create view v_special_probe as select
   year_value,
   geom_value,
   point_value,
+  line_value,
+  polygon_value,
   json_array(1, 2) as json_array_value,
   json_object('id', 1, 'name', 'x') as json_object_value,
   uuid() as uuid_value,
@@ -895,6 +902,7 @@ create or replace view v_special_probe as select
   interval '3 04:05:06.789' day(1) to second(3) interval_ds_value,
   cast(1.25 as binary_float) binary_float_value,
   cast(1.25 as binary_double) binary_double_value,
+  cast(timestamp '2020-01-01 00:00:00' as timestamp with time zone) timestamp_tz_cast_value,
   cast(timestamp '2020-01-01 00:00:00' as timestamp with local time zone) timestamp_ltz_value
 from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale

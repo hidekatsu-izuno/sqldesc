@@ -2151,7 +2151,9 @@ CREATE TABLE special_values (
   bit_flags BIT(8),
   year_value YEAR,
   geom_value GEOMETRY,
-  point_value POINT
+  point_value POINT,
+  line_value LINESTRING,
+  polygon_value POLYGON
 );
 ```
 
@@ -2177,6 +2179,8 @@ SELECT
   year_value,
   geom_value,
   point_value,
+  line_value,
+  polygon_value,
   JSON_ARRAY(1, 2) AS json_array_value,
   JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
   UUID() AS uuid_value,
@@ -2207,6 +2211,8 @@ verify: true
 | year_value | year | special_values.year_value |
 | geom_value | geometry | special_values.geom_value |
 | point_value | point | special_values.point_value |
+| line_value | linestring | special_values.line_value |
+| polygon_value | polygon | special_values.polygon_value |
 | json_array_value | json | expression |
 | json_object_value | json | expression |
 | uuid_value | varchar(36) | expression |

@@ -2286,7 +2286,9 @@ SELECT
   '$.a'::JSONPATH AS jsonpath_value,
   CAST('101010' AS VARBIT(8)) AS varbit_value,
   CAST('(1,2)' AS POINT) AS pg_point_value,
-  CAST('<(0,0),1>' AS CIRCLE) AS pg_circle_value
+  CAST('<(0,0),1>' AS CIRCLE) AS pg_circle_value,
+  CAST('{1,2,3}' AS LINE) AS pg_line_value,
+  CAST('((0,0),(1,1))' AS BOX) AS pg_box_value
 ```
 
 ### Then
@@ -2316,6 +2318,8 @@ verify: true
 | varbit_value | bit varying(8) | polyglot |
 | pg_point_value | point | polyglot |
 | pg_circle_value | circle | polyglot |
+| pg_line_value | line | polyglot |
+| pg_box_value | box | polyglot |
 
 ---
 ## bind placeholder — result metadata

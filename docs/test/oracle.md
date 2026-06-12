@@ -2398,6 +2398,7 @@ SELECT
   NUMTODSINTERVAL(3, 'DAY') interval_ds_value,
   CAST(1.25 AS BINARY_FLOAT) binary_float_value,
   CAST(1.25 AS BINARY_DOUBLE) binary_double_value,
+  CAST(TIMESTAMP '2020-01-01 00:00:00' AS TIMESTAMP WITH TIME ZONE) timestamp_tz_cast_value,
   CAST(TIMESTAMP '2020-01-01 00:00:00' AS TIMESTAMP WITH LOCAL TIME ZONE) timestamp_ltz_value
 FROM dual
 ```
@@ -2426,6 +2427,7 @@ verify: true
 | interval_ds_value | interval day(1) to second(3) | expression |
 | binary_float_value | binary_float | polyglot |
 | binary_double_value | binary_double | polyglot |
+| timestamp_tz_cast_value | timestamp(6) with time zone | polyglot |
 | timestamp_ltz_value | timestamp(6) with local time zone | polyglot |
 
 ---

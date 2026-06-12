@@ -2279,7 +2279,8 @@ SELECT
   CAST('12:34:56.123456' AS TIME) AS duck_time_value,
   INTERVAL '1 month 2 days 03:04:05' AS duck_interval_value,
   CAST('2020-01-01 00:00:00' AS TIMESTAMP_S) AS duck_timestamp_s_value,
-  CAST('2020-01-01 00:00:00.123' AS TIMESTAMP_MS) AS duck_timestamp_ms_value
+  CAST('2020-01-01 00:00:00.123' AS TIMESTAMP_MS) AS duck_timestamp_ms_value,
+  CAST('2020-01-01 00:00:00.123456789' AS TIMESTAMP_NS) AS duck_timestamp_ns_value
 ```
 
 ### Then
@@ -2305,6 +2306,7 @@ verify: true
 | duck_interval_value | interval | expression |
 | duck_timestamp_s_value | timestamp_s | polyglot |
 | duck_timestamp_ms_value | timestamp_ms | polyglot |
+| duck_timestamp_ns_value | timestamp_ns | polyglot |
 
 ---
 ## ENUM 型 — result metadata

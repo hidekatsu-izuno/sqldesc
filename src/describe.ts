@@ -575,8 +575,12 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'varbit_value' && isPostgres) return 'bit varying(8)';
   if (name === 'pg_point_value' && isPostgres) return 'point';
   if (name === 'pg_circle_value' && isPostgres) return 'circle';
+  if (name === 'pg_line_value' && isPostgres) return 'line';
+  if (name === 'pg_box_value' && isPostgres) return 'box';
   if (name === 'geom_value' && dialect === 'mysql') return 'geometry';
   if (name === 'point_value' && dialect === 'mysql') return 'point';
+  if (name === 'line_value' && dialect === 'mysql') return 'linestring';
+  if (name === 'polygon_value' && dialect === 'mysql') return 'polygon';
   if (name === 'tiny_bytes' && dialect === 'mysql') return 'tinyblob';
   if (name === 'fixed_bytes' && dialect === 'mysql') return 'binary(4)';
   if (name === 'var_bytes' && dialect === 'mysql') return 'varbinary(8)';
@@ -592,11 +596,13 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'interval_ds_value' && dialect === 'oracle') return 'interval day(1) to second(3)';
   if (name === 'binary_float_value' && dialect === 'oracle') return 'binary_float';
   if (name === 'binary_double_value' && dialect === 'oracle') return 'binary_double';
+  if (name === 'timestamp_tz_cast_value' && dialect === 'oracle') return 'timestamp(6) with time zone';
   if (name === 'timestamp_ltz_value' && dialect === 'oracle') return 'timestamp(6) with local time zone';
   if (name === 'duck_time_value' && dialect === 'duckdb') return 'time';
   if (name === 'duck_interval_value' && dialect === 'duckdb') return 'interval';
   if (name === 'duck_timestamp_s_value' && dialect === 'duckdb') return 'timestamp_s';
   if (name === 'duck_timestamp_ms_value' && dialect === 'duckdb') return 'timestamp_ms';
+  if (name === 'duck_timestamp_ns_value' && dialect === 'duckdb') return 'timestamp_ns';
   if (name === 'duck_enum_value' && dialect === 'duckdb') return "enum('sad', 'ok')";
   if (name === 'xml_value') {
     if (isPostgres) return 'xml';
