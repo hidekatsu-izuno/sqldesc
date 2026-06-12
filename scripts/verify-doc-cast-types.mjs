@@ -54,6 +54,11 @@ select
   typeof(cast('1.5' as numeric)) as n,
   typeof(cast(1 as text)) as t,
   typeof(cast('abc' as blob)) as b;
+select
+  typeof(cast(null as text)) as null_text,
+  typeof(coalesce(null, cast(1 as integer))) as co_i,
+  typeof(cast('12:34:56.123' as text)) as tm,
+  typeof(cast(1 as integer) + cast(1.25 as numeric)) as add_num;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -66,6 +71,13 @@ describe select
   cast('2020-01-01 00:00:00' as timestamp) as ts,
   cast('00000000-0000-0000-0000-000000000000' as uuid) as u,
   cast('abc' as blob) as b;
+describe select
+  cast(null as varchar) as null_v,
+  coalesce(null, cast('x' as varchar)) as co_v,
+  cast('12:34:56.123' as time) as tm,
+  interval '1 day' as iv,
+  cast(1 as integer) + cast(1.25 as decimal(6,2)) as add_num;
+select typeof(cast(1 as integer) + cast(1.25 as decimal(6,2))) as add_num_type;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -76,14 +88,25 @@ async function verifyPostgres() {
   await waitUntil('postgres', 30, () => docker(['exec', name, 'pg_isready', '-U', 'postgres']));
   const sql = `
 drop view if exists v_cast_probe;
+drop view if exists v_edge_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
   cast('2020-01-01 00:00:00' as timestamp(3)) as ts3,
   cast('2020-01-01 00:00:00+00' as timestamptz) as tstz;
+create view v_edge_probe as select
+  cast(null as varchar(8)) as null_v,
+  coalesce(null, cast('x' as char(4))) as co_c,
+  cast('12:34:56.123' as time(3)) as tm3,
+  cast('1 day' as interval) as iv,
+  cast(1 as integer) + cast(1.25 as numeric(6,2)) as add_num;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
+order by ordinal_position;
+select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
+from information_schema.columns
+where table_name = 'v_edge_probe'
 order by ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -97,14 +120,25 @@ async function verifyMysql() {
 create database if not exists sqldesc;
 use sqldesc;
 drop view if exists v_cast_probe;
+drop view if exists v_edge_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
   cast('2020-01-01 00:00:00.123' as datetime(3)) as dt3,
   cast('ab' as binary(4)) as b4;
+create view v_edge_probe as select
+  cast(null as char(8)) as null_v,
+  coalesce(null, cast('x' as char(4))) as co_c,
+  cast('12:34:56.123' as time(3)) as tm3,
+  cast('2020-01-01' as date) as dt,
+  cast(1 as signed) + cast(1.25 as decimal(6,2)) as add_num;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
+order by ordinal_position;
+select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
+from information_schema.columns
+where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -119,6 +153,12 @@ set nocount on;
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
   N'select cast(N''x'' as nvarchar(12)) as n12, cast(1.23 as decimal(8,2)) as d82, cast(''2020-01-01T00:00:00.123'' as datetime2(3)) as dt3, convert(varbinary(4), 171) as b4',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(null as nvarchar(8)) as null_v, coalesce(null, cast(N''x'' as nchar(4))) as co_c, cast(''12:34:56.123'' as time(3)) as tm3, cast(''2020-01-01T00:00:00.123+09:00'' as datetimeoffset(3)) as dto3, cast(1 as int) + cast(1.25 as decimal(6,2)) as add_num',
   null,
   0
 );
@@ -148,9 +188,20 @@ create or replace view v_cast_probe as select
   cast(timestamp '2020-01-01 00:00:00.123' as timestamp(3)) ts3,
   cast(hextoraw('AB') as raw(4)) r4
 from dual;
+create or replace view v_edge_probe as select
+  cast(null as varchar2(8)) null_v,
+  coalesce(null, cast('x' as char(4))) co_c,
+  cast(timestamp '2020-01-01 00:00:00.123' as timestamp(3) with time zone) tstz3,
+  numtodsinterval(1, 'DAY') iv,
+  cast(1 as number(6,0)) + cast(1.25 as number(6,2)) add_num
+from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
+order by column_id;
+select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
+from user_tab_columns
+where table_name = 'V_EDGE_PROBE'
 order by column_id;
 exit
 `;

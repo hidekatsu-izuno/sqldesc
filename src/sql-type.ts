@@ -134,6 +134,8 @@ export function createSqlType(type: string, dialect?: string): SqlType {
 
 export function normalizeTypeName(value: string): string {
   const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
+  if (/^interval day\(\d+\) to second\(\d+\)$/.test(lower)) return lower;
+  if (/^interval year\(\d+\) to month$/.test(lower)) return lower;
   const parameterized = parseParameterizedType(lower);
   if (parameterized) return parameterized;
   const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');
@@ -192,6 +194,7 @@ function displayByFamily(normalized: string, family: TypeFamily): string {
       return `decimal(${args})`;
     }
     if (base === 'datetime2' && family === 'tsql') return `datetime2(${args})`;
+    if (base === 'timestamptz' && (family === 'postgresql' || family === 'oracle')) return `timestamp(${args}) with time zone`;
     return normalized;
   }
 
@@ -344,7 +347,7 @@ function parseParameterizedType(value: string): string | undefined {
   const name = match[1].replace(/\s+/g, '').toLowerCase();
   const args = splitTopLevel(match[2], ',');
   if (name === 'nullable' || name === 'lowcardinality') return args[0] ? normalizeTypeName(args[0]) : 'unknown';
-  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
+  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp', 'timestamptz'].includes(name)) {
     return `${name === 'var_binary' ? 'varbinary' : name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
   if (name === 'array' || name === 'list') return `array<${args[0] ? normalizeTypeName(args[0]) : 'unknown'}>`;

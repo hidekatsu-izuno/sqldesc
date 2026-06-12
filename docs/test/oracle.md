@@ -1786,6 +1786,46 @@ verify: true
 | r4 | raw(4) | polyglot |
 
 ---
+## CAST / COALESCE — null, temporal, arithmetic metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST(NULL AS VARCHAR2(8)) AS null_v,
+  COALESCE(NULL, CAST('x' AS CHAR(4))) AS co_c,
+  CAST(TIMESTAMP '2020-01-01 00:00:00.123' AS TIMESTAMP(3) WITH TIME ZONE) AS tstz3,
+  NUMTODSINTERVAL(1, 'DAY') AS iv,
+  CAST(1 AS NUMBER(6,0)) + CAST(1.25 AS NUMBER(6,2)) AS add_num
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| null_v | varchar2(8) | polyglot |
+| co_c | char(4) | expression |
+| tstz3 | timestamp(3) with time zone | polyglot |
+| iv | interval day(9) to second(9) | expression |
+| add_num | number | polyglot |
+
+---
 ## NVL / COALESCE
 
 ### Given
@@ -2313,7 +2353,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ndi | interval | expression |
+| ndi | interval day(9) to second(9) | expression |
 
 ---
 ## MONTHS_BETWEEN
@@ -2373,7 +2413,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| nym | interval | expression |
+| nym | interval year(9) to month | expression |
 
 ---
 ## EXTRACT

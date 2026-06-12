@@ -1563,6 +1563,45 @@ verify: true
 | b4 | varbinary(4) | polyglot |
 
 ---
+## CAST / COALESCE — null, temporal, arithmetic metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CAST(NULL AS CHAR(8)) AS null_v,
+  COALESCE(NULL, CAST('x' AS CHAR(4))) AS co_c,
+  CAST('12:34:56.123' AS TIME(3)) AS tm3,
+  CAST('2020-01-01' AS DATE) AS dt,
+  CAST(1 AS SIGNED) + CAST(1.25 AS DECIMAL(6,2)) AS add_num
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| null_v | varchar(8) | polyglot |
+| co_c | varchar(4) | expression |
+| tm3 | time(3) | polyglot |
+| dt | date | polyglot |
+| add_num | decimal(23,2) | polyglot |
+
+---
 ## IFNULL / IF
 
 ### Given

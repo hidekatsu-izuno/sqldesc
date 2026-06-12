@@ -1497,6 +1497,7 @@ function dataTypeToString(dataType: unknown): string | undefined {
   const value = dataType.data_type === 'custom' && typeof dataType.name === 'string'
     ? dataType.name
     : dataType.data_type ?? dataType.type ?? dataType.name;
+  if (value === 'timestamp' && dataType.timezone === true && typeof dataType.precision === 'number') return `timestamptz(${dataType.precision})`;
   if (value === 'timestamp' && dataType.timezone === true) return 'timestamptz';
   if (typeof value === 'string') {
     const normalizedValue = value.toLowerCase().replace(/\s+/g, '');

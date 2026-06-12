@@ -1684,6 +1684,45 @@ verify: true
 | tstz | timestamp with time zone | polyglot |
 
 ---
+## CAST / COALESCE — null, temporal, arithmetic metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CAST(NULL AS VARCHAR(8)) AS null_v,
+  COALESCE(NULL, CAST('x' AS CHAR(4))) AS co_c,
+  CAST('12:34:56.123' AS TIME(3)) AS tm3,
+  CAST('1 day' AS INTERVAL) AS iv,
+  CAST(1 AS INTEGER) + CAST(1.25 AS NUMERIC(6,2)) AS add_num
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| null_v | varchar(8) | polyglot |
+| co_c | char(4) | expression |
+| tm3 | time(3) | polyglot |
+| iv | interval | polyglot |
+| add_num | numeric | polyglot |
+
+---
 ## COALESCE / NULLIF
 
 ### Given

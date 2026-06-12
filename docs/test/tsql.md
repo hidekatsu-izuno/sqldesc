@@ -1802,6 +1802,45 @@ verify: true
 | b4 | varbinary(4) | expression |
 
 ---
+## TRY_CAST / CONVERT / TRY_CONVERT — null, temporal, arithmetic metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(NULL AS NVARCHAR(8)) AS null_v,
+  COALESCE(NULL, CAST(N'x' AS NCHAR(4))) AS co_c,
+  CAST('12:34:56.123' AS TIME(3)) AS tm3,
+  CAST('2020-01-01T00:00:00.123+09:00' AS DATETIMEOFFSET(3)) AS dto3,
+  CAST(1 AS INT) + CAST(1.25 AS DECIMAL(6,2)) AS add_num
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| null_v | nvarchar(8) | polyglot |
+| co_c | nchar(4) | expression |
+| tm3 | time(3) | polyglot |
+| dto3 | datetimeoffset(3) | polyglot |
+| add_num | decimal(13,2) | polyglot |
+
+---
 ## ISNULL / COALESCE
 
 ### Given

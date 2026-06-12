@@ -1691,6 +1691,44 @@ verify: true
 | b | blob | polyglot |
 
 ---
+## CAST / COALESCE — null, temporal, arithmetic metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST(NULL AS VARCHAR) AS null_v,
+  COALESCE(NULL, CAST('x' AS VARCHAR)) AS co_v,
+  CAST('12:34:56.123' AS TIME) AS tm,
+  INTERVAL '1 day' AS iv,
+  CAST(1 AS INTEGER) + CAST(1.25 AS DECIMAL(6,2)) AS add_num
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| null_v | varchar | polyglot |
+| co_v | varchar | expression |
+| tm | time | polyglot |
+| iv | interval | expression |
+| add_num | decimal(13,2) | polyglot |
+
+---
 ## COALESCE
 
 ### Given

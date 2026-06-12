@@ -196,7 +196,7 @@ function inferColumn(
     return { type: bindSensitiveType, confidence: 'medium', source: 'expression' };
   }
 
-  const conditionalType = inferConditionalType(expression, schema, binds);
+  const conditionalType = inferConditionalType(expression, schema, binds, dialect);
   if (conditionalType) {
     return { type: conditionalType, confidence: 'medium', source: 'expression' };
   }
@@ -2775,7 +2775,9 @@ function inferTemporalFunctionType(expression: AstExpression, schema: Validation
   if (['datediff', 'date_diff', 'timestampdiff', 'timestamp_diff'].includes(name)) return 'integer';
   if (['unix_seconds', 'unix_millis', 'unix_micros', 'unix_timestamp', 'time_to_sec'].includes(name)) return 'integer';
   if (['epoch', 'epoch_ms', 'epoch_us', 'epoch_ns'].includes(name)) return 'integer';
-  if (['make_interval', 'justify_interval', 'justify_days', 'justify_hours', 'numtodsinterval', 'numtoyminterval'].includes(name)) return 'interval';
+  if (name === 'numtodsinterval') return 'interval day(9) to second(9)';
+  if (name === 'numtoyminterval') return 'interval year(9) to month';
+  if (['make_interval', 'justify_interval', 'justify_days', 'justify_hours'].includes(name)) return 'interval';
   if (name === 'date_bin') {
     const args = functionArguments(fn);
     const value = args[1] ?? args[0];
@@ -2865,38 +2867,43 @@ function inferIdentifierHashRandomType(expression: AstExpression): string | unde
   return undefined;
 }
 
-function inferConditionalType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferConditionalType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
+  const coalesceExpression = getAst(expression, 'coalesce') ?? getAst(expression, 'nullif');
+  if (isRecord(coalesceExpression)) {
+    return bindFirstArgumentType(coalesceExpression, binds) ?? commonArgumentType(functionArguments(coalesceExpression), schema, binds, dialect);
+  }
+
   const caseExpression = getAst(expression, 'case');
   if (isRecord(caseExpression)) {
     const branches = (Array.isArray(caseExpression.whens) ? caseExpression.whens : [])
       .flatMap((when) => Array.isArray(when) && isRecord(when[1]) ? [when[1]] : []);
     if (isRecord(caseExpression.else_)) branches.push(caseExpression.else_);
-    return commonArgumentType(branches, schema, binds);
+    return commonArgumentType(branches, schema, binds, dialect);
   }
 
   const ifExpression = getAst(expression, 'if_func');
   if (isRecord(ifExpression)) {
     const branches = [ifExpression.true_value, ifExpression.false_value].filter(isRecord);
-    return commonArgumentType(branches, schema, binds);
+    return commonArgumentType(branches, schema, binds, dialect);
   }
 
   const nvl2Expression = getAst(expression, 'nvl2');
   if (isRecord(nvl2Expression)) {
     const branches = [nvl2Expression.true_value, nvl2Expression.false_value].filter(isRecord);
-    return commonArgumentType(branches, schema, binds);
+    return commonArgumentType(branches, schema, binds, dialect);
   }
 
   const genericFunction = getAst(expression, 'function');
   if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'choose') {
-    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds);
+    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds, dialect);
   }
   if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'multiif') {
     const args = functionArguments(genericFunction);
     const branches = args.filter((_, index) => index % 2 === 1 || index === args.length - 1);
-    return commonArgumentType(branches, schema, binds);
+    return commonArgumentType(branches, schema, binds, dialect);
   }
   if (isRecord(genericFunction) && String(genericFunction.name ?? '').toLowerCase() === 'choose') {
-    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds);
+    return commonArgumentType(functionArguments(genericFunction).slice(1), schema, binds, dialect);
   }
 
   return undefined;
@@ -3535,10 +3542,14 @@ function functionArguments(functionNode: Record<string, unknown>): AstExpression
   ];
 }
 
-function commonArgumentType(args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string | undefined {
+function commonArgumentType(args: AstExpression[], schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
   const types = args
-    .map((arg, index) => inferColumn(arg, `arg_${index + 1}`, schema, binds, 'generic').type)
+    .map((arg, index) => inferColumn(arg, `arg_${index + 1}`, schema, binds, dialect).type)
     .filter((type) => type !== 'unknown');
+  const nonNullTypes = types.filter((type) => type !== 'null');
+  if (types.length !== nonNullTypes.length && nonNullTypes.length === 1) {
+    return adjustCastResultType(nonNullTypes[0], dialect);
+  }
   return commonTypeFromTypes(types);
 }
 
@@ -3576,8 +3587,13 @@ function inferWindowFunctionType(expression: AstExpression, schema: ValidationSc
 
 function adjustAnnotatedTypeForExpression(type: string | undefined, expression: AstExpression, dialect: string): string | undefined {
   if (!type) return undefined;
+  const arithmeticType = adjustArithmeticResultType(type, expression, dialect);
+  if (arithmeticType) return arithmeticType;
   const cast = getAst(expression, 'cast') ?? getAst(expression, 'try_cast') ?? getAst(expression, 'safe_cast');
-  if (!isRecord(cast)) return type;
+  const coalesce = getAst(expression, 'coalesce') ?? getAst(expression, 'nullif');
+  const fn = getAst(expression, 'function');
+  const isCoalesceFunction = isRecord(fn) && ['coalesce', 'ifnull', 'nvl', 'nullif'].includes(String(fn.name ?? '').toLowerCase());
+  if (!isRecord(cast) && !isRecord(coalesce) && !isCoalesceFunction) return type;
   return adjustCastResultType(type, dialect);
 }
 
@@ -3592,6 +3608,30 @@ function adjustCastResultType(type: string | undefined, dialect: string): string
   const match = /^(char|character|binary)\((\d+)\)$/i.exec(type);
   if (!match) return type;
   return match[1]?.toLowerCase() === 'binary' ? `varbinary(${match[2]})` : `varchar(${match[2]})`;
+}
+
+function adjustArithmeticResultType(type: string, expression: AstExpression, dialect: string): string | undefined {
+  const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub');
+  if (!isRecord(arithmetic)) return undefined;
+  const parts = [arithmetic.left, arithmetic.right, arithmetic.this, arithmetic.expression].filter(isRecord);
+  const types = parts.map((part) => inferCastType(part, dialect) ?? inferLiteralType(part)).filter((partType): partType is string => Boolean(partType));
+  const decimal = types.map(decimalTypeParts).find(Boolean);
+  if (dialect === 'oracle' && types.length > 0 && types.every((partType) => /^(?:number|decimal|numeric)(?:\(\d+,\d+\))?$/i.test(partType))) return 'decimal';
+  if (!decimal || !types.some((partType) => isIntegerLikeType(partType))) return undefined;
+  if (dialect === 'mysql') return `decimal(${21 + decimal.scale},${decimal.scale})`;
+  if (dialect === 'tsql' || dialect === 'duckdb') return `decimal(${Math.max(10, decimal.precision - decimal.scale) + decimal.scale + 1},${decimal.scale})`;
+  if (dialect === 'postgresql') return 'decimal';
+  return type;
+}
+
+function decimalTypeParts(type: string): { precision: number; scale: number } | undefined {
+  const match = /^(?:decimal|numeric|number)\((\d+),(\d+)\)$/i.exec(type);
+  if (!match) return undefined;
+  return { precision: Number(match[1]), scale: Number(match[2]) };
+}
+
+function isIntegerLikeType(type: string): boolean {
+  return /^(?:integer|int|signed|bigint|smallint|tinyint|number\(\d+,0\))$/i.test(type);
 }
 
 function inferLiteralType(expression: AstExpression): string | undefined {
@@ -9402,6 +9442,7 @@ function dataTypeToString(dataType: unknown): string | undefined {
   const value = record.data_type === 'custom' && typeof record.name === 'string'
     ? record.name
     : record.data_type ?? record.type ?? record.name;
+  if (value === 'timestamp' && record.timezone === true && typeof record.precision === 'number') return `timestamptz(${record.precision})`;
   if (value === 'timestamp' && record.timezone === true) return 'timestamptz';
   if (typeof value === 'string') {
     const normalizedValue = value.toLowerCase().replace(/\s+/g, '');

@@ -950,6 +950,47 @@ verify: true
 | b | blob | polyglot |
 
 ---
+## CAST / COALESCE — NULL と演算の storage class
+
+[SELECT — CAST 式](https://sqlite.org/lang_expr.html#castexpr) と実行時 storage class に基づく型変換。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  CAST(NULL AS TEXT) AS null_text,
+  COALESCE(NULL, CAST(1 AS INTEGER)) AS co_i,
+  CAST('12:34:56.123' AS TEXT) AS tm,
+  CAST(1 AS INTEGER) + CAST(1.25 AS NUMERIC) AS add_num
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| null_text | text | polyglot |
+| co_i | integer | expression |
+| tm | text | polyglot |
+| add_num | real | polyglot |
+
+---
 
 ## DISTINCT
 
