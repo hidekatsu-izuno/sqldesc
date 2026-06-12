@@ -137,6 +137,8 @@ export function normalizeTypeName(value: string): string {
   const lower = value.trim().toLowerCase().replace(/\s+/g, ' ');
   if (/^interval day\(\d+\) to second\(\d+\)$/.test(lower)) return lower;
   if (/^interval year\(\d+\) to month$/.test(lower)) return lower;
+  const timestampWithTimeZone = /^timestamp\s*\(([^)]+)\)\s+with\s+time\s+zone$/.exec(lower);
+  if (timestampWithTimeZone?.[1]) return `timestamptz(${timestampWithTimeZone[1].trim()})`;
   const parameterized = parseParameterizedType(lower);
   if (parameterized) return parameterized;
   const unparameterized = lower.replace(/\s*\([^)]*\)/g, '');

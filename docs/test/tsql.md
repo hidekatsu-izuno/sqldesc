@@ -2295,6 +2295,86 @@ verify: true
 | except_text | nvarchar(7) | cast |
 
 ---
+## 型付きNULL set operation — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT CAST(NULL AS INT) AS set_null_int, CAST(NULL AS NVARCHAR(5)) AS intersect_null_text
+UNION ALL
+SELECT CAST(1 AS INT), CAST(NULL AS NVARCHAR(5))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_null_int | int | cast |
+| intersect_null_text | nvarchar(5) | cast |
+
+---
+## timezone変換・JSON unquote・bind相当式 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CASE WHEN 1=1 THEN CAST(1 AS INT) ELSE CAST(2 AS BIGINT) END AS case_num_text,
+  CASE WHEN 1=1 THEN CAST('2020-01-01' AS DATETIME2(0)) ELSE CAST('2020-01-01T00:00:00' AS DATETIME2(0)) END AS case_date_ts,
+  MAX(IIF(1 = 1, 1, 0)) AS bool_any,
+  SUM(IIF(1 = 1, 1, 0)) AS bool_sum,
+  CAST('2020-01-01T00:00:00' AS DATETIME2(0)) AT TIME ZONE 'Tokyo Standard Time' AS timezone_convert,
+  JSON_VALUE(N'{"n":1,"b":true,"s":"x","z":null}', '$.s') AS json_unquote_text,
+  COALESCE(CAST(1 AS INT), CAST(2 AS INT)) AS bind_coalesce_equiv,
+  CAST(CAST(N'x' AS NVARCHAR(5)) AS NVARCHAR(5)) AS bind_cast_equiv,
+  CAST(1 AS INT) + CAST(2 AS INT) AS bind_add_equiv
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_num_text | bigint | expression |
+| case_date_ts | datetime2(0) | expression |
+| bool_any | int | expression |
+| bool_sum | int | expression |
+| timezone_convert | datetimeoffset(0) | expression |
+| json_unquote_text | nvarchar(4000) | expression |
+| bind_coalesce_equiv | int | expression |
+| bind_cast_equiv | nvarchar(5) | polyglot |
+| bind_add_equiv | int | polyglot |
+
+---
 ## ISNULL / COALESCE
 
 ### Given

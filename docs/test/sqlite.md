@@ -1411,6 +1411,96 @@ verify: true
 | except_text | text | cast |
 
 ---
+## 型付きNULL set operation — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT NULL AS set_null_int, NULL AS intersect_null_text
+UNION ALL
+SELECT CAST(1 AS INTEGER), CAST(NULL AS TEXT);
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_null_int | null | cast |
+| intersect_null_text | null | cast |
+
+---
+## timezone変換・JSON unquote・bind相当式 — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT
+  CASE WHEN 1 THEN CAST(1 AS INTEGER) ELSE CAST('x' AS TEXT) END AS case_num_text,
+  CASE WHEN 1 THEN DATE('2020-01-01') ELSE DATETIME('2020-01-01 00:00:00') END AS case_date_ts,
+  SUM(1 = 1) AS bool_sum,
+  DATETIME('2020-01-01 00:00:00+09:00', 'utc') AS timezone_convert,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}', '$.s') AS json_unquote_text,
+  COALESCE(CAST(1 AS INTEGER), CAST(2 AS INTEGER)) AS bind_coalesce_equiv,
+  CAST(CAST('x' AS TEXT) AS TEXT) AS bind_cast_equiv,
+  CAST(1 AS INTEGER) + CAST(2 AS INTEGER) AS bind_add_equiv
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_num_text | integer | expression |
+| case_date_ts | text | expression |
+| bool_sum | integer | expression |
+| timezone_convert | text | polyglot |
+| json_unquote_text | text | expression |
+| bind_coalesce_equiv | integer | expression |
+| bind_cast_equiv | text | polyglot |
+| bind_add_equiv | integer | polyglot |
+
+---
 
 ## DISTINCT
 

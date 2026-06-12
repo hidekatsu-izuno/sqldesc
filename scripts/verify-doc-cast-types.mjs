@@ -133,6 +133,17 @@ select
 select
   typeof((select cast(1 as integer) intersect select cast(1 as integer))) as intersect_num,
   typeof((select cast('x' as text) except select cast('y' as text))) as except_text;
+select
+  typeof((select null as v union all select cast(1 as integer) limit 1)) as set_null_int,
+  typeof((select null as v intersect select cast(null as text))) as intersect_null_text,
+  typeof(case when 1 then cast(1 as integer) else cast('x' as text) end) as case_num_text,
+  typeof(case when 1 then date('2020-01-01') else datetime('2020-01-01 00:00:00') end) as case_date_ts,
+  typeof(sum(1 = 1)) as bool_sum,
+  typeof(datetime('2020-01-01 00:00:00+09:00', 'utc')) as timezone_convert,
+  typeof(json_extract('{"n":1,"b":true,"s":"x","z":null}', '$.s')) as json_unquote_text,
+  typeof(coalesce(cast(1 as integer), cast(2 as integer))) as bind_coalesce_equiv,
+  typeof(cast(cast('x' as text) as text)) as bind_cast_equiv,
+  typeof(cast(1 as integer) + cast(2 as integer)) as bind_add_equiv;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -227,6 +238,18 @@ describe select
   json_extract('{"n":1,"b":true,"s":"x","z":null}'::json, '$.z') as json_scalar_null;
 describe select cast(1 as integer) as intersect_num intersect select cast(1 as bigint);
 describe select cast('x' as char(3)) as except_text except select cast('y' as varchar);
+describe select null::integer as set_null_int union all select cast(1 as integer);
+describe select null::varchar as intersect_null_text intersect select cast(null as varchar);
+describe select
+  case when true then cast(1 as integer) else cast(2 as bigint) end as case_num_text,
+  case when true then date '2020-01-01' else timestamp '2020-01-01 00:00:00' end as case_date_ts,
+  bool_or(1 = 1) as bool_any,
+  sum(case when 1 = 1 then 1 else 0 end) as bool_sum,
+  timestamp '2020-01-01 00:00:00' at time zone 'Asia/Tokyo' as timezone_convert,
+  json_extract_string('{"n":1,"b":true,"s":"x","z":null}'::json, '$.s') as json_unquote_text,
+  coalesce(cast(1 as integer), cast(2 as integer)) as bind_coalesce_equiv,
+  cast(cast('x' as varchar) as varchar) as bind_cast_equiv,
+  cast(1 as integer) + cast(2 as integer) as bind_add_equiv;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -251,6 +274,8 @@ drop view if exists v_set_resolution_probe;
 drop view if exists v_remaining_probe;
 drop view if exists v_extra_probe;
 drop view if exists v_set_ops_probe;
+drop view if exists v_final_probe;
+drop view if exists v_final_expr_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
@@ -342,6 +367,20 @@ intersect
 select cast(1 as bigint), cast('x' as varchar(7))
 except
 select cast(2 as bigint), cast('y' as varchar(7));
+create view v_final_probe as
+select null::integer as set_null_int, null::varchar as intersect_null_text
+union all
+select cast(1 as integer), cast(null as varchar);
+create view v_final_expr_probe as select
+  case when true then cast(1 as integer) else cast(2 as bigint) end as case_num_text,
+  case when true then date '2020-01-01' else timestamp '2020-01-01 00:00:00' end as case_date_ts,
+  bool_or(1 = 1) as bool_any,
+  sum(case when 1 = 1 then 1 else 0 end) as bool_sum,
+  timestamp '2020-01-01 00:00:00' at time zone 'Asia/Tokyo' as timezone_convert,
+  '{"n":1,"b":true,"s":"x","z":null}'::jsonb ->> 's' as json_unquote_text,
+  coalesce(cast(1 as integer), cast(2 as integer)) as bind_coalesce_equiv,
+  cast(cast('x' as varchar) as varchar) as bind_cast_equiv,
+  cast(1 as integer) + cast(2 as integer) as bind_add_equiv;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -352,7 +391,7 @@ where table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe')
+where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe', 'v_final_probe', 'v_final_expr_probe')
 order by table_name, ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -380,6 +419,8 @@ drop view if exists v_set_resolution_probe;
 drop view if exists v_remaining_probe;
 drop view if exists v_extra_probe;
 drop view if exists v_set_ops_probe;
+drop view if exists v_final_probe;
+drop view if exists v_final_expr_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
@@ -471,6 +512,20 @@ intersect
 select cast(1 as unsigned), cast('x' as char(7))
 except
 select cast(2 as unsigned), cast('y' as char(7));
+create view v_final_probe as
+select cast(null as signed) as set_null_int, cast(null as char(5)) as intersect_null_text
+union all
+select cast(1 as signed), cast(null as char(5));
+create view v_final_expr_probe as select
+  case when true then cast(1 as signed) else cast(2 as unsigned) end as case_num_text,
+  case when true then date '2020-01-01' else timestamp '2020-01-01 00:00:00' end as case_date_ts,
+  max(1 = 1) as bool_any,
+  sum(1 = 1) as bool_sum,
+  convert_tz(timestamp '2020-01-01 00:00:00', '+00:00', '+09:00') as timezone_convert,
+  json_unquote(json_extract(cast('{"n":1,"b":true,"s":"x","z":null}' as json), '$.s')) as json_unquote_text,
+  coalesce(cast(1 as signed), cast(2 as signed)) as bind_coalesce_equiv,
+  cast(cast('x' as char(5)) as char(5)) as bind_cast_equiv,
+  cast(1 as signed) + cast(2 as signed) as bind_add_equiv;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
@@ -481,7 +536,7 @@ where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe')
+where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe', 'v_final_probe', 'v_final_expr_probe')
 order by table_name, ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -580,6 +635,18 @@ from sys.dm_exec_describe_first_result_set(
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
   N'select cast(1 as int) as intersect_num, cast(N''x'' as nchar(3)) as except_text intersect select cast(1 as bigint), cast(N''x'' as nvarchar(7)) except select cast(2 as bigint), cast(N''y'' as nvarchar(7))',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(null as int) as set_null_int, cast(null as nvarchar(5)) as intersect_null_text union all select cast(1 as int), cast(null as nvarchar(5))',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select case when 1=1 then cast(1 as int) else cast(2 as bigint) end as case_num_text, case when 1=1 then cast(''2020-01-01'' as datetime2(0)) else cast(''2020-01-01T00:00:00'' as datetime2(0)) end as case_date_ts, max(iif(1 = 1, 1, 0)) as bool_any, sum(iif(1 = 1, 1, 0)) as bool_sum, cast(''2020-01-01T00:00:00'' as datetime2(0)) at time zone ''Tokyo Standard Time'' as timezone_convert, json_value(N''{"n":1,"b":true,"s":"x","z":null}'', ''$.s'') as json_unquote_text, coalesce(cast(1 as int), cast(2 as int)) as bind_coalesce_equiv, cast(cast(N''x'' as nvarchar(5)) as nvarchar(5)) as bind_cast_equiv, cast(1 as int) + cast(2 as int) as bind_add_equiv',
   null,
   0
 );
@@ -704,6 +771,21 @@ intersect
 select cast(1 as number(19,0)), cast('x' as varchar2(7)) from dual
 minus
 select cast(2 as number(19,0)), cast('y' as varchar2(7)) from dual;
+create or replace view v_final_probe as
+select cast(null as number(6,0)) set_null_int, cast(null as varchar2(5)) intersect_null_text from dual
+union all
+select cast(1 as number(6,0)), cast(null as varchar2(5)) from dual;
+create or replace view v_final_expr_probe as select
+  case when 1=1 then cast(1 as number(6,0)) else cast(2 as number(19,0)) end case_num_text,
+  case when 1=1 then cast(date '2020-01-01' as timestamp) else timestamp '2020-01-01 00:00:00' end case_date_ts,
+  max(case when 1 = 1 then 1 else 0 end) bool_any,
+  sum(case when 1 = 1 then 1 else 0 end) bool_sum,
+  from_tz(timestamp '2020-01-01 00:00:00', 'UTC') at time zone 'Asia/Tokyo' timezone_convert,
+  json_value('{"n":1,"b":true,"s":"x","z":null}', '$.s') json_unquote_text,
+  coalesce(cast(1 as number(6,0)), cast(2 as number(6,0))) bind_coalesce_equiv,
+  cast(cast('x' as varchar2(5)) as varchar2(5)) bind_cast_equiv,
+  cast(1 as number(6,0)) + cast(2 as number(6,0)) bind_add_equiv
+from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
@@ -714,7 +796,7 @@ where table_name = 'V_EDGE_PROBE'
 order by column_id;
 select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
-where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE', 'V_SET_RESOLUTION_PROBE', 'V_REMAINING_PROBE', 'V_EXTRA_PROBE', 'V_SET_OPS_PROBE')
+where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE', 'V_SET_RESOLUTION_PROBE', 'V_REMAINING_PROBE', 'V_EXTRA_PROBE', 'V_SET_OPS_PROBE', 'V_FINAL_PROBE', 'V_FINAL_EXPR_PROBE')
 order by table_name, column_id;
 exit
 `;

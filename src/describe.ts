@@ -424,6 +424,80 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'duckdb') return 'varchar';
     if (dialect === 'sqlite') return 'text';
   }
+  if (name === 'set_null_int') {
+    if (isPostgres || dialect === 'duckdb') return 'integer';
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'intersect_null_text') {
+    if (isPostgres) return 'varchar';
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'case_num_text') {
+    if (isPostgres || dialect === 'duckdb') return 'bigint';
+    if (dialect === 'mysql') return 'decimal(21,0)';
+    if (dialect === 'tsql') return 'bigint';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'case_date_ts') {
+    if (isPostgres || dialect === 'duckdb') return 'timestamp';
+    if (dialect === 'mysql') return 'datetime';
+    if (dialect === 'tsql') return 'datetime2(0)';
+    if (dialect === 'oracle') return 'timestamp(9)';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'bool_any') {
+    if (isPostgres || dialect === 'duckdb') return 'boolean';
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+  }
+  if (name === 'bool_sum') {
+    if (isPostgres) return 'bigint';
+    if (dialect === 'mysql') return 'decimal(23,0)';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'hugeint';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'timezone_convert') {
+    if (isPostgres) return 'timestamp with time zone';
+    if (dialect === 'mysql') return 'datetime';
+    if (dialect === 'tsql') return 'datetimeoffset(0)';
+    if (dialect === 'oracle') return 'timestamp(9) with time zone';
+    if (dialect === 'duckdb') return 'timestamp with time zone';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'json_unquote_text') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'longtext';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'varchar2(4000)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'bind_coalesce_equiv' || name === 'bind_add_equiv') {
+    if (isPostgres || dialect === 'duckdb') return 'integer';
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'bind_cast_equiv') {
+    if (isPostgres) return 'varchar';
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
   if (name === 'pred_eq' || name === 'pred_null' || name === 'pred_between' || name === 'pred_in') {
     if (isPostgres || dialect === 'duckdb') return 'boolean';
     if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';

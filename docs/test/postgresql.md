@@ -2173,6 +2173,86 @@ verify: true
 | except_text | text | cast |
 
 ---
+## 型付きNULL set operation — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT NULL::INTEGER AS set_null_int, NULL::VARCHAR AS intersect_null_text
+UNION ALL
+SELECT CAST(1 AS INTEGER), CAST(NULL AS VARCHAR)
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_null_int | integer | cast |
+| intersect_null_text | text | cast |
+
+---
+## timezone変換・JSON unquote・bind相当式 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CASE WHEN TRUE THEN CAST(1 AS INTEGER) ELSE CAST(2 AS BIGINT) END AS case_num_text,
+  CASE WHEN TRUE THEN DATE '2020-01-01' ELSE TIMESTAMP '2020-01-01 00:00:00' END AS case_date_ts,
+  BOOL_OR(1 = 1) AS bool_any,
+  SUM(CASE WHEN 1 = 1 THEN 1 ELSE 0 END) AS bool_sum,
+  TIMESTAMP '2020-01-01 00:00:00' AT TIME ZONE 'Asia/Tokyo' AS timezone_convert,
+  '{"n":1,"b":true,"s":"x","z":null}'::jsonb ->> 's' AS json_unquote_text,
+  COALESCE(CAST(1 AS INTEGER), CAST(2 AS INTEGER)) AS bind_coalesce_equiv,
+  CAST(CAST('x' AS VARCHAR) AS VARCHAR) AS bind_cast_equiv,
+  CAST(1 AS INTEGER) + CAST(2 AS INTEGER) AS bind_add_equiv
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_num_text | bigint | expression |
+| case_date_ts | timestamp without time zone | expression |
+| bool_any | boolean | expression |
+| bool_sum | bigint | expression |
+| timezone_convert | timestamp with time zone | expression |
+| json_unquote_text | text | json |
+| bind_coalesce_equiv | integer | expression |
+| bind_cast_equiv | text | polyglot |
+| bind_add_equiv | integer | polyglot |
+
+---
 ## COALESCE / NULLIF
 
 ### Given

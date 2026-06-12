@@ -2286,6 +2286,87 @@ verify: true
 | minus_text | varchar2(7) | cast |
 
 ---
+## 型付きNULL set operation — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT CAST(NULL AS NUMBER(6,0)) set_null_int, CAST(NULL AS VARCHAR2(5)) intersect_null_text FROM dual
+UNION ALL
+SELECT CAST(1 AS NUMBER(6,0)), CAST(NULL AS VARCHAR2(5)) FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_null_int | number | cast |
+| intersect_null_text | varchar2(5) | cast |
+
+---
+## timezone変換・JSON unquote・bind相当式 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CASE WHEN 1=1 THEN CAST(1 AS NUMBER(6,0)) ELSE CAST(2 AS NUMBER(19,0)) END case_num_text,
+  CASE WHEN 1=1 THEN CAST(DATE '2020-01-01' AS TIMESTAMP) ELSE TIMESTAMP '2020-01-01 00:00:00' END case_date_ts,
+  MAX(CASE WHEN 1 = 1 THEN 1 ELSE 0 END) bool_any,
+  SUM(CASE WHEN 1 = 1 THEN 1 ELSE 0 END) bool_sum,
+  FROM_TZ(TIMESTAMP '2020-01-01 00:00:00', 'UTC') AT TIME ZONE 'Asia/Tokyo' timezone_convert,
+  JSON_VALUE('{"n":1,"b":true,"s":"x","z":null}', '$.s') json_unquote_text,
+  COALESCE(CAST(1 AS NUMBER(6,0)), CAST(2 AS NUMBER(6,0))) bind_coalesce_equiv,
+  CAST(CAST('x' AS VARCHAR2(5)) AS VARCHAR2(5)) bind_cast_equiv,
+  CAST(1 AS NUMBER(6,0)) + CAST(2 AS NUMBER(6,0)) bind_add_equiv
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_num_text | number | expression |
+| case_date_ts | timestamp(9) | expression |
+| bool_any | number | expression |
+| bool_sum | number | expression |
+| timezone_convert | timestamp(9) with time zone | expression |
+| json_unquote_text | varchar2(4000) | expression |
+| bind_coalesce_equiv | number | expression |
+| bind_cast_equiv | varchar2(5) | polyglot |
+| bind_add_equiv | number | polyglot |
+
+---
 ## NVL / COALESCE
 
 ### Given

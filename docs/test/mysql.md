@@ -2052,6 +2052,86 @@ verify: true
 | except_text | varchar(7) | cast |
 
 ---
+## 型付きNULL set operation — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT CAST(NULL AS SIGNED) AS set_null_int, CAST(NULL AS CHAR(5)) AS intersect_null_text
+UNION ALL
+SELECT CAST(1 AS SIGNED), CAST(NULL AS CHAR(5))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_null_int | bigint | cast |
+| intersect_null_text | varchar(5) | cast |
+
+---
+## timezone変換・JSON unquote・bind相当式 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CASE WHEN TRUE THEN CAST(1 AS SIGNED) ELSE CAST(2 AS UNSIGNED) END AS case_num_text,
+  CASE WHEN TRUE THEN DATE '2020-01-01' ELSE TIMESTAMP '2020-01-01 00:00:00' END AS case_date_ts,
+  MAX(1 = 1) AS bool_any,
+  SUM(1 = 1) AS bool_sum,
+  CONVERT_TZ(TIMESTAMP '2020-01-01 00:00:00', '+00:00', '+09:00') AS timezone_convert,
+  JSON_UNQUOTE(JSON_EXTRACT(CAST('{"n":1,"b":true,"s":"x","z":null}' AS JSON), '$.s')) AS json_unquote_text,
+  COALESCE(CAST(1 AS SIGNED), CAST(2 AS SIGNED)) AS bind_coalesce_equiv,
+  CAST(CAST('x' AS CHAR(5)) AS CHAR(5)) AS bind_cast_equiv,
+  CAST(1 AS SIGNED) + CAST(2 AS SIGNED) AS bind_add_equiv
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_num_text | decimal(21,0) | expression |
+| case_date_ts | datetime | expression |
+| bool_any | bigint | expression |
+| bool_sum | decimal(23,0) | expression |
+| timezone_convert | datetime | polyglot |
+| json_unquote_text | longtext | expression |
+| bind_coalesce_equiv | bigint | expression |
+| bind_cast_equiv | varchar(5) | polyglot |
+| bind_add_equiv | bigint | polyglot |
+
+---
 ## IFNULL / IF
 
 ### Given
