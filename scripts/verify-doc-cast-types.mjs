@@ -69,6 +69,14 @@ select
   typeof(cast('ab' as text) || cast('cde' as text)) as concat_text,
   typeof(date('2020-01-01', '+1 day')) as date_add,
   typeof(datetime('2020-01-01 00:00:00', '+1 day')) as datetime_add;
+select
+  typeof(cast(1.25 as numeric) * cast(2 as integer)) as mul_num,
+  typeof(cast(5 as integer) / cast(2 as integer)) as div_int,
+  typeof(round(cast(1.25 as numeric), 1)) as round_num,
+  typeof(substr(cast('abcde' as text), 2, 3)) as substr_text,
+  typeof(row_number() over ()) as rn,
+  typeof(sum(cast(1.25 as numeric)) over ()) as win_sum,
+  typeof(avg(cast(1 as integer)) over ()) as win_avg;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -100,6 +108,14 @@ describe select
   cast('ab' as varchar) || cast('cde' as varchar) as concat_text,
   cast('2020-01-01' as date) + interval '1 day' as date_plus,
   cast('2020-01-01 00:00:00' as timestamp) + interval '1 day' as ts_plus;
+describe select
+  cast(1.25 as decimal(6,2)) * cast(2 as integer) as mul_num,
+  cast(5 as integer) / cast(2 as integer) as div_int,
+  round(cast(1.25 as decimal(6,2)), 1) as round_num,
+  substring(cast('abcde' as varchar), 2, 3) as substr_text,
+  row_number() over () as rn,
+  sum(cast(1.25 as decimal(6,2))) over () as win_sum,
+  avg(cast(1 as integer)) over () as win_avg;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -116,6 +132,7 @@ drop view if exists v_union_null_probe;
 drop view if exists v_union_num_probe;
 drop view if exists v_agg_probe;
 drop view if exists v_concat_temporal_probe;
+drop view if exists v_more_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
@@ -138,6 +155,14 @@ create view v_concat_temporal_probe as select
   cast('ab' as varchar(2)) || cast('cde' as varchar(3)) as concat_text,
   cast('2020-01-01' as date) + interval '1 day' as date_plus,
   cast('2020-01-01 00:00:00' as timestamp(3)) + interval '1 day' as ts_plus;
+create view v_more_probe as select
+  cast(1.25 as numeric(6,2)) * cast(2 as integer) as mul_num,
+  cast(5 as integer) / cast(2 as integer) as div_int,
+  round(cast(1.25 as numeric(6,2)), 1) as round_num,
+  substring(cast('abcde' as varchar(5)) from 2 for 3) as substr_text,
+  row_number() over () as rn,
+  sum(cast(1.25 as numeric(6,2))) over () as win_sum,
+  avg(cast(1 as integer)) over () as win_avg;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -148,7 +173,7 @@ where table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe')
+where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe')
 order by table_name, ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -168,6 +193,7 @@ drop view if exists v_union_null_probe;
 drop view if exists v_union_num_probe;
 drop view if exists v_agg_probe;
 drop view if exists v_concat_temporal_probe;
+drop view if exists v_more_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
@@ -190,6 +216,14 @@ create view v_concat_temporal_probe as select
   concat(cast('ab' as char(2)), cast('cde' as char(3))) as concat_text,
   date_add(cast('2020-01-01' as date), interval 1 day) as date_plus,
   timestampadd(day, 1, cast('2020-01-01 00:00:00.123' as datetime(3))) as ts_plus;
+create view v_more_probe as select
+  cast(1.25 as decimal(6,2)) * cast(2 as signed) as mul_num,
+  cast(5 as signed) / cast(2 as signed) as div_int,
+  round(cast(1.25 as decimal(6,2)), 1) as round_num,
+  substring(cast('abcde' as char(5)), 2, 3) as substr_text,
+  row_number() over () as rn,
+  sum(cast(1.25 as decimal(6,2))) over () as win_sum,
+  avg(cast(1 as signed)) over () as win_avg;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
@@ -200,7 +234,7 @@ where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe')
+where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe')
 order by table_name, ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -254,6 +288,12 @@ from sys.dm_exec_describe_first_result_set(
   null,
   0
 );
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(1.25 as decimal(6,2)) * cast(2 as int) as mul_num, cast(5 as int) / cast(2 as int) as div_int, round(cast(1.25 as decimal(6,2)), 1) as round_num, substring(cast(N''abcde'' as nvarchar(5)), 2, 3) as substr_text, row_number() over (order by (select 1)) as rn, sum(cast(1.25 as decimal(6,2))) over () as win_sum, avg(cast(1 as int)) over () as win_avg',
+  null,
+  0
+);
 `;
   printSection('sqlserver cast metadata', docker(['exec', '-i', name, '/opt/mssql-tools18/bin/sqlcmd', '-S', 'localhost', '-U', 'sa', '-P', 'Str0ngPass!234', '-C', '-W', '-h', '-1'], { input: sql }));
 }
@@ -300,6 +340,15 @@ create or replace view v_concat_temporal_probe as select
   cast(date '2020-01-01' + 1 as date) date_plus,
   cast(timestamp '2020-01-01 00:00:00.123' + numtodsinterval(1, 'DAY') as timestamp(3)) ts_plus
 from dual;
+create or replace view v_more_probe as select
+  cast(1.25 as number(6,2)) * cast(2 as number(6,0)) mul_num,
+  cast(5 as number(6,0)) / cast(2 as number(6,0)) div_int,
+  round(cast(1.25 as number(6,2)), 1) round_num,
+  substr(cast('abcde' as varchar2(5)), 2, 3) substr_text,
+  row_number() over (order by 1) rn,
+  sum(cast(1.25 as number(6,2))) over () win_sum,
+  avg(cast(1 as number(6,0))) over () win_avg
+from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
@@ -310,7 +359,7 @@ where table_name = 'V_EDGE_PROBE'
 order by column_id;
 select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
-where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE')
+where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE')
 order by table_name, column_id;
 exit
 `;

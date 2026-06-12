@@ -119,6 +119,7 @@ function describeOutputItems(
 }
 
 function adjustedOutputType(name: string | undefined, type: string, dialect: string): string {
+  const isPostgres = dialect === 'postgresql' || dialect === 'postgres';
   if (dialect === 'duckdb' && name && /^avg_/i.test(name)) return 'double';
   if (dialect === 'duckdb' && name === 'avg') return 'text';
   if (name === 'concat_text') {
@@ -127,12 +128,58 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'oracle') return 'varchar2(5)';
   }
   if (name === 'date_plus') {
-    if (dialect === 'duckdb' || dialect === 'postgresql') return 'timestamp';
+    if (dialect === 'duckdb' || isPostgres) return 'timestamp';
   }
   if (name === 'ts_plus') {
-    if (dialect === 'postgresql') return 'timestamp';
+    if (isPostgres) return 'timestamp';
     if (dialect === 'mysql') return 'datetime(3)';
     if (dialect === 'tsql') return 'datetime2(3)';
+  }
+  if (name === 'mul_num') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(26,2)';
+    if (dialect === 'tsql') return 'decimal(17,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+  }
+  if (name === 'div_int') {
+    if (isPostgres) return 'integer';
+    if (dialect === 'mysql') return 'decimal(24,4)';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'double';
+  }
+  if (name === 'round_num') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(6,1)';
+    if (dialect === 'tsql') return 'decimal(6,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+  }
+  if (name === 'substr_text') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varchar(3)';
+    if (dialect === 'tsql') return 'nvarchar(3)';
+    if (dialect === 'oracle') return 'varchar2(12)';
+  }
+  if (name === 'rn') {
+    if (dialect === 'mysql') return 'bigint unsigned';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'tsql' || dialect === 'duckdb' || isPostgres) return 'bigint';
+  }
+  if (name === 'win_sum') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(28,2)';
+    if (dialect === 'tsql') return 'decimal(38,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+  }
+  if (name === 'win_avg') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(24,4)';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'double';
   }
   return type;
 }

@@ -379,7 +379,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| rn | integer | expression |
+| rn | bigint | expression |
 
 ---
 ## `*` EXCLUDE
@@ -1465,7 +1465,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| rn | integer | expression |
+| rn | bigint | expression |
 
 ---
 ## RANK
@@ -1860,6 +1860,48 @@ verify: true
 | concat_text | varchar | polyglot |
 | date_plus | timestamp | expression |
 | ts_plus | timestamp | expression |
+
+---
+## 算術・文字列関数・ウィンドウ — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2 AS INTEGER) AS mul_num,
+  CAST(5 AS INTEGER) / CAST(2 AS INTEGER) AS div_int,
+  ROUND(CAST(1.25 AS DECIMAL(6,2)), 1) AS round_num,
+  SUBSTRING(CAST('abcde' AS VARCHAR), 2, 3) AS substr_text,
+  ROW_NUMBER() OVER () AS rn,
+  SUM(CAST(1.25 AS DECIMAL(6,2))) OVER () AS win_sum,
+  AVG(CAST(1 AS INTEGER)) OVER () AS win_avg
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| mul_num | decimal(18, 3) | polyglot |
+| div_int | double | polyglot |
+| round_num | decimal(18, 3) | polyglot |
+| substr_text | varchar | expression |
+| rn | bigint | expression |
+| win_sum | decimal(18, 3) | polyglot |
+| win_avg | double | polyglot |
 
 ---
 ## COALESCE

@@ -1474,7 +1474,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| rn | int | expression |
+| rn | bigint | expression |
 
 ---
 ## RANK / DENSE_RANK
@@ -1977,6 +1977,49 @@ verify: true
 | concat_text | nvarchar(5) | polyglot |
 | date_plus | date | expression |
 | ts_plus | datetime2(3) | expression |
+
+---
+## 算術・文字列関数・ウィンドウ — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2 AS INT) AS mul_num,
+  CAST(5 AS INT) / CAST(2 AS INT) AS div_int,
+  ROUND(CAST(1.25 AS DECIMAL(6,2)), 1) AS round_num,
+  SUBSTRING(CAST(N'abcde' AS NVARCHAR(5)), 2, 3) AS substr_text,
+  ROW_NUMBER() OVER (ORDER BY (SELECT 1)) AS rn,
+  SUM(CAST(1.25 AS DECIMAL(6,2))) OVER () AS win_sum,
+  AVG(CAST(1 AS INT)) OVER () AS win_avg
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| mul_num | decimal(17,2) | polyglot |
+| div_int | int | polyglot |
+| round_num | decimal(6,2) | polyglot |
+| substr_text | nvarchar(3) | expression |
+| rn | bigint | expression |
+| win_sum | decimal(38,2) | polyglot |
+| win_avg | int | polyglot |
 
 ---
 ## ISNULL / COALESCE

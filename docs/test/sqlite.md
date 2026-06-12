@@ -1071,6 +1071,53 @@ verify: true
 | datetime_plus | text | polyglot |
 
 ---
+## 算術・文字列関数・ウィンドウ — storage class metadata
+
+[式](https://sqlite.org/lang_expr.html) と [window functions](https://sqlite.org/windowfunctions.html) の実行時 storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  CAST(1.25 AS NUMERIC) * CAST(2 AS INTEGER) AS mul_num,
+  CAST(5 AS INTEGER) / CAST(2 AS INTEGER) AS div_int,
+  ROUND(CAST(1.25 AS NUMERIC), 1) AS round_num,
+  SUBSTR(CAST('abcde' AS TEXT), 2, 3) AS substr_text,
+  ROW_NUMBER() OVER () AS rn,
+  SUM(CAST(1.25 AS NUMERIC)) OVER () AS win_sum,
+  AVG(CAST(1 AS INTEGER)) OVER () AS win_avg
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| mul_num | real | polyglot |
+| div_int | integer | polyglot |
+| round_num | real | polyglot |
+| substr_text | text | expression |
+| rn | integer | expression |
+| win_sum | real | polyglot |
+| win_avg | real | polyglot |
+
+---
 
 ## DISTINCT
 

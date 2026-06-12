@@ -1427,7 +1427,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | number | users.id |
-| rn | number(10) | expression |
+| rn | number | expression |
 
 ---
 ## RANK / DENSE_RANK
@@ -1965,6 +1965,50 @@ verify: true
 | concat_text | varchar2(5) | polyglot |
 | date_plus | date | polyglot |
 | ts_plus | timestamp(3) | polyglot |
+
+---
+## 算術・文字列関数・ウィンドウ — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST(1.25 AS NUMBER(6,2)) * CAST(2 AS NUMBER(6,0)) AS mul_num,
+  CAST(5 AS NUMBER(6,0)) / CAST(2 AS NUMBER(6,0)) AS div_int,
+  ROUND(CAST(1.25 AS NUMBER(6,2)), 1) AS round_num,
+  SUBSTR(CAST('abcde' AS VARCHAR2(5)), 2, 3) AS substr_text,
+  ROW_NUMBER() OVER (ORDER BY 1) AS rn,
+  SUM(CAST(1.25 AS NUMBER(6,2))) OVER () AS win_sum,
+  AVG(CAST(1 AS NUMBER(6,0))) OVER () AS win_avg
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| mul_num | number | polyglot |
+| div_int | number | polyglot |
+| round_num | number | polyglot |
+| substr_text | varchar2(12) | expression |
+| rn | number | expression |
+| win_sum | number | polyglot |
+| win_avg | number | polyglot |
 
 ---
 ## NVL / COALESCE

@@ -1420,7 +1420,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | integer | users.id |
-| rn | integer | expression |
+| rn | bigint | expression |
 
 ---
 ## RANK / DENSE_RANK
@@ -1859,6 +1859,49 @@ verify: true
 | concat_text | text | polyglot |
 | date_plus | timestamp without time zone | expression |
 | ts_plus | timestamp without time zone | polyglot |
+
+---
+## 算術・文字列関数・ウィンドウ — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CAST(1.25 AS NUMERIC(6,2)) * CAST(2 AS INTEGER) AS mul_num,
+  CAST(5 AS INTEGER) / CAST(2 AS INTEGER) AS div_int,
+  ROUND(CAST(1.25 AS NUMERIC(6,2)), 1) AS round_num,
+  SUBSTRING(CAST('abcde' AS VARCHAR(5)) FROM 2 FOR 3) AS substr_text,
+  ROW_NUMBER() OVER () AS rn,
+  SUM(CAST(1.25 AS NUMERIC(6,2))) OVER () AS win_sum,
+  AVG(CAST(1 AS INTEGER)) OVER () AS win_avg
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| mul_num | numeric | polyglot |
+| div_int | integer | polyglot |
+| round_num | numeric | polyglot |
+| substr_text | text | expression |
+| rn | bigint | expression |
+| win_sum | numeric | polyglot |
+| win_avg | numeric | polyglot |
 
 ---
 ## COALESCE / NULLIF

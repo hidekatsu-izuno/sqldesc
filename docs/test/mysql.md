@@ -1236,7 +1236,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | users.id |
-| rn | int | expression |
+| rn | bigint unsigned | expression |
 
 ---
 ## RANK / DENSE_RANK
@@ -1736,6 +1736,49 @@ verify: true
 | concat_text | varchar(5) | polyglot |
 | date_plus | date | expression |
 | ts_plus | datetime(3) | expression |
+
+---
+## 算術・文字列関数・ウィンドウ — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2 AS SIGNED) AS mul_num,
+  CAST(5 AS SIGNED) / CAST(2 AS SIGNED) AS div_int,
+  ROUND(CAST(1.25 AS DECIMAL(6,2)), 1) AS round_num,
+  SUBSTRING(CAST('abcde' AS CHAR(5)), 2, 3) AS substr_text,
+  ROW_NUMBER() OVER () AS rn,
+  SUM(CAST(1.25 AS DECIMAL(6,2))) OVER () AS win_sum,
+  AVG(CAST(1 AS SIGNED)) OVER () AS win_avg
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| mul_num | decimal(26,2) | polyglot |
+| div_int | decimal(24,4) | polyglot |
+| round_num | decimal(6,1) | polyglot |
+| substr_text | varchar(3) | expression |
+| rn | bigint unsigned | expression |
+| win_sum | decimal(28,2) | polyglot |
+| win_avg | decimal(24,4) | polyglot |
 
 ---
 ## IFNULL / IF
