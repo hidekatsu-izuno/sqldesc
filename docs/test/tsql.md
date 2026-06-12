@@ -1765,6 +1765,43 @@ verify: true
 | c | int | expression |
 
 ---
+## TRY_CAST / CONVERT / TRY_CONVERT — native type names with modifiers
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(N'x' AS NVARCHAR(12)) AS n12,
+  CAST(1.23 AS DECIMAL(8,2)) AS d82,
+  CAST('2020-01-01T00:00:00.123' AS DATETIME2(3)) AS dt3,
+  CONVERT(VARBINARY(4), 171) AS b4
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| n12 | nvarchar(12) | polyglot |
+| d82 | decimal(8,2) | polyglot |
+| dt3 | datetime2(3) | polyglot |
+| b4 | varbinary(4) | expression |
+
+---
 ## ISNULL / COALESCE
 
 ### Given

@@ -1653,6 +1653,44 @@ verify: true
 | age_text | varchar | polyglot |
 
 ---
+## CAST — native type names with modifiers
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST('x' AS VARCHAR) AS v,
+  CAST(1.23 AS DECIMAL(8,2)) AS d,
+  CAST('2020-01-01 00:00:00' AS TIMESTAMP) AS ts,
+  CAST('00000000-0000-0000-0000-000000000000' AS UUID) AS u,
+  CAST('abc' AS BLOB) AS b
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| v | varchar | polyglot |
+| d | decimal(8,2) | polyglot |
+| ts | timestamp | polyglot |
+| u | uuid | polyglot |
+| b | blob | polyglot |
+
+---
 ## COALESCE
 
 ### Given

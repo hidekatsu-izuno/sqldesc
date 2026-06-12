@@ -1647,6 +1647,43 @@ verify: true
 | age_text | text | polyglot |
 
 ---
+## CAST / :: — native type names with modifiers
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CAST('x' AS VARCHAR(12)) AS v12,
+  CAST(1.23 AS NUMERIC(8,2)) AS n82,
+  CAST('2020-01-01 00:00:00' AS TIMESTAMP(3)) AS ts3,
+  CAST('2020-01-01 00:00:00+00' AS TIMESTAMPTZ) AS tstz
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| v12 | varchar(12) | polyglot |
+| n82 | numeric(8,2) | polyglot |
+| ts3 | timestamp(3) | polyglot |
+| tstz | timestamp with time zone | polyglot |
+
+---
 ## COALESCE / NULLIF
 
 ### Given

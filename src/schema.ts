@@ -1500,10 +1500,10 @@ function dataTypeToString(dataType: unknown): string | undefined {
   if (value === 'timestamp' && dataType.timezone === true) return 'timestamptz';
   if (typeof value === 'string') {
     const normalizedValue = value.toLowerCase().replace(/\s+/g, '');
-    if (typeof dataType.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary'].includes(normalizedValue)) {
-      return `${normalizedValue === 'var_char' ? 'varchar' : normalizedValue}(${dataType.length})`;
+    if (typeof dataType.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary'].includes(normalizedValue)) {
+      return `${normalizedValue === 'var_char' || normalizedValue === 'var_binary' ? normalizedValue.replace('_', '') : normalizedValue}(${dataType.length})`;
     }
-    if (typeof dataType.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime2'].includes(normalizedValue)) {
+    if (typeof dataType.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime', 'datetime2'].includes(normalizedValue)) {
       return `${normalizedValue}(${dataType.precision}${typeof dataType.scale === 'number' ? `,${dataType.scale}` : ''})`;
     }
   }

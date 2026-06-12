@@ -211,12 +211,12 @@ function inferColumn(
     return { type: definedFunctionType, confidence: 'medium', source: 'function' };
   }
 
-  const annotatedType = dataTypeToString(ast.getInferredType(expression as never));
+  const annotatedType = adjustAnnotatedTypeForExpression(dataTypeToString(ast.getInferredType(expression as never)), expression, dialect);
   if (annotatedType) {
     return { type: annotatedType, confidence: 'high', source: 'polyglot' };
   }
 
-  const castType = inferCastType(expression);
+  const castType = inferCastType(expression, dialect);
   if (castType) {
     return { type: castType, confidence: 'high', source: 'cast' };
   }
@@ -3574,9 +3574,24 @@ function inferWindowFunctionType(expression: AstExpression, schema: ValidationSc
   return inferExpressionType(inner, schema, binds);
 }
 
-function inferCastType(expression: AstExpression): string | undefined {
+function adjustAnnotatedTypeForExpression(type: string | undefined, expression: AstExpression, dialect: string): string | undefined {
+  if (!type) return undefined;
   const cast = getAst(expression, 'cast') ?? getAst(expression, 'try_cast') ?? getAst(expression, 'safe_cast');
-  return isRecord(cast) ? dataTypeToString(cast.to) : undefined;
+  if (!isRecord(cast)) return type;
+  return adjustCastResultType(type, dialect);
+}
+
+function inferCastType(expression: AstExpression, dialect: string): string | undefined {
+  const cast = getAst(expression, 'cast') ?? getAst(expression, 'try_cast') ?? getAst(expression, 'safe_cast');
+  const type = isRecord(cast) ? dataTypeToString(cast.to) : undefined;
+  return adjustCastResultType(type, dialect);
+}
+
+function adjustCastResultType(type: string | undefined, dialect: string): string | undefined {
+  if (!type || dialect !== 'mysql') return type;
+  const match = /^(char|character|binary)\((\d+)\)$/i.exec(type);
+  if (!match) return type;
+  return match[1]?.toLowerCase() === 'binary' ? `varbinary(${match[2]})` : `varchar(${match[2]})`;
 }
 
 function inferLiteralType(expression: AstExpression): string | undefined {
@@ -9390,10 +9405,10 @@ function dataTypeToString(dataType: unknown): string | undefined {
   if (value === 'timestamp' && record.timezone === true) return 'timestamptz';
   if (typeof value === 'string') {
     const normalizedValue = value.toLowerCase().replace(/\s+/g, '');
-    if (typeof record.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary'].includes(normalizedValue)) {
-      return `${normalizedValue === 'var_char' ? 'varchar' : normalizedValue}(${record.length})`;
+    if (typeof record.length === 'number' && ['char', 'character', 'varchar', 'var_char', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary'].includes(normalizedValue)) {
+      return `${normalizedValue === 'var_char' || normalizedValue === 'var_binary' ? normalizedValue.replace('_', '') : normalizedValue}(${record.length})`;
     }
-    if (typeof record.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime2'].includes(normalizedValue)) {
+    if (typeof record.precision === 'number' && ['decimal', 'dec', 'numeric', 'number', 'timestamp', 'time', 'datetime', 'datetime2'].includes(normalizedValue)) {
       return `${normalizedValue}(${record.precision}${typeof record.scale === 'number' ? `,${record.scale}` : ''})`;
     }
   }

@@ -147,7 +147,7 @@ export function normalizeTypeName(value: string): string {
   if (['float', 'float4', 'float8', 'double', 'doubleprecision', 'real'].includes(compact)) return 'decimal';
   if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
   if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
-  if (['binary', 'varbinary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
+  if (['binary', 'varbinary', 'var_binary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
   if (compact === 'json_b') return 'jsonb';
   if (compact === 'datetime2') return 'datetime2';
   if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
@@ -344,8 +344,8 @@ function parseParameterizedType(value: string): string | undefined {
   const name = match[1].replace(/\s+/g, '').toLowerCase();
   const args = splitTopLevel(match[2], ',');
   if (name === 'nullable' || name === 'lowcardinality') return args[0] ? normalizeTypeName(args[0]) : 'unknown';
-  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'decimal', 'dec', 'numeric', 'number', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
-    return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
+  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp'].includes(name)) {
+    return `${name === 'var_binary' ? 'varbinary' : name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
   if (name === 'array' || name === 'list') return `array<${args[0] ? normalizeTypeName(args[0]) : 'unknown'}>`;
   if (name === 'map' && args.length >= 2) return `map<${normalizeTypeName(args[0])}, ${normalizeTypeName(args[1])}>`;

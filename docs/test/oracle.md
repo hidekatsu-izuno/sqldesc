@@ -1748,6 +1748,44 @@ verify: true
 | age_text | varchar2(10) | polyglot |
 
 ---
+## CAST — native type names with modifiers
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST('x' AS VARCHAR2(12)) AS v12,
+  CAST(1.23 AS NUMBER(8,2)) AS n82,
+  CAST(TIMESTAMP '2020-01-01 00:00:00.123' AS TIMESTAMP(3)) AS ts3,
+  CAST(HEXTORAW('AB') AS RAW(4)) AS r4
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| v12 | varchar2(12) | polyglot |
+| n82 | number(8,2) | polyglot |
+| ts3 | timestamp(3) | polyglot |
+| r4 | raw(4) | polyglot |
+
+---
 ## NVL / COALESCE
 
 ### Given

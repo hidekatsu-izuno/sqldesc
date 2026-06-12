@@ -1526,6 +1526,43 @@ verify: true
 | age_text | varchar(255) | polyglot |
 
 ---
+## CAST — native type names with modifiers
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CAST('x' AS CHAR(12)) AS c12,
+  CAST(1.23 AS DECIMAL(8,2)) AS d82,
+  CAST('2020-01-01 00:00:00.123' AS DATETIME(3)) AS dt3,
+  CAST('ab' AS BINARY(4)) AS b4
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| c12 | varchar(12) | polyglot |
+| d82 | decimal(8,2) | polyglot |
+| dt3 | datetime(3) | polyglot |
+| b4 | varbinary(4) | polyglot |
+
+---
 ## IFNULL / IF
 
 ### Given

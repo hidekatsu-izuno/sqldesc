@@ -909,6 +909,47 @@ verify: true
 | age_text | text | polyglot |
 
 ---
+## CAST 式 — storage class
+
+[SELECT — CAST 式](https://sqlite.org/lang_expr.html#castexpr) に基づく型変換。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  CAST('1' AS INTEGER) AS i,
+  CAST('1.5' AS NUMERIC) AS n,
+  CAST(1 AS TEXT) AS t,
+  CAST('abc' AS BLOB) AS b
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| i | integer | polyglot |
+| n | real | polyglot |
+| t | text | polyglot |
+| b | blob | polyglot |
+
+---
 
 ## DISTINCT
 
