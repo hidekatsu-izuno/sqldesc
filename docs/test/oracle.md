@@ -2061,6 +2061,48 @@ verify: true
 | lit_ts | timestamp(9) | literal |
 
 ---
+## 日時差分・述語相当列 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  DATE '2020-01-03' - DATE '2020-01-01' AS date_diff_days,
+  TIMESTAMP '2020-01-01 00:00:10' - TIMESTAMP '2020-01-01 00:00:00' AS ts_diff,
+  CASE WHEN 1 = 1 THEN 1 ELSE 0 END AS pred_eq,
+  CASE WHEN NULL IS NULL THEN 1 ELSE 0 END AS pred_null,
+  CASE WHEN 2 BETWEEN 1 AND 3 THEN 1 ELSE 0 END AS pred_between,
+  CASE WHEN 2 IN (1, 2, 3) THEN 1 ELSE 0 END AS pred_in
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| date_diff_days | number | expression |
+| ts_diff | interval day(9) to second(9) | expression |
+| pred_eq | number | expression |
+| pred_null | number | expression |
+| pred_between | number | expression |
+| pred_in | number | expression |
+
+---
 ## NVL / COALESCE
 
 ### Given

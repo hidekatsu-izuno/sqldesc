@@ -1165,6 +1165,51 @@ verify: true
 | lit_null | null | literal |
 
 ---
+## 日時差分・述語投影 — storage class metadata
+
+[日付時刻関数](https://sqlite.org/lang_datefunc.html) と述語式の実行時 storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  JULIANDAY('2020-01-03') - JULIANDAY('2020-01-01') AS date_diff_days,
+  JULIANDAY('2020-01-01 00:00:10') - JULIANDAY('2020-01-01 00:00:00') AS ts_diff,
+  1 = 1 AS pred_eq,
+  NULL IS NULL AS pred_null,
+  2 BETWEEN 1 AND 3 AS pred_between,
+  2 IN (1, 2, 3) AS pred_in
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| date_diff_days | real | polyglot |
+| ts_diff | real | polyglot |
+| pred_eq | integer | polyglot |
+| pred_null | integer | expression |
+| pred_between | integer | expression |
+| pred_in | integer | expression |
+
+---
 
 ## DISTINCT
 

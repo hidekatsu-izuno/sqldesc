@@ -2071,6 +2071,47 @@ verify: true
 | lit_ts | datetime2(3) | polyglot |
 
 ---
+## 日時差分・述語相当列 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  DATEDIFF(DAY, CAST('2020-01-01' AS DATE), CAST('2020-01-03' AS DATE)) AS date_diff_days,
+  DATEDIFF(SECOND, CAST('2020-01-01T00:00:00' AS DATETIME2(0)), CAST('2020-01-01T00:00:10' AS DATETIME2(0))) AS ts_diff_seconds,
+  CAST(IIF(1 = 1, 1, 0) AS BIT) AS pred_eq,
+  CAST(IIF(NULL IS NULL, 1, 0) AS BIT) AS pred_null,
+  CAST(IIF(2 BETWEEN 1 AND 3, 1, 0) AS BIT) AS pred_between,
+  CAST(IIF(2 IN (1, 2, 3), 1, 0) AS BIT) AS pred_in
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| date_diff_days | int | expression |
+| ts_diff_seconds | int | expression |
+| pred_eq | bit | polyglot |
+| pred_null | bit | polyglot |
+| pred_between | bit | polyglot |
+| pred_in | bit | polyglot |
+
+---
 ## ISNULL / COALESCE
 
 ### Given

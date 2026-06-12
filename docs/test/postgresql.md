@@ -1951,6 +1951,47 @@ verify: true
 | lit_ts | timestamp without time zone | literal |
 
 ---
+## 日時差分・述語投影 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  DATE '2020-01-03' - DATE '2020-01-01' AS date_diff_days,
+  TIMESTAMP '2020-01-01 00:00:10' - TIMESTAMP '2020-01-01 00:00:00' AS ts_diff,
+  1 = 1 AS pred_eq,
+  NULL IS NULL AS pred_null,
+  2 BETWEEN 1 AND 3 AS pred_between,
+  2 IN (1, 2, 3) AS pred_in
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| date_diff_days | integer | expression |
+| ts_diff | interval | expression |
+| pred_eq | boolean | polyglot |
+| pred_null | boolean | expression |
+| pred_between | boolean | expression |
+| pred_in | boolean | expression |
+
+---
 ## COALESCE / NULLIF
 
 ### Given

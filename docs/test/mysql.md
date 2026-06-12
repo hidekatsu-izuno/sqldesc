@@ -1830,6 +1830,47 @@ verify: true
 | lit_ts | datetime(3) | literal |
 
 ---
+## 日時差分・述語投影 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  DATEDIFF(DATE '2020-01-03', DATE '2020-01-01') AS date_diff_days,
+  TIMESTAMPDIFF(SECOND, TIMESTAMP '2020-01-01 00:00:00', TIMESTAMP '2020-01-01 00:00:10') AS ts_diff_seconds,
+  1 = 1 AS pred_eq,
+  NULL IS NULL AS pred_null,
+  2 BETWEEN 1 AND 3 AS pred_between,
+  2 IN (1, 2, 3) AS pred_in
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| date_diff_days | int | expression |
+| ts_diff_seconds | bigint | expression |
+| pred_eq | int | polyglot |
+| pred_null | int | expression |
+| pred_between | int | expression |
+| pred_in | int | expression |
+
+---
 ## IFNULL / IF
 
 ### Given

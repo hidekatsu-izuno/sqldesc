@@ -229,6 +229,28 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'tsql') return 'datetime2(3)';
     if (dialect === 'oracle') return 'timestamp(9)';
   }
+  if (name === 'date_diff_days') {
+    if (isPostgres) return 'integer';
+    if (dialect === 'duckdb') return 'bigint';
+    if (dialect === 'mysql' || dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'ts_diff') {
+    if (isPostgres || dialect === 'duckdb') return 'interval';
+    if (dialect === 'oracle') return 'interval day(9) to second(9)';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'ts_diff_seconds') {
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+  }
+  if (name === 'pred_eq' || name === 'pred_null' || name === 'pred_between' || name === 'pred_in') {
+    if (isPostgres || dialect === 'duckdb') return 'boolean';
+    if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';
+    if (dialect === 'tsql') return 'bit';
+    if (dialect === 'oracle') return 'number';
+  }
   return type;
 }
 
