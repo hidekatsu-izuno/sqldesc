@@ -2397,7 +2397,8 @@ SELECT
   JSON_QUERY(N'[1,2]') AS json_array_value,
   CAST('<a />' AS XML) AS xml_value,
   CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) AS uuid_value,
-  CAST(1.23 AS MONEY) AS money_value
+  CAST(1.23 AS MONEY) AS money_value,
+  CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS = CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS AS collated_equal
 ```
 
 ### Then
@@ -2416,6 +2417,7 @@ verify: true
 | xml_value | xml | polyglot |
 | uuid_value | uniqueidentifier | polyglot |
 | money_value | money | polyglot |
+| collated_equal | bit | polyglot |
 
 ---
 ## bind placeholder — result metadata

@@ -385,7 +385,7 @@ function parseParameterizedType(value: string): string | undefined {
   const name = match[1].replace(/\s+/g, '').toLowerCase();
   const args = splitTopLevel(match[2], ',');
   if (name === 'nullable' || name === 'lowcardinality') return args[0] ? normalizeTypeName(args[0]) : 'unknown';
-  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp', 'timestamptz'].includes(name)) {
+  if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'bit', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp', 'timestamptz'].includes(name)) {
     return `${name === 'var_binary' ? 'varbinary' : name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
   if (name === 'enum' || name === 'set') return `${name}(${args.map((arg) => arg.trim()).join(',')})`;

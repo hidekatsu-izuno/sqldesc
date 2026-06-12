@@ -2272,7 +2272,10 @@ SELECT
   [1, 2] AS int_array,
   STRUCT_PACK(id := 1, name := 'x') AS struct_value,
   UUID() AS uuid_value,
-  1::HUGEINT AS hugeint_value
+  1::HUGEINT AS hugeint_value,
+  CAST('a' AS VARCHAR) COLLATE NOCASE = CAST('A' AS VARCHAR) COLLATE NOCASE AS collated_equal,
+  [[1, 2], [3, 4]] AS nested_int_array,
+  MAP(['a', 'b'], [1, 2]) AS map_value
 ```
 
 ### Then
@@ -2291,6 +2294,9 @@ verify: true
 | struct_value | struct | expression |
 | uuid_value | uuid | expression |
 | hugeint_value | hugeint | polyglot |
+| collated_equal | boolean | polyglot |
+| nested_int_array | integer[][] | expression |
+| map_value | map<text, integer> | expression |
 
 ---
 ## bind placeholder — result metadata

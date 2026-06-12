@@ -2388,7 +2388,10 @@ SELECT
   TO_BLOB(HEXTORAW('AB')) large_bytes,
   JSON_ARRAY(1, 2 RETURNING CLOB) json_array_value,
   SYS_GUID() uuid_value,
-  SYSTIMESTAMP timestamp_tz_value
+  SYSTIMESTAMP timestamp_tz_value,
+  TO_NCLOB(N'x') unicode_large_text,
+  XMLTYPE('<a />') xml_value,
+  NLS_UPPER(N'a', 'NLS_SORT = BINARY_CI') collated_text
 FROM dual
 ```
 
@@ -2407,6 +2410,9 @@ verify: true
 | json_array_value | clob | expression |
 | uuid_value | raw(16) | expression |
 | timestamp_tz_value | timestamp(6) with time zone | expression |
+| unicode_large_text | nclob | polyglot |
+| xml_value | xmltype | polyglot |
+| collated_text | nvarchar2(1) | polyglot |
 
 ---
 ## bind placeholder — result metadata

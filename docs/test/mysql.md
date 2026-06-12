@@ -2142,7 +2142,11 @@ CREATE TABLE special_values (
   large_text LONGTEXT,
   large_bytes LONGBLOB,
   enum_value ENUM('a','b'),
-  set_value SET('a','b')
+  set_value SET('a','b'),
+  unicode_large_text MEDIUMTEXT CHARACTER SET utf8mb4,
+  medium_bytes MEDIUMBLOB,
+  bit_flags BIT(8),
+  year_value YEAR
 );
 ```
 
@@ -2159,9 +2163,14 @@ SELECT
   large_bytes,
   enum_value,
   set_value,
+  unicode_large_text,
+  medium_bytes,
+  bit_flags,
+  year_value,
   JSON_ARRAY(1, 2) AS json_array_value,
   JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
-  UUID() AS uuid_value
+  UUID() AS uuid_value,
+  _utf8mb4'a' COLLATE utf8mb4_0900_ai_ci = _utf8mb4'A' COLLATE utf8mb4_0900_ai_ci AS collated_equal
 FROM special_values
 ```
 
@@ -2179,9 +2188,14 @@ verify: true
 | large_bytes | longblob | special_values.large_bytes |
 | enum_value | enum('a','b') | special_values.enum_value |
 | set_value | set('a','b') | special_values.set_value |
+| unicode_large_text | mediumtext | special_values.unicode_large_text |
+| medium_bytes | mediumblob | special_values.medium_bytes |
+| bit_flags | bit(8) | special_values.bit_flags |
+| year_value | year | special_values.year_value |
 | json_array_value | json | expression |
 | json_object_value | json | expression |
 | uuid_value | varchar(36) | expression |
+| collated_equal | int | polyglot |
 
 ---
 ## bind placeholder — result metadata

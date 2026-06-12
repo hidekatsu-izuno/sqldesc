@@ -1523,7 +1523,10 @@ SELECT
   ZEROBLOB(4) AS zero_blob,
   JSON_ARRAY(1, 2) AS json_array_value,
   JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
-  RANDOMBLOB(4) AS random_blob_value
+  RANDOMBLOB(4) AS random_blob_value,
+  CAST('a' AS TEXT) COLLATE NOCASE = CAST('A' AS TEXT) COLLATE NOCASE AS collated_equal,
+  CAST('x' AS TEXT) || CAST('あ' AS TEXT) AS unicode_concat,
+  JSON_ARRAY(JSON_ARRAY(1, 2), JSON_OBJECT('k', 'v')) AS nested_json_value
 ```
 
 ### Then
@@ -1542,6 +1545,9 @@ verify: true
 | json_array_value | text | expression |
 | json_object_value | text | expression |
 | random_blob_value | blob | polyglot |
+| collated_equal | integer | polyglot |
+| unicode_concat | text | polyglot |
+| nested_json_value | text | expression |
 
 ---
 ## bind placeholder — storage class metadata

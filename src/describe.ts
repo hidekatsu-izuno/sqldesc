@@ -549,6 +549,29 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'money_value' && dialect === 'tsql') return 'money';
   if (name === 'timestamp_tz_value' && dialect === 'oracle') return 'timestamp(6) with time zone';
   if (name === 'random_blob_value' && dialect === 'sqlite') return 'blob';
+  if (name === 'collated_equal') {
+    if (isPostgres || dialect === 'duckdb') return 'boolean';
+    if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';
+    if (dialect === 'tsql') return 'bit';
+  }
+  if (name === 'unicode_concat' && dialect === 'sqlite') return 'text';
+  if (name === 'nested_json_value' && dialect === 'sqlite') return 'text';
+  if (name === 'nested_int_array' && dialect === 'duckdb') return 'integer[][]';
+  if (name === 'map_value' && dialect === 'duckdb') return 'map(varchar, integer)';
+  if (name === 'range_value' && isPostgres) return 'int4range';
+  if (name === 'unicode_large_text') {
+    if (dialect === 'mysql') return 'mediumtext';
+    if (dialect === 'oracle') return 'nclob';
+  }
+  if (name === 'medium_bytes' && dialect === 'mysql') return 'mediumblob';
+  if (name === 'bit_flags' && dialect === 'mysql') return 'bit(8)';
+  if (name === 'year_value' && dialect === 'mysql') return 'year';
+  if (name === 'collated_text' && dialect === 'oracle') return 'nvarchar2(1)';
+  if (name === 'xml_value') {
+    if (isPostgres) return 'xml';
+    if (dialect === 'oracle') return 'xmltype';
+    if (dialect === 'tsql') return 'xml';
+  }
   if (name === 'pred_eq' || name === 'pred_null' || name === 'pred_between' || name === 'pred_in') {
     if (isPostgres || dialect === 'duckdb') return 'boolean';
     if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';

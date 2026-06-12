@@ -2275,7 +2275,10 @@ SELECT
   ARRAY[1, 2] AS int_array,
   JSONB_BUILD_OBJECT('id', 1, 'name', 'x') AS json_object_value,
   '00000000-0000-0000-0000-000000000000'::UUID AS uuid_value,
-  INET '127.0.0.1' AS inet_value
+  INET '127.0.0.1' AS inet_value,
+  CAST('a' AS TEXT) COLLATE "C" = CAST('a' AS TEXT) COLLATE "C" AS collated_equal,
+  INT4RANGE(1, 5) AS range_value,
+  CAST('<a />' AS XML) AS xml_value
 ```
 
 ### Then
@@ -2294,6 +2297,9 @@ verify: true
 | json_object_value | jsonb | expression |
 | uuid_value | uuid | polyglot |
 | inet_value | inet | polyglot |
+| collated_equal | boolean | polyglot |
+| range_value | int4range | polyglot |
+| xml_value | xml | polyglot |
 
 ---
 ## bind placeholder — result metadata

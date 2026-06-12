@@ -152,6 +152,10 @@ select
   typeof(json_array(1,2)) as json_array_value,
   typeof(json_object('id',1,'name','x')) as json_object_value,
   typeof(randomblob(4)) as random_blob_value;
+select
+  typeof(cast('a' as text) collate nocase = cast('A' as text) collate nocase) as collated_equal,
+  typeof(cast('x' as text) || cast('あ' as text)) as unicode_concat,
+  typeof(json_array(json_array(1,2), json_object('k','v'))) as nested_json_value;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -266,6 +270,10 @@ describe select
   struct_pack(id := 1, name := 'x') as struct_value,
   uuid() as uuid_value,
   1::hugeint as hugeint_value;
+describe select
+  cast('a' as varchar) collate nocase = cast('A' as varchar) collate nocase as collated_equal,
+  [[1, 2], [3, 4]] as nested_int_array,
+  map(['a', 'b'], [1, 2]) as map_value;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -405,7 +413,10 @@ create view v_special_probe as select
   array[1, 2] as int_array,
   jsonb_build_object('id', 1, 'name', 'x') as json_object_value,
   '00000000-0000-0000-0000-000000000000'::uuid as uuid_value,
-  inet '127.0.0.1' as inet_value;
+  inet '127.0.0.1' as inet_value,
+  cast('a' as text) collate "C" = cast('a' as text) collate "C" as collated_equal,
+  int4range(1, 5) as range_value,
+  xmlparse(document '<a />') as xml_value;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -557,7 +568,11 @@ create table t_special_probe(
   large_text longtext,
   large_bytes longblob,
   enum_value enum('a','b'),
-  set_value set('a','b')
+  set_value set('a','b'),
+  unicode_large_text mediumtext character set utf8mb4,
+  medium_bytes mediumblob,
+  bit_flags bit(8),
+  year_value year
 );
 create view v_special_probe as select
   unicode_text,
@@ -565,9 +580,14 @@ create view v_special_probe as select
   large_bytes,
   enum_value,
   set_value,
+  unicode_large_text,
+  medium_bytes,
+  bit_flags,
+  year_value,
   json_array(1, 2) as json_array_value,
   json_object('id', 1, 'name', 'x') as json_object_value,
-  uuid() as uuid_value
+  uuid() as uuid_value,
+  _utf8mb4'a' collate utf8mb4_0900_ai_ci = _utf8mb4'A' collate utf8mb4_0900_ai_ci as collated_equal
 from t_special_probe;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
@@ -841,7 +861,10 @@ create or replace view v_special_probe as select
   to_blob(hextoraw('AB')) large_bytes,
   json_array(1, 2 returning clob) json_array_value,
   sys_guid() uuid_value,
-  systimestamp timestamp_tz_value
+  systimestamp timestamp_tz_value,
+  to_nclob(N'x') unicode_large_text,
+  xmltype('<a />') xml_value,
+  nls_upper(N'a', 'NLS_SORT = BINARY_CI') collated_text
 from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
