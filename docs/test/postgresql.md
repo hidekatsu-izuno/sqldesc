@@ -2581,6 +2581,43 @@ verify: true
 | t | text | users.data.name |
 
 ---
+## JSON extraction — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  '{"name":"bob","items":[1,2]}'::jsonb -> 'items' AS json_items,
+  '{"name":"bob","items":[1,2]}'::jsonb ->> 'name' AS json_name,
+  jsonb_path_query_first('{"name":"bob","items":[1,2]}'::jsonb, '$.items') AS json_path_item,
+  jsonb_typeof('{"name":"bob","items":[1,2]}'::jsonb -> 'items') AS json_type_name
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| json_items | jsonb | expression |
+| json_name | text | json |
+| json_path_item | jsonb | expression |
+| json_type_name | text | expression |
+
+---
 ## jsonb_each
 
 ### Given

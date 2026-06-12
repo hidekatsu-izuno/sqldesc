@@ -92,6 +92,11 @@ select
   typeof(null is null) as pred_null,
   typeof(2 between 1 and 3) as pred_between,
   typeof(2 in (1, 2, 3)) as pred_in;
+select
+  typeof(json_extract('{"name":"bob","items":[1,2]}', '$.items')) as json_items,
+  typeof(json_extract('{"name":"bob","items":[1,2]}', '$.name')) as json_name,
+  typeof(json_quote(json_extract('{"name":"bob","items":[1,2]}', '$.items'))) as json_items_text,
+  typeof(json_type('{"name":"bob","items":[1,2]}', '$.items')) as json_type_name;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -148,6 +153,10 @@ describe select
   null is null as pred_null,
   2 between 1 and 3 as pred_between,
   2 in (1, 2, 3) as pred_in;
+describe select
+  json_extract('{"name":"bob","items":[1,2]}'::json, '$.items') as json_items,
+  json_extract_string('{"name":"bob","items":[1,2]}'::json, '$.name') as json_name,
+  json_type('{"name":"bob","items":[1,2]}'::json, '$.items') as json_type_name;
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -167,6 +176,7 @@ drop view if exists v_concat_temporal_probe;
 drop view if exists v_more_probe;
 drop view if exists v_priority_literal_probe;
 drop view if exists v_temporal_predicate_probe;
+drop view if exists v_json_extract_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
@@ -214,6 +224,11 @@ create view v_temporal_predicate_probe as select
   null is null as pred_null,
   2 between 1 and 3 as pred_between,
   2 in (1, 2, 3) as pred_in;
+create view v_json_extract_probe as select
+  '{"name":"bob","items":[1,2]}'::jsonb -> 'items' as json_items,
+  '{"name":"bob","items":[1,2]}'::jsonb ->> 'name' as json_name,
+  jsonb_path_query_first('{"name":"bob","items":[1,2]}'::jsonb, '$.items') as json_path_item,
+  jsonb_typeof('{"name":"bob","items":[1,2]}'::jsonb -> 'items') as json_type_name;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -224,7 +239,7 @@ where table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe')
+where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe')
 order by table_name, ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -247,6 +262,7 @@ drop view if exists v_concat_temporal_probe;
 drop view if exists v_more_probe;
 drop view if exists v_priority_literal_probe;
 drop view if exists v_temporal_predicate_probe;
+drop view if exists v_json_extract_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
@@ -295,6 +311,10 @@ create view v_temporal_predicate_probe as select
   null is null as pred_null,
   2 between 1 and 3 as pred_between,
   2 in (1, 2, 3) as pred_in;
+create view v_json_extract_probe as select
+  json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.items') as json_items,
+  json_unquote(json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.name')) as json_name,
+  json_type(json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.items')) as json_type_name;
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
@@ -305,7 +325,7 @@ where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe')
+where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe')
 order by table_name, ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -374,6 +394,12 @@ from sys.dm_exec_describe_first_result_set(
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
   N'select datediff(day, cast(''2020-01-01'' as date), cast(''2020-01-03'' as date)) as date_diff_days, datediff(second, cast(''2020-01-01T00:00:00'' as datetime2(0)), cast(''2020-01-01T00:00:10'' as datetime2(0))) as ts_diff_seconds, cast(iif(1 = 1, 1, 0) as bit) as pred_eq, cast(iif(null is null, 1, 0) as bit) as pred_null, cast(iif(2 between 1 and 3, 1, 0) as bit) as pred_between, cast(iif(2 in (1, 2, 3), 1, 0) as bit) as pred_in',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select json_query(N''{"name":"bob","items":[1,2]}'', ''$.items'') as json_items, json_value(N''{"name":"bob","items":[1,2]}'', ''$.name'') as json_name, isjson(N''{"name":"bob","items":[1,2]}'') as json_is_valid',
   null,
   0
 );
@@ -452,6 +478,11 @@ create or replace view v_temporal_predicate_probe as select
   case when 2 between 1 and 3 then 1 else 0 end pred_between,
   case when 2 in (1, 2, 3) then 1 else 0 end pred_in
 from dual;
+create or replace view v_json_extract_probe as select
+  json_query('{"name":"bob","items":[1,2]}', '$.items') json_items,
+  json_value('{"name":"bob","items":[1,2]}', '$.name') json_name,
+  json_value('{"name":"bob","items":[1,2]}', '$.items[0]' returning number) json_first_num
+from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
@@ -462,7 +493,7 @@ where table_name = 'V_EDGE_PROBE'
 order by column_id;
 select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
-where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE')
+where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE')
 order by table_name, column_id;
 exit
 `;

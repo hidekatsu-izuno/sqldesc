@@ -2587,6 +2587,41 @@ verify: true
 | n | varchar(255) | expression |
 
 ---
+## JSON extraction — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  JSON_EXTRACT(CAST('{"name":"bob","items":[1,2]}' AS JSON), '$.items') AS json_items,
+  JSON_UNQUOTE(JSON_EXTRACT(CAST('{"name":"bob","items":[1,2]}' AS JSON), '$.name')) AS json_name,
+  JSON_TYPE(JSON_EXTRACT(CAST('{"name":"bob","items":[1,2]}' AS JSON), '$.items')) AS json_type_name
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| json_items | json | expression |
+| json_name | longtext | expression |
+| json_type_name | varchar(17) | expression |
+
+---
 ## JSON_OBJECT / JSON_ARRAY
 
 ### Given

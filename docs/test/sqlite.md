@@ -3572,6 +3572,48 @@ verify: true
 | x | text | expression |
 
 ---
+## JSON extraction — storage class metadata
+
+[JSON1 — json_extract()](https://sqlite.org/json1.html#jex) の戻り storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```sql
+SELECT
+  JSON_EXTRACT('{"name":"bob","items":[1,2]}', '$.items') AS json_items,
+  JSON_EXTRACT('{"name":"bob","items":[1,2]}', '$.name') AS json_name,
+  JSON_QUOTE(JSON_EXTRACT('{"name":"bob","items":[1,2]}', '$.items')) AS json_items_text,
+  JSON_TYPE('{"name":"bob","items":[1,2]}', '$.items') AS json_type_name
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| json_items | text | expression |
+| json_name | text | expression |
+| json_items_text | text |  |
+| json_type_name | text | expression |
+
+---
 
 ## JSON — json_object / json_array
 

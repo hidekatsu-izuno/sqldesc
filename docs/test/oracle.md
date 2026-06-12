@@ -2919,6 +2919,42 @@ verify: true
 | jq | json | expression |
 
 ---
+## JSON extraction — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  JSON_QUERY('{"name":"bob","items":[1,2]}', '$.items') AS json_items,
+  JSON_VALUE('{"name":"bob","items":[1,2]}', '$.name') AS json_name,
+  JSON_VALUE('{"name":"bob","items":[1,2]}', '$.items[0]' RETURNING NUMBER) AS json_first_num
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| json_items | varchar2(4000) | expression |
+| json_name | varchar2(4000) | expression |
+| json_first_num | number | expression |
+
+---
 ## JSON_TABLE
 
 ### Given

@@ -251,6 +251,37 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'tsql') return 'bit';
     if (dialect === 'oracle') return 'number';
   }
+  if (name === 'json_items') {
+    if (isPostgres) return 'jsonb';
+    if (dialect === 'mysql' || dialect === 'duckdb') return 'json';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'varchar2(4000)';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'json_name') {
+    if (isPostgres || dialect === 'sqlite') return 'text';
+    if (dialect === 'mysql') return 'longtext';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'varchar2(4000)';
+  }
+  if (name === 'json_path_item') {
+    if (isPostgres) return 'jsonb';
+  }
+  if (name === 'json_items_text') {
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'json_type_name') {
+    if (dialect === 'mysql') return 'varchar(17)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (isPostgres || dialect === 'sqlite') return 'text';
+  }
+  if (name === 'json_is_valid') {
+    if (dialect === 'tsql') return 'int';
+  }
+  if (name === 'json_first_num') {
+    if (dialect === 'oracle') return 'number';
+  }
   return type;
 }
 

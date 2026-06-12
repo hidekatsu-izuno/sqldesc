@@ -2842,6 +2842,41 @@ verify: true
 | jq | nvarchar(max) | expression |
 
 ---
+## JSON extraction — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  JSON_QUERY(N'{"name":"bob","items":[1,2]}', '$.items') AS json_items,
+  JSON_VALUE(N'{"name":"bob","items":[1,2]}', '$.name') AS json_name,
+  ISJSON(N'{"name":"bob","items":[1,2]}') AS json_is_valid
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| json_items | nvarchar(4000) | expression |
+| json_name | nvarchar(4000) | expression |
+| json_is_valid | int | polyglot |
+
+---
 ## OPENJSON WITH
 
 ### Given

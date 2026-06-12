@@ -2438,6 +2438,40 @@ verify: true
 | jn | json | expression |
 
 ---
+## JSON extraction — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  json_extract('{"name":"bob","items":[1,2]}'::json, '$.items') AS json_items,
+  json_extract_string('{"name":"bob","items":[1,2]}'::json, '$.name') AS json_name,
+  json_type('{"name":"bob","items":[1,2]}'::json, '$.items') AS json_type_name
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| json_items | json | expression |
+| json_name | varchar | polyglot |
+| json_type_name | varchar | expression |
+
+---
 ## json_each
 
 ### Given
