@@ -1501,6 +1501,49 @@ verify: true
 | bind_add_equiv | integer | polyglot |
 
 ---
+## Unicode・LOB・構造相当・DB固有型 — storage class metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT
+  CAST('あ' AS TEXT) COLLATE NOCASE AS unicode_text,
+  CAST('x' AS TEXT) AS large_text,
+  CAST('abc' AS BLOB) AS large_bytes,
+  ZEROBLOB(4) AS zero_blob,
+  JSON_ARRAY(1, 2) AS json_array_value,
+  JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
+  RANDOMBLOB(4) AS random_blob_value
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | text | cast |
+| large_text | text | polyglot |
+| large_bytes | blob | polyglot |
+| zero_blob | blob | polyglot |
+| json_array_value | text | expression |
+| json_object_value | text | expression |
+| random_blob_value | blob | polyglot |
+
+---
 ## bind placeholder — storage class metadata
 
 ### Given

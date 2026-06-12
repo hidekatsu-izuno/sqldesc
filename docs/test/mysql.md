@@ -2132,6 +2132,58 @@ verify: true
 | bind_add_equiv | bigint | polyglot |
 
 ---
+## Unicode・LOB・構造相当・DB固有型 — result metadata
+
+### Given
+
+```sql
+CREATE TABLE special_values (
+  unicode_text VARCHAR(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  large_text LONGTEXT,
+  large_bytes LONGBLOB,
+  enum_value ENUM('a','b'),
+  set_value SET('a','b')
+);
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  unicode_text,
+  large_text,
+  large_bytes,
+  enum_value,
+  set_value,
+  JSON_ARRAY(1, 2) AS json_array_value,
+  JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
+  UUID() AS uuid_value
+FROM special_values
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | varchar(4) | special_values.unicode_text |
+| large_text | longtext | special_values.large_text |
+| large_bytes | longblob | special_values.large_bytes |
+| enum_value | enum('a','b') | special_values.enum_value |
+| set_value | set('a','b') | special_values.set_value |
+| json_array_value | json | expression |
+| json_object_value | json | expression |
+| uuid_value | varchar(36) | expression |
+
+---
 ## bind placeholder — result metadata
 
 ### Given

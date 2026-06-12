@@ -16,7 +16,10 @@ const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   double: 'DOUBLE',
   boolean: 'BOOLEAN',
   text: 'VARCHAR',
+  clob: 'CLOB',
+  nclob: 'NCLOB',
   bytes: 'VARBINARY',
+  blob: 'BLOB',
   json: 'OTHER',
   jsonb: 'OTHER',
   xml: 'SQLXML',
@@ -152,8 +155,11 @@ export function normalizeTypeName(value: string): string {
   if (['double', 'doubleprecision', 'float8'].includes(compact)) return 'double';
   if (['float', 'float4', 'real'].includes(compact)) return 'decimal';
   if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
-  if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
-  if (['binary', 'varbinary', 'var_binary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
+  if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text'].includes(compact)) return 'text';
+  if (compact === 'clob') return 'clob';
+  if (compact === 'nclob') return 'nclob';
+  if (['binary', 'varbinary', 'var_binary', 'bytea', 'bytes'].includes(compact)) return 'bytes';
+  if (compact === 'blob') return 'blob';
   if (compact === 'json_b') return 'jsonb';
   if (compact === 'datetime2') return 'datetime2';
   if (compact === 'timestamptz' || compact === 'timestampwithtimezone') return 'timestamptz';
@@ -218,7 +224,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     double: 'numeric',
     boolean: 'boolean',
     text: 'text',
+    clob: 'text',
+    nclob: 'text',
     bytes: 'bytea',
+    blob: 'bytea',
     json: 'json',
     jsonb: 'jsonb',
     date: 'date',
@@ -234,7 +243,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'decimal',
     boolean: 'tinyint(1)',
     text: 'varchar(255)',
+    clob: 'longtext',
+    nclob: 'longtext',
     bytes: 'varbinary(255)',
+    blob: 'longblob',
     json: 'json',
     jsonb: 'json',
     date: 'date',
@@ -251,7 +263,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     double: 'real',
     boolean: 'integer',
     text: 'text',
+    clob: 'text',
+    nclob: 'text',
     bytes: 'blob',
+    blob: 'blob',
     json: 'text',
     jsonb: 'blob',
     date: 'text',
@@ -267,7 +282,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'decimal(38, 10)',
     boolean: 'bit',
     text: 'nvarchar(max)',
+    clob: 'nvarchar(max)',
+    nclob: 'nvarchar(max)',
     bytes: 'varbinary(255)',
+    blob: 'varbinary(max)',
     json: 'nvarchar(max)',
     jsonb: 'nvarchar(max)',
     xml: 'xml',
@@ -285,7 +303,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'number',
     boolean: 'number(1)',
     text: 'varchar2(255)',
+    clob: 'clob',
+    nclob: 'nclob',
     bytes: 'raw(255)',
+    blob: 'blob',
     json: 'json',
     jsonb: 'json',
     xml: 'xmltype',
@@ -303,7 +324,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     double: 'double',
     boolean: 'boolean',
     text: 'varchar',
+    clob: 'varchar',
+    nclob: 'varchar',
     bytes: 'blob',
+    blob: 'blob',
     json: 'json',
     jsonb: 'json',
     date: 'date',
@@ -319,7 +343,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'numeric',
     boolean: 'bool',
     text: 'string',
+    clob: 'string',
+    nclob: 'string',
     bytes: 'bytes',
+    blob: 'bytes',
     json: 'json',
     jsonb: 'json',
     date: 'date',
@@ -336,7 +363,10 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     double: 'DECIMAL',
     boolean: 'BOOLEAN',
     text: 'VARCHAR(255)',
+    clob: 'CLOB',
+    nclob: 'NCLOB',
     bytes: 'VARBINARY(255)',
+    blob: 'BLOB',
     json: 'VARCHAR(4000)',
     jsonb: 'VARCHAR(4000)',
     xml: 'SQLXML',
@@ -358,6 +388,7 @@ function parseParameterizedType(value: string): string | undefined {
   if (['char', 'character', 'varchar', 'varchar2', 'nvarchar', 'nvarchar2', 'nchar', 'raw', 'binary', 'varbinary', 'var_binary', 'decimal', 'dec', 'numeric', 'number', 'datetime', 'datetime2', 'datetimeoffset', 'time', 'timestamp', 'timestamptz'].includes(name)) {
     return `${name === 'var_binary' ? 'varbinary' : name}(${args.map((arg) => arg.trim()).join(',')})`;
   }
+  if (name === 'enum' || name === 'set') return `${name}(${args.map((arg) => arg.trim()).join(',')})`;
   if (name === 'array' || name === 'list') return `array<${args[0] ? normalizeTypeName(args[0]) : 'unknown'}>`;
   if (name === 'map' && args.length >= 2) return `map<${normalizeTypeName(args[0])}, ${normalizeTypeName(args[1])}>`;
   if (name === 'tuple' || name === 'row') return `struct<${args.map((arg, index) => fieldFromTypeArgument(arg, index)).map((field) => `${field.name} ${field.type}`).join(', ')}>`;

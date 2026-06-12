@@ -2250,6 +2250,49 @@ verify: true
 | bind_add_equiv | integer | polyglot |
 
 ---
+## Unicode・LOB・配列・構造・DB固有型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST('あ' AS VARCHAR) AS unicode_text,
+  CAST('x' AS VARCHAR) AS large_text,
+  CAST('abc' AS BLOB) AS large_bytes,
+  [1, 2] AS int_array,
+  STRUCT_PACK(id := 1, name := 'x') AS struct_value,
+  UUID() AS uuid_value,
+  1::HUGEINT AS hugeint_value
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | varchar | polyglot |
+| large_text | varchar | polyglot |
+| large_bytes | blob | polyglot |
+| int_array | integer[] | expression |
+| struct_value | struct | expression |
+| uuid_value | uuid | expression |
+| hugeint_value | hugeint | polyglot |
+
+---
 ## bind placeholder — result metadata
 
 ### Given

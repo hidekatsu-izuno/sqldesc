@@ -220,7 +220,7 @@ verify: true
 | name | varchar2(100) | users.name |
 | age | number | users.age |
 | dept | varchar2(50) | users.dept |
-| data | varchar2(255) | users.data |
+| data | clob | users.data |
 | created_at | timestamp(6) | users.created_at |
 | d | date | users.d |
 | parent_id | number | users.parent_id |
@@ -2367,6 +2367,48 @@ verify: true
 | bind_add_equiv | number | polyglot |
 
 ---
+## Unicode・LOB・構造相当・DB固有型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST(N'あ' AS NVARCHAR2(4)) unicode_text,
+  TO_CLOB('x') large_text,
+  TO_BLOB(HEXTORAW('AB')) large_bytes,
+  JSON_ARRAY(1, 2 RETURNING CLOB) json_array_value,
+  SYS_GUID() uuid_value,
+  SYSTIMESTAMP timestamp_tz_value
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | nvarchar2(4) | polyglot |
+| large_text | clob | polyglot |
+| large_bytes | blob | polyglot |
+| json_array_value | clob | expression |
+| uuid_value | raw(16) | expression |
+| timestamp_tz_value | timestamp(6) with time zone | expression |
+
+---
 ## bind placeholder — result metadata
 
 ### Given
@@ -3615,7 +3657,7 @@ verify: true
 | name | varchar2(100) | users.name |
 | age | number | users.age |
 | dept | varchar2(50) | users.dept |
-| data | varchar2(255) | users.data |
+| data | clob | users.data |
 | created_at | timestamp(6) | users.created_at |
 | d | date | users.d |
 | parent_id | number | users.parent_id |
@@ -3653,7 +3695,7 @@ verify: true
 | name | varchar2(100) | users.name |
 | age | number | users.age |
 | dept | varchar2(50) | users.dept |
-| data | varchar2(255) | users.data |
+| data | clob | users.data |
 | created_at | timestamp(6) | users.created_at |
 | d | date | users.d |
 | parent_id | number | users.parent_id |

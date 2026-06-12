@@ -2253,6 +2253,49 @@ verify: true
 | bind_add_equiv | integer | polyglot |
 
 ---
+## Unicode・LOB・配列・DB固有型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CAST('あ' AS VARCHAR(4)) COLLATE "C" AS unicode_text,
+  CAST('x' AS TEXT) AS large_text,
+  DECODE('AB', 'hex') AS large_bytes,
+  ARRAY[1, 2] AS int_array,
+  JSONB_BUILD_OBJECT('id', 1, 'name', 'x') AS json_object_value,
+  '00000000-0000-0000-0000-000000000000'::UUID AS uuid_value,
+  INET '127.0.0.1' AS inet_value
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | varchar(4) | cast |
+| large_text | text | polyglot |
+| large_bytes | bytea | polyglot |
+| int_array | array<integer> | expression |
+| json_object_value | jsonb | expression |
+| uuid_value | uuid | polyglot |
+| inet_value | inet | polyglot |
+
+---
 ## bind placeholder — result metadata
 
 ### Given

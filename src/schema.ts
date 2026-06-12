@@ -989,6 +989,8 @@ function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>, t
 }
 
 function dataTypeFromRawColumnSpec(spec: string, typeAliases = new Map<string, string>()): string | undefined {
+  const enumOrSet = spec.trim().match(/^(enum|set)\s*\(([^)]*)\)/i);
+  if (enumOrSet) return `${enumOrSet[1].toLowerCase()}(${enumOrSet[2].replace(/\s+/g, '')})`;
   const type = spec.trim().split(/\s+/)[0];
   if (!type) return undefined;
   const normalized = normalizeDataTypeName(cleanIdentifier(type));

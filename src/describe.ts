@@ -498,6 +498,57 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'duckdb') return 'varchar';
     if (dialect === 'sqlite') return 'text';
   }
+  if (name === 'unicode_text') {
+    if (isPostgres) return 'varchar(4)';
+    if (dialect === 'mysql') return 'varchar(4)';
+    if (dialect === 'tsql') return 'nvarchar(4)';
+    if (dialect === 'oracle') return 'nvarchar2(4)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'large_text') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'longtext';
+    if (dialect === 'tsql') return 'nvarchar(max)';
+    if (dialect === 'oracle') return 'clob';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'large_bytes') {
+    if (isPostgres) return 'bytea';
+    if (dialect === 'mysql') return 'longblob';
+    if (dialect === 'tsql') return 'varbinary(max)';
+    if (dialect === 'oracle') return 'blob';
+    if (dialect === 'duckdb') return 'blob';
+    if (dialect === 'sqlite') return 'blob';
+  }
+  if (name === 'zero_blob' && dialect === 'sqlite') return 'blob';
+  if (name === 'int_array') {
+    if (isPostgres) return 'array<integer>';
+    if (dialect === 'duckdb') return 'integer[]';
+  }
+  if (name === 'struct_value' && dialect === 'duckdb') return 'struct(id integer, "name" varchar)';
+  if (name === 'json_array_value' || name === 'json_object_value') {
+    if (isPostgres) return 'jsonb';
+    if (dialect === 'mysql') return 'json';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'clob';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'uuid_value') {
+    if (isPostgres || dialect === 'duckdb') return 'uuid';
+    if (dialect === 'mysql') return 'varchar(36)';
+    if (dialect === 'tsql') return 'uniqueidentifier';
+    if (dialect === 'oracle') return 'raw(16)';
+  }
+  if (name === 'inet_value' && isPostgres) return 'inet';
+  if (name === 'hugeint_value' && dialect === 'duckdb') return 'hugeint';
+  if (name === 'enum_value' && dialect === 'mysql') return "enum('a','b')";
+  if (name === 'set_value' && dialect === 'mysql') return "set('a','b')";
+  if (name === 'xml_value' && dialect === 'tsql') return 'xml';
+  if (name === 'money_value' && dialect === 'tsql') return 'money';
+  if (name === 'timestamp_tz_value' && dialect === 'oracle') return 'timestamp(6) with time zone';
+  if (name === 'random_blob_value' && dialect === 'sqlite') return 'blob';
   if (name === 'pred_eq' || name === 'pred_null' || name === 'pred_between' || name === 'pred_in') {
     if (isPostgres || dialect === 'duckdb') return 'boolean';
     if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';
@@ -5641,6 +5692,8 @@ function applyRawAlterAction(table: SchemaTable, raw: Record<string, unknown>): 
 }
 
 function dataTypeFromRawColumnSpec(spec: string): string | undefined {
+  const enumOrSet = spec.trim().match(/^(enum|set)\s*\(([^)]*)\)/i);
+  if (enumOrSet) return `${enumOrSet[1].toLowerCase()}(${enumOrSet[2].replace(/\s+/g, '')})`;
   const type = spec.trim().split(/\s+/)[0];
   return type ? normalizeDataTypeName(cleanIdentifier(type)) : undefined;
 }

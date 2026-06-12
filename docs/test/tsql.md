@@ -2375,6 +2375,49 @@ verify: true
 | bind_add_equiv | int | polyglot |
 
 ---
+## Unicode・LOB・構造相当・DB固有型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(N'あ' AS NVARCHAR(4)) COLLATE Japanese_CI_AS AS unicode_text,
+  CAST(N'x' AS NVARCHAR(MAX)) AS large_text,
+  CAST(CAST('AB' AS VARBINARY(8000)) AS VARBINARY(8000)) AS large_bytes_8000,
+  JSON_QUERY(N'[1,2]') AS json_array_value,
+  CAST('<a />' AS XML) AS xml_value,
+  CAST('00000000-0000-0000-0000-000000000000' AS UNIQUEIDENTIFIER) AS uuid_value,
+  CAST(1.23 AS MONEY) AS money_value
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| unicode_text | nvarchar(4) | cast |
+| large_text | nvarchar(max) | polyglot |
+| large_bytes_8000 | varbinary(8000) | polyglot |
+| json_array_value | nvarchar(4000) | expression |
+| xml_value | xml | polyglot |
+| uuid_value | uniqueidentifier | polyglot |
+| money_value | money | polyglot |
+
+---
 ## bind placeholder — result metadata
 
 ### Given
