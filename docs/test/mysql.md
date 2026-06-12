@@ -2132,6 +2132,42 @@ verify: true
 | bind_add_equiv | bigint | polyglot |
 
 ---
+## bind placeholder — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+binds: int,text,int
+```
+
+```sql
+SELECT
+  COALESCE(?, CAST(1 AS SIGNED)) AS bind_coalesce,
+  CAST(? AS CHAR(5)) AS bind_cast,
+  ? + CAST(1 AS SIGNED) AS bind_add
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bind_coalesce | int | expression |
+| bind_cast | varchar(5) | polyglot |
+| bind_add | signed | polyglot |
+
+---
 ## IFNULL / IF
 
 ### Given

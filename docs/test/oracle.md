@@ -2367,6 +2367,43 @@ verify: true
 | bind_add_equiv | number | polyglot |
 
 ---
+## bind placeholder — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+binds: p1=int,p2=text,p3=int
+```
+
+```sql
+SELECT
+  COALESCE(:p1, CAST(1 AS NUMBER(6,0))) bind_coalesce,
+  CAST(:p2 AS VARCHAR2(5)) bind_cast,
+  :p3 + CAST(1 AS NUMBER(6,0)) bind_add
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bind_coalesce | number(10) | expression |
+| bind_cast | varchar2(5) | polyglot |
+| bind_add | number | polyglot |
+
+---
 ## NVL / COALESCE
 
 ### Given

@@ -1501,6 +1501,48 @@ verify: true
 | bind_add_equiv | integer | polyglot |
 
 ---
+## bind placeholder — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+binds: int,text,int
+```
+
+```sql
+SELECT
+  COALESCE(?, CAST(1 AS INTEGER)) AS bind_coalesce,
+  CAST(? AS TEXT) AS bind_cast,
+  ? + CAST(1 AS INTEGER) AS bind_add
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bind_coalesce | integer | expression |
+| bind_cast | text | polyglot |
+| bind_add | integer | polyglot |
+
+---
 
 ## DISTINCT
 

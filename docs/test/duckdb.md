@@ -2250,6 +2250,42 @@ verify: true
 | bind_add_equiv | integer | polyglot |
 
 ---
+## bind placeholder — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+binds: int,text,int
+```
+
+```sql
+SELECT
+  COALESCE($1, CAST(1 AS INTEGER)) AS bind_coalesce,
+  CAST($2 AS VARCHAR) AS bind_cast,
+  $3 + CAST(1 AS INTEGER) AS bind_add
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bind_coalesce | integer | expression |
+| bind_cast | varchar | polyglot |
+| bind_add | integer | polyglot |
+
+---
 ## COALESCE
 
 ### Given

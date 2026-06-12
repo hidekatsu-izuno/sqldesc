@@ -2375,6 +2375,42 @@ verify: true
 | bind_add_equiv | int | polyglot |
 
 ---
+## bind placeholder — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+binds: p1=int,p2=text,p3=int
+```
+
+```sql
+SELECT
+  COALESCE(@p1, CAST(1 AS INT)) AS bind_coalesce,
+  CAST(@p2 AS NVARCHAR(5)) AS bind_cast,
+  @p3 + CAST(1 AS INT) AS bind_add
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bind_coalesce | int | expression |
+| bind_cast | nvarchar(5) | polyglot |
+| bind_add | int | polyglot |
+
+---
 ## ISNULL / COALESCE
 
 ### Given
