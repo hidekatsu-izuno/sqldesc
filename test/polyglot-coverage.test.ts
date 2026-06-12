@@ -1079,10 +1079,11 @@ describe('polyglot representative SQL coverage', () => {
       });
 
       assert.strictEqual(result.statements[0]?.resultKind, 'static');
-      assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type, column.source]), [
-        ['id', 'integer', 'users.id'],
-        ['name', 'text', 'users.name'],
+      assert.deepStrictEqual(result.columns.map((column) => [column.name, column.source]), [
+        ['id', 'users.id'],
+        ['name', 'users.name'],
       ]);
+      assert.strictEqual(unresolvedColumnCount(result), 0);
       assert.deepStrictEqual(result.warnings, []);
     });
   }
