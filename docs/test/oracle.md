@@ -1895,6 +1895,40 @@ verify: true
 | n | number | cast |
 
 ---
+## UNION — type resolution metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT CAST(1 AS NUMBER(6,0)) AS set_num, CAST('a' AS CHAR(3)) AS set_text, DATE '2020-01-01' AS set_temporal FROM dual
+UNION ALL
+SELECT CAST(1 AS NUMBER(19,0)), CAST('bb' AS VARCHAR2(7)), TIMESTAMP '2020-01-01 00:00:00' FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_num | number | cast |
+| set_text | varchar2(7) | cast |
+| set_temporal | timestamp(9) | cast |
+
+---
 ## 集約 — decimal precision metadata
 
 ### Given
@@ -2101,6 +2135,155 @@ verify: true
 | pred_null | number | expression |
 | pred_between | number | expression |
 | pred_in | number | expression |
+
+---
+## NULL・除算・timezone差分 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST('a' AS VARCHAR2(3)) || NULL concat_null,
+  SUM(CAST(NULL AS NUMBER(6,2))) sum_null,
+  AVG(CAST(NULL AS NUMBER(6,0))) avg_null,
+  COUNT(NULL) count_null,
+  MIN(CAST(NULL AS VARCHAR2(5))) min_null,
+  CASE WHEN 1=1 THEN NULL ELSE NULL END case_all_null,
+  CAST(5.00 AS NUMBER(6,2)) / CAST(2.00 AS NUMBER(6,2)) div_decimal,
+  CAST(5.00 AS NUMBER(6,2)) / CAST(2 AS NUMBER(6,0)) div_decimal_int,
+  TIMESTAMP '2020-01-01 00:00:10' AT TIME ZONE 'UTC' - TIMESTAMP '2020-01-01 00:00:00' AT TIME ZONE 'UTC' tstz_diff
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_null | varchar2(3) | polyglot |
+| sum_null | number | expression |
+| avg_null | number | expression |
+| count_null | number | expression |
+| min_null | varchar2(5) | expression |
+| case_all_null | varchar2(0) | expression |
+| div_decimal | number | polyglot |
+| div_decimal_int | number | polyglot |
+| tstz_diff | interval day(9) to second(9) |  |
+
+---
+## NULL型解決・追加演算・MINUS・JSON scalar — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  COALESCE(NULL, NULL, CAST(1 AS NUMBER(6,0))) co_null_typed,
+  CASE WHEN 1=0 THEN NULL WHEN 1=0 THEN NULL ELSE CAST('x' AS VARCHAR2(5)) END case_nulls_typed,
+  NULLIF(CAST(NULL AS NUMBER(6,0)), CAST(1 AS NUMBER(6,0))) nullif_null_typed,
+  NULLIF(CAST(1 AS NUMBER(6,0)), CAST(NULL AS NUMBER(6,0))) nullif_typed_null,
+  CAST('a' AS CHAR(1)) || CAST('bc' AS VARCHAR2(4)) concat_widen,
+  CAST('' AS VARCHAR2(1)) || CAST('x' AS VARCHAR2(4)) concat_empty,
+  CAST(1.25 AS NUMBER(6,2)) + CAST(2 AS NUMBER(6,0)) dec_plus_int,
+  CAST(1.25 AS NUMBER(6,2)) * CAST(2.50 AS NUMBER(6,2)) dec_mul_dec,
+  MOD(CAST(5 AS NUMBER(6,0)), CAST(2 AS NUMBER(6,0))) mod_num,
+  COUNT(*) count_star,
+  COUNT(DISTINCT CAST(1 AS NUMBER(6,0))) count_distinct,
+  MIN(DATE '2020-01-01') min_date,
+  MAX(TIMESTAMP '2020-01-01 00:00:00') max_ts,
+  DATE '2020-01-01' + 1 date_interval_plus,
+  TIMESTAMP '2020-01-01 00:00:00' + NUMTODSINTERVAL(1, 'DAY') ts_interval_plus,
+  JSON_VALUE('{"n":1,"b":true,"s":"x","z":null}', '$.n' RETURNING NUMBER) json_scalar_num,
+  JSON_VALUE('{"n":1,"b":true,"s":"x","z":null}', '$.b') json_scalar_bool,
+  JSON_VALUE('{"n":1,"b":true,"s":"x","z":null}', '$.z') json_scalar_null
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_null_typed | number | expression |
+| case_nulls_typed | varchar2(5) | expression |
+| nullif_null_typed | number | polyglot |
+| nullif_typed_null | number | polyglot |
+| concat_widen | varchar2(5) | polyglot |
+| concat_empty | varchar2(5) | polyglot |
+| dec_plus_int | number | polyglot |
+| dec_mul_dec | number | polyglot |
+| mod_num | number | expression |
+| count_star | number | expression |
+| count_distinct | number | expression |
+| min_date | date | expression |
+| max_ts | timestamp(9) | expression |
+| date_interval_plus | date | polyglot |
+| ts_interval_plus | timestamp(9) | polyglot |
+| json_scalar_num | number | expression |
+| json_scalar_bool | varchar2(4000) | expression |
+| json_scalar_null | varchar2(4000) | expression |
+
+---
+## INTERSECT / MINUS — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT CAST(1 AS NUMBER(6,0)) intersect_num, CAST('x' AS CHAR(3)) minus_text FROM dual
+INTERSECT
+SELECT CAST(1 AS NUMBER(19,0)), CAST('x' AS VARCHAR2(7)) FROM dual
+MINUS
+SELECT CAST(2 AS NUMBER(19,0)), CAST('y' AS VARCHAR2(7)) FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| intersect_num | number | cast |
+| minus_text | varchar2(7) | cast |
 
 ---
 ## NVL / COALESCE

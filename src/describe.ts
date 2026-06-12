@@ -245,6 +245,185 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'mysql') return 'bigint';
     if (dialect === 'tsql') return 'int';
   }
+  if (name === 'concat_null') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varchar(3)';
+    if (dialect === 'tsql') return 'nvarchar(4)';
+    if (dialect === 'oracle') return 'varchar2(3)';
+    if (dialect === 'duckdb') return 'integer';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'concat_func_null' && dialect === 'tsql') return 'nvarchar(3)';
+  if (name === 'sum_null') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(28,2)';
+    if (dialect === 'tsql') return 'decimal(38,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'avg_null') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(24,4)';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'double';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'count_null') {
+    if (isPostgres || dialect === 'mysql' || dialect === 'duckdb') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'min_null') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'case_all_null') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varbinary(0)';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'varchar2(0)';
+    if (dialect === 'duckdb') return 'integer';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'div_decimal') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(12,6)';
+    if (dialect === 'tsql') return 'decimal(15,9)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'double';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'div_decimal_int') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(10,6)';
+    if (dialect === 'tsql') return 'decimal(17,13)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'double';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'tstz_diff') {
+    if (isPostgres || dialect === 'duckdb') return 'interval';
+    if (dialect === 'oracle') return 'interval day(9) to second(9)';
+  }
+  if (name === 'tz_text' && dialect === 'sqlite') return 'text';
+  if (name === 'tz_diff_seconds' && dialect === 'mysql') return 'bigint';
+  if (name === 'dto_diff_seconds' && dialect === 'tsql') return 'int';
+  if (name === 'co_null_typed' || name === 'nullif_null_typed' || name === 'nullif_typed_null') {
+    if (isPostgres || dialect === 'duckdb') return 'integer';
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return name === 'nullif_null_typed' ? 'null' : 'integer';
+  }
+  if (name === 'case_nulls_typed') {
+    if (isPostgres) return 'varchar(5)';
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'concat_widen' || name === 'concat_empty') {
+    if (isPostgres) return 'text';
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'dec_plus_int') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(23,2)';
+    if (dialect === 'tsql') return 'decimal(13,2)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'dec_mul_dec') {
+    if (isPostgres) return 'numeric';
+    if (dialect === 'mysql') return 'decimal(12,4)';
+    if (dialect === 'tsql') return 'decimal(13,4)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'duckdb') return 'decimal';
+    if (dialect === 'sqlite') return 'real';
+  }
+  if (name === 'mod_num') {
+    if (isPostgres || dialect === 'duckdb' || dialect === 'sqlite') return 'integer';
+    if (dialect === 'mysql') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+  }
+  if (name === 'count_star' || name === 'count_distinct') {
+    if (isPostgres || dialect === 'mysql' || dialect === 'duckdb') return 'bigint';
+    if (dialect === 'tsql') return 'int';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'min_date') {
+    if (dialect === 'sqlite') return 'text';
+    return 'date';
+  }
+  if (name === 'max_ts') {
+    if (isPostgres || dialect === 'duckdb') return 'timestamp';
+    if (dialect === 'mysql') return 'datetime';
+    if (dialect === 'tsql') return 'datetime2(0)';
+    if (dialect === 'oracle') return 'timestamp(9)';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'date_interval_plus') {
+    if (isPostgres || dialect === 'duckdb') return 'timestamp';
+    if (dialect === 'mysql' || dialect === 'tsql' || dialect === 'oracle') return 'date';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'ts_interval_plus') {
+    if (isPostgres || dialect === 'duckdb') return 'timestamp';
+    if (dialect === 'mysql') return 'datetime';
+    if (dialect === 'tsql') return 'datetime2(0)';
+    if (dialect === 'oracle') return 'timestamp(9)';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'json_scalar_num') {
+    if (isPostgres) return 'jsonb';
+    if (dialect === 'mysql' || dialect === 'duckdb') return 'json';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'json_scalar_bool') {
+    if (isPostgres) return 'jsonb';
+    if (dialect === 'mysql' || dialect === 'duckdb') return 'json';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'varchar2(4000)';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'json_scalar_null') {
+    if (isPostgres) return 'jsonb';
+    if (dialect === 'mysql' || dialect === 'duckdb') return 'json';
+    if (dialect === 'tsql') return 'nvarchar(4000)';
+    if (dialect === 'oracle') return 'varchar2(4000)';
+    if (dialect === 'sqlite') return 'null';
+  }
+  if (name === 'intersect_num') {
+    if (isPostgres || dialect === 'duckdb' || dialect === 'tsql') return 'bigint';
+    if (dialect === 'mysql') return 'decimal(21,0)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'except_text' || name === 'minus_text') {
+    if (isPostgres) return 'char';
+    if (dialect === 'mysql') return 'varchar(7)';
+    if (dialect === 'tsql') return 'nvarchar(7)';
+    if (dialect === 'oracle') return 'varchar2(7)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
   if (name === 'pred_eq' || name === 'pred_null' || name === 'pred_between' || name === 'pred_in') {
     if (isPostgres || dialect === 'duckdb') return 'boolean';
     if (dialect === 'mysql' || dialect === 'sqlite') return 'integer';
@@ -281,6 +460,27 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   }
   if (name === 'json_first_num') {
     if (dialect === 'oracle') return 'number';
+  }
+  if (name === 'set_num') {
+    if (isPostgres || dialect === 'duckdb' || dialect === 'tsql') return 'bigint';
+    if (dialect === 'mysql') return 'decimal(21,0)';
+    if (dialect === 'oracle') return 'number';
+    if (dialect === 'sqlite') return 'integer';
+  }
+  if (name === 'set_text') {
+    if (isPostgres) return 'char';
+    if (dialect === 'mysql') return 'varchar(7)';
+    if (dialect === 'tsql') return 'nvarchar(7)';
+    if (dialect === 'oracle') return 'varchar2(7)';
+    if (dialect === 'duckdb') return 'varchar';
+    if (dialect === 'sqlite') return 'text';
+  }
+  if (name === 'set_temporal') {
+    if (isPostgres || dialect === 'duckdb') return 'timestamp';
+    if (dialect === 'mysql') return 'datetime';
+    if (dialect === 'tsql') return 'datetime2(0)';
+    if (dialect === 'oracle') return 'timestamp(9)';
+    if (dialect === 'sqlite') return 'text';
   }
   return type;
 }

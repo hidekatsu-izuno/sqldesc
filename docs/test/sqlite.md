@@ -1032,6 +1032,43 @@ verify: true
 | avg_int | real | expression |
 
 ---
+## UNION — type resolution storage class metadata
+
+[SELECT — compound SELECT](https://sqlite.org/lang_select.html#compound_select_statements) の実行時 storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT CAST(1 AS INTEGER) AS set_num, CAST('a' AS TEXT) AS set_text, DATE('2020-01-01') AS set_temporal
+UNION ALL
+SELECT CAST(1 AS INTEGER), CAST('bb' AS TEXT), DATETIME('2020-01-01 00:00:00');
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_num | integer | cast |
+| set_text | text | cast |
+| set_temporal | text | cast |
+
+---
 ## 文字列連結・日時関数 — storage class metadata
 
 [SELECT — 式](https://sqlite.org/lang_expr.html) と日付時刻関数の実行時 storage class。
@@ -1208,6 +1245,170 @@ verify: true
 | pred_null | integer | expression |
 | pred_between | integer | expression |
 | pred_in | integer | expression |
+
+---
+## NULL・除算・timezone文字列 — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT
+  CAST('a' AS TEXT) || NULL AS concat_null,
+  SUM(CAST(NULL AS NUMERIC)) AS sum_null,
+  AVG(CAST(NULL AS INTEGER)) AS avg_null,
+  COUNT(NULL) AS count_null,
+  MIN(CAST(NULL AS TEXT)) AS min_null,
+  CASE WHEN 1 THEN NULL ELSE NULL END AS case_all_null,
+  CAST(5.00 AS NUMERIC) / CAST(2.00 AS NUMERIC) AS div_decimal,
+  CAST(5.00 AS NUMERIC) / CAST(2 AS INTEGER) AS div_decimal_int,
+  datetime('2020-01-01 00:00:00+09:00') AS tz_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_null | null | polyglot |
+| sum_null | null | expression |
+| avg_null | null | expression |
+| count_null | integer | expression |
+| min_null | null | expression |
+| case_all_null | null | expression |
+| div_decimal | real | polyglot |
+| div_decimal_int | real | polyglot |
+| tz_text | text | polyglot |
+
+---
+## NULL型解決・追加演算・set operation・JSON scalar — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT,
+  data  JSON
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT
+  COALESCE(NULL, NULL, CAST(1 AS INTEGER)) AS co_null_typed,
+  CASE WHEN 0 THEN NULL WHEN 0 THEN NULL ELSE CAST('x' AS TEXT) END AS case_nulls_typed,
+  NULLIF(NULL, CAST(1 AS INTEGER)) AS nullif_null_typed,
+  NULLIF(CAST(1 AS INTEGER), NULL) AS nullif_typed_null,
+  CAST('a' AS TEXT) || CAST('bc' AS TEXT) AS concat_widen,
+  CAST('' AS TEXT) || CAST('x' AS TEXT) AS concat_empty,
+  CAST(1.25 AS NUMERIC) + CAST(2 AS INTEGER) AS dec_plus_int,
+  CAST(1.25 AS NUMERIC) * CAST(2.50 AS NUMERIC) AS dec_mul_dec,
+  CAST(5 AS INTEGER) % CAST(2 AS INTEGER) AS mod_num,
+  COUNT(*) AS count_star,
+  COUNT(DISTINCT CAST(1 AS INTEGER)) AS count_distinct,
+  MIN(DATE('2020-01-01')) AS min_date,
+  MAX(DATETIME('2020-01-01 00:00:00')) AS max_ts,
+  DATE('2020-01-01', '+1 day') AS date_interval_plus,
+  DATETIME('2020-01-01 00:00:00', '+1 day') AS ts_interval_plus,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}', '$.n') AS json_scalar_num,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}', '$.b') AS json_scalar_bool,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}', '$.z') AS json_scalar_null
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_null_typed | integer | expression |
+| case_nulls_typed | text | expression |
+| nullif_null_typed | null | expression |
+| nullif_typed_null | integer | polyglot |
+| concat_widen | text | polyglot |
+| concat_empty | text | polyglot |
+| dec_plus_int | real | polyglot |
+| dec_mul_dec | real | polyglot |
+| mod_num | integer | polyglot |
+| count_star | integer | expression |
+| count_distinct | integer | expression |
+| min_date | text | expression |
+| max_ts | text | expression |
+| date_interval_plus | text | polyglot |
+| ts_interval_plus | text | polyglot |
+| json_scalar_num | integer | expression |
+| json_scalar_bool | integer | expression |
+| json_scalar_null | null | expression |
+
+---
+## INTERSECT / EXCEPT — storage class metadata
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT CAST(1 AS INTEGER) AS intersect_num, CAST('x' AS TEXT) AS except_text
+INTERSECT
+SELECT CAST(1 AS INTEGER), CAST('x' AS TEXT)
+EXCEPT
+SELECT CAST(2 AS INTEGER), CAST('y' AS TEXT)
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| intersect_num | integer | cast |
+| except_text | text | cast |
 
 ---
 

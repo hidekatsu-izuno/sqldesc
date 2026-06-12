@@ -1794,6 +1794,39 @@ verify: true
 | u | varchar | cast |
 
 ---
+## UNION — type resolution metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT CAST(1 AS INTEGER) AS set_num, CAST('a' AS CHAR(3)) AS set_text, DATE '2020-01-01' AS set_temporal
+UNION ALL
+SELECT CAST(1 AS BIGINT), CAST('bb' AS VARCHAR), TIMESTAMP '2020-01-01 00:00:00'
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| set_num | bigint | cast |
+| set_text | varchar | cast |
+| set_temporal | timestamp | cast |
+
+---
 ## 集約 — decimal precision metadata
 
 ### Given
@@ -1988,6 +2021,153 @@ verify: true
 | pred_null | boolean | expression |
 | pred_between | boolean | expression |
 | pred_in | boolean | expression |
+
+---
+## NULL・除算・timezone差分 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST('a' AS VARCHAR) || NULL AS concat_null,
+  SUM(CAST(NULL AS DECIMAL(6,2))) AS sum_null,
+  AVG(CAST(NULL AS INTEGER)) AS avg_null,
+  COUNT(NULL) AS count_null,
+  MIN(CAST(NULL AS VARCHAR)) AS min_null,
+  CASE WHEN TRUE THEN NULL ELSE NULL END AS case_all_null,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2.00 AS DECIMAL(6,2)) AS div_decimal,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2 AS INTEGER) AS div_decimal_int,
+  TIMESTAMP WITH TIME ZONE '2020-01-01 00:00:10+00' - TIMESTAMP WITH TIME ZONE '2020-01-01 00:00:00+00' AS tstz_diff
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_null | integer | polyglot |
+| sum_null | decimal(18, 3) | expression |
+| avg_null | double | expression |
+| count_null | bigint | expression |
+| min_null | varchar | expression |
+| case_all_null | integer | expression |
+| div_decimal | double | polyglot |
+| div_decimal_int | double | polyglot |
+| tstz_diff | interval | polyglot |
+
+---
+## NULL型解決・追加演算・set operation・JSON scalar — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  COALESCE(NULL, NULL, CAST(1 AS INTEGER)) AS co_null_typed,
+  CASE WHEN FALSE THEN NULL WHEN FALSE THEN NULL ELSE CAST('x' AS VARCHAR) END AS case_nulls_typed,
+  NULLIF(NULL, CAST(1 AS INTEGER)) AS nullif_null_typed,
+  NULLIF(CAST(1 AS INTEGER), NULL) AS nullif_typed_null,
+  CAST('a' AS CHAR(1)) || CAST('bc' AS VARCHAR) AS concat_widen,
+  CAST('' AS VARCHAR) || CAST('x' AS VARCHAR) AS concat_empty,
+  CAST(1.25 AS DECIMAL(6,2)) + CAST(2 AS INTEGER) AS dec_plus_int,
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2.50 AS DECIMAL(6,2)) AS dec_mul_dec,
+  MOD(CAST(5 AS INTEGER), CAST(2 AS INTEGER)) AS mod_num,
+  COUNT(*) AS count_star,
+  COUNT(DISTINCT CAST(1 AS INTEGER)) AS count_distinct,
+  MIN(DATE '2020-01-01') AS min_date,
+  MAX(TIMESTAMP '2020-01-01 00:00:00') AS max_ts,
+  DATE '2020-01-01' + INTERVAL '1 day' AS date_interval_plus,
+  TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1 day' AS ts_interval_plus,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}'::JSON, '$.n') AS json_scalar_num,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}'::JSON, '$.b') AS json_scalar_bool,
+  JSON_EXTRACT('{"n":1,"b":true,"s":"x","z":null}'::JSON, '$.z') AS json_scalar_null
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_null_typed | integer | expression |
+| case_nulls_typed | varchar | expression |
+| nullif_null_typed | integer | expression |
+| nullif_typed_null | integer | polyglot |
+| concat_widen | varchar | polyglot |
+| concat_empty | varchar | polyglot |
+| dec_plus_int | decimal(18, 3) | polyglot |
+| dec_mul_dec | decimal(18, 3) | polyglot |
+| mod_num | integer | expression |
+| count_star | bigint | expression |
+| count_distinct | bigint | expression |
+| min_date | date | expression |
+| max_ts | timestamp | expression |
+| date_interval_plus | timestamp | expression |
+| ts_interval_plus | timestamp | expression |
+| json_scalar_num | json | expression |
+| json_scalar_bool | json | expression |
+| json_scalar_null | json | expression |
+
+---
+## INTERSECT / EXCEPT — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT CAST(1 AS INTEGER) AS intersect_num, CAST('x' AS CHAR(3)) AS except_text
+INTERSECT
+SELECT CAST(1 AS BIGINT), CAST('x' AS VARCHAR)
+EXCEPT
+SELECT CAST(2 AS BIGINT), CAST('y' AS VARCHAR)
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| intersect_num | bigint | cast |
+| except_text | varchar | cast |
 
 ---
 ## COALESCE

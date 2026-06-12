@@ -1909,6 +1909,40 @@ verify: true
 | n | decimal(12,2) | cast |
 
 ---
+## UNION — type resolution metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT CAST(1 AS INT) AS set_num, CAST(N'a' AS NCHAR(3)) AS set_text, CAST('2020-01-01' AS DATE) AS set_temporal
+UNION ALL
+SELECT CAST(1 AS BIGINT), CAST(N'bb' AS NVARCHAR(7)), CAST('2020-01-01T00:00:00' AS DATETIME2(0))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_num | bigint | cast |
+| set_text | nvarchar(7) | cast |
+| set_temporal | datetime2(0) | cast |
+
+---
 ## 集約 — decimal precision metadata
 
 ### Given
@@ -2110,6 +2144,155 @@ verify: true
 | pred_null | bit | polyglot |
 | pred_between | bit | polyglot |
 | pred_in | bit | polyglot |
+
+---
+## NULL・除算・datetimeoffset差分 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(N'a' AS NVARCHAR(3)) + NULL AS concat_null,
+  CONCAT(CAST(N'a' AS NVARCHAR(3)), NULL) AS concat_func_null,
+  SUM(CAST(NULL AS DECIMAL(6,2))) AS sum_null,
+  AVG(CAST(NULL AS INT)) AS avg_null,
+  COUNT(CAST(NULL AS INT)) AS count_null,
+  MIN(CAST(NULL AS NVARCHAR(5))) AS min_null,
+  CASE WHEN 1=1 THEN CAST(NULL AS INT) ELSE CAST(NULL AS INT) END AS case_all_null,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2.00 AS DECIMAL(6,2)) AS div_decimal,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2 AS INT) AS div_decimal_int,
+  DATEDIFF(SECOND, CAST('2020-01-01T00:00:00+00:00' AS DATETIMEOFFSET(0)), CAST('2020-01-01T00:00:10+00:00' AS DATETIMEOFFSET(0))) AS dto_diff_seconds
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_null | nvarchar(4) | polyglot |
+| concat_func_null | nvarchar(3) | polyglot |
+| sum_null | decimal(38,2) | expression |
+| avg_null | int | expression |
+| count_null | int | expression |
+| min_null | nvarchar(5) | expression |
+| case_all_null | int | expression |
+| div_decimal | decimal(15,9) | polyglot |
+| div_decimal_int | decimal(17,13) | polyglot |
+| dto_diff_seconds | int | expression |
+
+---
+## NULL型解決・追加演算・set operation・JSON scalar — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  COALESCE(NULL, NULL, CAST(1 AS INT)) AS co_null_typed,
+  CASE WHEN 1=0 THEN NULL WHEN 1=0 THEN NULL ELSE CAST(N'x' AS NVARCHAR(5)) END AS case_nulls_typed,
+  NULLIF(CAST(NULL AS INT), CAST(1 AS INT)) AS nullif_null_typed,
+  NULLIF(CAST(1 AS INT), CAST(NULL AS INT)) AS nullif_typed_null,
+  CAST(N'a' AS NCHAR(1)) + CAST(N'bc' AS NVARCHAR(4)) AS concat_widen,
+  CAST(N'' AS NVARCHAR(1)) + CAST(N'x' AS NVARCHAR(4)) AS concat_empty,
+  CAST(1.25 AS DECIMAL(6,2)) + CAST(2 AS INT) AS dec_plus_int,
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2.50 AS DECIMAL(6,2)) AS dec_mul_dec,
+  CAST(5 AS INT) % CAST(2 AS INT) AS mod_num,
+  COUNT(*) AS count_star,
+  COUNT(DISTINCT CAST(1 AS INT)) AS count_distinct,
+  MIN(CAST('2020-01-01' AS DATE)) AS min_date,
+  MAX(CAST('2020-01-01T00:00:00' AS DATETIME2(0))) AS max_ts,
+  DATEADD(DAY, 1, CAST('2020-01-01' AS DATE)) AS date_interval_plus,
+  DATEADD(DAY, 1, CAST('2020-01-01T00:00:00' AS DATETIME2(0))) AS ts_interval_plus,
+  JSON_VALUE(N'{"n":1,"b":true,"s":"x","z":null}', '$.n') AS json_scalar_num,
+  JSON_VALUE(N'{"n":1,"b":true,"s":"x","z":null}', '$.b') AS json_scalar_bool,
+  JSON_VALUE(N'{"n":1,"b":true,"s":"x","z":null}', '$.z') AS json_scalar_null
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_null_typed | int | expression |
+| case_nulls_typed | nvarchar(5) | expression |
+| nullif_null_typed | int | polyglot |
+| nullif_typed_null | int | polyglot |
+| concat_widen | nvarchar(5) | polyglot |
+| concat_empty | nvarchar(5) | polyglot |
+| dec_plus_int | decimal(13,2) | polyglot |
+| dec_mul_dec | decimal(13,4) | polyglot |
+| mod_num | int | polyglot |
+| count_star | int | expression |
+| count_distinct | int | expression |
+| min_date | date | expression |
+| max_ts | datetime2(0) | expression |
+| date_interval_plus | date | expression |
+| ts_interval_plus | datetime2(0) | expression |
+| json_scalar_num | nvarchar(4000) | expression |
+| json_scalar_bool | nvarchar(4000) | expression |
+| json_scalar_null | nvarchar(4000) | expression |
+
+---
+## INTERSECT / EXCEPT — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT CAST(1 AS INT) AS intersect_num, CAST(N'x' AS NCHAR(3)) AS except_text
+INTERSECT
+SELECT CAST(1 AS BIGINT), CAST(N'x' AS NVARCHAR(7))
+EXCEPT
+SELECT CAST(2 AS BIGINT), CAST(N'y' AS NVARCHAR(7))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| intersect_num | bigint | cast |
+| except_text | nvarchar(7) | cast |
 
 ---
 ## ISNULL / COALESCE

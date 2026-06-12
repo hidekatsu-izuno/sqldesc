@@ -97,6 +97,42 @@ select
   typeof(json_extract('{"name":"bob","items":[1,2]}', '$.name')) as json_name,
   typeof(json_quote(json_extract('{"name":"bob","items":[1,2]}', '$.items'))) as json_items_text,
   typeof(json_type('{"name":"bob","items":[1,2]}', '$.items')) as json_type_name;
+select
+  typeof((select cast(1 as integer) as v union all select cast(1 as integer) limit 1)) as set_int,
+  typeof((select cast('a' as text) as v union all select cast('bb' as text) limit 1)) as set_text,
+  typeof((select date('2020-01-01') as v union all select datetime('2020-01-01 00:00:00') limit 1)) as set_temporal;
+select
+  typeof(cast('a' as text) || null) as concat_null,
+  typeof(sum(cast(null as numeric))) as sum_null,
+  typeof(avg(cast(null as integer))) as avg_null,
+  typeof(count(null)) as count_null,
+  typeof(min(cast(null as text))) as min_null,
+  typeof(case when 1 then null else null end) as case_all_null,
+  typeof(cast(5.00 as numeric) / cast(2.00 as numeric)) as div_decimal,
+  typeof(cast(5.00 as numeric) / cast(2 as integer)) as div_decimal_int,
+  typeof(datetime('2020-01-01 00:00:00+09:00')) as tz_text;
+select
+  typeof(coalesce(null, null, cast(1 as integer))) as co_null_typed,
+  typeof(case when 0 then null when 0 then null else cast('x' as text) end) as case_nulls_typed,
+  typeof(nullif(null, cast(1 as integer))) as nullif_null_typed,
+  typeof(nullif(cast(1 as integer), null)) as nullif_typed_null,
+  typeof(cast('a' as text) || cast('bc' as text)) as concat_widen,
+  typeof(cast('' as text) || cast('x' as text)) as concat_empty,
+  typeof(cast(1.25 as numeric) + cast(2 as integer)) as dec_plus_int,
+  typeof(cast(1.25 as numeric) * cast(2.50 as numeric)) as dec_mul_dec,
+  typeof(cast(5 as integer) % cast(2 as integer)) as mod_num,
+  typeof(count(*)) as count_star,
+  typeof(count(distinct cast(1 as integer))) as count_distinct,
+  typeof(min(date('2020-01-01'))) as min_date,
+  typeof(max(datetime('2020-01-01 00:00:00'))) as max_ts,
+  typeof(date('2020-01-01', '+1 day')) as date_interval_plus,
+  typeof(datetime('2020-01-01 00:00:00', '+1 day')) as ts_interval_plus,
+  typeof(json_extract('{"n":1,"b":true,"s":"x","z":null}', '$.n')) as json_scalar_num,
+  typeof(json_extract('{"n":1,"b":true,"s":"x","z":null}', '$.b')) as json_scalar_bool,
+  typeof(json_extract('{"n":1,"b":true,"s":"x","z":null}', '$.z')) as json_scalar_null;
+select
+  typeof((select cast(1 as integer) intersect select cast(1 as integer))) as intersect_num,
+  typeof((select cast('x' as text) except select cast('y' as text))) as except_text;
 `;
   printSection('sqlite cast runtime types', docker(['run', '--rm', '-i', 'nouchka/sqlite3:latest'], { input: sql }));
 }
@@ -157,6 +193,40 @@ describe select
   json_extract('{"name":"bob","items":[1,2]}'::json, '$.items') as json_items,
   json_extract_string('{"name":"bob","items":[1,2]}'::json, '$.name') as json_name,
   json_type('{"name":"bob","items":[1,2]}'::json, '$.items') as json_type_name;
+describe select cast(1 as integer) as set_num union all select cast(1 as bigint);
+describe select cast('a' as char(3)) as set_text union all select cast('bb' as varchar);
+describe select date '2020-01-01' as set_temporal union all select timestamp '2020-01-01 00:00:00';
+describe select
+  cast('a' as varchar) || null as concat_null,
+  sum(cast(null as decimal(6,2))) as sum_null,
+  avg(cast(null as integer)) as avg_null,
+  count(null) as count_null,
+  min(cast(null as varchar)) as min_null,
+  case when true then null else null end as case_all_null,
+  cast(5.00 as decimal(6,2)) / cast(2.00 as decimal(6,2)) as div_decimal,
+  cast(5.00 as decimal(6,2)) / cast(2 as integer) as div_decimal_int,
+  timestamp with time zone '2020-01-01 00:00:10+00' - timestamp with time zone '2020-01-01 00:00:00+00' as tstz_diff;
+describe select
+  coalesce(null, null, cast(1 as integer)) as co_null_typed,
+  case when false then null when false then null else cast('x' as varchar) end as case_nulls_typed,
+  nullif(null, cast(1 as integer)) as nullif_null_typed,
+  nullif(cast(1 as integer), null) as nullif_typed_null,
+  cast('a' as char(1)) || cast('bc' as varchar) as concat_widen,
+  cast('' as varchar) || cast('x' as varchar) as concat_empty,
+  cast(1.25 as decimal(6,2)) + cast(2 as integer) as dec_plus_int,
+  cast(1.25 as decimal(6,2)) * cast(2.50 as decimal(6,2)) as dec_mul_dec,
+  mod(cast(5 as integer), cast(2 as integer)) as mod_num,
+  count(*) as count_star,
+  count(distinct cast(1 as integer)) as count_distinct,
+  min(date '2020-01-01') as min_date,
+  max(timestamp '2020-01-01 00:00:00') as max_ts,
+  date '2020-01-01' + interval '1 day' as date_interval_plus,
+  timestamp '2020-01-01 00:00:00' + interval '1 day' as ts_interval_plus,
+  json_extract('{"n":1,"b":true,"s":"x","z":null}'::json, '$.n') as json_scalar_num,
+  json_extract('{"n":1,"b":true,"s":"x","z":null}'::json, '$.b') as json_scalar_bool,
+  json_extract('{"n":1,"b":true,"s":"x","z":null}'::json, '$.z') as json_scalar_null;
+describe select cast(1 as integer) as intersect_num intersect select cast(1 as bigint);
+describe select cast('x' as char(3)) as except_text except select cast('y' as varchar);
 `;
   printSection('duckdb cast metadata', docker(['run', '--rm', '-i', 'duckdb/duckdb:latest'], { input: sql }));
 }
@@ -177,6 +247,10 @@ drop view if exists v_more_probe;
 drop view if exists v_priority_literal_probe;
 drop view if exists v_temporal_predicate_probe;
 drop view if exists v_json_extract_probe;
+drop view if exists v_set_resolution_probe;
+drop view if exists v_remaining_probe;
+drop view if exists v_extra_probe;
+drop view if exists v_set_ops_probe;
 create view v_cast_probe as select
   cast('x' as varchar(12)) as v12,
   cast(1.23 as numeric(8,2)) as n82,
@@ -229,6 +303,45 @@ create view v_json_extract_probe as select
   '{"name":"bob","items":[1,2]}'::jsonb ->> 'name' as json_name,
   jsonb_path_query_first('{"name":"bob","items":[1,2]}'::jsonb, '$.items') as json_path_item,
   jsonb_typeof('{"name":"bob","items":[1,2]}'::jsonb -> 'items') as json_type_name;
+create view v_set_resolution_probe as
+select cast(1 as integer) as set_num, cast('a' as char(3)) as set_text, date '2020-01-01' as set_temporal
+union all
+select cast(1 as bigint), cast('bb' as varchar(7)), timestamp '2020-01-01 00:00:00';
+create view v_remaining_probe as select
+  cast('a' as varchar(3)) || null as concat_null,
+  sum(cast(null as numeric(6,2))) as sum_null,
+  avg(cast(null as integer)) as avg_null,
+  count(null) as count_null,
+  min(cast(null as varchar(5))) as min_null,
+  case when true then null else null end as case_all_null,
+  cast(5.00 as numeric(6,2)) / cast(2.00 as numeric(6,2)) as div_decimal,
+  cast(5.00 as numeric(6,2)) / cast(2 as integer) as div_decimal_int,
+  timestamp with time zone '2020-01-01 00:00:10+00' - timestamp with time zone '2020-01-01 00:00:00+00' as tstz_diff;
+create view v_extra_probe as select
+  coalesce(null, null, cast(1 as integer)) as co_null_typed,
+  case when false then null when false then null else cast('x' as varchar(5)) end as case_nulls_typed,
+  nullif(null::integer, cast(1 as integer)) as nullif_null_typed,
+  nullif(cast(1 as integer), null::integer) as nullif_typed_null,
+  cast('a' as char(1)) || cast('bc' as varchar(4)) as concat_widen,
+  cast('' as varchar(1)) || cast('x' as varchar(4)) as concat_empty,
+  cast(1.25 as numeric(6,2)) + cast(2 as integer) as dec_plus_int,
+  cast(1.25 as numeric(6,2)) * cast(2.50 as numeric(6,2)) as dec_mul_dec,
+  mod(cast(5 as integer), cast(2 as integer)) as mod_num,
+  count(*) as count_star,
+  count(distinct cast(1 as integer)) as count_distinct,
+  min(date '2020-01-01') as min_date,
+  max(timestamp '2020-01-01 00:00:00') as max_ts,
+  date '2020-01-01' + interval '1 day' as date_interval_plus,
+  timestamp '2020-01-01 00:00:00' + interval '1 day' as ts_interval_plus,
+  '{"n":1,"b":true,"s":"x","z":null}'::jsonb -> 'n' as json_scalar_num,
+  '{"n":1,"b":true,"s":"x","z":null}'::jsonb -> 'b' as json_scalar_bool,
+  '{"n":1,"b":true,"s":"x","z":null}'::jsonb -> 'z' as json_scalar_null;
+create view v_set_ops_probe as
+select cast(1 as integer) as intersect_num, cast('x' as char(3)) as except_text
+intersect
+select cast(1 as bigint), cast('x' as varchar(7))
+except
+select cast(2 as bigint), cast('y' as varchar(7));
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -239,7 +352,7 @@ where table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe')
+where table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe')
 order by table_name, ordinal_position;
 `;
   printSection('postgres cast metadata', docker(['exec', '-i', name, 'psql', '-U', 'postgres', '-At', '-F', '|', '-c', sql]));
@@ -263,6 +376,10 @@ drop view if exists v_more_probe;
 drop view if exists v_priority_literal_probe;
 drop view if exists v_temporal_predicate_probe;
 drop view if exists v_json_extract_probe;
+drop view if exists v_set_resolution_probe;
+drop view if exists v_remaining_probe;
+drop view if exists v_extra_probe;
+drop view if exists v_set_ops_probe;
 create view v_cast_probe as select
   cast('x' as char(12)) as c12,
   cast(1.23 as decimal(8,2)) as d82,
@@ -315,6 +432,45 @@ create view v_json_extract_probe as select
   json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.items') as json_items,
   json_unquote(json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.name')) as json_name,
   json_type(json_extract(cast('{"name":"bob","items":[1,2]}' as json), '$.items')) as json_type_name;
+create view v_set_resolution_probe as
+select cast(1 as signed) as set_num, cast('a' as char(3)) as set_text, date '2020-01-01' as set_temporal
+union all
+select cast(1 as unsigned), cast('bb' as char(7)), timestamp '2020-01-01 00:00:00';
+create view v_remaining_probe as select
+  concat(cast('a' as char(3)), null) as concat_null,
+  sum(cast(null as decimal(6,2))) as sum_null,
+  avg(cast(null as signed)) as avg_null,
+  count(null) as count_null,
+  min(cast(null as char(5))) as min_null,
+  case when true then null else null end as case_all_null,
+  cast(5.00 as decimal(6,2)) / cast(2.00 as decimal(6,2)) as div_decimal,
+  cast(5.00 as decimal(6,2)) / cast(2 as signed) as div_decimal_int,
+  timestampdiff(second, timestamp '2020-01-01 00:00:00+00:00', timestamp '2020-01-01 00:00:10+00:00') as tz_diff_seconds;
+create view v_extra_probe as select
+  coalesce(null, null, cast(1 as signed)) as co_null_typed,
+  case when false then null when false then null else cast('x' as char(5)) end as case_nulls_typed,
+  nullif(cast(null as signed), cast(1 as signed)) as nullif_null_typed,
+  nullif(cast(1 as signed), cast(null as signed)) as nullif_typed_null,
+  concat(cast('a' as char(1)), cast('bc' as char(4))) as concat_widen,
+  concat(cast('' as char(1)), cast('x' as char(4))) as concat_empty,
+  cast(1.25 as decimal(6,2)) + cast(2 as signed) as dec_plus_int,
+  cast(1.25 as decimal(6,2)) * cast(2.50 as decimal(6,2)) as dec_mul_dec,
+  mod(cast(5 as signed), cast(2 as signed)) as mod_num,
+  count(*) as count_star,
+  count(distinct cast(1 as signed)) as count_distinct,
+  min(date '2020-01-01') as min_date,
+  max(timestamp '2020-01-01 00:00:00') as max_ts,
+  date_add(date '2020-01-01', interval 1 day) as date_interval_plus,
+  timestampadd(day, 1, timestamp '2020-01-01 00:00:00') as ts_interval_plus,
+  json_extract(cast('{"n":1,"b":true,"s":"x","z":null}' as json), '$.n') as json_scalar_num,
+  json_extract(cast('{"n":1,"b":true,"s":"x","z":null}' as json), '$.b') as json_scalar_bool,
+  json_extract(cast('{"n":1,"b":true,"s":"x","z":null}' as json), '$.z') as json_scalar_null;
+create view v_set_ops_probe as
+select cast(1 as signed) as intersect_num, cast('x' as char(3)) as except_text
+intersect
+select cast(1 as unsigned), cast('x' as char(7))
+except
+select cast(2 as unsigned), cast('y' as char(7));
 select column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_schema = 'sqldesc' and table_name = 'v_cast_probe'
@@ -325,7 +481,7 @@ where table_schema = 'sqldesc' and table_name = 'v_edge_probe'
 order by ordinal_position;
 select table_name, column_name, column_type, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
-where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe')
+where table_schema = 'sqldesc' and table_name in ('v_case_probe', 'v_union_null_probe', 'v_union_num_probe', 'v_agg_probe', 'v_concat_temporal_probe', 'v_more_probe', 'v_priority_literal_probe', 'v_temporal_predicate_probe', 'v_json_extract_probe', 'v_set_resolution_probe', 'v_remaining_probe', 'v_extra_probe', 'v_set_ops_probe')
 order by table_name, ordinal_position;
 `;
   printSection('mysql cast metadata', docker(['exec', '-i', name, 'mysql', '-h127.0.0.1', '-uroot', '-N', '-B'], { input: sql }));
@@ -400,6 +556,30 @@ from sys.dm_exec_describe_first_result_set(
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
   N'select json_query(N''{"name":"bob","items":[1,2]}'', ''$.items'') as json_items, json_value(N''{"name":"bob","items":[1,2]}'', ''$.name'') as json_name, isjson(N''{"name":"bob","items":[1,2]}'') as json_is_valid',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(1 as int) as set_num, cast(N''a'' as nchar(3)) as set_text, cast(''2020-01-01'' as date) as set_temporal union all select cast(1 as bigint), cast(N''bb'' as nvarchar(7)), cast(''2020-01-01T00:00:00'' as datetime2(0))',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(N''a'' as nvarchar(3)) + null as concat_null, concat(cast(N''a'' as nvarchar(3)), null) as concat_func_null, sum(cast(null as decimal(6,2))) as sum_null, avg(cast(null as int)) as avg_null, count(cast(null as int)) as count_null, min(cast(null as nvarchar(5))) as min_null, case when 1=1 then cast(null as int) else cast(null as int) end as case_all_null, cast(5.00 as decimal(6,2)) / cast(2.00 as decimal(6,2)) as div_decimal, cast(5.00 as decimal(6,2)) / cast(2 as int) as div_decimal_int, datediff(second, cast(''2020-01-01T00:00:00+00:00'' as datetimeoffset(0)), cast(''2020-01-01T00:00:10+00:00'' as datetimeoffset(0))) as dto_diff_seconds',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select coalesce(null, null, cast(1 as int)) as co_null_typed, case when 1=0 then null when 1=0 then null else cast(N''x'' as nvarchar(5)) end as case_nulls_typed, nullif(cast(null as int), cast(1 as int)) as nullif_null_typed, nullif(cast(1 as int), cast(null as int)) as nullif_typed_null, cast(N''a'' as nchar(1)) + cast(N''bc'' as nvarchar(4)) as concat_widen, cast(N'''' as nvarchar(1)) + cast(N''x'' as nvarchar(4)) as concat_empty, cast(1.25 as decimal(6,2)) + cast(2 as int) as dec_plus_int, cast(1.25 as decimal(6,2)) * cast(2.50 as decimal(6,2)) as dec_mul_dec, cast(5 as int) % cast(2 as int) as mod_num, count(*) as count_star, count(distinct cast(1 as int)) as count_distinct, min(cast(''2020-01-01'' as date)) as min_date, max(cast(''2020-01-01T00:00:00'' as datetime2(0))) as max_ts, dateadd(day, 1, cast(''2020-01-01'' as date)) as date_interval_plus, dateadd(day, 1, cast(''2020-01-01T00:00:00'' as datetime2(0))) as ts_interval_plus, json_value(N''{"n":1,"b":true,"s":"x","z":null}'', ''$.n'') as json_scalar_num, json_value(N''{"n":1,"b":true,"s":"x","z":null}'', ''$.b'') as json_scalar_bool, json_value(N''{"n":1,"b":true,"s":"x","z":null}'', ''$.z'') as json_scalar_null',
+  null,
+  0
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select cast(1 as int) as intersect_num, cast(N''x'' as nchar(3)) as except_text intersect select cast(1 as bigint), cast(N''x'' as nvarchar(7)) except select cast(2 as bigint), cast(N''y'' as nvarchar(7))',
   null,
   0
 );
@@ -483,6 +663,47 @@ create or replace view v_json_extract_probe as select
   json_value('{"name":"bob","items":[1,2]}', '$.name') json_name,
   json_value('{"name":"bob","items":[1,2]}', '$.items[0]' returning number) json_first_num
 from dual;
+create or replace view v_set_resolution_probe as
+select cast(1 as number(6,0)) set_num, cast('a' as char(3)) set_text, date '2020-01-01' set_temporal from dual
+union all
+select cast(1 as number(19,0)), cast('bb' as varchar2(7)), timestamp '2020-01-01 00:00:00' from dual;
+create or replace view v_remaining_probe as select
+  cast('a' as varchar2(3)) || null concat_null,
+  sum(cast(null as number(6,2))) sum_null,
+  avg(cast(null as number(6,0))) avg_null,
+  count(null) count_null,
+  min(cast(null as varchar2(5))) min_null,
+  case when 1=1 then null else null end case_all_null,
+  cast(5.00 as number(6,2)) / cast(2.00 as number(6,2)) div_decimal,
+  cast(5.00 as number(6,2)) / cast(2 as number(6,0)) div_decimal_int,
+  timestamp '2020-01-01 00:00:10' at time zone 'UTC' - timestamp '2020-01-01 00:00:00' at time zone 'UTC' tstz_diff
+from dual;
+create or replace view v_extra_probe as select
+  coalesce(null, null, cast(1 as number(6,0))) co_null_typed,
+  case when 1=0 then null when 1=0 then null else cast('x' as varchar2(5)) end case_nulls_typed,
+  nullif(cast(null as number(6,0)), cast(1 as number(6,0))) nullif_null_typed,
+  nullif(cast(1 as number(6,0)), cast(null as number(6,0))) nullif_typed_null,
+  cast('a' as char(1)) || cast('bc' as varchar2(4)) concat_widen,
+  cast('' as varchar2(1)) || cast('x' as varchar2(4)) concat_empty,
+  cast(1.25 as number(6,2)) + cast(2 as number(6,0)) dec_plus_int,
+  cast(1.25 as number(6,2)) * cast(2.50 as number(6,2)) dec_mul_dec,
+  mod(cast(5 as number(6,0)), cast(2 as number(6,0))) mod_num,
+  count(*) count_star,
+  count(distinct cast(1 as number(6,0))) count_distinct,
+  min(date '2020-01-01') min_date,
+  max(timestamp '2020-01-01 00:00:00') max_ts,
+  date '2020-01-01' + 1 date_interval_plus,
+  timestamp '2020-01-01 00:00:00' + numtodsinterval(1, 'DAY') ts_interval_plus,
+  json_value('{"n":1,"b":true,"s":"x","z":null}', '$.n' returning number) json_scalar_num,
+  json_value('{"n":1,"b":true,"s":"x","z":null}', '$.b') json_scalar_bool,
+  json_value('{"n":1,"b":true,"s":"x","z":null}', '$.z') json_scalar_null
+from dual;
+create or replace view v_set_ops_probe as
+select cast(1 as number(6,0)) intersect_num, cast('x' as char(3)) minus_text from dual
+intersect
+select cast(1 as number(19,0)), cast('x' as varchar2(7)) from dual
+minus
+select cast(2 as number(19,0)), cast('y' as varchar2(7)) from dual;
 select column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
 where table_name = 'V_CAST_PROBE'
@@ -493,7 +714,7 @@ where table_name = 'V_EDGE_PROBE'
 order by column_id;
 select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
 from user_tab_columns
-where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE')
+where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE', 'V_SET_RESOLUTION_PROBE', 'V_REMAINING_PROBE', 'V_EXTRA_PROBE', 'V_SET_OPS_PROBE')
 order by table_name, column_id;
 exit
 `;

@@ -1670,6 +1670,40 @@ verify: true
 | n | decimal(22,2) | cast |
 
 ---
+## UNION — type resolution metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT CAST(1 AS SIGNED) AS set_num, CAST('a' AS CHAR(3)) AS set_text, DATE '2020-01-01' AS set_temporal
+UNION ALL
+SELECT CAST(1 AS UNSIGNED), CAST('bb' AS CHAR(7)), TIMESTAMP '2020-01-01 00:00:00'
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| set_num | decimal(21,0) | cast |
+| set_text | varchar(7) | cast |
+| set_temporal | datetime | cast |
+
+---
 ## 集約 — decimal precision metadata
 
 ### Given
@@ -1869,6 +1903,153 @@ verify: true
 | pred_null | int | expression |
 | pred_between | int | expression |
 | pred_in | int | expression |
+
+---
+## NULL・除算・timezone差分 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CONCAT(CAST('a' AS CHAR(3)), NULL) AS concat_null,
+  SUM(CAST(NULL AS DECIMAL(6,2))) AS sum_null,
+  AVG(CAST(NULL AS SIGNED)) AS avg_null,
+  COUNT(NULL) AS count_null,
+  MIN(CAST(NULL AS CHAR(5))) AS min_null,
+  CASE WHEN TRUE THEN NULL ELSE NULL END AS case_all_null,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2.00 AS DECIMAL(6,2)) AS div_decimal,
+  CAST(5.00 AS DECIMAL(6,2)) / CAST(2 AS SIGNED) AS div_decimal_int,
+  TIMESTAMPDIFF(SECOND, TIMESTAMP '2020-01-01 00:00:00+00:00', TIMESTAMP '2020-01-01 00:00:10+00:00') AS tz_diff_seconds
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_null | varchar(3) | polyglot |
+| sum_null | decimal(28,2) | expression |
+| avg_null | decimal(24,4) | expression |
+| count_null | bigint | expression |
+| min_null | varchar(5) | expression |
+| case_all_null | varbinary(0) | expression |
+| div_decimal | decimal(12,6) | polyglot |
+| div_decimal_int | decimal(10,6) | polyglot |
+| tz_diff_seconds | bigint | expression |
+
+---
+## NULL型解決・追加演算・set operation・JSON scalar — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  COALESCE(NULL, NULL, CAST(1 AS SIGNED)) AS co_null_typed,
+  CASE WHEN FALSE THEN NULL WHEN FALSE THEN NULL ELSE CAST('x' AS CHAR(5)) END AS case_nulls_typed,
+  NULLIF(CAST(NULL AS SIGNED), CAST(1 AS SIGNED)) AS nullif_null_typed,
+  NULLIF(CAST(1 AS SIGNED), CAST(NULL AS SIGNED)) AS nullif_typed_null,
+  CONCAT(CAST('a' AS CHAR(1)), CAST('bc' AS CHAR(4))) AS concat_widen,
+  CONCAT(CAST('' AS CHAR(1)), CAST('x' AS CHAR(4))) AS concat_empty,
+  CAST(1.25 AS DECIMAL(6,2)) + CAST(2 AS SIGNED) AS dec_plus_int,
+  CAST(1.25 AS DECIMAL(6,2)) * CAST(2.50 AS DECIMAL(6,2)) AS dec_mul_dec,
+  MOD(CAST(5 AS SIGNED), CAST(2 AS SIGNED)) AS mod_num,
+  COUNT(*) AS count_star,
+  COUNT(DISTINCT CAST(1 AS SIGNED)) AS count_distinct,
+  MIN(DATE '2020-01-01') AS min_date,
+  MAX(TIMESTAMP '2020-01-01 00:00:00') AS max_ts,
+  DATE_ADD(DATE '2020-01-01', INTERVAL 1 DAY) AS date_interval_plus,
+  TIMESTAMPADD(DAY, 1, TIMESTAMP '2020-01-01 00:00:00') AS ts_interval_plus,
+  JSON_EXTRACT(CAST('{"n":1,"b":true,"s":"x","z":null}' AS JSON), '$.n') AS json_scalar_num,
+  JSON_EXTRACT(CAST('{"n":1,"b":true,"s":"x","z":null}' AS JSON), '$.b') AS json_scalar_bool,
+  JSON_EXTRACT(CAST('{"n":1,"b":true,"s":"x","z":null}' AS JSON), '$.z') AS json_scalar_null
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| co_null_typed | bigint | expression |
+| case_nulls_typed | varchar(5) | expression |
+| nullif_null_typed | bigint | polyglot |
+| nullif_typed_null | bigint | polyglot |
+| concat_widen | varchar(5) | polyglot |
+| concat_empty | varchar(5) | polyglot |
+| dec_plus_int | decimal(23,2) | polyglot |
+| dec_mul_dec | decimal(12,4) | polyglot |
+| mod_num | bigint |  |
+| count_star | bigint | expression |
+| count_distinct | bigint | expression |
+| min_date | date | expression |
+| max_ts | datetime | expression |
+| date_interval_plus | date | expression |
+| ts_interval_plus | datetime | expression |
+| json_scalar_num | json | expression |
+| json_scalar_bool | json | expression |
+| json_scalar_null | json | expression |
+
+---
+## INTERSECT / EXCEPT — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT CAST(1 AS SIGNED) AS intersect_num, CAST('x' AS CHAR(3)) AS except_text
+INTERSECT
+SELECT CAST(1 AS UNSIGNED), CAST('x' AS CHAR(7))
+EXCEPT
+SELECT CAST(2 AS UNSIGNED), CAST('y' AS CHAR(7))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| intersect_num | decimal(21,0) | cast |
+| except_text | varchar(7) | cast |
 
 ---
 ## IFNULL / IF
