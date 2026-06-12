@@ -13,6 +13,7 @@ const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   integer: 'INTEGER',
   bigint: 'BIGINT',
   decimal: 'DECIMAL',
+  double: 'DOUBLE',
   boolean: 'BOOLEAN',
   text: 'VARCHAR',
   bytes: 'VARBINARY',
@@ -146,7 +147,8 @@ export function normalizeTypeName(value: string): string {
   if (['int', 'int2', 'int4', 'int16', 'int32', 'integer', 'smallint', 'tinyint', 'small_int', 'tiny_int', 'uint8', 'uint16', 'uint32'].includes(compact)) return 'integer';
   if (['int8', 'int64', 'bigint', 'big_int', 'uint64'].includes(compact)) return 'bigint';
   if (['decimal', 'dec', 'numeric', 'number'].includes(compact)) return 'decimal';
-  if (['float', 'float4', 'float8', 'double', 'doubleprecision', 'real'].includes(compact)) return 'decimal';
+  if (['double', 'doubleprecision', 'float8'].includes(compact)) return 'double';
+  if (['float', 'float4', 'real'].includes(compact)) return 'decimal';
   if (['bool', 'boolean', 'bit'].includes(compact)) return 'boolean';
   if (['char', 'nchar', 'varchar', 'varchar2', 'var_char', 'nvarchar', 'nvarchar2', 'nvar_char', 'character', 'string', 'text', 'clob'].includes(compact)) return 'text';
   if (['binary', 'varbinary', 'var_binary', 'bytea', 'bytes', 'blob'].includes(compact)) return 'bytes';
@@ -211,6 +213,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     integer: 'integer',
     bigint: 'bigint',
     decimal: 'numeric',
+    double: 'numeric',
     boolean: 'boolean',
     text: 'text',
     bytes: 'bytea',
@@ -243,6 +246,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     integer: 'integer',
     bigint: 'integer',
     decimal: 'real',
+    double: 'real',
     boolean: 'integer',
     text: 'text',
     bytes: 'blob',
@@ -294,6 +298,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     integer: 'integer',
     bigint: 'bigint',
     decimal: 'decimal(18, 3)',
+    double: 'double',
     boolean: 'boolean',
     text: 'varchar',
     bytes: 'blob',
@@ -326,6 +331,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     integer: 'INTEGER',
     bigint: 'BIGINT',
     decimal: 'DECIMAL',
+    double: 'DECIMAL',
     boolean: 'BOOLEAN',
     text: 'VARCHAR(255)',
     bytes: 'VARBINARY(255)',

@@ -991,6 +991,86 @@ verify: true
 | add_num | real | polyglot |
 
 ---
+## CASE / UNION / 集約 — storage class metadata
+
+[SELECT — compound SELECT](https://sqlite.org/lang_select.html#compound_select_statements) と実行時 storage class に基づく型変換。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  CASE WHEN 1 THEN NULL ELSE CAST('x' AS TEXT) END AS case_null,
+  CASE WHEN 1 THEN CAST(1 AS INTEGER) ELSE CAST(1.25 AS NUMERIC) END AS case_num,
+  SUM(CAST(1.25 AS NUMERIC)) AS sum_num,
+  AVG(CAST(1 AS INTEGER)) AS avg_int
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_null | text | expression |
+| case_num | real | expression |
+| sum_num | real | expression |
+| avg_int | real | expression |
+
+---
+## 文字列連結・日時関数 — storage class metadata
+
+[SELECT — 式](https://sqlite.org/lang_expr.html) と日付時刻関数の実行時 storage class。
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL,
+  age   INTEGER,
+  dept  TEXT
+);
+```
+
+### When
+
+```sql
+SELECT
+  CAST('ab' AS TEXT) || CAST('cde' AS TEXT) AS concat_text,
+  DATE('2020-01-01', '+1 day') AS date_plus,
+  DATETIME('2020-01-01 00:00:00', '+1 day') AS datetime_plus
+FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_text | text | polyglot |
+| date_plus | text | polyglot |
+| datetime_plus | text | polyglot |
+
+---
 
 ## DISTINCT
 

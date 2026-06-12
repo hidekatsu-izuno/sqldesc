@@ -1270,7 +1270,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | number | cast |
-| name | varchar2(255) | cast |
+| name | varchar2(100) | cast |
 
 ---
 ## UNION ALL
@@ -1824,6 +1824,147 @@ verify: true
 | tstz3 | timestamp(3) with time zone | polyglot |
 | iv | interval day(9) to second(9) | expression |
 | add_num | number | polyglot |
+
+---
+## CASE — null and mixed type metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CASE WHEN 1=1 THEN NULL ELSE CAST('x' AS VARCHAR2(5)) END AS case_null,
+  CASE WHEN 1=1 THEN CAST(1 AS NUMBER(6,0)) ELSE CAST(1.25 AS NUMBER(6,2)) END AS case_num,
+  CASE WHEN 1=1 THEN CAST('x' AS CHAR(3)) ELSE CAST('yy' AS VARCHAR2(7)) END AS case_text
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_null | varchar2(5) | expression |
+| case_num | number(6,0) | expression |
+| case_text | char(3) | expression |
+
+---
+## UNION — null and mixed numeric metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT CAST(NULL AS VARCHAR2(5)) AS u, CAST(1 AS NUMBER(6,0)) AS n FROM dual
+UNION ALL
+SELECT CAST('x' AS VARCHAR2(5)), CAST(1.25 AS NUMBER(6,2)) FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| u | varchar2(5) | cast |
+| n | number | cast |
+
+---
+## 集約 — decimal precision metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  SUM(CAST(1.25 AS NUMBER(6,2))) AS sum_num,
+  AVG(CAST(1.25 AS NUMBER(6,2))) AS avg_num,
+  AVG(CAST(1 AS NUMBER(6,0))) AS avg_int
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| sum_num | number | expression |
+| avg_num | number | expression |
+| avg_int | number | expression |
+
+---
+## 文字列連結・日時演算 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT
+  CAST('ab' AS VARCHAR2(2)) || CAST('cde' AS VARCHAR2(3)) AS concat_text,
+  CAST(DATE '2020-01-01' + 1 AS DATE) AS date_plus,
+  CAST(TIMESTAMP '2020-01-01 00:00:00.123' + NUMTODSINTERVAL(1, 'DAY') AS TIMESTAMP(3)) AS ts_plus
+FROM dual
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_text | varchar2(5) | polyglot |
+| date_plus | date | polyglot |
+| ts_plus | timestamp(3) | polyglot |
 
 ---
 ## NVL / COALESCE

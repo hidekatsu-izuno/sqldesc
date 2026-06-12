@@ -1723,6 +1723,144 @@ verify: true
 | add_num | numeric | polyglot |
 
 ---
+## CASE — null and mixed type metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CASE WHEN TRUE THEN NULL ELSE CAST('x' AS VARCHAR(5)) END AS case_null,
+  CASE WHEN TRUE THEN CAST(1 AS INTEGER) ELSE CAST(1.25 AS NUMERIC(6,2)) END AS case_num,
+  CASE WHEN TRUE THEN CAST('x' AS CHAR(3)) ELSE CAST('yy' AS VARCHAR(7)) END AS case_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_null | varchar(5) | expression |
+| case_num | numeric | expression |
+| case_text | text | expression |
+
+---
+## UNION — null and mixed numeric metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT CAST(NULL AS VARCHAR(5)) AS u, CAST(1 AS INTEGER) AS n
+UNION ALL
+SELECT CAST('x' AS VARCHAR(5)), CAST(1.25 AS NUMERIC(6,2))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| u | text | cast |
+| n | numeric | cast |
+
+---
+## 集約 — decimal precision metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  SUM(CAST(1.25 AS NUMERIC(6,2))) AS sum_num,
+  AVG(CAST(1.25 AS NUMERIC(6,2))) AS avg_num,
+  AVG(CAST(1 AS INTEGER)) AS avg_int
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| sum_num | numeric | expression |
+| avg_num | numeric | expression |
+| avg_int | numeric | expression |
+
+---
+## 文字列連結・日時演算 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT
+  CAST('ab' AS VARCHAR(2)) || CAST('cde' AS VARCHAR(3)) AS concat_text,
+  CAST('2020-01-01' AS DATE) + INTERVAL '1 day' AS date_plus,
+  CAST('2020-01-01 00:00:00' AS TIMESTAMP(3)) + INTERVAL '1 day' AS ts_plus
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_text | text | polyglot |
+| date_plus | timestamp without time zone | expression |
+| ts_plus | timestamp without time zone | polyglot |
+
+---
 ## COALESCE / NULLIF
 
 ### Given

@@ -3132,7 +3132,7 @@ describe('describeQuery', () => {
       ['min', 'varchar', 'cast'],
       ['max', 'varchar', 'cast'],
       ['approx_unique', 'integer', 'cast'],
-      ['avg', 'varchar', 'cast'],
+      ['avg', 'varchar', 'expression'],
       ['std', 'varchar', 'cast'],
       ['q25', 'varchar', 'cast'],
       ['q50', 'varchar', 'cast'],

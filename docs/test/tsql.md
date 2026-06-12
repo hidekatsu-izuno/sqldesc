@@ -1347,7 +1347,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | cast |
-| name | nvarchar(max) | cast |
+| name | nvarchar(100) | cast |
 
 ---
 ## UNION ALL
@@ -1839,6 +1839,144 @@ verify: true
 | tm3 | time(3) | polyglot |
 | dto3 | datetimeoffset(3) | polyglot |
 | add_num | decimal(13,2) | polyglot |
+
+---
+## TRY_CAST / CONVERT / TRY_CONVERT — CASE mixed metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CASE WHEN 1=1 THEN NULL ELSE CAST(N'x' AS NVARCHAR(5)) END AS case_null,
+  CASE WHEN 1=1 THEN CAST(1 AS INT) ELSE CAST(1.25 AS DECIMAL(6,2)) END AS case_num,
+  CASE WHEN 1=1 THEN CAST(N'x' AS NCHAR(3)) ELSE CAST(N'yy' AS NVARCHAR(7)) END AS case_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_null | nvarchar(5) | expression |
+| case_num | decimal(12,2) | expression |
+| case_text | nchar(3) | expression |
+
+---
+## UNION — null and mixed numeric metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT CAST(NULL AS NVARCHAR(5)) AS u, CAST(1 AS INT) AS n
+UNION ALL
+SELECT CAST(N'x' AS NVARCHAR(5)), CAST(1.25 AS DECIMAL(6,2))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| u | nvarchar(5) | cast |
+| n | decimal(12,2) | cast |
+
+---
+## 集約 — decimal precision metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  SUM(CAST(1.25 AS DECIMAL(6,2))) AS sum_num,
+  AVG(CAST(1.25 AS DECIMAL(6,2))) AS avg_num,
+  AVG(CAST(1 AS INT)) AS avg_int
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| sum_num | decimal(38,2) | expression |
+| avg_num | decimal(38,6) | expression |
+| avg_int | int | expression |
+
+---
+## 文字列連結・日時演算 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT
+  CAST(N'ab' AS NVARCHAR(2)) + CAST(N'cde' AS NVARCHAR(3)) AS concat_text,
+  DATEADD(DAY, 1, CAST('2020-01-01' AS DATE)) AS date_plus,
+  DATEADD(DAY, 1, CAST('2020-01-01T00:00:00.123' AS DATETIME2(3))) AS ts_plus
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_text | nvarchar(5) | polyglot |
+| date_plus | date | expression |
+| ts_plus | datetime2(3) | expression |
 
 ---
 ## ISNULL / COALESCE

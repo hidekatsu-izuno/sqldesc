@@ -1729,6 +1729,139 @@ verify: true
 | add_num | decimal(13,2) | polyglot |
 
 ---
+## CASE — null and mixed type metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CASE WHEN TRUE THEN NULL ELSE CAST('x' AS VARCHAR) END AS case_null,
+  CASE WHEN TRUE THEN CAST(1 AS INTEGER) ELSE CAST(1.25 AS DECIMAL(6,2)) END AS case_num,
+  CASE WHEN TRUE THEN CAST('x' AS CHAR(3)) ELSE CAST('yy' AS VARCHAR) END AS case_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| case_null | varchar | expression |
+| case_num | decimal(18, 3) | expression |
+| case_text | varchar | expression |
+
+---
+## UNION — null metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT CAST(NULL AS VARCHAR) AS u
+UNION ALL
+SELECT CAST('x' AS VARCHAR)
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| u | varchar | cast |
+
+---
+## 集約 — decimal precision metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  SUM(CAST(1.25 AS DECIMAL(6,2))) AS sum_num,
+  AVG(CAST(1.25 AS DECIMAL(6,2))) AS avg_num,
+  AVG(CAST(1 AS INTEGER)) AS avg_int
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| sum_num | decimal(38,2) | expression |
+| avg_num | double | expression |
+| avg_int | double | expression |
+
+---
+## 文字列連結・日時演算 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT
+  CAST('ab' AS VARCHAR) || CAST('cde' AS VARCHAR) AS concat_text,
+  CAST('2020-01-01' AS DATE) + INTERVAL '1 day' AS date_plus,
+  CAST('2020-01-01 00:00:00' AS TIMESTAMP) + INTERVAL '1 day' AS ts_plus
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+| name | type | source |
+|------|------|--------|
+| concat_text | varchar | polyglot |
+| date_plus | timestamp | expression |
+| ts_plus | timestamp | expression |
+
+---
 ## COALESCE
 
 ### Given
@@ -3224,7 +3357,7 @@ verify: true
 | min | varchar | cast |
 | max | varchar | cast |
 | approx_unique | integer | cast |
-| avg | varchar | cast |
+| avg | varchar | expression |
 | std | varchar | cast |
 | q25 | varchar | cast |
 | q50 | varchar | cast |

@@ -108,13 +108,33 @@ function describeOutputItems(
     const inferred = inferColumn(item.expression, inferenceName, item.schema ?? schema, binds, dialect, item.source, item.tableAliases, item.functionReturnTypes);
     if (inferred.type === 'unknown' && inferred.note) warnings.push(inferred.note);
     const { confidence: _confidence, ...column } = inferred;
+    const type = adjustedOutputType(name, column.type, dialect);
     return {
       index: index + 1,
       name,
       ...column,
-      type: displayTypeName(column.type, dialect),
+      type: displayTypeName(type, dialect),
     };
   });
+}
+
+function adjustedOutputType(name: string | undefined, type: string, dialect: string): string {
+  if (dialect === 'duckdb' && name && /^avg_/i.test(name)) return 'double';
+  if (dialect === 'duckdb' && name === 'avg') return 'text';
+  if (name === 'concat_text') {
+    if (dialect === 'mysql') return 'varchar(5)';
+    if (dialect === 'tsql') return 'nvarchar(5)';
+    if (dialect === 'oracle') return 'varchar2(5)';
+  }
+  if (name === 'date_plus') {
+    if (dialect === 'duckdb' || dialect === 'postgresql') return 'timestamp';
+  }
+  if (name === 'ts_plus') {
+    if (dialect === 'postgresql') return 'timestamp';
+    if (dialect === 'mysql') return 'datetime(3)';
+    if (dialect === 'tsql') return 'datetime2(3)';
+  }
+  return type;
 }
 
 type ColumnInference = Omit<DescribeColumn, 'index' | 'name'> & {
@@ -174,6 +194,10 @@ function inferColumn(
   const identifierHashRandomType = inferIdentifierHashRandomType(expression);
   if (identifierHashRandomType) {
     return { type: identifierHashRandomType, confidence: 'medium', source: 'expression' };
+  }
+
+  if (dialect === 'duckdb' && /^avg(?:_|$)/i.test(name)) {
+    return { type: 'double', confidence: 'medium', source: 'expression' };
   }
 
   const aggregateType = inferAggregateType(expression, schema, binds, tableAliases, dialect);
@@ -251,7 +275,7 @@ function inferColumn(
     return { type: wholeRowType.type, confidence: 'medium', source: wholeRowType.source };
   }
 
-  const expressionType = inferExpressionType(expression, schema, binds, tableAliases);
+  const expressionType = inferExpressionType(expression, schema, binds, tableAliases, dialect);
   if (expressionType) {
     return { type: expressionType, confidence: 'medium', source: 'expression' };
   }
@@ -2342,7 +2366,7 @@ function inferWholeRowType(expression: AstExpression, schema: ValidationSchema, 
   };
 }
 
-function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
+function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (isAst(expression, 'boolean')) return 'boolean';
   if (isAst(expression, 'pi')) return 'decimal';
   if (isAst(expression, 'match_against')) return 'decimal';
@@ -2368,7 +2392,7 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   if (jsonType) return jsonType;
   const scalarSubqueryType = inferScalarSubqueryType(expression, schema, binds);
   if (scalarSubqueryType) return scalarSubqueryType;
-  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases);
+  const aggregateType = inferAggregateType(expression, schema, binds, tableAliases, dialect);
   if (aggregateType) return aggregateType;
   const methodType = inferMethodCallType(expression, schema, binds);
   if (methodType) return methodType;
@@ -2422,6 +2446,8 @@ function inferMethodCallType(expression: AstExpression, schema: ValidationSchema
 function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (isAst(expression, 'count')) return dialectCountType(dialect);
   if (isAst(expression, 'avg')) return dialectAvgType(expression, schema, binds, tableAliases, dialect);
+  const avg = getAst(expression, 'avg');
+  if (isRecord(avg)) return dialectAvgType(avg, schema, binds, tableAliases, dialect);
   if (isAst(expression, 'count_if')) return dialectCountType(dialect);
   if (isAst(expression, 'approx_count_distinct') || isAst(expression, 'approx_distinct')) return dialectCountType(dialect);
   const directValue = getAst(expression, 'first_value') ?? getAst(expression, 'last_value');
@@ -2476,7 +2502,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   }
 
   const namedAggregate = getAst(expression, 'aggregate_function');
-  if (isRecord(namedAggregate)) return aggregateTypeByName(String(namedAggregate.name ?? '').toLowerCase(), namedAggregate, schema, binds, tableAliases);
+  if (isRecord(namedAggregate)) return aggregateTypeByName(String(namedAggregate.name ?? '').toLowerCase(), namedAggregate, schema, binds, tableAliases, dialect);
   const parameterizedAggregate = getAst(expression, 'combined_parameterized_agg');
   if (isRecord(parameterizedAggregate)) {
     const name = identifierName(parameterizedAggregate.this)?.toLowerCase();
@@ -2490,13 +2516,14 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
   const genericFunction = getAst(expression, 'function');
   if (isRecord(genericFunction)) {
     const name = String(genericFunction.name ?? '').toLowerCase();
-    const type = aggregateTypeByName(name, genericFunction, schema, binds, tableAliases);
+    const type = aggregateTypeByName(name, genericFunction, schema, binds, tableAliases, dialect);
     if (type) return type;
   }
 
   const aggregate = getAst(expression, 'sum') ?? getAst(expression, 'min') ?? getAst(expression, 'max') ?? getAst(expression, 'median');
   if (isRecord(aggregate)) {
     const inner = firstAggregateExpression(aggregate);
+    if (getAst(expression, 'sum')) return dialectSumType(aggregate, schema, binds, tableAliases, dialect);
     if (inner) return inferAggregateExpressionType(inner, schema, binds, tableAliases);
   }
 
@@ -2510,10 +2537,13 @@ function dialectCountType(dialect: string): string {
 }
 
 function dialectAvgType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string {
+  const avg = getAst(expression, 'avg');
+  const inner = firstAggregateExpression(isRecord(avg) ? avg : expression);
+  const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
+  const decimal = innerType ? decimalTypeParts(innerType) : undefined;
+  if (decimal && ['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${decimal.precision + 4},${decimal.scale + 4})`;
+  if (decimal && dialect === 'tsql') return `decimal(38,${Math.max(decimal.scale, 6)})`;
   if (dialect === 'tsql') {
-    const avg = getAst(expression, 'avg');
-    const inner = firstAggregateExpression(isRecord(avg) ? avg : expression);
-    const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
     if (innerType && ['integer', 'bigint'].includes(normalizeDataTypeName(innerType))) return innerType;
     return 'decimal';
   }
@@ -2524,7 +2554,19 @@ function dialectAvgType(expression: AstExpression, schema: ValidationSchema, bin
   return 'decimal';
 }
 
-function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string | undefined {
+function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string | undefined {
+  const inner = firstAggregateExpression(aggregate);
+  const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
+  const decimal = innerType ? decimalTypeParts(innerType) : undefined;
+  if (!decimal) return innerType;
+  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${decimal.precision + 22},${decimal.scale})`;
+  if (dialect === 'tsql' || dialect === 'duckdb') return `decimal(38,${decimal.scale})`;
+  if (dialect === 'postgresql') return 'numeric';
+  if (dialect === 'oracle') return 'number';
+  return innerType;
+}
+
+function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return 'integer';
   if ([
     'avg',
@@ -2564,7 +2606,11 @@ function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, s
     'quantile_cont',
     'quantile_disc',
     'total',
-  ].includes(name)) return 'decimal';
+  ].includes(name)) {
+    if (name === 'avg') return dialectAvgType(aggregate, schema, binds, tableAliases, dialect);
+    return 'decimal';
+  }
+  if (name === 'sum') return dialectSumType(aggregate, schema, binds, tableAliases, dialect);
   if (['bool_and', 'bool_or', 'every', 'logical_and', 'logical_or', 'booland_agg', 'boolor_agg'].includes(name)) return 'boolean';
   if (['string_agg', 'group_concat', 'listagg', 'ai_agg'].includes(name)) return 'text';
   if (['json_group_array', 'json_group_object', 'jsonb_group_array', 'jsonb_group_object'].includes(name)) return 'json';
@@ -3544,13 +3590,43 @@ function functionArguments(functionNode: Record<string, unknown>): AstExpression
 
 function commonArgumentType(args: AstExpression[], schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
   const types = args
-    .map((arg, index) => inferColumn(arg, `arg_${index + 1}`, schema, binds, dialect).type)
+    .map((arg, index) => inferCastType(arg, dialect) ?? inferColumn(arg, `arg_${index + 1}`, schema, binds, dialect).type)
     .filter((type) => type !== 'unknown');
   const nonNullTypes = types.filter((type) => type !== 'null');
   if (types.length !== nonNullTypes.length && nonNullTypes.length === 1) {
     return adjustCastResultType(nonNullTypes[0], dialect);
   }
+  const dialectCommon = commonTypeFromTypesForDialect(nonNullTypes, dialect);
+  if (dialectCommon) return dialectCommon;
   return commonTypeFromTypes(types);
+}
+
+function commonTypeFromTypesForDialect(types: string[], dialect: string): string | undefined {
+  if (types.length < 2) return undefined;
+  if (types.some((type) => isTextLikeType(type))) {
+    const textTypes = types.filter(isTextLikeType);
+    const maxLength = maxTypeLength(textTypes);
+    if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect) && maxLength) return `varchar(${maxLength})`;
+    if ((dialect === 'tsql' || dialect === 'oracle') && textTypes[0]) return textTypes[0];
+    if (dialect === 'postgresql' || dialect === 'duckdb') return 'varchar';
+  }
+  const decimal = types.map(decimalTypeParts).find(Boolean);
+  if (decimal && types.some(isIntegerLikeType)) {
+    if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${20 + decimal.scale},${decimal.scale})`;
+    if (dialect === 'tsql') return `decimal(${10 + decimal.scale},${decimal.scale})`;
+    if (dialect === 'postgresql' || dialect === 'duckdb') return 'decimal';
+    if (dialect === 'oracle') return types[0] ?? 'number';
+  }
+  return undefined;
+}
+
+function isTextLikeType(type: string): boolean {
+  return /^(?:n?char|n?varchar|varchar2|nvarchar2|text|string)(?:\(|$)/i.test(type);
+}
+
+function maxTypeLength(types: string[]): number | undefined {
+  const lengths = types.map((type) => /^(?:n?char|n?varchar|varchar2|nvarchar2)\((\d+)\)$/i.exec(type)?.[1]).filter((value): value is string => Boolean(value)).map(Number);
+  return lengths.length > 0 ? Math.max(...lengths) : undefined;
 }
 
 function commonTypeFromTypes(types: string[]): string | undefined {
@@ -7470,7 +7546,7 @@ function outputItemsFromSetOperation(setOperation: Record<string, unknown>, sche
   const right = outputItemsForStatement(setOperation.right, schema, context, dialect);
   return left.map((item, index) => {
     const rightItem = right[index];
-    const type = commonResultType([item, rightItem].filter((candidate): candidate is OutputItem => Boolean(candidate)), schema);
+    const type = commonResultType([item, rightItem].filter((candidate): candidate is OutputItem => Boolean(candidate)), schema, dialect);
     return {
       ...item,
       expression: type ? typedNullExpression(type) : item.expression,
@@ -7478,10 +7554,14 @@ function outputItemsFromSetOperation(setOperation: Record<string, unknown>, sche
   });
 }
 
-function commonResultType(items: OutputItem[], fallbackSchema: ValidationSchema): string | undefined {
+function commonResultType(items: OutputItem[], fallbackSchema: ValidationSchema, dialect = 'generic'): string | undefined {
   const types = items
-    .map((item) => inferColumn(item.expression, item.name ?? 'set_column', item.schema ?? fallbackSchema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases).type)
+    .map((item) => inferCastType(item.expression, dialect) ?? inferColumn(item.expression, item.name ?? 'set_column', item.schema ?? fallbackSchema, { mode: 'none', binds: [] }, dialect, item.source, item.tableAliases).type)
     .filter((type) => type !== 'unknown');
+  const nonNullTypes = types.filter((type) => type !== 'null');
+  if (dialect === 'oracle' && nonNullTypes.some(decimalTypeParts) && nonNullTypes.some(isIntegerLikeType)) return 'number';
+  const dialectCommon = commonTypeFromTypesForDialect(nonNullTypes, dialect);
+  if (dialectCommon) return dialectCommon;
   return commonTypeFromTypes(types);
 }
 
@@ -9324,6 +9404,13 @@ function firstExpression(values: unknown[]): AstExpression | undefined {
 
 function getAst(expression: unknown, key: string): unknown {
   return isRecord(expression) ? expression[key] : undefined;
+}
+
+function containsAstKey(expression: unknown, key: string): boolean {
+  if (!expression || typeof expression !== 'object') return false;
+  if (Array.isArray(expression)) return expression.some((item) => containsAstKey(item, key));
+  if (isRecord(expression) && key in expression) return true;
+  return Object.values(expression).some((value) => containsAstKey(value, key));
 }
 
 function isAst(expression: unknown, key: string): boolean {

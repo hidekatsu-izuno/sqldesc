@@ -1109,7 +1109,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | cast |
-| name | varchar(255) | cast |
+| name | varchar(100) | cast |
 
 ---
 ## UNION ALL
@@ -1600,6 +1600,142 @@ verify: true
 | tm3 | time(3) | polyglot |
 | dt | date | polyglot |
 | add_num | decimal(23,2) | polyglot |
+
+---
+## CASE — null and mixed type metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CASE WHEN TRUE THEN NULL ELSE CAST('x' AS CHAR(5)) END AS case_null,
+  CASE WHEN TRUE THEN CAST(1 AS SIGNED) ELSE CAST(1.25 AS DECIMAL(6,2)) END AS case_num,
+  CASE WHEN TRUE THEN CAST('x' AS CHAR(3)) ELSE CAST('yy' AS CHAR(7)) END AS case_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| case_null | varchar(5) | expression |
+| case_num | decimal(22,2) | expression |
+| case_text | varchar(7) | expression |
+
+---
+## UNION — null and mixed numeric metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT CAST(NULL AS CHAR(5)) AS u, CAST(1 AS SIGNED) AS n
+UNION ALL
+SELECT CAST('x' AS CHAR(5)), CAST(1.25 AS DECIMAL(6,2))
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| u | varchar(5) | cast |
+| n | decimal(22,2) | cast |
+
+---
+## 集約 — decimal precision metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  SUM(CAST(1.25 AS DECIMAL(6,2))) AS sum_num,
+  AVG(CAST(1.25 AS DECIMAL(6,2))) AS avg_num
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| sum_num | decimal(28,2) | expression |
+| avg_num | decimal(10,6) | expression |
+
+---
+## 文字列連結・日時演算 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT
+  CONCAT(CAST('ab' AS CHAR(2)), CAST('cde' AS CHAR(3))) AS concat_text,
+  DATE_ADD(CAST('2020-01-01' AS DATE), INTERVAL 1 DAY) AS date_plus,
+  TIMESTAMPADD(DAY, 1, CAST('2020-01-01 00:00:00.123' AS DATETIME(3))) AS ts_plus
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| concat_text | varchar(5) | polyglot |
+| date_plus | date | expression |
+| ts_plus | datetime(3) | expression |
 
 ---
 ## IFNULL / IF
