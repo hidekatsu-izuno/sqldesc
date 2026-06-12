@@ -12,6 +12,7 @@ type TypeFamily = 'postgresql' | 'mysql' | 'sqlite' | 'tsql' | 'oracle' | 'duckd
 const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   integer: 'INTEGER',
   bigint: 'BIGINT',
+  bignumeric: 'DECIMAL',
   decimal: 'DECIMAL',
   double: 'DOUBLE',
   boolean: 'BOOLEAN',
@@ -153,6 +154,7 @@ export function normalizeTypeName(value: string): string {
   if (compact === 'smallserial' || compact === 'serial2') return 'integer';
   if (['int', 'int2', 'int4', 'int16', 'int32', 'integer', 'smallint', 'tinyint', 'small_int', 'tiny_int', 'uint8', 'uint16', 'uint32'].includes(compact)) return 'integer';
   if (['int8', 'int64', 'bigint', 'big_int', 'uint64'].includes(compact)) return 'bigint';
+  if (compact === 'bignumeric' || compact === 'big_numeric') return 'bignumeric';
   if (['decimal', 'dec', 'numeric', 'number'].includes(compact)) return 'decimal';
   if (['double', 'doubleprecision', 'float8'].includes(compact)) return 'double';
   if (['float', 'float4', 'real'].includes(compact)) return 'decimal';
@@ -228,6 +230,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'numeric',
     double: 'numeric',
     boolean: 'boolean',
+    postgres_varchar: 'character varying',
     text: 'text',
     clob: 'text',
     nclob: 'text',
@@ -248,6 +251,8 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'decimal',
     boolean: 'tinyint(1)',
     text: 'varchar(255)',
+    mysql_text: 'text',
+    mysql_blob: 'blob',
     clob: 'longtext',
     nclob: 'longtext',
     bytes: 'varbinary(255)',
@@ -283,7 +288,11 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
   },
   tsql: {
     integer: 'int',
+    tsql_tinyint: 'tinyint',
+    tsql_smallint: 'smallint',
     bigint: 'bigint',
+    tsql_real: 'real',
+    tsql_float: 'float',
     decimal: 'decimal(38, 10)',
     boolean: 'bit',
     text: 'nvarchar(max)',
@@ -297,6 +306,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     date: 'date',
     time: 'time',
     timestamp: 'datetime2(7)',
+    tsql_rowversion: 'timestamp',
     timestamptz: 'datetimeoffset',
     datetime2: 'datetime2(7)',
     datetime: 'datetime',
@@ -329,6 +339,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     decimal: 'decimal(18, 3)',
     double: 'double',
     boolean: 'boolean',
+    duck_bit: 'bit',
     text: 'varchar',
     clob: 'varchar',
     nclob: 'varchar',
@@ -349,6 +360,7 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
   bigquery: {
     integer: 'int64',
     bigint: 'int64',
+    bignumeric: 'bignumeric',
     decimal: 'numeric',
     boolean: 'bool',
     text: 'string',

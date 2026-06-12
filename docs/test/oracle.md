@@ -112,6 +112,25 @@ CREATE TABLE departments (
   dept   VARCHAR2(50) PRIMARY KEY,
   budget NUMBER NOT NULL
 );
+
+CREATE TABLE special_files (
+  bfile_value BFILE
+);
+
+CREATE TABLE special_long_text (
+  long_value LONG
+);
+
+CREATE TABLE special_long_raw (
+  long_raw_value LONG RAW
+);
+
+CREATE TABLE special_char_semantics (
+  varchar2_byte_value VARCHAR2(4 BYTE),
+  varchar2_char_value VARCHAR2(4 CHAR),
+  char_byte_value CHAR(2 BYTE),
+  char_char_value CHAR(2 CHAR)
+);
 ```
 
 ## Prepare-2: hr スキーマメタデータ
@@ -2429,6 +2448,128 @@ verify: true
 | binary_double_value | binary_double | polyglot |
 | timestamp_tz_cast_value | timestamp(6) with time zone | polyglot |
 | timestamp_ltz_value | timestamp(6) with local time zone | polyglot |
+
+## BFILE 型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT bfile_value FROM special_files
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| bfile_value | bfile | special_files.bfile_value |
+
+---
+## LONG 型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT long_value FROM special_long_text
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| long_value | long | special_long_text.long_value |
+
+---
+## LONG RAW 型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT long_raw_value FROM special_long_raw
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| long_raw_value | long raw | special_long_raw.long_raw_value |
+
+---
+## BYTE / CHAR 長さ semantics — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+```
+
+```sql
+SELECT varchar2_byte_value, varchar2_char_value, char_byte_value, char_char_value FROM special_char_semantics
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| varchar2_byte_value | varchar2(4 byte) | special_char_semantics.varchar2_byte_value |
+| varchar2_char_value | varchar2(4 char) | special_char_semantics.varchar2_char_value |
+| char_byte_value | char(2 byte) | special_char_semantics.char_byte_value |
+| char_char_value | char(2 char) | special_char_semantics.char_char_value |
 
 ---
 ## bind placeholder — result metadata

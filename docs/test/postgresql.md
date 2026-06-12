@@ -2270,6 +2270,8 @@ dialect: postgres
 ```sql
 SELECT
   CAST('あ' AS VARCHAR(4)) COLLATE "C" AS unicode_text,
+  CAST('abc' AS CHAR(3)) AS fixed_char_text,
+  CAST('abc' AS VARCHAR) AS unbounded_varchar_text,
   CAST('x' AS TEXT) AS large_text,
   DECODE('AB', 'hex') AS large_bytes,
   ARRAY[1, 2] AS int_array,
@@ -2288,7 +2290,17 @@ SELECT
   CAST('(1,2)' AS POINT) AS pg_point_value,
   CAST('<(0,0),1>' AS CIRCLE) AS pg_circle_value,
   CAST('{1,2,3}' AS LINE) AS pg_line_value,
-  CAST('((0,0),(1,1))' AS BOX) AS pg_box_value
+  CAST('((0,0),(1,1))' AS BOX) AS pg_box_value,
+  CAST('[(0,0),(1,1)]' AS LSEG) AS pg_lseg_value,
+  CAST('[(0,0),(1,1),(2,0)]' AS PATH) AS pg_path_value,
+  CAST('((0,0),(1,1),(2,0))' AS POLYGON) AS pg_polygon_value,
+  CAST('12:34:56+09' AS TIME WITH TIME ZONE) AS pg_timetz_value,
+  CAST(1.23 AS MONEY) AS pg_money_value,
+  TO_TSVECTOR('english', 'hello world') AS pg_tsvector_value,
+  PLAINTO_TSQUERY('english', 'hello') AS pg_tsquery_value,
+  CAST('0/16B6C50' AS PG_LSN) AS pg_lsn_value,
+  TO_REGCLASS('pg_class') AS pg_regclass_value,
+  CAST('integer' AS REGTYPE) AS pg_regtype_value
 ```
 
 ### Then
@@ -2301,6 +2313,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | unicode_text | varchar(4) | cast |
+| fixed_char_text | char(3) | polyglot |
+| unbounded_varchar_text | character varying | polyglot |
 | large_text | text | polyglot |
 | large_bytes | bytea | polyglot |
 | int_array | array<integer> | expression |
@@ -2320,6 +2334,16 @@ verify: true
 | pg_circle_value | circle | polyglot |
 | pg_line_value | line | polyglot |
 | pg_box_value | box | polyglot |
+| pg_lseg_value | lseg | polyglot |
+| pg_path_value | path | polyglot |
+| pg_polygon_value | polygon | polyglot |
+| pg_timetz_value | time with time zone | polyglot |
+| pg_money_value | money | polyglot |
+| pg_tsvector_value | tsvector | polyglot |
+| pg_tsquery_value | tsquery | polyglot |
+| pg_lsn_value | pg_lsn | polyglot |
+| pg_regclass_value | regclass | polyglot |
+| pg_regtype_value | regtype | polyglot |
 
 ---
 ## bind placeholder — result metadata

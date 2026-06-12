@@ -113,6 +113,27 @@ CREATE TABLE departments (
   dept   NVARCHAR(50) PRIMARY KEY,
   budget INT NOT NULL
 );
+
+CREATE TABLE spatial_values (
+  tsql_geometry_value GEOMETRY,
+  tsql_geography_value GEOGRAPHY,
+  tsql_hierarchy_value HIERARCHYID,
+  tsql_rowversion_value ROWVERSION
+);
+
+CREATE TABLE numeric_values (
+  tiny_value TINYINT,
+  small_value SMALLINT,
+  big_value BIGINT,
+  real_value REAL,
+  float_value FLOAT
+);
+
+CREATE TABLE max_length_values (
+  varchar_max_value VARCHAR(MAX),
+  nvarchar_max_value NVARCHAR(MAX),
+  varbinary_max_value VARBINARY(MAX)
+);
 ```
 
 ## Prepare-2: dbo スキーマメタデータ
@@ -2393,6 +2414,7 @@ dialect: tsql
 SELECT
   CAST(N'あ' AS NVARCHAR(4)) COLLATE Japanese_CI_AS AS unicode_text,
   CAST(N'x' AS NVARCHAR(MAX)) AS large_text,
+  CAST('x' AS VARCHAR(MAX)) AS large_varchar_text,
   CAST(CAST('AB' AS VARBINARY(8000)) AS VARBINARY(8000)) AS large_bytes_8000,
   JSON_QUERY(N'[1,2]') AS json_array_value,
   CAST('<a />' AS XML) AS xml_value,
@@ -2404,6 +2426,7 @@ SELECT
   CAST('12:34:56.1234' AS TIME(4)) AS time_precision_value,
   CAST('2020-01-01T00:00:00' AS DATETIME) AS legacy_datetime_value,
   CAST('2020-01-01T00:00:00' AS SMALLDATETIME) AS smalldatetime_value,
+  CAST(CAST(1 AS INT) AS SQL_VARIANT) AS variant_value,
   CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS = CAST(N'a' AS NVARCHAR(4)) COLLATE Japanese_CI_AS AS collated_equal
 ```
 
@@ -2418,6 +2441,7 @@ verify: true
 |------|------|--------|
 | unicode_text | nvarchar(4) | cast |
 | large_text | nvarchar(max) | polyglot |
+| large_varchar_text | varchar(max) | polyglot |
 | large_bytes_8000 | varbinary(8000) | polyglot |
 | json_array_value | nvarchar(4000) | expression |
 | xml_value | xml | polyglot |
@@ -2429,7 +2453,107 @@ verify: true
 | time_precision_value | time(4) | polyglot |
 | legacy_datetime_value | datetime | polyglot |
 | smalldatetime_value | smalldatetime | polyglot |
+| variant_value | sql_variant | polyglot |
 | collated_equal | bit | polyglot |
+
+---
+## SQL Server MAX 長型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT varchar_max_value, nvarchar_max_value, varbinary_max_value FROM max_length_values
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| varchar_max_value | varchar(max) | max_length_values.varchar_max_value |
+| nvarchar_max_value | nvarchar(max) | max_length_values.nvarchar_max_value |
+| varbinary_max_value | varbinary(max) | max_length_values.varbinary_max_value |
+
+---
+## SQL Server spatial 型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT tsql_geometry_value, tsql_geography_value, tsql_hierarchy_value, tsql_rowversion_value FROM spatial_values
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| tsql_geometry_value | geometry | spatial_values.tsql_geometry_value |
+| tsql_geography_value | geography | spatial_values.tsql_geography_value |
+| tsql_hierarchy_value | hierarchyid | spatial_values.tsql_hierarchy_value |
+| tsql_rowversion_value | timestamp | spatial_values.tsql_rowversion_value |
+
+---
+## SQL Server 小整数・近似数値型 — result metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT tiny_value, small_value, big_value, real_value, float_value FROM numeric_values
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| tiny_value | tinyint | numeric_values.tiny_value |
+| small_value | smallint | numeric_values.small_value |
+| big_value | bigint | numeric_values.big_value |
+| real_value | real | numeric_values.real_value |
+| float_value | float | numeric_values.float_value |
 
 ---
 ## bind placeholder — result metadata

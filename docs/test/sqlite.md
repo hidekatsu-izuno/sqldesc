@@ -157,6 +157,13 @@ CREATE TABLE departments (
   budget  INTEGER NOT NULL
 );
 
+CREATE TABLE affinity_values (
+  boolean_value  BOOLEAN,
+  numeric_value  NUMERIC,
+  datetime_value DATETIME,
+  varchar_value  VARCHAR(12)
+);
+
 -- FTS5 仮想テーブル（sender / title / body + 暗黙の rank 列）
 CREATE VIRTUAL TABLE email USING fts5(sender, title, body);
 
@@ -1548,6 +1555,39 @@ verify: true
 | collated_equal | integer | polyglot |
 | unicode_concat | text | polyglot |
 | nested_json_value | text | expression |
+
+---
+## 宣言型 affinity — schema metadata
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: sqlite
+```
+
+```sql
+SELECT boolean_value, numeric_value, datetime_value, varchar_value FROM affinity_values
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| boolean_value | integer | affinity_values.boolean_value |
+| numeric_value | real | affinity_values.numeric_value |
+| datetime_value | text | affinity_values.datetime_value |
+| varchar_value | varchar(12) | affinity_values.varchar_value |
 
 ---
 ## bind placeholder — storage class metadata

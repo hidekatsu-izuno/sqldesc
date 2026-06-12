@@ -2280,7 +2280,14 @@ SELECT
   INTERVAL '1 month 2 days 03:04:05' AS duck_interval_value,
   CAST('2020-01-01 00:00:00' AS TIMESTAMP_S) AS duck_timestamp_s_value,
   CAST('2020-01-01 00:00:00.123' AS TIMESTAMP_MS) AS duck_timestamp_ms_value,
-  CAST('2020-01-01 00:00:00.123456789' AS TIMESTAMP_NS) AS duck_timestamp_ns_value
+  CAST('2020-01-01 00:00:00.123456789' AS TIMESTAMP_NS) AS duck_timestamp_ns_value,
+  CAST('2020-01-01 00:00:00+09' AS TIMESTAMPTZ) AS duck_timestamptz_value,
+  CAST('1010' AS BIT) AS duck_bit_value,
+  CAST('123456789012345678901234567890' AS BIGNUM) AS duck_bignum_value,
+  1::UTINYINT AS duck_utinyint_value,
+  1::UINTEGER AS duck_uinteger_value,
+  1::UBIGINT AS duck_ubigint_value,
+  1::UHUGEINT AS duck_uhugeint_value
 ```
 
 ### Then
@@ -2307,6 +2314,13 @@ verify: true
 | duck_timestamp_s_value | timestamp_s | polyglot |
 | duck_timestamp_ms_value | timestamp_ms | polyglot |
 | duck_timestamp_ns_value | timestamp_ns | polyglot |
+| duck_timestamptz_value | timestamp with time zone | polyglot |
+| duck_bit_value | bit | polyglot |
+| duck_bignum_value | bignum | polyglot |
+| duck_utinyint_value | utinyint | polyglot |
+| duck_uinteger_value | uinteger | polyglot |
+| duck_ubigint_value | ubigint | polyglot |
+| duck_uhugeint_value | uhugeint | polyglot |
 
 ---
 ## ENUM 型 — result metadata

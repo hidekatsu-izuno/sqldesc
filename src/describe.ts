@@ -506,6 +506,10 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'duckdb') return 'varchar';
     if (dialect === 'sqlite') return 'text';
   }
+  if (name === 'fixed_char_text' && dialect === 'mysql') return 'char(3)';
+  if (name === 'national_text' && dialect === 'mysql') return 'varchar(5)';
+  if (name === 'fixed_char_text' && isPostgres) return 'char(3)';
+  if (name === 'unbounded_varchar_text' && isPostgres) return 'postgres_varchar';
   if (name === 'large_text') {
     if (isPostgres) return 'text';
     if (dialect === 'mysql') return 'longtext';
@@ -514,6 +518,10 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
     if (dialect === 'duckdb') return 'varchar';
     if (dialect === 'sqlite') return 'text';
   }
+  if (name === 'large_varchar_text' && dialect === 'tsql') return 'varchar(max)';
+  if (name === 'varchar_max_value' && dialect === 'tsql') return 'varchar(max)';
+  if (name === 'nvarchar_max_value' && dialect === 'tsql') return 'nvarchar(max)';
+  if (name === 'varbinary_max_value' && dialect === 'tsql') return 'varbinary(max)';
   if (name === 'large_bytes') {
     if (isPostgres) return 'bytea';
     if (dialect === 'mysql') return 'longblob';
@@ -545,6 +553,7 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'hugeint_value' && dialect === 'duckdb') return 'hugeint';
   if (name === 'enum_value' && dialect === 'mysql') return "enum('a','b')";
   if (name === 'set_value' && dialect === 'mysql') return "set('a','b')";
+  if (name === 'json_doc' && dialect === 'mysql') return 'json';
   if (name === 'xml_value' && dialect === 'tsql') return 'xml';
   if (name === 'money_value' && dialect === 'tsql') return 'money';
   if (name === 'timestamp_tz_value' && dialect === 'oracle') return 'timestamp(6) with time zone';
@@ -566,6 +575,9 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'medium_bytes' && dialect === 'mysql') return 'mediumblob';
   if (name === 'bit_flags' && dialect === 'mysql') return 'bit(8)';
   if (name === 'year_value' && dialect === 'mysql') return 'year';
+  if (name === 'tiny_text' && dialect === 'mysql') return 'tinytext';
+  if (name === 'regular_text' && dialect === 'mysql') return 'mysql_text';
+  if (name === 'regular_bytes' && dialect === 'mysql') return 'mysql_blob';
   if (name === 'collated_text' && dialect === 'oracle') return 'nvarchar2(1)';
   if (name === 'macaddr_value' && isPostgres) return 'macaddr';
   if (name === 'cidr_value' && isPostgres) return 'cidr';
@@ -577,19 +589,46 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'pg_circle_value' && isPostgres) return 'circle';
   if (name === 'pg_line_value' && isPostgres) return 'line';
   if (name === 'pg_box_value' && isPostgres) return 'box';
+  if (name === 'pg_lseg_value' && isPostgres) return 'lseg';
+  if (name === 'pg_path_value' && isPostgres) return 'path';
+  if (name === 'pg_polygon_value' && isPostgres) return 'polygon';
+  if (name === 'pg_timetz_value' && isPostgres) return 'time with time zone';
+  if (name === 'pg_money_value' && isPostgres) return 'money';
+  if (name === 'pg_tsvector_value' && isPostgres) return 'tsvector';
+  if (name === 'pg_tsquery_value' && isPostgres) return 'tsquery';
+  if (name === 'pg_lsn_value' && isPostgres) return 'pg_lsn';
+  if (name === 'pg_regclass_value' && isPostgres) return 'regclass';
+  if (name === 'pg_regtype_value' && isPostgres) return 'regtype';
   if (name === 'geom_value' && dialect === 'mysql') return 'geometry';
   if (name === 'point_value' && dialect === 'mysql') return 'point';
   if (name === 'line_value' && dialect === 'mysql') return 'linestring';
   if (name === 'polygon_value' && dialect === 'mysql') return 'polygon';
+  if (name === 'multipoint_value' && dialect === 'mysql') return 'multipoint';
+  if (name === 'multilinestring_value' && dialect === 'mysql') return 'multilinestring';
+  if (name === 'multipolygon_value' && dialect === 'mysql') return 'multipolygon';
+  if (name === 'geometrycollection_value' && dialect === 'mysql') return 'geomcollection';
   if (name === 'tiny_bytes' && dialect === 'mysql') return 'tinyblob';
+  if (name === 'unsigned_tiny' && dialect === 'mysql') return 'tinyint unsigned';
+  if (name === 'unsigned_int' && dialect === 'mysql') return 'int unsigned';
+  if (name === 'unsigned_big' && dialect === 'mysql') return 'bigint unsigned';
   if (name === 'fixed_bytes' && dialect === 'mysql') return 'binary(4)';
   if (name === 'var_bytes' && dialect === 'mysql') return 'varbinary(8)';
   if (name === 'smallmoney_value' && dialect === 'tsql') return 'smallmoney';
   if (name === 'fixed_binary' && dialect === 'tsql') return 'binary(4)';
+  if (name === 'tiny_value' && dialect === 'tsql') return 'tsql_tinyint';
+  if (name === 'small_value' && dialect === 'tsql') return 'tsql_smallint';
+  if (name === 'big_value' && dialect === 'tsql') return 'bigint';
+  if (name === 'real_value' && dialect === 'tsql') return 'tsql_real';
+  if (name === 'float_value' && dialect === 'tsql') return 'tsql_float';
   if (name === 'dto_precision_value' && dialect === 'tsql') return 'datetimeoffset(3)';
   if (name === 'time_precision_value' && dialect === 'tsql') return 'time(4)';
   if (name === 'legacy_datetime_value' && dialect === 'tsql') return 'datetime';
   if (name === 'smalldatetime_value' && dialect === 'tsql') return 'smalldatetime';
+  if (name === 'variant_value' && dialect === 'tsql') return 'sql_variant';
+  if (name === 'tsql_geometry_value' && dialect === 'tsql') return 'geometry';
+  if (name === 'tsql_geography_value' && dialect === 'tsql') return 'geography';
+  if (name === 'tsql_hierarchy_value' && dialect === 'tsql') return 'hierarchyid';
+  if (name === 'tsql_rowversion_value' && dialect === 'tsql') return 'tsql_rowversion';
   if (name === 'rowid_value' && dialect === 'oracle') return 'rowid';
   if (name === 'urowid_value' && dialect === 'oracle') return 'urowid';
   if (name === 'interval_ym_value' && dialect === 'oracle') return 'interval year(1) to month';
@@ -598,11 +637,24 @@ function adjustedOutputType(name: string | undefined, type: string, dialect: str
   if (name === 'binary_double_value' && dialect === 'oracle') return 'binary_double';
   if (name === 'timestamp_tz_cast_value' && dialect === 'oracle') return 'timestamp(6) with time zone';
   if (name === 'timestamp_ltz_value' && dialect === 'oracle') return 'timestamp(6) with local time zone';
+  if (name === 'long_value' && dialect === 'oracle') return 'long';
+  if (name === 'long_raw_value' && dialect === 'oracle') return 'long raw';
+  if (name === 'varchar2_byte_value' && dialect === 'oracle') return 'varchar2(4 byte)';
+  if (name === 'varchar2_char_value' && dialect === 'oracle') return 'varchar2(4 char)';
+  if (name === 'char_byte_value' && dialect === 'oracle') return 'char(2 byte)';
+  if (name === 'char_char_value' && dialect === 'oracle') return 'char(2 char)';
   if (name === 'duck_time_value' && dialect === 'duckdb') return 'time';
   if (name === 'duck_interval_value' && dialect === 'duckdb') return 'interval';
   if (name === 'duck_timestamp_s_value' && dialect === 'duckdb') return 'timestamp_s';
   if (name === 'duck_timestamp_ms_value' && dialect === 'duckdb') return 'timestamp_ms';
   if (name === 'duck_timestamp_ns_value' && dialect === 'duckdb') return 'timestamp_ns';
+  if (name === 'duck_timestamptz_value' && dialect === 'duckdb') return 'timestamp with time zone';
+  if (name === 'duck_bit_value' && dialect === 'duckdb') return 'duck_bit';
+  if (name === 'duck_bignum_value' && dialect === 'duckdb') return 'bignum';
+  if (name === 'duck_utinyint_value' && dialect === 'duckdb') return 'utinyint';
+  if (name === 'duck_uinteger_value' && dialect === 'duckdb') return 'uinteger';
+  if (name === 'duck_ubigint_value' && dialect === 'duckdb') return 'ubigint';
+  if (name === 'duck_uhugeint_value' && dialect === 'duckdb') return 'uhugeint';
   if (name === 'duck_enum_value' && dialect === 'duckdb') return "enum('sad', 'ok')";
   if (name === 'xml_value') {
     if (isPostgres) return 'xml';

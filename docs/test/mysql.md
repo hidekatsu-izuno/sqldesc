@@ -2139,13 +2139,22 @@ verify: true
 ```sql
 CREATE TABLE special_values (
   unicode_text VARCHAR(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  fixed_char_text CHAR(3) CHARACTER SET utf8mb4,
+  national_text NATIONAL VARCHAR(5),
   large_text LONGTEXT,
   large_bytes LONGBLOB,
   enum_value ENUM('a','b'),
   set_value SET('a','b'),
+  json_doc JSON,
+  tiny_text TINYTEXT,
+  regular_text TEXT,
   unicode_large_text MEDIUMTEXT CHARACTER SET utf8mb4,
+  regular_bytes BLOB,
   medium_bytes MEDIUMBLOB,
   tiny_bytes TINYBLOB,
+  unsigned_tiny TINYINT UNSIGNED,
+  unsigned_int INT UNSIGNED,
+  unsigned_big BIGINT UNSIGNED,
   fixed_bytes BINARY(4),
   var_bytes VARBINARY(8),
   bit_flags BIT(8),
@@ -2153,7 +2162,11 @@ CREATE TABLE special_values (
   geom_value GEOMETRY,
   point_value POINT,
   line_value LINESTRING,
-  polygon_value POLYGON
+  polygon_value POLYGON,
+  multipoint_value MULTIPOINT,
+  multilinestring_value MULTILINESTRING,
+  multipolygon_value MULTIPOLYGON,
+  geometrycollection_value GEOMETRYCOLLECTION
 );
 ```
 
@@ -2166,13 +2179,22 @@ dialect: mysql
 ```sql
 SELECT
   unicode_text,
+  fixed_char_text,
+  national_text,
   large_text,
   large_bytes,
   enum_value,
   set_value,
+  json_doc,
+  tiny_text,
+  regular_text,
   unicode_large_text,
+  regular_bytes,
   medium_bytes,
   tiny_bytes,
+  unsigned_tiny,
+  unsigned_int,
+  unsigned_big,
   fixed_bytes,
   var_bytes,
   bit_flags,
@@ -2181,6 +2203,10 @@ SELECT
   point_value,
   line_value,
   polygon_value,
+  multipoint_value,
+  multilinestring_value,
+  multipolygon_value,
+  geometrycollection_value,
   JSON_ARRAY(1, 2) AS json_array_value,
   JSON_OBJECT('id', 1, 'name', 'x') AS json_object_value,
   UUID() AS uuid_value,
@@ -2198,13 +2224,22 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | unicode_text | varchar(4) | special_values.unicode_text |
+| fixed_char_text | char(3) | special_values.fixed_char_text |
+| national_text | varchar(5) | special_values.national_text |
 | large_text | longtext | special_values.large_text |
 | large_bytes | longblob | special_values.large_bytes |
 | enum_value | enum('a','b') | special_values.enum_value |
 | set_value | set('a','b') | special_values.set_value |
+| json_doc | json | special_values.json_doc |
+| tiny_text | tinytext | special_values.tiny_text |
+| regular_text | text | special_values.regular_text |
 | unicode_large_text | mediumtext | special_values.unicode_large_text |
+| regular_bytes | blob | special_values.regular_bytes |
 | medium_bytes | mediumblob | special_values.medium_bytes |
 | tiny_bytes | tinyblob | special_values.tiny_bytes |
+| unsigned_tiny | tinyint unsigned | special_values.unsigned_tiny |
+| unsigned_int | int unsigned | special_values.unsigned_int |
+| unsigned_big | bigint unsigned | special_values.unsigned_big |
 | fixed_bytes | binary(4) | special_values.fixed_bytes |
 | var_bytes | varbinary(8) | special_values.var_bytes |
 | bit_flags | bit(8) | special_values.bit_flags |
@@ -2213,6 +2248,10 @@ verify: true
 | point_value | point | special_values.point_value |
 | line_value | linestring | special_values.line_value |
 | polygon_value | polygon | special_values.polygon_value |
+| multipoint_value | multipoint | special_values.multipoint_value |
+| multilinestring_value | multilinestring | special_values.multilinestring_value |
+| multipolygon_value | multipolygon | special_values.multipolygon_value |
+| geometrycollection_value | geomcollection | special_values.geometrycollection_value |
 | json_array_value | json | expression |
 | json_object_value | json | expression |
 | uuid_value | varchar(36) | expression |

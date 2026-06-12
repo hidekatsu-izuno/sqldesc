@@ -28,4 +28,16 @@ describe('SqlType', () => {
     assert.strictEqual(sqlTypeToJdbcType('array<text>', 'postgres'), 'ARRAY');
     assert.strictEqual(sqlTypeToJdbcType('struct<id integer>', 'generic'), 'STRUCT');
   });
+
+  it('keeps BigQuery extended native types distinct', () => {
+    const bignumeric = createSqlType('BIGNUMERIC', 'bigquery');
+    assert.strictEqual(bignumeric.normalizedType, 'bignumeric');
+    assert.strictEqual(bignumeric.nativeType, 'bignumeric');
+    assert.strictEqual(bignumeric.toJdbcType(), 'DECIMAL');
+
+    const geography = createSqlType('GEOGRAPHY', 'bigquery');
+    assert.strictEqual(geography.normalizedType, 'geography');
+    assert.strictEqual(geography.nativeType, 'geography');
+    assert.strictEqual(geography.toJdbcType(), 'OTHER');
+  });
 });

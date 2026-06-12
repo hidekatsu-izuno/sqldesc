@@ -278,7 +278,14 @@ describe select
   interval '1 month 2 days 03:04:05' as duck_interval_value,
   cast('2020-01-01 00:00:00' as timestamp_s) as duck_timestamp_s_value,
   cast('2020-01-01 00:00:00.123' as timestamp_ms) as duck_timestamp_ms_value,
-  cast('2020-01-01 00:00:00.123456789' as timestamp_ns) as duck_timestamp_ns_value;
+  cast('2020-01-01 00:00:00.123456789' as timestamp_ns) as duck_timestamp_ns_value,
+  cast('2020-01-01 00:00:00+09' as timestamptz) as duck_timestamptz_value,
+  cast('1010' as bit) as duck_bit_value,
+  cast('123456789012345678901234567890' as bignum) as duck_bignum_value,
+  1::utinyint as duck_utinyint_value,
+  1::uinteger as duck_uinteger_value,
+  1::ubigint as duck_ubigint_value,
+  1::uhugeint as duck_uhugeint_value;
 create type mood as enum ('sad', 'ok');
 describe select 'ok'::mood as duck_enum_value;
 `;
@@ -415,6 +422,8 @@ create view v_final_expr_probe as select
   cast(1 as integer) + cast(2 as integer) as bind_add_equiv;
 create view v_special_probe as select
   cast('あ' as varchar(4)) collate "C" as unicode_text,
+  cast('abc' as char(3)) as fixed_char_text,
+  cast('abc' as varchar) as unbounded_varchar_text,
   cast('x' as text) as large_text,
   decode('AB', 'hex') as large_bytes,
   array[1, 2] as int_array,
@@ -433,7 +442,17 @@ create view v_special_probe as select
   cast('(1,2)' as point) as pg_point_value,
   cast('<(0,0),1>' as circle) as pg_circle_value,
   cast('{1,2,3}' as line) as pg_line_value,
-  cast('((0,0),(1,1))' as box) as pg_box_value;
+  cast('((0,0),(1,1))' as box) as pg_box_value,
+  cast('[(0,0),(1,1)]' as lseg) as pg_lseg_value,
+  cast('[(0,0),(1,1),(2,0)]' as path) as pg_path_value,
+  cast('((0,0),(1,1),(2,0))' as polygon) as pg_polygon_value,
+  cast('12:34:56+09' as time with time zone) as pg_timetz_value,
+  cast(1.23 as money) as pg_money_value,
+  to_tsvector('english', 'hello world') as pg_tsvector_value,
+  plainto_tsquery('english', 'hello') as pg_tsquery_value,
+  cast('0/16B6C50' as pg_lsn) as pg_lsn_value,
+  to_regclass('pg_class') as pg_regclass_value,
+  cast('integer' as regtype) as pg_regtype_value;
 select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale, datetime_precision
 from information_schema.columns
 where table_name = 'v_cast_probe'
@@ -582,13 +601,22 @@ create view v_final_expr_probe as select
 drop table if exists t_special_probe;
 create table t_special_probe(
   unicode_text varchar(4) character set utf8mb4 collate utf8mb4_0900_ai_ci,
+  fixed_char_text char(3) character set utf8mb4,
+  national_text national varchar(5),
   large_text longtext,
   large_bytes longblob,
   enum_value enum('a','b'),
   set_value set('a','b'),
+  json_doc json,
+  tiny_text tinytext,
+  regular_text text,
   unicode_large_text mediumtext character set utf8mb4,
+  regular_bytes blob,
   medium_bytes mediumblob,
   tiny_bytes tinyblob,
+  unsigned_tiny tinyint unsigned,
+  unsigned_int int unsigned,
+  unsigned_big bigint unsigned,
   fixed_bytes binary(4),
   var_bytes varbinary(8),
   bit_flags bit(8),
@@ -596,17 +624,30 @@ create table t_special_probe(
   geom_value geometry,
   point_value point,
   line_value linestring,
-  polygon_value polygon
+  polygon_value polygon,
+  multipoint_value multipoint,
+  multilinestring_value multilinestring,
+  multipolygon_value multipolygon,
+  geometrycollection_value geometrycollection
 );
 create view v_special_probe as select
   unicode_text,
+  fixed_char_text,
+  national_text,
   large_text,
   large_bytes,
   enum_value,
   set_value,
+  json_doc,
+  tiny_text,
+  regular_text,
   unicode_large_text,
+  regular_bytes,
   medium_bytes,
   tiny_bytes,
+  unsigned_tiny,
+  unsigned_int,
+  unsigned_big,
   fixed_bytes,
   var_bytes,
   bit_flags,
@@ -615,6 +656,10 @@ create view v_special_probe as select
   point_value,
   line_value,
   polygon_value,
+  multipoint_value,
+  multilinestring_value,
+  multipolygon_value,
+  geometrycollection_value,
   json_array(1, 2) as json_array_value,
   json_object('id', 1, 'name', 'x') as json_object_value,
   uuid() as uuid_value,
@@ -746,7 +791,17 @@ from sys.dm_exec_describe_first_result_set(
 );
 select name, system_type_name
 from sys.dm_exec_describe_first_result_set(
-  N'select cast(N''あ'' as nvarchar(4)) collate Japanese_CI_AS as unicode_text, cast(N''x'' as nvarchar(max)) as large_text, cast(0xAB as varbinary(max)) as large_bytes, json_query(N''[1,2]'') as json_array_value, cast(''<a />'' as xml) as xml_value, cast(''00000000-0000-0000-0000-000000000000'' as uniqueidentifier) as uuid_value, cast(1.23 as money) as money_value, cast(1.23 as smallmoney) as smallmoney_value, cast(0xAB as binary(4)) as fixed_binary, cast(''2020-01-01T00:00:00+09:00'' as datetimeoffset(3)) as dto_precision_value, cast(''12:34:56.1234'' as time(4)) as time_precision_value, cast(''2020-01-01T00:00:00'' as datetime) as legacy_datetime_value, cast(''2020-01-01T00:00:00'' as smalldatetime) as smalldatetime_value',
+  N'select cast(N''あ'' as nvarchar(4)) collate Japanese_CI_AS as unicode_text, cast(N''x'' as nvarchar(max)) as large_text, cast(''x'' as varchar(max)) as large_varchar_text, cast(0xAB as varbinary(max)) as large_bytes, json_query(N''[1,2]'') as json_array_value, cast(''<a />'' as xml) as xml_value, cast(''00000000-0000-0000-0000-000000000000'' as uniqueidentifier) as uuid_value, cast(1.23 as money) as money_value, cast(1.23 as smallmoney) as smallmoney_value, cast(0xAB as binary(4)) as fixed_binary, cast(1 as tinyint) as tiny_value, cast(1 as smallint) as small_value, cast(1 as bigint) as big_value, cast(1.25 as real) as real_value, cast(1.25 as float) as float_value, cast(''2020-01-01T00:00:00+09:00'' as datetimeoffset(3)) as dto_precision_value, cast(''12:34:56.1234'' as time(4)) as time_precision_value, cast(''2020-01-01T00:00:00'' as datetime) as legacy_datetime_value, cast(''2020-01-01T00:00:00'' as smalldatetime) as smalldatetime_value, cast(cast(1 as int) as sql_variant) as variant_value, geometry::STGeomFromText(''POINT (1 2)'', 0) as tsql_geometry_value, geography::STGeomFromText(''POINT(1 2)'', 4326) as tsql_geography_value',
+  null,
+  0
+);
+create table #special_type_probe(
+  tsql_hierarchy_value hierarchyid,
+  tsql_rowversion_value rowversion
+);
+select name, system_type_name
+from sys.dm_exec_describe_first_result_set(
+  N'select tsql_hierarchy_value, tsql_rowversion_value from #special_type_probe',
   null,
   0
 );
@@ -770,6 +825,14 @@ exit
   docker(['exec', '-i', name, 'sqlplus', '-s', 'system/pass@//localhost/XEPDB1'], { input: setup });
   const sql = `
 set heading off feedback off pagesize 200 linesize 200 trimspool on
+create table special_long_text (long_value long);
+create table special_long_raw (long_raw_value long raw);
+create table special_char_semantics (
+  varchar2_byte_value varchar2(4 byte),
+  varchar2_char_value varchar2(4 char),
+  char_byte_value char(2 byte),
+  char_char_value char(2 char)
+);
 create or replace view v_cast_probe as select
   cast('x' as varchar2(12)) v12,
   cast(1.23 as number(8,2)) n82,
@@ -895,6 +958,7 @@ create or replace view v_special_probe as select
   systimestamp timestamp_tz_value,
   to_nclob(N'x') unicode_large_text,
   xmltype('<a />') xml_value,
+  bfilename('DATA_PUMP_DIR', 'x.bin') bfile_value,
   nls_upper(N'a', 'NLS_SORT = BINARY_CI') collated_text,
   chartorowid('AAAEpTAAFAAAABSAAA') rowid_value,
   cast('AAAEpTAAFAAAABSAAA' as urowid) urowid_value,
@@ -917,6 +981,14 @@ select table_name || '.' || column_name || '|' || data_type || '|' || data_lengt
 from user_tab_columns
 where table_name in ('V_CASE_PROBE', 'V_UNION_NULL_PROBE', 'V_UNION_NUM_PROBE', 'V_AGG_PROBE', 'V_CONCAT_TEMPORAL_PROBE', 'V_MORE_PROBE', 'V_PRIORITY_LITERAL_PROBE', 'V_TEMPORAL_PREDICATE_PROBE', 'V_JSON_EXTRACT_PROBE', 'V_SET_RESOLUTION_PROBE', 'V_REMAINING_PROBE', 'V_EXTRA_PROBE', 'V_SET_OPS_PROBE', 'V_FINAL_PROBE', 'V_FINAL_EXPR_PROBE', 'V_SPECIAL_PROBE')
 order by table_name, column_id;
+select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || data_precision || '|' || data_scale
+from user_tab_columns
+where table_name in ('SPECIAL_LONG_TEXT', 'SPECIAL_LONG_RAW')
+order by table_name, column_id;
+select table_name || '.' || column_name || '|' || data_type || '|' || data_length || '|' || char_length || '|' || char_used
+from user_tab_columns
+where table_name = 'SPECIAL_CHAR_SEMANTICS'
+order by column_id;
 exit
 `;
   printSection('oracle cast metadata', docker(['exec', '-i', name, 'sqlplus', '-s', 'sqldesc/pass@//localhost/XEPDB1'], { input: sql }));
