@@ -1,1072 +1,1068 @@
-import type { DialectConfig } from '../types.js';
+import type { DialectConfig } from "../types.js";
 
 export const dialectConfig = {
-  name: 'duckdb',
+  name: "duckdb",
   aliases: [],
-  family: 'duckdb',
-  typeFamily: 'duckdb',
+  family: "duckdb",
+  typeFamily: "duckdb",
   displayTypes: {
-    bigint: 'bigint',
-    blob: 'blob',
-    boolean: 'boolean',
-    bytes: 'blob',
-    clob: 'varchar',
-    date: 'date',
-    datetime: 'timestamp',
-    decimal: 'decimal(18, 3)',
-    double: 'double',
-    duck_bit: 'bit',
-    integer: 'integer',
-    json: 'json',
-    jsonb: 'json',
-    nclob: 'varchar',
-    text: 'varchar',
-    time: 'time',
-    timestamp: 'timestamp',
-    timestamp_ms: 'timestamp_ms',
-    timestamp_ns: 'timestamp_ns',
-    timestamp_s: 'timestamp_s',
-    timestamptz: 'timestamp with time zone',
-    uuid: 'uuid',
+    bigint: "bigint",
+    blob: "blob",
+    boolean: "boolean",
+    bytes: "blob",
+    clob: "varchar",
+    date: "date",
+    datetime: "timestamp",
+    decimal: "decimal(18, 3)",
+    double: "double",
+    duck_bit: "bit",
+    integer: "integer",
+    json: "json",
+    jsonb: "json",
+    nclob: "varchar",
+    text: "varchar",
+    time: "time",
+    timestamp: "timestamp",
+    timestamp_ms: "timestamp_ms",
+    timestamp_ns: "timestamp_ns",
+    timestamp_s: "timestamp_s",
+    timestamptz: "timestamp with time zone",
+    uuid: "uuid",
   },
   jdbcTypeMap: {
-    ARRAY: 'array<variant>',
-    BIGINT: 'bigint',
-    BINARY: 'bytes',
-    BIT: 'boolean',
-    BLOB: 'bytes',
-    BOOLEAN: 'boolean',
-    CHAR: 'text',
-    CLOB: 'text',
-    DATALINK: 'text',
-    DATE: 'date',
-    DECIMAL: 'decimal',
-    DISTINCT: 'variant',
-    DOUBLE: 'decimal',
-    FLOAT: 'decimal',
-    INTEGER: 'integer',
-    JAVA_OBJECT: 'variant',
-    LONGNVARCHAR: 'text',
-    LONGVARBINARY: 'bytes',
-    LONGVARCHAR: 'text',
-    NCHAR: 'text',
-    NCLOB: 'text',
-    NULL: 'unknown',
-    NUMERIC: 'decimal',
-    NVARCHAR: 'text',
-    OTHER: 'variant',
-    REAL: 'decimal',
-    REF: 'variant',
-    REF_CURSOR: 'variant',
-    ROWID: 'text',
-    SMALLINT: 'integer',
-    SQLXML: 'xml',
-    STRUCT: 'struct<>',
-    TIME: 'time',
-    TIMESTAMP: 'timestamp',
-    TIMESTAMP_WITH_TIMEZONE: 'timestamp',
-    TIME_WITH_TIMEZONE: 'time',
-    TINYINT: 'integer',
-    VARBINARY: 'bytes',
-    VARCHAR: 'text',
+    ARRAY: "array<variant>",
+    BIGINT: "bigint",
+    BINARY: "bytes",
+    BIT: "boolean",
+    BLOB: "bytes",
+    BOOLEAN: "boolean",
+    CHAR: "text",
+    CLOB: "text",
+    DATALINK: "text",
+    DATE: "date",
+    DECIMAL: "decimal",
+    DISTINCT: "variant",
+    DOUBLE: "decimal",
+    FLOAT: "decimal",
+    INTEGER: "integer",
+    JAVA_OBJECT: "variant",
+    LONGNVARCHAR: "text",
+    LONGVARBINARY: "bytes",
+    LONGVARCHAR: "text",
+    NCHAR: "text",
+    NCLOB: "text",
+    NULL: "unknown",
+    NUMERIC: "decimal",
+    NVARCHAR: "text",
+    OTHER: "variant",
+    REAL: "decimal",
+    REF: "variant",
+    REF_CURSOR: "variant",
+    ROWID: "text",
+    SMALLINT: "integer",
+    SQLXML: "xml",
+    STRUCT: "struct<>",
+    TIME: "time",
+    TIMESTAMP: "timestamp",
+    TIMESTAMP_WITH_TIMEZONE: "timestamp",
+    TIME_WITH_TIMEZONE: "time",
+    TINYINT: "integer",
+    VARBINARY: "bytes",
+    VARCHAR: "text",
   },
   scalarFunctionTypes: {
-    age: 'interval',
-    array_all: 'boolean',
-    array_any: 'boolean',
-    array_contains: 'boolean',
-    array_join: 'text',
-    array_length: 'integer',
-    array_lower: 'integer',
-    array_ndims: 'integer',
-    array_position: 'integer',
-    array_size: 'integer',
-    array_sum: 'integer',
-    array_to_string: 'text',
-    array_upper: 'integer',
-    as_array: 'array<variant>',
-    as_object: 'object',
-    as_varchar: 'text',
-    ascii: 'integer',
-    bit_length: 'integer',
-    byte_length: 'integer',
-    cardinality: 'integer',
-    cbrt: 'decimal',
-    char_length: 'integer',
-    character_length: 'integer',
-    contains: 'boolean',
-    convert_to: 'bytes',
-    cos: 'decimal',
-    current_catalog: 'text',
-    current_database: 'text',
-    current_datetime: 'datetime',
-    current_schema: 'text',
-    current_user: 'text',
-    currval: 'bigint',
-    date_parse: 'timestamp',
-    datetime: 'datetime',
-    day: 'integer',
-    degrees: 'decimal',
-    ends_with: 'boolean',
-    exp: 'decimal',
-    factorial: 'integer',
-    format_date: 'text',
-    from_base64: 'bytes',
-    gen_random_uuid: 'uuid',
-    generate_uuid: 'uuid',
-    grouping: 'integer',
-    grouping_id: 'integer',
-    hash: 'integer',
-    hex: 'text',
-    highlight: 'text',
-    hll_hash: 'hll',
-    hour: 'integer',
-    ieee_divide: 'decimal',
-    initcap: 'text',
-    instr: 'integer',
-    json_contains: 'boolean',
-    json_insert: 'json',
-    json_patch: 'json',
-    json_query: 'json',
-    json_query_array: 'array<json>',
-    json_remove: 'json',
-    json_replace: 'json',
-    json_set: 'json',
-    json_valid: 'boolean',
-    json_value: 'text',
-    json_value_array: 'array<text>',
-    jsonlength: 'integer',
-    julianday: 'decimal',
-    lastval: 'bigint',
-    length: 'integer',
-    list_contains: 'boolean',
-    ln: 'decimal',
-    locate: 'integer',
-    log: 'decimal',
-    log10: 'decimal',
-    lower: 'text',
-    ltrim: 'text',
-    md5: 'text',
-    minute: 'integer',
-    month: 'integer',
-    months_between: 'decimal',
-    newid: 'uuid',
-    nextval: 'bigint',
-    octet_length: 'integer',
-    overlay: 'text',
-    parse_json: 'json',
-    pi: 'decimal',
-    position: 'integer',
-    pow: 'decimal',
-    power: 'decimal',
-    printf: 'text',
-    quarter: 'integer',
-    radians: 'decimal',
-    rand: 'decimal',
-    random: 'decimal',
-    regexp_contains: 'boolean',
-    regexp_count: 'integer',
-    regexp_extract: 'text',
-    regexp_extract_all: 'array<text>',
-    regexp_instr: 'integer',
-    regexp_like: 'boolean',
-    regexp_match: 'array<text>',
-    regexp_matches: 'array<text>',
-    regexp_position: 'integer',
-    regexp_replace: 'text',
-    regexp_split: 'array<text>',
-    regexp_split_to_array: 'array<text>',
-    regexp_split_to_table: 'text',
-    regexp_substr: 'text',
-    replace: 'text',
-    rlike: 'boolean',
-    row_to_json: 'json',
-    rtrim: 'text',
-    safe_divide: 'decimal',
-    scope_identity: 'integer',
-    second: 'integer',
-    setval: 'bigint',
-    sha: 'text',
-    sha1: 'text',
-    sha224: 'bytes',
-    sha256: 'bytes',
-    sha384: 'bytes',
-    sha512: 'bytes',
-    sign: 'integer',
-    sin: 'decimal',
-    snippet: 'text',
-    split: 'array<text>',
-    split_part: 'text',
-    sqlite_version: 'text',
-    sqrt: 'decimal',
-    st_area: 'decimal',
-    st_asbinary: 'bytes',
-    st_asgeojson: 'text',
-    st_astext: 'text',
-    st_aswkb: 'bytes',
-    st_aswkt: 'text',
-    st_contains: 'boolean',
-    st_dimension: 'integer',
-    st_distance: 'decimal',
-    st_geogpoint: 'geography',
-    st_intersects: 'boolean',
-    st_length: 'decimal',
-    st_makeenvelope: 'geometry',
-    st_makepoint: 'geometry',
-    st_ndims: 'integer',
-    st_npoints: 'integer',
-    st_point: 'geometry',
-    st_srid: 'integer',
-    st_within: 'boolean',
-    st_x: 'decimal',
-    st_y: 'decimal',
-    starts_with: 'boolean',
-    str_split: 'array<text>',
-    string_to_array: 'array<text>',
-    strpos: 'integer',
-    substr: 'text',
-    substring: 'text',
-    tan: 'decimal',
-    time: 'time',
-    timestamp: 'timestamp',
-    to_array: 'array<variant>',
-    to_binary: 'bytes',
-    to_bitmap: 'bitmap',
-    to_boolean: 'boolean',
-    to_char: 'text',
-    to_decimal: 'decimal',
-    to_geography: 'geography',
-    to_geometry: 'geometry',
-    to_hex: 'text',
-    to_number: 'decimal',
-    to_object: 'object',
-    to_utf8: 'bytes',
-    to_variant: 'variant',
-    todate: 'date',
-    trim: 'text',
-    try_to_boolean: 'boolean',
-    try_to_decimal: 'decimal',
-    try_to_number: 'decimal',
-    typeof: 'text',
-    unhex: 'bytes',
-    upper: 'text',
-    user: 'text',
-    uuid: 'uuid',
-    uuid_string: 'uuid',
-    version: 'text',
-    week: 'integer',
-    xxhash64: 'integer',
-    year: 'integer',
+    age: "interval",
+    array_all: "boolean",
+    array_any: "boolean",
+    array_contains: "boolean",
+    array_join: "text",
+    array_length: "integer",
+    array_lower: "integer",
+    array_ndims: "integer",
+    array_position: "integer",
+    array_size: "integer",
+    array_sum: "integer",
+    array_to_string: "text",
+    array_upper: "integer",
+    as_array: "array<variant>",
+    as_object: "object",
+    as_varchar: "text",
+    ascii: "integer",
+    bit_length: "integer",
+    byte_length: "integer",
+    cardinality: "integer",
+    cbrt: "decimal",
+    char_length: "integer",
+    character_length: "integer",
+    contains: "boolean",
+    convert_to: "bytes",
+    cos: "decimal",
+    current_catalog: "text",
+    current_database: "text",
+    current_datetime: "datetime",
+    current_schema: "text",
+    current_user: "text",
+    currval: "bigint",
+    date_parse: "timestamp",
+    datetime: "datetime",
+    day: "integer",
+    degrees: "decimal",
+    ends_with: "boolean",
+    exp: "decimal",
+    factorial: "integer",
+    format_date: "text",
+    from_base64: "bytes",
+    gen_random_uuid: "uuid",
+    generate_uuid: "uuid",
+    grouping: "integer",
+    grouping_id: "integer",
+    hash: "integer",
+    hex: "text",
+    highlight: "text",
+    hll_hash: "hll",
+    hour: "integer",
+    ieee_divide: "decimal",
+    initcap: "text",
+    instr: "integer",
+    json_contains: "boolean",
+    json_insert: "json",
+    json_patch: "json",
+    json_query: "json",
+    json_query_array: "array<json>",
+    json_remove: "json",
+    json_replace: "json",
+    json_set: "json",
+    json_valid: "boolean",
+    json_value: "text",
+    json_value_array: "array<text>",
+    jsonlength: "integer",
+    julianday: "decimal",
+    lastval: "bigint",
+    length: "integer",
+    list_contains: "boolean",
+    ln: "decimal",
+    locate: "integer",
+    log: "decimal",
+    log10: "decimal",
+    lower: "text",
+    ltrim: "text",
+    md5: "text",
+    minute: "integer",
+    month: "integer",
+    months_between: "decimal",
+    newid: "uuid",
+    nextval: "bigint",
+    octet_length: "integer",
+    overlay: "text",
+    parse_json: "json",
+    pi: "decimal",
+    position: "integer",
+    pow: "decimal",
+    power: "decimal",
+    printf: "text",
+    quarter: "integer",
+    radians: "decimal",
+    rand: "decimal",
+    random: "decimal",
+    regexp_contains: "boolean",
+    regexp_count: "integer",
+    regexp_extract: "text",
+    regexp_extract_all: "array<text>",
+    regexp_instr: "integer",
+    regexp_like: "boolean",
+    regexp_match: "array<text>",
+    regexp_matches: "array<text>",
+    regexp_position: "integer",
+    regexp_replace: "text",
+    regexp_split: "array<text>",
+    regexp_split_to_array: "array<text>",
+    regexp_split_to_table: "text",
+    regexp_substr: "text",
+    replace: "text",
+    rlike: "boolean",
+    row_to_json: "json",
+    rtrim: "text",
+    safe_divide: "decimal",
+    scope_identity: "integer",
+    second: "integer",
+    setval: "bigint",
+    sha: "text",
+    sha1: "text",
+    sha224: "bytes",
+    sha256: "bytes",
+    sha384: "bytes",
+    sha512: "bytes",
+    sign: "integer",
+    sin: "decimal",
+    snippet: "text",
+    split: "array<text>",
+    split_part: "text",
+    sqlite_version: "text",
+    sqrt: "decimal",
+    st_area: "decimal",
+    st_asbinary: "bytes",
+    st_asgeojson: "text",
+    st_astext: "text",
+    st_aswkb: "bytes",
+    st_aswkt: "text",
+    st_contains: "boolean",
+    st_dimension: "integer",
+    st_distance: "decimal",
+    st_geogpoint: "geography",
+    st_intersects: "boolean",
+    st_length: "decimal",
+    st_makeenvelope: "geometry",
+    st_makepoint: "geometry",
+    st_ndims: "integer",
+    st_npoints: "integer",
+    st_point: "geometry",
+    st_srid: "integer",
+    st_within: "boolean",
+    st_x: "decimal",
+    st_y: "decimal",
+    starts_with: "boolean",
+    str_split: "array<text>",
+    string_to_array: "array<text>",
+    strpos: "integer",
+    substr: "text",
+    substring: "text",
+    tan: "decimal",
+    time: "time",
+    timestamp: "timestamp",
+    to_array: "array<variant>",
+    to_binary: "bytes",
+    to_bitmap: "bitmap",
+    to_boolean: "boolean",
+    to_char: "text",
+    to_decimal: "decimal",
+    to_geography: "geography",
+    to_geometry: "geometry",
+    to_hex: "text",
+    to_number: "decimal",
+    to_object: "object",
+    to_utf8: "bytes",
+    to_variant: "variant",
+    todate: "date",
+    trim: "text",
+    try_to_boolean: "boolean",
+    try_to_decimal: "decimal",
+    try_to_number: "decimal",
+    typeof: "text",
+    unhex: "bytes",
+    upper: "text",
+    user: "text",
+    uuid: "uuid",
+    uuid_string: "uuid",
+    version: "text",
+    week: "integer",
+    xxhash64: "integer",
+    year: "integer",
   },
   scalarFunctionTypePatterns: {
-    '/^avg(?:_|$)/i': 'double',
+    "/^avg(?:_|$)/i": "double",
   },
-  tableFunctions:   {
+  tableFunctions: {
     duckdb_columns: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "table_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "column_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "column_index",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "data_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "is_nullable",
-        type: "boolean"
-      }
+        type: "boolean",
+      },
     ],
     duckdb_constraints: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "database_oid",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_oid",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "table_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "table_oid",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "constraint_index",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "constraint_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "constraint_text",
-        type: "text"
+        type: "text",
       },
       {
         name: "expression",
-        type: "text"
+        type: "text",
       },
       {
         name: "constraint_column_indexes",
-        type: "array<integer>"
+        type: "array<integer>",
       },
       {
         name: "constraint_column_names",
-        type: "array<text>"
-      }
+        type: "array<text>",
+      },
     ],
     duckdb_databases: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "database_oid",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "path",
-        type: "text"
+        type: "text",
       },
       {
         name: "internal",
-        type: "boolean"
-      }
+        type: "boolean",
+      },
     ],
     duckdb_extensions: [
       {
         name: "extension_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "loaded",
-        type: "boolean"
+        type: "boolean",
       },
       {
         name: "installed",
-        type: "boolean"
+        type: "boolean",
       },
       {
         name: "install_path",
-        type: "text"
+        type: "text",
       },
       {
         name: "description",
-        type: "text"
+        type: "text",
       },
       {
         name: "aliases",
-        type: "array<text>"
-      }
+        type: "array<text>",
+      },
     ],
     duckdb_functions: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "function_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "function_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "return_type",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     duckdb_indexes: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "index_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "table_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "is_unique",
-        type: "boolean"
+        type: "boolean",
       },
       {
         name: "sql",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     duckdb_keywords: [
       {
         name: "keyword_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "keyword_category",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     duckdb_memory: [
       {
         name: "tag",
-        type: "text"
+        type: "text",
       },
       {
         name: "memory_usage_bytes",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "temporary_storage_bytes",
-        type: "integer"
-      }
+        type: "integer",
+      },
     ],
     duckdb_schemas: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "internal",
-        type: "boolean"
-      }
+        type: "boolean",
+      },
     ],
     duckdb_sequences: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "sequence_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "start_value",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "min_value",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "max_value",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "increment_by",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "cycle",
-        type: "boolean"
-      }
+        type: "boolean",
+      },
     ],
     duckdb_settings: [
       {
         name: "name",
-        type: "text"
+        type: "text",
       },
       {
         name: "value",
-        type: "text"
+        type: "text",
       },
       {
         name: "description",
-        type: "text"
+        type: "text",
       },
       {
         name: "input_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "scope",
-        type: "text"
+        type: "text",
       },
       {
         name: "aliases",
-        type: "array<text>"
-      }
+        type: "array<text>",
+      },
     ],
     duckdb_tables: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "table_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "table_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "temporary",
-        type: "boolean"
-      }
+        type: "boolean",
+      },
     ],
     duckdb_types: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "type_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "type_size",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "logical_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "labels",
-        type: "array<text>"
-      }
+        type: "array<text>",
+      },
     ],
     duckdb_views: [
       {
         name: "database_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "schema_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "view_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "temporary",
-        type: "boolean"
+        type: "boolean",
       },
       {
         name: "sql",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     glob: [
       {
         name: "file",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     json_each: [
       {
         name: "key",
-        type: "text"
+        type: "text",
       },
       {
         name: "value",
-        type: "json"
+        type: "json",
       },
       {
         name: "type",
-        type: "text"
+        type: "text",
       },
       {
         name: "atom",
-        type: "json"
+        type: "json",
       },
       {
         name: "id",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "parent",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "fullkey",
-        type: "text"
+        type: "text",
       },
       {
         name: "path",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     json_tree: [
       {
         name: "key",
-        type: "text"
+        type: "text",
       },
       {
         name: "value",
-        type: "json"
+        type: "json",
       },
       {
         name: "type",
-        type: "text"
+        type: "text",
       },
       {
         name: "atom",
-        type: "json"
+        type: "json",
       },
       {
         name: "id",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "parent",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "fullkey",
-        type: "text"
+        type: "text",
       },
       {
         name: "path",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     pragma_table_info: [
       {
         name: "cid",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "name",
-        type: "text"
+        type: "text",
       },
       {
         name: "type",
-        type: "text"
+        type: "text",
       },
       {
         name: "notnull",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "dflt_value",
-        type: "text"
+        type: "text",
       },
       {
         name: "pk",
-        type: "integer"
-      }
+        type: "integer",
+      },
     ],
     parquet_file_metadata: [
       {
         name: "file_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "created_by",
-        type: "text"
+        type: "text",
       },
       {
         name: "num_rows",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "num_row_groups",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "format_version",
-        type: "text"
+        type: "text",
       },
       {
         name: "encryption_algorithm",
-        type: "text"
+        type: "text",
       },
       {
         name: "footer_signing_key_metadata",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     parquet_kv_metadata: [
       {
         name: "file_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "key",
-        type: "text"
+        type: "text",
       },
       {
         name: "value",
-        type: "bytes"
-      }
+        type: "bytes",
+      },
     ],
     parquet_metadata: [
       {
         name: "file_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "row_group_id",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "row_group_num_rows",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "row_group_num_columns",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "row_group_bytes",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "column_id",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "file_offset",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "num_values",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "path_in_schema",
-        type: "text"
+        type: "text",
       },
       {
         name: "type",
-        type: "text"
+        type: "text",
       },
       {
         name: "stats_min",
-        type: "text"
+        type: "text",
       },
       {
         name: "stats_max",
-        type: "text"
+        type: "text",
       },
       {
         name: "stats_null_count",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "total_compressed_size",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "total_uncompressed_size",
-        type: "integer"
-      }
+        type: "integer",
+      },
     ],
     parquet_schema: [
       {
         name: "file_name",
-        type: "text"
+        type: "text",
       },
       {
         name: "name",
-        type: "text"
+        type: "text",
       },
       {
         name: "type",
-        type: "text"
+        type: "text",
       },
       {
         name: "type_length",
-        type: "text"
+        type: "text",
       },
       {
         name: "repetition_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "num_children",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "converted_type",
-        type: "text"
+        type: "text",
       },
       {
         name: "scale",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "precision",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "field_id",
-        type: "integer"
+        type: "integer",
       },
       {
         name: "logical_type",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     read_blob: [
       {
         name: "filename",
-        type: "text"
+        type: "text",
       },
       {
         name: "content",
-        type: "blob"
-      }
+        type: "blob",
+      },
     ],
     read_json_objects: [
       {
         name: "json",
-        type: "json"
-      }
+        type: "json",
+      },
     ],
     read_ndjson_objects: [
       {
         name: "json",
-        type: "json"
-      }
+        type: "json",
+      },
     ],
     read_text: [
       {
         name: "filename",
-        type: "text"
+        type: "text",
       },
       {
         name: "content",
-        type: "text"
-      }
+        type: "text",
+      },
     ],
     regexp_matches: [
       {
         name: "$alias",
-        type: "array<text>"
-      }
+        type: "array<text>",
+      },
     ],
     regexp_split_to_array: [
       {
         name: "$alias",
-        type: "array<text>"
-      }
-    ]
+        type: "array<text>",
+      },
+    ],
   },
   aggregate: {
-    "countType": "bigint",
-    "avgDefault": "double",
-    "avgDecimal": "default",
-    "sumDecimal": "decimal38",
+    countType: "bigint",
+    avgDefault: "double",
+    avgDecimal: "default",
+    sumDecimal: "decimal38",
   },
   commonTypes: {
-    "text": "varchar",
-    "decimalInteger": "decimal",
+    text: "varchar",
+    decimalInteger: "decimal",
   },
   cast: {
-    "adjustment": "none",
+    adjustment: "none",
   },
   arithmetic: {
-    "decimalInteger": "tsqlDuckdbPrecision",
+    decimalInteger: "tsqlDuckdbPrecision",
   },
   windowFunctionTypes: {
-    "row_number": "integer",
-    "rank": "integer",
-    "dense_rank": "integer",
-    "ntile": "integer",
-    "n_tile": "integer",
-    "percent_rank": "decimal",
-    "cume_dist": "decimal",
+    row_number: "integer",
+    rank: "integer",
+    dense_rank: "integer",
+    ntile: "integer",
+    n_tile: "integer",
+    percent_rank: "decimal",
+    cume_dist: "decimal",
   },
   specialParameterTypes: {},
   specialColumnTypes: {
-    "current_date": "date",
-    "current_time": "time",
-    "current_timestamp": "timestamp",
-    "localtimestamp": "timestamp",
+    current_date: "date",
+    current_time: "time",
+    current_timestamp: "timestamp",
+    localtimestamp: "timestamp",
   },
   qualifiedSpecialColumnTypes: {},
   pseudoColumnTypes: {},
   generatedNames: {
-    "countStar": "count_star()",
-    "add": "duckdbParenthesized",
-    "upper": "duckdbQuotedCall",
+    countStar: "count_star()",
+    add: "duckdbParenthesized",
+    upper: "duckdbQuotedCall",
   },
-  scriptPreprocessor: 'dotCommand',
-  includeDirectives: [{ kind: 'dot' }],
-  complexTypeStyle: 'angle',
-  jdbcEscapeStyle: 'standard',
+  scriptPreprocessor: "dotCommand",
+  includeDirectives: [{ kind: "dot" }],
+  complexTypeStyle: "angle",
+  jdbcEscapeStyle: "standard",
   jdbcEscape: {
-    ifnullFunction: 'coalesce',
-    temporalLiteral: 'standard',
+    ifnullFunction: "coalesce",
+    temporalLiteral: "standard",
     executeCall: false,
-    currentDateExpression: 'current_date',
-    currentTimeExpression: 'current_time',
+    currentDateExpression: "current_date",
+    currentTimeExpression: "current_time",
   },
-  jdbcParameterMarker: 'question',
+  jdbcParameterMarker: "question",
   parserFallbacks: {
-    createView: 'postgres',
-    tableMacro: 'duckdb',
-    embeddedSqlTableFunction: 'tsql',
+    createView: "postgres",
+    tableMacro: "duckdb",
+    embeddedSqlTableFunction: "tsql",
   },
   parameterizedTypeFormats: {
-    decimal: 'decimal({args})',
-    dec: 'decimal({args})',
-    numeric: 'decimal({args})',
-    number: 'decimal({args})',
+    decimal: "decimal({args})",
+    dec: "decimal({args})",
+    numeric: "decimal({args})",
+    number: "decimal({args})",
   },
   literalTypes: {
-    string: 'text',
+    string: "text",
   },
   dynamicTableFunctions: {
-    generateSeriesColumn: '$alias',
-    rangeColumn: '$alias',
-    enabledHandlers: [
-      'generateSeries',
-      'range',
-      'fileColumns',
-    ],
+    generateSeriesColumn: "$alias",
+    rangeColumn: "$alias",
+    enabledHandlers: ["generateSeries", "range", "fileColumns"],
   },
   serializedSelect: {},
   outputTypeOverrides: {
     "/^avg_/": "double",
-    "avg": "text",
-    "avg_null": "double",
-    "bind_add_equiv": "integer",
-    "bind_cast_equiv": "varchar",
-    "bind_coalesce_equiv": "integer",
-    "bool_any": "boolean",
-    "bool_sum": "hugeint",
-    "case_all_null": "integer",
-    "case_date_ts": "timestamp",
-    "case_nulls_typed": "varchar",
-    "case_num_text": "bigint",
-    "co_null_typed": "integer",
-    "co_num": "decimal",
-    "co_text": "varchar",
-    "collated_equal": "boolean",
-    "concat_empty": "varchar",
-    "concat_null": "integer",
-    "concat_widen": "varchar",
-    "count_distinct": "bigint",
-    "count_null": "bigint",
-    "count_star": "bigint",
-    "date_diff_days": "bigint",
-    "date_interval_plus": "timestamp",
-    "date_plus": "timestamp",
-    "dec_mul_dec": "decimal",
-    "dec_plus_int": "decimal",
-    "div_decimal": "double",
-    "div_decimal_int": "double",
-    "div_int": "double",
-    "duck_bignum_value": "bignum",
-    "duck_bit_value": "duck_bit",
-    "duck_enum_value": "enum('sad', 'ok')",
-    "duck_interval_value": "interval",
-    "duck_time_value": "time",
-    "duck_timestamp_ms_value": "timestamp_ms",
-    "duck_timestamp_ns_value": "timestamp_ns",
-    "duck_timestamp_s_value": "timestamp_s",
-    "duck_timestamptz_value": "timestamp with time zone",
-    "duck_ubigint_value": "ubigint",
-    "duck_uhugeint_value": "uhugeint",
-    "duck_uinteger_value": "uinteger",
-    "duck_utinyint_value": "utinyint",
-    "except_text": "varchar",
-    "hugeint_value": "hugeint",
-    "ifnull_text": "varchar(7)",
-    "int_array": "integer[]",
-    "intersect_null_text": "varchar",
-    "intersect_num": "bigint",
-    "isnull_text": "nchar(3)",
-    "json_items": "json",
-    "json_name": "varchar",
-    "json_scalar_bool": "json",
-    "json_scalar_null": "json",
-    "json_scalar_num": "json",
-    "json_type_name": "varchar",
-    "json_unquote_text": "varchar",
-    "large_bytes": "blob",
-    "large_text": "varchar",
-    "lit_null": "integer",
-    "map_value": "map(varchar, integer)",
-    "max_ts": "timestamp",
-    "min_date": "date",
-    "min_null": "varchar",
-    "minus_text": "varchar",
-    "mod_num": "integer",
-    "mul_num": "decimal",
-    "nested_int_array": "integer[][]",
-    "nullif_null_typed": "integer",
-    "nullif_num": "decimal",
-    "nullif_typed_null": "integer",
-    "nvl_text": "varchar2(7)",
-    "pred_between": "boolean",
-    "pred_eq": "boolean",
-    "pred_in": "boolean",
-    "pred_null": "boolean",
-    "rn": "bigint",
-    "round_num": "decimal",
-    "set_null_int": "integer",
-    "set_num": "bigint",
-    "set_temporal": "timestamp",
-    "set_text": "varchar",
-    "struct_value": "struct(id integer, \"name\" varchar)",
-    "sum_null": "decimal",
-    "timezone_convert": "timestamp with time zone",
-    "ts_diff": "interval",
-    "ts_interval_plus": "timestamp",
-    "tstz_diff": "interval",
-    "unicode_text": "varchar",
-    "uuid_value": "uuid",
-    "win_avg": "double",
-    "win_sum": "decimal",
+    avg: "text",
+    avg_null: "double",
+    bind_add_equiv: "integer",
+    bind_cast_equiv: "varchar",
+    bind_coalesce_equiv: "integer",
+    bool_any: "boolean",
+    bool_sum: "hugeint",
+    case_all_null: "integer",
+    case_date_ts: "timestamp",
+    case_nulls_typed: "varchar",
+    case_num_text: "bigint",
+    co_null_typed: "integer",
+    co_num: "decimal",
+    co_text: "varchar",
+    collated_equal: "boolean",
+    concat_empty: "varchar",
+    concat_null: "integer",
+    concat_widen: "varchar",
+    count_distinct: "bigint",
+    count_null: "bigint",
+    count_star: "bigint",
+    date_diff_days: "bigint",
+    date_interval_plus: "timestamp",
+    date_plus: "timestamp",
+    dec_mul_dec: "decimal",
+    dec_plus_int: "decimal",
+    div_decimal: "double",
+    div_decimal_int: "double",
+    div_int: "double",
+    duck_bignum_value: "bignum",
+    duck_bit_value: "duck_bit",
+    duck_enum_value: "enum('sad', 'ok')",
+    duck_interval_value: "interval",
+    duck_time_value: "time",
+    duck_timestamp_ms_value: "timestamp_ms",
+    duck_timestamp_ns_value: "timestamp_ns",
+    duck_timestamp_s_value: "timestamp_s",
+    duck_timestamptz_value: "timestamp with time zone",
+    duck_ubigint_value: "ubigint",
+    duck_uhugeint_value: "uhugeint",
+    duck_uinteger_value: "uinteger",
+    duck_utinyint_value: "utinyint",
+    except_text: "varchar",
+    hugeint_value: "hugeint",
+    ifnull_text: "varchar(7)",
+    int_array: "integer[]",
+    intersect_null_text: "varchar",
+    intersect_num: "bigint",
+    isnull_text: "nchar(3)",
+    json_items: "json",
+    json_name: "varchar",
+    json_scalar_bool: "json",
+    json_scalar_null: "json",
+    json_scalar_num: "json",
+    json_type_name: "varchar",
+    json_unquote_text: "varchar",
+    large_bytes: "blob",
+    large_text: "varchar",
+    lit_null: "integer",
+    map_value: "map(varchar, integer)",
+    max_ts: "timestamp",
+    min_date: "date",
+    min_null: "varchar",
+    minus_text: "varchar",
+    mod_num: "integer",
+    mul_num: "decimal",
+    nested_int_array: "integer[][]",
+    nullif_null_typed: "integer",
+    nullif_num: "decimal",
+    nullif_typed_null: "integer",
+    nvl_text: "varchar2(7)",
+    pred_between: "boolean",
+    pred_eq: "boolean",
+    pred_in: "boolean",
+    pred_null: "boolean",
+    rn: "bigint",
+    round_num: "decimal",
+    set_null_int: "integer",
+    set_num: "bigint",
+    set_temporal: "timestamp",
+    set_text: "varchar",
+    struct_value: 'struct(id integer, "name" varchar)',
+    sum_null: "decimal",
+    timezone_convert: "timestamp with time zone",
+    ts_diff: "interval",
+    ts_interval_plus: "timestamp",
+    tstz_diff: "interval",
+    unicode_text: "varchar",
+    uuid_value: "uuid",
+    win_avg: "double",
+    win_sum: "decimal",
   },
   metadata: {
     builtinSchemaTables: [
@@ -1081,8 +1077,8 @@ export const dialectConfig = {
           { name: "form_of_use", type: "text" },
           { name: "default_collate_catalog", type: "text" },
           { name: "default_collate_schema", type: "text" },
-          { name: "default_collate_name", type: "text" }
-        ]
+          { name: "default_collate_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1091,8 +1087,8 @@ export const dialectConfig = {
           { name: "constraint_catalog", type: "text" },
           { name: "constraint_schema", type: "text" },
           { name: "constraint_name", type: "text" },
-          { name: "check_clause", type: "text" }
-        ]
+          { name: "check_clause", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1142,8 +1138,8 @@ export const dialectConfig = {
           { name: "is_generated", type: "text" },
           { name: "generation_expression", type: "text" },
           { name: "is_updatable", type: "boolean" },
-          { name: "column_comment", type: "text" }
-        ]
+          { name: "column_comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1157,8 +1153,8 @@ export const dialectConfig = {
           { name: "constraint_schema", type: "text" },
           { name: "constraint_name", type: "text" },
           { name: "constraint_type", type: "text" },
-          { name: "constraint_text", type: "text" }
-        ]
+          { name: "constraint_text", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1170,8 +1166,8 @@ export const dialectConfig = {
           { name: "constraint_catalog", type: "text" },
           { name: "constraint_schema", type: "text" },
           { name: "constraint_name", type: "text" },
-          { name: "constraint_type", type: "text" }
-        ]
+          { name: "constraint_type", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1185,8 +1181,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
           { name: "ordinal_position", type: "integer" },
-          { name: "position_in_unique_constraint", type: "integer" }
-        ]
+          { name: "position_in_unique_constraint", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1200,8 +1196,8 @@ export const dialectConfig = {
           { name: "unique_constraint_name", type: "text" },
           { name: "match_option", type: "text" },
           { name: "update_rule", type: "text" },
-          { name: "delete_rule", type: "text" }
-        ]
+          { name: "delete_rule", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1213,8 +1209,8 @@ export const dialectConfig = {
           { name: "default_character_set_catalog", type: "text" },
           { name: "default_character_set_schema", type: "text" },
           { name: "default_character_set_name", type: "text" },
-          { name: "sql_path", type: "text" }
-        ]
+          { name: "sql_path", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1230,8 +1226,8 @@ export const dialectConfig = {
           { name: "is_deferrable", type: "text" },
           { name: "initially_deferred", type: "text" },
           { name: "enforced", type: "text" },
-          { name: "nulls_distinct", type: "text" }
-        ]
+          { name: "nulls_distinct", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1249,8 +1245,8 @@ export const dialectConfig = {
           { name: "is_insertable_into", type: "text" },
           { name: "is_typed", type: "text" },
           { name: "commit_action", type: "text" },
-          { name: "table_comment", type: "text" }
-        ]
+          { name: "table_comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1265,8 +1261,8 @@ export const dialectConfig = {
           { name: "is_insertable_into", type: "text" },
           { name: "is_trigger_updatable", type: "text" },
           { name: "is_trigger_deletable", type: "text" },
-          { name: "is_trigger_insertable_into", type: "text" }
-        ]
+          { name: "is_trigger_insertable_into", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1275,8 +1271,8 @@ export const dialectConfig = {
           { name: "oid", type: "integer" },
           { name: "amname", type: "text" },
           { name: "amhandler", type: "variant" },
-          { name: "amtype", type: "text" }
-        ]
+          { name: "amtype", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1285,8 +1281,8 @@ export const dialectConfig = {
           { name: "oid", type: "integer" },
           { name: "adrelid", type: "integer" },
           { name: "adnum", type: "integer" },
-          { name: "adbin", type: "text" }
-        ]
+          { name: "adbin", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1317,8 +1313,8 @@ export const dialectConfig = {
           { name: "attacl", type: "variant" },
           { name: "attoptions", type: "variant" },
           { name: "attfdwoptions", type: "variant" },
-          { name: "attmissingval", type: "variant" }
-        ]
+          { name: "attmissingval", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1358,16 +1354,16 @@ export const dialectConfig = {
           { name: "relminmxid", type: "variant" },
           { name: "relacl", type: "variant" },
           { name: "reloptions", type: "variant" },
-          { name: "relpartbound", type: "variant" }
-        ]
+          { name: "relpartbound", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
         name: "pg_collation",
         columns: [
           { name: "oid", type: "integer" },
-          { name: "collname", type: "text" }
-        ]
+          { name: "collname", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1397,8 +1393,8 @@ export const dialectConfig = {
           { name: "conppeqop", type: "variant" },
           { name: "conffeqop", type: "variant" },
           { name: "conexclop", type: "variant" },
-          { name: "conbin", type: "text" }
-        ]
+          { name: "conbin", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1407,8 +1403,8 @@ export const dialectConfig = {
           { name: "oid", type: "integer" },
           { name: "datname", type: "text" },
           { name: "datallowconn", type: "boolean" },
-          { name: "datistemplate", type: "boolean" }
-        ]
+          { name: "datistemplate", type: "boolean" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1420,8 +1416,8 @@ export const dialectConfig = {
           { name: "refclassid", type: "integer" },
           { name: "refobjid", type: "integer" },
           { name: "refobjsubid", type: "integer" },
-          { name: "deptype", type: "text" }
-        ]
+          { name: "deptype", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1430,8 +1426,8 @@ export const dialectConfig = {
           { name: "objoid", type: "integer" },
           { name: "classoid", type: "text" },
           { name: "objsubid", type: "integer" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1440,8 +1436,8 @@ export const dialectConfig = {
           { name: "oid", type: "variant" },
           { name: "enumtypid", type: "integer" },
           { name: "enumsortorder", type: "integer" },
-          { name: "enumlabel", type: "text" }
-        ]
+          { name: "enumlabel", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1466,8 +1462,8 @@ export const dialectConfig = {
           { name: "indclass", type: "integer" },
           { name: "indoption", type: "integer" },
           { name: "indexprs", type: "text" },
-          { name: "indpred", type: "variant" }
-        ]
+          { name: "indpred", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1477,8 +1473,8 @@ export const dialectConfig = {
           { name: "tablename", type: "text" },
           { name: "indexname", type: "text" },
           { name: "tablespace", type: "variant" },
-          { name: "indexdef", type: "text" }
-        ]
+          { name: "indexdef", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1487,8 +1483,8 @@ export const dialectConfig = {
           { name: "oid", type: "integer" },
           { name: "nspname", type: "text" },
           { name: "nspowner", type: "integer" },
-          { name: "nspacl", type: "variant" }
-        ]
+          { name: "nspacl", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1501,8 +1497,8 @@ export const dialectConfig = {
           { name: "result_types", type: "text" },
           { name: "from_sql", type: "variant" },
           { name: "generic_plans", type: "variant" },
-          { name: "custom_plans", type: "variant" }
-        ]
+          { name: "custom_plans", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1538,8 +1534,8 @@ export const dialectConfig = {
           { name: "prosqlbody", type: "text" },
           { name: "proconfig", type: "variant" },
           { name: "proacl", type: "variant" },
-          { name: "proisagg", type: "boolean" }
-        ]
+          { name: "proisagg", type: "boolean" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1552,8 +1548,8 @@ export const dialectConfig = {
           { name: "seqmax", type: "integer" },
           { name: "seqmin", type: "integer" },
           { name: "seqcache", type: "integer" },
-          { name: "seqcycle", type: "boolean" }
-        ]
+          { name: "seqcycle", type: "boolean" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1569,8 +1565,8 @@ export const dialectConfig = {
           { name: "increment_by", type: "integer" },
           { name: "cycle", type: "boolean" },
           { name: "cache_size", type: "integer" },
-          { name: "last_value", type: "integer" }
-        ]
+          { name: "last_value", type: "integer" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1579,8 +1575,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "setting", type: "text" },
           { name: "short_desc", type: "text" },
-          { name: "vartype", type: "text" }
-        ]
+          { name: "vartype", type: "text" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1592,8 +1588,8 @@ export const dialectConfig = {
           { name: "tablespace", type: "variant" },
           { name: "hasindexes", type: "boolean" },
           { name: "hasrules", type: "boolean" },
-          { name: "hastriggers", type: "boolean" }
-        ]
+          { name: "hastriggers", type: "boolean" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1603,8 +1599,8 @@ export const dialectConfig = {
           { name: "spcname", type: "text" },
           { name: "spcowner", type: "integer" },
           { name: "spcacl", type: "variant" },
-          { name: "spcoptions", type: "variant" }
-        ]
+          { name: "spcoptions", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1641,8 +1637,8 @@ export const dialectConfig = {
           { name: "typcollation", type: "variant" },
           { name: "typdefaultbin", type: "variant" },
           { name: "typdefault", type: "variant" },
-          { name: "typacl", type: "variant" }
-        ]
+          { name: "typacl", type: "variant" },
+        ],
       },
       {
         schema: "pg_catalog",
@@ -1651,78 +1647,66 @@ export const dialectConfig = {
           { name: "schemaname", type: "text" },
           { name: "viewname", type: "text" },
           { name: "viewowner", type: "text" },
-          { name: "definition", type: "text" }
-        ]
-      }
+          { name: "definition", type: "text" },
+        ],
+      },
     ],
     describeFunctionColumns: [
-      { name: 'Name', type: 'text' },
-      { name: 'Description', type: 'text' },
+      { name: "Name", type: "text" },
+      { name: "Description", type: "text" },
     ],
-    explainColumns: [
-      { name: 'QUERY PLAN', type: 'text' },
-    ],
+    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
-      { name: 'created_on', type: 'timestamp' },
-      { name: 'name', type: 'text' },
-      { name: 'database_name', type: 'text' },
-      { name: 'schema_name', type: 'text' },
-      { name: 'kind', type: 'text' },
-      { name: 'comment', type: 'text' },
-      { name: 'cluster_by', type: 'text' },
-      { name: 'rows', type: 'integer' },
-      { name: 'bytes', type: 'integer' },
-      { name: 'owner', type: 'text' },
-      { name: 'retention_time', type: 'integer' },
-      { name: 'automatic_clustering', type: 'text' },
-      { name: 'change_tracking', type: 'boolean' },
-      { name: 'search_optimization', type: 'boolean' },
+      { name: "created_on", type: "timestamp" },
+      { name: "name", type: "text" },
+      { name: "database_name", type: "text" },
+      { name: "schema_name", type: "text" },
+      { name: "kind", type: "text" },
+      { name: "comment", type: "text" },
+      { name: "cluster_by", type: "text" },
+      { name: "rows", type: "integer" },
+      { name: "bytes", type: "integer" },
+      { name: "owner", type: "text" },
+      { name: "retention_time", type: "integer" },
+      { name: "automatic_clustering", type: "text" },
+      { name: "change_tracking", type: "boolean" },
+      { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
       {
-        pattern: '/^(?:list|ls)\\s+@/',
+        pattern: "/^(?:list|ls)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'md5', type: 'text' },
-          { name: 'last_modified', type: 'timestamp' },
+          { name: "name", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "md5", type: "text" },
+          { name: "last_modified", type: "timestamp" },
         ],
       },
       {
-        pattern: '/^get\\s+@/',
+        pattern: "/^get\\s+@/",
         columns: [
-          { name: 'file', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'status', type: 'text' },
-          { name: 'message', type: 'text' },
+          { name: "file", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "message", type: "text" },
         ],
       },
       {
-        pattern: '/^(?:remove|rm)\\s+@/',
+        pattern: "/^(?:remove|rm)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'result', type: 'text' },
+          { name: "name", type: "text" },
+          { name: "result", type: "text" },
         ],
       },
       {
-        pattern: '/^list\\s+(?:file|jar|archive)\\b/',
-        columns: [
-          { name: 'resource', type: 'text' },
-        ],
+        pattern: "/^list\\s+(?:file|jar|archive)\\b/",
+        columns: [{ name: "resource", type: "text" }],
       },
     ],
   },
   diagnosticRules: {
-    knownTableFunctionArgumentNames: [
-      'file',
-      'url',
-    ],
-    virtualTableArgumentNames: [
-      'highlight',
-      'snippet',
-      'bm25',
-      'fts5vocab',
-    ],
+    knownTableFunctionArgumentNames: ["file", "url"],
+    virtualTableArgumentNames: ["highlight", "snippet", "bm25", "fts5vocab"],
   },
 } satisfies DialectConfig;

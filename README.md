@@ -57,12 +57,12 @@ Unsupported dialect names fail before parsing SQL and point to `sqldesc
 ## Library
 
 ```ts
-import { describeQuery, loadSchema, parseBinds } from 'sqldesc';
+import { describeQuery, loadSchema, parseBinds } from "sqldesc";
 
-const schema = await loadSchema(['schemas/**/*.sql']);
+const schema = await loadSchema(["schemas/**/*.sql"]);
 const result = await describeQuery({
-  sql: 'select id, name from users where id = ?',
-  binds: ['int'],
+  sql: "select id, name from users where id = ?",
+  binds: ["int"],
   schema,
 });
 
@@ -95,3 +95,17 @@ runtime-dependent or metadata-dependent result shapes.
 The detailed behavior specification is maintained in [SPEC.md](SPEC.md). It is
 intended for maintainers and LLM agents that need to understand or extend the
 current implementation.
+
+<!--
+npm run format
+npm run build
+npm run test
+update version in README.md
+git tag vX.X.X && git push origin --tags
+npm publish --tag beta
+npm publish
+
+## tag remove
+git tag -d vX.X.X
+git push origin --delete vX.X.X
+-->

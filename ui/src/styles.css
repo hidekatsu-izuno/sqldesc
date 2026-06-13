@@ -12,8 +12,8 @@
   --success: #3ecf8e;
   --error: #ff6b6b;
   --warning: #f0b429;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
   --radius: 10px;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
@@ -79,7 +79,9 @@ body {
   padding: 0.4rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 }
 
 .header-link:hover {
@@ -228,7 +230,7 @@ body {
 }
 
 select,
-input[type='text'] {
+input[type="text"] {
   background: var(--bg-input);
   color: var(--text);
   border: 1px solid var(--border);
@@ -242,7 +244,7 @@ select {
   min-width: 8rem;
 }
 
-input[type='text'] {
+input[type="text"] {
   min-width: 12rem;
 }
 

@@ -1,28 +1,33 @@
-import type { Binds } from './types.js';
+import type { Binds } from "./types.js";
 
 export function parseBinds(spec?: string): Binds | undefined {
-  if (!spec || spec.trim() === '') {
+  if (!spec || spec.trim() === "") {
     return undefined;
   }
 
-  const parts = spec.split(',').map((part) => part.trim()).filter(Boolean);
+  const parts = spec
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
   if (parts.length === 0) {
     return undefined;
   }
 
-  const hasNamed = parts.some((part) => part.includes('='));
-  const hasPositional = parts.some((part) => !part.includes('='));
+  const hasNamed = parts.some((part) => part.includes("="));
+  const hasPositional = parts.some((part) => !part.includes("="));
   if (hasNamed && hasPositional) {
-    throw new Error('Mixed bind syntax is not supported. Use either "int,text" or "id=int,name=text".');
+    throw new Error(
+      'Mixed bind syntax is not supported. Use either "int,text" or "id=int,name=text".',
+    );
   }
 
   if (hasNamed) {
     const binds: Record<string, string> = {};
     const seen = new Set<string>();
     for (const part of parts) {
-      const [rawName, ...rest] = part.split('=');
+      const [rawName, ...rest] = part.split("=");
       const name = rawName.trim();
-      const type = rest.join('=').trim();
+      const type = rest.join("=").trim();
       if (!name || !type) {
         throw new Error(`Invalid named bind "${part}". Expected name=type.`);
       }
@@ -43,7 +48,10 @@ export function parseBinds(spec?: string): Binds | undefined {
   });
 }
 
-export function mapBindTypes(binds: Binds | undefined, mapper: (type: string) => string): Binds | undefined {
+export function mapBindTypes(
+  binds: Binds | undefined,
+  mapper: (type: string) => string,
+): Binds | undefined {
   if (!binds) return undefined;
   if (Array.isArray(binds)) {
     return binds.map(mapper);

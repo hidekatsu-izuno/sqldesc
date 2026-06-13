@@ -1,9 +1,18 @@
-import { parseBinds } from '../binds.js';
-import { describeQuery } from '../describe.js';
-import { parseTestDocFile } from './parser.js';
-import { parseCreateTables } from '../schema.js';
-import type { DescribeColumn, ValidationSchema } from '../types.js';
-import type { DocTestCase, DocTestFailure, DocTestReport, ExpectedColumn, GivenSpec, ParsedTestDoc, PrepareBlock, ThenSpec } from './types.js';
+import { parseBinds } from "../binds.js";
+import { describeQuery } from "../describe.js";
+import { parseTestDocFile } from "./parser.js";
+import { parseCreateTables } from "../schema.js";
+import type { DescribeColumn, ValidationSchema } from "../types.js";
+import type {
+  DocTestCase,
+  DocTestFailure,
+  DocTestReport,
+  ExpectedColumn,
+  GivenSpec,
+  ParsedTestDoc,
+  PrepareBlock,
+  ThenSpec,
+} from "./types.js";
 
 export interface DocTestFileReport extends DocTestReport {
   filePath: string;
@@ -31,7 +40,7 @@ export async function runTestDoc(doc: ParsedTestDoc): Promise<DocTestReport> {
   let verified = 0;
 
   for (const testCase of doc.cases) {
-    if (testCase.then.kind === 'skip' || testCase.when.kind !== 'sql' || !testCase.when.sql) {
+    if (testCase.then.kind === "skip" || testCase.when.kind !== "sql" || !testCase.when.sql) {
       skipped += 1;
       continue;
     }
@@ -69,7 +78,7 @@ async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise
   const binds = parseBinds(testCase.when.binds ?? testCase.given.binds);
   const schema = resolveSchema(testCase.given, doc.prepares, dialect);
 
-  if (testCase.then.kind === 'error') {
+  if (testCase.then.kind === "error") {
     await expectError(testCase, { dialect, binds, schema });
     return;
   }
@@ -81,12 +90,20 @@ async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise
     schema,
   });
 
-  if (testCase.then.kind === 'none') {
-    assertNone(result.columns, result.diagnostics?.map((d) => d.code).filter(Boolean) as string[], testCase.then);
+  if (testCase.then.kind === "none") {
+    assertNone(
+      result.columns,
+      result.diagnostics?.map((d) => d.code).filter(Boolean) as string[],
+      testCase.then,
+    );
     return;
   }
 
-  const actual = selectColumns(result.columns, result.resultSets.map((set) => set.columns), testCase.then);
+  const actual = selectColumns(
+    result.columns,
+    result.resultSets.map((set) => set.columns),
+    testCase.then,
+  );
   assertColumns(actual, testCase.then.columns ?? [], testCase.id);
 }
 
@@ -101,12 +118,14 @@ async function expectError(
       binds: input.binds,
       schema: input.schema,
     });
-    throw new Error('expected describeQuery to throw');
+    throw new Error("expected describeQuery to throw");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    const expected = testCase.then.errorMatch ?? 'Parse error';
+    const expected = testCase.then.errorMatch ?? "Parse error";
     if (!message.includes(expected)) {
-      throw new Error(`expected error containing ${JSON.stringify(expected)}, got ${JSON.stringify(message)}`);
+      throw new Error(
+        `expected error containing ${JSON.stringify(expected)}, got ${JSON.stringify(message)}`,
+      );
     }
   }
 }
@@ -147,23 +166,19 @@ function selectColumns(
   resultSets: DescribeColumn[][],
   then: ThenSpec,
 ): DescribeColumn[] {
-  if (then.target === 'last' && resultSets.length > 0) {
+  if (then.target === "last" && resultSets.length > 0) {
     return resultSets[resultSets.length - 1];
   }
   return first;
 }
 
-function assertNone(
-  columns: DescribeColumn[],
-  diagnosticCodes: string[],
-  then: ThenSpec,
-): void {
+function assertNone(columns: DescribeColumn[], diagnosticCodes: string[], then: ThenSpec): void {
   if (columns.length > 0) {
-    throw new Error(`expected no columns, got ${columns.map((c) => c.name).join(', ')}`);
+    throw new Error(`expected no columns, got ${columns.map((c) => c.name).join(", ")}`);
   }
   for (const code of then.diagnostics ?? []) {
     if (!diagnosticCodes.includes(code)) {
-      throw new Error(`expected diagnostic ${code}, got [${diagnosticCodes.join(', ')}]`);
+      throw new Error(`expected diagnostic ${code}, got [${diagnosticCodes.join(", ")}]`);
     }
   }
 }
@@ -171,8 +186,8 @@ function assertNone(
 function assertColumns(actual: DescribeColumn[], expected: ExpectedColumn[], caseId: string): void {
   if (actual.length !== expected.length) {
     throw new Error(
-      `column count mismatch: expected ${expected.length} [${formatExpected(expected)}], `
-      + `got ${actual.length} [${formatActual(actual)}]`,
+      `column count mismatch: expected ${expected.length} [${formatExpected(expected)}], ` +
+        `got ${actual.length} [${formatActual(actual)}]`,
     );
   }
 
@@ -180,21 +195,25 @@ function assertColumns(actual: DescribeColumn[], expected: ExpectedColumn[], cas
     const exp = expected[index];
     const act = actual[index];
     if (exp.name !== act.name) {
-      throw new Error(`column ${index + 1} name: expected ${exp.name}, got ${act.name} (${caseId})`);
+      throw new Error(
+        `column ${index + 1} name: expected ${exp.name}, got ${act.name} (${caseId})`,
+      );
     }
     if (exp.type !== act.type) {
       throw new Error(`column ${exp.name} type: expected ${exp.type}, got ${act.type}`);
     }
     if (exp.source !== undefined && exp.source !== act.source) {
-      throw new Error(`column ${exp.name} source: expected ${exp.source}, got ${act.source ?? '(none)'}`);
+      throw new Error(
+        `column ${exp.name} source: expected ${exp.source}, got ${act.source ?? "(none)"}`,
+      );
     }
   }
 }
 
 function formatExpected(columns: ExpectedColumn[]): string {
-  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ''}`).join(', ');
+  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}`).join(", ");
 }
 
 function formatActual(columns: DescribeColumn[]): string {
-  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ''}`).join(', ');
+  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}`).join(", ");
 }

@@ -1,4 +1,4 @@
-export type PrepareKind = 'schema-ddl';
+export type PrepareKind = "schema-ddl";
 
 export interface PrepareBlock {
   id: string;
@@ -16,7 +16,7 @@ export interface GivenSpec {
   dialect?: string;
 }
 
-export type ThenKind = 'columns' | 'error' | 'none' | 'skip';
+export type ThenKind = "columns" | "error" | "none" | "skip";
 
 export interface ExpectedColumn {
   name: string;
@@ -26,7 +26,7 @@ export interface ExpectedColumn {
 
 export interface ThenSpec {
   kind: ThenKind;
-  target: 'first' | 'last';
+  target: "first" | "last";
   verify: boolean;
   columns?: ExpectedColumn[];
   errorMatch?: string;
@@ -39,7 +39,7 @@ export interface WhenSpec {
   sql?: string;
   dialect?: string;
   binds?: string;
-  kind: 'sql' | 'cli' | 'js' | 'none';
+  kind: "sql" | "cli" | "js" | "none";
 }
 
 export interface DocTestCase {

@@ -1,5 +1,16 @@
-import type { DescribeColumn, DescribeResult, StatementResultKind, StatementSummary } from 'sqldesc';
-import { describeQuery, getSupportedDialects, parseBinds, parseCreateTables, sqlTypeToJdbcType } from 'sqldesc';
+import type {
+  DescribeColumn,
+  DescribeResult,
+  StatementResultKind,
+  StatementSummary,
+} from "sqldesc";
+import {
+  describeQuery,
+  getSupportedDialects,
+  parseBinds,
+  parseCreateTables,
+  sqlTypeToJdbcType,
+} from "sqldesc";
 
 export { getSupportedDialects };
 export type { DescribeColumn, DescribeResult, StatementResultKind, StatementSummary };
@@ -8,7 +19,7 @@ export interface AnalyzeColumn extends DescribeColumn {
   jdbcType?: string;
 }
 
-export interface AnalyzeResult extends Omit<DescribeResult, 'columns' | 'resultSets'> {
+export interface AnalyzeResult extends Omit<DescribeResult, "columns" | "resultSets"> {
   jdbcEnabled: boolean;
   columns: AnalyzeColumn[];
   resultSets: Array<{ index: number; columns: AnalyzeColumn[] }>;
@@ -22,7 +33,11 @@ export interface AnalyzeInput {
   schemaSql: string;
 }
 
-function enrichWithJdbcTypes(result: DescribeResult, dialect: string, jdbc: boolean): AnalyzeResult {
+function enrichWithJdbcTypes(
+  result: DescribeResult,
+  dialect: string,
+  jdbc: boolean,
+): AnalyzeResult {
   const enrichColumn = (column: DescribeColumn): AnalyzeColumn =>
     jdbc ? { ...column, jdbcType: sqlTypeToJdbcType(column.type, dialect) } : column;
 

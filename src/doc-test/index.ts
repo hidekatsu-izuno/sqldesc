@@ -1,5 +1,5 @@
-export { parseTestDoc, parseTestDocFile } from './parser.js';
-export { runTestDoc, runTestDocFile, runTestDocFiles } from './runner.js';
+export { parseTestDoc, parseTestDocFile } from "./parser.js";
+export { runTestDoc, runTestDocFile, runTestDocFiles } from "./runner.js";
 export type {
   DocTestCase,
   DocTestFailure,
@@ -7,4 +7,4 @@ export type {
   ExpectedColumn,
   ParsedTestDoc,
   PrepareBlock,
-} from './types.js';
+} from "./types.js";

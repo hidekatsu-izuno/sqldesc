@@ -51,7 +51,7 @@ export interface DescribeInput {
 export interface Diagnostic {
   code?: string;
   message: string;
-  severity?: 'error' | 'warning' | 'info';
+  severity?: "error" | "warning" | "info";
   line?: number;
   column?: number;
 }
@@ -78,7 +78,7 @@ export interface DescribeResult {
   schema: ValidationSchema;
 }
 
-export type StatementResultKind = 'static' | 'none' | 'runtime' | 'metadata' | 'unknown';
+export type StatementResultKind = "static" | "none" | "runtime" | "metadata" | "unknown";
 
 export interface StatementSummary {
   index: number;
@@ -90,8 +90,8 @@ export interface StatementSummary {
 export type AstExpression = Record<string, unknown>;
 export type TableAliasMap = Map<string, TableAliasEntry>;
 
-export type ColumnInference = Omit<DescribeColumn, 'index' | 'name'> & {
-  confidence?: 'high' | 'medium' | 'low';
+export type ColumnInference = Omit<DescribeColumn, "index" | "name"> & {
+  confidence?: "high" | "medium" | "low";
 };
 
 export interface OutputItem {
@@ -116,9 +116,7 @@ export interface NestedBaseColumn {
   source: string;
 }
 
-export type NestedPathStep =
-  | { kind: 'field'; name: string }
-  | { kind: 'element' };
+export type NestedPathStep = { kind: "field"; name: string } | { kind: "element" };
 
 export interface StatementContext {
   prepared: Map<string, AstExpression>;
@@ -129,30 +127,40 @@ export interface StatementContext {
 }
 
 export type TypeFamily =
-  | 'postgresql'
-  | 'mysql'
-  | 'sqlite'
-  | 'tsql'
-  | 'oracle'
-  | 'duckdb'
-  | 'bigquery'
-  | 'trino'
-  | 'snowflake'
-  | 'hive'
-  | 'clickhouse'
-  | 'generic';
+  | "postgresql"
+  | "mysql"
+  | "sqlite"
+  | "tsql"
+  | "oracle"
+  | "duckdb"
+  | "bigquery"
+  | "trino"
+  | "snowflake"
+  | "hive"
+  | "clickhouse"
+  | "generic";
 
-export type ScriptPreprocessor = 'none' | 'psql' | 'sqlplus' | 'mysqlDelimiter' | 'tsqlGo' | 'dotCommand';
+export type ScriptPreprocessor =
+  | "none"
+  | "psql"
+  | "sqlplus"
+  | "mysqlDelimiter"
+  | "tsqlGo"
+  | "dotCommand";
 
-export type ComplexTypeStyle = 'angle' | 'trino';
+export type ComplexTypeStyle = "angle" | "trino";
 
-export type JdbcEscapeStyle = 'standard' | 'mysql' | 'tsql';
-export type JdbcParameterMarkerStyle = 'question' | 'postgresOrdinal' | 'oracleOrdinal' | 'tsqlOrdinal';
-export type LiteralStringTypePolicy = 'text' | 'varcharLength';
-export type JdbcTemporalLiteralStyle = 'standard' | 'raw' | 'cast';
+export type JdbcEscapeStyle = "standard" | "mysql" | "tsql";
+export type JdbcParameterMarkerStyle =
+  | "question"
+  | "postgresOrdinal"
+  | "oracleOrdinal"
+  | "tsqlOrdinal";
+export type LiteralStringTypePolicy = "text" | "varcharLength";
+export type JdbcTemporalLiteralStyle = "standard" | "raw" | "cast";
 
 export interface IncludeDirectiveConfig {
-  readonly kind: 'oracle' | 'postgresql' | 'mysql' | 'tsql' | 'dot';
+  readonly kind: "oracle" | "postgresql" | "mysql" | "tsql" | "dot";
 }
 
 export interface DialectMetadataConfig {
@@ -161,7 +169,9 @@ export interface DialectMetadataConfig {
   readonly builtinSchemaTables: readonly DialectSchemaTableConfig[];
   readonly describeFunctionColumns: readonly DialectTableFunctionColumnConfig[];
   readonly explainColumns: readonly DialectTableFunctionColumnConfig[];
-  readonly snowflakeDescribeObjectColumns: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
+  readonly snowflakeDescribeObjectColumns: Readonly<
+    Record<string, readonly DialectTableFunctionColumnConfig[]>
+  >;
   readonly showTablesColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly showTableListingColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly commandResultColumns: readonly DialectCommandResultConfig[];
@@ -192,15 +202,34 @@ export interface DialectCommandResultConfig {
   readonly columns: readonly DialectTableFunctionColumnConfig[];
 }
 
-export type AvgDecimalPolicy = 'default' | 'mysqlPlus4' | 'tsqlScaleAtLeast6';
-export type AvgDefaultPolicy = 'integerPreserving' | string;
-export type SumDecimalPolicy = 'input' | 'mysqlPlus22' | 'decimal38' | 'numeric' | 'number';
-export type CommonTextTypePolicy = 'none' | 'mysqlMaxVarchar' | 'firstText' | 'varchar';
-export type CommonDecimalIntegerPolicy = 'none' | 'mysqlScalePlus20' | 'tsqlScalePlus10' | 'decimal' | 'firstType';
-export type CastAdjustmentPolicy = 'none' | 'mysqlCharBinaryLength';
-export type ArithmeticDecimalPolicy = 'none' | 'mysqlScalePlus21' | 'tsqlDuckdbPrecision' | 'decimal';
-export type GeneratedAddNameStyle = 'empty' | 'postgresColumn' | 'duckdbParenthesized' | 'oracleUpperCompact' | 'compact';
-export type GeneratedUpperNameStyle = 'empty' | 'postgresFunction' | 'oracleUpperCall' | 'duckdbQuotedCall' | 'call';
+export type AvgDecimalPolicy = "default" | "mysqlPlus4" | "tsqlScaleAtLeast6";
+export type AvgDefaultPolicy = "integerPreserving" | string;
+export type SumDecimalPolicy = "input" | "mysqlPlus22" | "decimal38" | "numeric" | "number";
+export type CommonTextTypePolicy = "none" | "mysqlMaxVarchar" | "firstText" | "varchar";
+export type CommonDecimalIntegerPolicy =
+  | "none"
+  | "mysqlScalePlus20"
+  | "tsqlScalePlus10"
+  | "decimal"
+  | "firstType";
+export type CastAdjustmentPolicy = "none" | "mysqlCharBinaryLength";
+export type ArithmeticDecimalPolicy =
+  | "none"
+  | "mysqlScalePlus21"
+  | "tsqlDuckdbPrecision"
+  | "decimal";
+export type GeneratedAddNameStyle =
+  | "empty"
+  | "postgresColumn"
+  | "duckdbParenthesized"
+  | "oracleUpperCompact"
+  | "compact";
+export type GeneratedUpperNameStyle =
+  | "empty"
+  | "postgresFunction"
+  | "oracleUpperCall"
+  | "duckdbQuotedCall"
+  | "call";
 
 export interface DialectAggregateConfig {
   readonly countType: string;

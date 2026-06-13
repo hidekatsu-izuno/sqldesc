@@ -1,439 +1,439 @@
-import type { DialectConfig } from '../types.js';
+import type { DialectConfig } from "../types.js";
 
 export const dialectConfig = {
-  name: 'mysql',
+  name: "mysql",
   aliases: [],
-  family: 'mysql',
-  typeFamily: 'mysql',
+  family: "mysql",
+  typeFamily: "mysql",
   displayTypes: {
-    bigint: 'bigint',
-    blob: 'longblob',
-    boolean: 'tinyint(1)',
-    bytes: 'varbinary(255)',
-    clob: 'longtext',
-    date: 'date',
-    datetime: 'datetime',
-    decimal: 'decimal',
-    integer: 'int',
-    json: 'json',
-    jsonb: 'json',
-    mysql_blob: 'blob',
-    mysql_text: 'text',
-    nclob: 'longtext',
-    text: 'varchar(255)',
-    time: 'time',
-    timestamp: 'timestamp',
-    timestamptz: 'timestamp',
-    uuid: 'char(36)',
+    bigint: "bigint",
+    blob: "longblob",
+    boolean: "tinyint(1)",
+    bytes: "varbinary(255)",
+    clob: "longtext",
+    date: "date",
+    datetime: "datetime",
+    decimal: "decimal",
+    integer: "int",
+    json: "json",
+    jsonb: "json",
+    mysql_blob: "blob",
+    mysql_text: "text",
+    nclob: "longtext",
+    text: "varchar(255)",
+    time: "time",
+    timestamp: "timestamp",
+    timestamptz: "timestamp",
+    uuid: "char(36)",
   },
   jdbcTypeMap: {
-    ARRAY: 'json',
-    BIGINT: 'bigint',
-    BINARY: 'bytes',
-    BIT: 'boolean',
-    BLOB: 'bytes',
-    BOOLEAN: 'boolean',
-    CHAR: 'text',
-    CLOB: 'text',
-    DATALINK: 'text',
-    DATE: 'date',
-    DECIMAL: 'decimal',
-    DISTINCT: 'variant',
-    DOUBLE: 'decimal',
-    FLOAT: 'decimal',
-    INTEGER: 'integer',
-    JAVA_OBJECT: 'json',
-    LONGNVARCHAR: 'text',
-    LONGVARBINARY: 'bytes',
-    LONGVARCHAR: 'text',
-    NCHAR: 'text',
-    NCLOB: 'text',
-    NULL: 'unknown',
-    NUMERIC: 'decimal',
-    NVARCHAR: 'text',
-    OTHER: 'json',
-    REAL: 'decimal',
-    REF: 'variant',
-    REF_CURSOR: 'variant',
-    ROWID: 'text',
-    SMALLINT: 'integer',
-    SQLXML: 'text',
-    STRUCT: 'json',
-    TIME: 'time',
-    TIMESTAMP: 'datetime',
-    TIMESTAMP_WITH_TIMEZONE: 'datetime',
-    TIME_WITH_TIMEZONE: 'time',
-    TINYINT: 'integer',
-    VARBINARY: 'bytes',
-    VARCHAR: 'text',
+    ARRAY: "json",
+    BIGINT: "bigint",
+    BINARY: "bytes",
+    BIT: "boolean",
+    BLOB: "bytes",
+    BOOLEAN: "boolean",
+    CHAR: "text",
+    CLOB: "text",
+    DATALINK: "text",
+    DATE: "date",
+    DECIMAL: "decimal",
+    DISTINCT: "variant",
+    DOUBLE: "decimal",
+    FLOAT: "decimal",
+    INTEGER: "integer",
+    JAVA_OBJECT: "json",
+    LONGNVARCHAR: "text",
+    LONGVARBINARY: "bytes",
+    LONGVARCHAR: "text",
+    NCHAR: "text",
+    NCLOB: "text",
+    NULL: "unknown",
+    NUMERIC: "decimal",
+    NVARCHAR: "text",
+    OTHER: "json",
+    REAL: "decimal",
+    REF: "variant",
+    REF_CURSOR: "variant",
+    ROWID: "text",
+    SMALLINT: "integer",
+    SQLXML: "text",
+    STRUCT: "json",
+    TIME: "time",
+    TIMESTAMP: "datetime",
+    TIMESTAMP_WITH_TIMEZONE: "datetime",
+    TIME_WITH_TIMEZONE: "time",
+    TINYINT: "integer",
+    VARBINARY: "bytes",
+    VARCHAR: "text",
   },
   scalarFunctionTypes: {
-    age: 'interval',
-    array_all: 'boolean',
-    array_any: 'boolean',
-    array_contains: 'boolean',
-    array_join: 'text',
-    array_length: 'integer',
-    array_lower: 'integer',
-    array_ndims: 'integer',
-    array_position: 'integer',
-    array_size: 'integer',
-    array_sum: 'integer',
-    array_to_string: 'text',
-    array_upper: 'integer',
-    as_array: 'array<variant>',
-    as_object: 'object',
-    as_varchar: 'text',
-    ascii: 'integer',
-    bit_length: 'integer',
-    byte_length: 'integer',
-    cardinality: 'integer',
-    cbrt: 'decimal',
-    char_length: 'integer',
-    character_length: 'integer',
-    contains: 'boolean',
-    convert_to: 'bytes',
-    cos: 'decimal',
-    current_catalog: 'text',
-    current_database: 'text',
-    current_datetime: 'datetime',
-    current_schema: 'text',
-    current_user: 'text',
-    currval: 'bigint',
-    date_parse: 'timestamp',
-    datetime: 'datetime',
-    day: 'integer',
-    degrees: 'decimal',
-    ends_with: 'boolean',
-    exp: 'decimal',
-    factorial: 'integer',
-    format_date: 'text',
-    from_base64: 'bytes',
-    gen_random_uuid: 'uuid',
-    generate_uuid: 'uuid',
-    grouping: 'integer',
-    grouping_id: 'integer',
-    hash: 'integer',
-    hex: 'text',
-    highlight: 'text',
-    hll_hash: 'hll',
-    hour: 'integer',
-    ieee_divide: 'decimal',
-    initcap: 'text',
-    instr: 'integer',
-    json_contains: 'boolean',
-    json_insert: 'json',
-    json_patch: 'json',
-    json_query: 'json',
-    json_query_array: 'array<json>',
-    json_remove: 'json',
-    json_replace: 'json',
-    json_set: 'json',
-    json_valid: 'boolean',
-    json_value: 'text',
-    json_value_array: 'array<text>',
-    jsonlength: 'integer',
-    julianday: 'decimal',
-    lastval: 'bigint',
-    length: 'integer',
-    list_contains: 'boolean',
-    ln: 'decimal',
-    locate: 'integer',
-    log: 'decimal',
-    log10: 'decimal',
-    lower: 'text',
-    ltrim: 'text',
-    md5: 'text',
-    minute: 'integer',
-    month: 'integer',
-    months_between: 'decimal',
-    newid: 'uuid',
-    nextval: 'bigint',
-    octet_length: 'integer',
-    overlay: 'text',
-    parse_json: 'json',
-    pi: 'decimal',
-    position: 'integer',
-    pow: 'decimal',
-    power: 'decimal',
-    printf: 'text',
-    quarter: 'integer',
-    radians: 'decimal',
-    rand: 'decimal',
-    random: 'decimal',
-    regexp_contains: 'boolean',
-    regexp_count: 'integer',
-    regexp_extract: 'text',
-    regexp_extract_all: 'array<text>',
-    regexp_instr: 'integer',
-    regexp_like: 'boolean',
-    regexp_match: 'array<text>',
-    regexp_matches: 'array<text>',
-    regexp_position: 'integer',
-    regexp_replace: 'text',
-    regexp_split: 'array<text>',
-    regexp_split_to_array: 'array<text>',
-    regexp_split_to_table: 'text',
-    regexp_substr: 'text',
-    replace: 'text',
-    rlike: 'boolean',
-    row_to_json: 'json',
-    rtrim: 'text',
-    safe_divide: 'decimal',
-    scope_identity: 'integer',
-    second: 'integer',
-    setval: 'bigint',
-    sha: 'text',
-    sha1: 'text',
-    sha224: 'bytes',
-    sha256: 'bytes',
-    sha384: 'bytes',
-    sha512: 'bytes',
-    sign: 'integer',
-    sin: 'decimal',
-    snippet: 'text',
-    split: 'array<text>',
-    split_part: 'text',
-    sqlite_version: 'text',
-    sqrt: 'decimal',
-    st_area: 'decimal',
-    st_asbinary: 'bytes',
-    st_asgeojson: 'text',
-    st_astext: 'text',
-    st_aswkb: 'bytes',
-    st_aswkt: 'text',
-    st_contains: 'boolean',
-    st_dimension: 'integer',
-    st_distance: 'decimal',
-    st_geogpoint: 'geography',
-    st_intersects: 'boolean',
-    st_length: 'decimal',
-    st_makeenvelope: 'geometry',
-    st_makepoint: 'geometry',
-    st_ndims: 'integer',
-    st_npoints: 'integer',
-    st_point: 'geometry',
-    st_srid: 'integer',
-    st_within: 'boolean',
-    st_x: 'decimal',
-    st_y: 'decimal',
-    starts_with: 'boolean',
-    str_split: 'array<text>',
-    string_to_array: 'array<text>',
-    strpos: 'integer',
-    substr: 'text',
-    substring: 'text',
-    tan: 'decimal',
-    time: 'time',
-    timestamp: 'timestamp',
-    to_array: 'array<variant>',
-    to_binary: 'bytes',
-    to_bitmap: 'bitmap',
-    to_boolean: 'boolean',
-    to_char: 'text',
-    to_decimal: 'decimal',
-    to_geography: 'geography',
-    to_geometry: 'geometry',
-    to_hex: 'text',
-    to_number: 'decimal',
-    to_object: 'object',
-    to_utf8: 'bytes',
-    to_variant: 'variant',
-    todate: 'date',
-    trim: 'text',
-    try_to_boolean: 'boolean',
-    try_to_decimal: 'decimal',
-    try_to_number: 'decimal',
-    typeof: 'text',
-    unhex: 'bytes',
-    upper: 'text',
-    user: 'text',
-    uuid: 'uuid',
-    uuid_string: 'uuid',
-    version: 'text',
-    week: 'integer',
-    xxhash64: 'integer',
-    year: 'integer',
+    age: "interval",
+    array_all: "boolean",
+    array_any: "boolean",
+    array_contains: "boolean",
+    array_join: "text",
+    array_length: "integer",
+    array_lower: "integer",
+    array_ndims: "integer",
+    array_position: "integer",
+    array_size: "integer",
+    array_sum: "integer",
+    array_to_string: "text",
+    array_upper: "integer",
+    as_array: "array<variant>",
+    as_object: "object",
+    as_varchar: "text",
+    ascii: "integer",
+    bit_length: "integer",
+    byte_length: "integer",
+    cardinality: "integer",
+    cbrt: "decimal",
+    char_length: "integer",
+    character_length: "integer",
+    contains: "boolean",
+    convert_to: "bytes",
+    cos: "decimal",
+    current_catalog: "text",
+    current_database: "text",
+    current_datetime: "datetime",
+    current_schema: "text",
+    current_user: "text",
+    currval: "bigint",
+    date_parse: "timestamp",
+    datetime: "datetime",
+    day: "integer",
+    degrees: "decimal",
+    ends_with: "boolean",
+    exp: "decimal",
+    factorial: "integer",
+    format_date: "text",
+    from_base64: "bytes",
+    gen_random_uuid: "uuid",
+    generate_uuid: "uuid",
+    grouping: "integer",
+    grouping_id: "integer",
+    hash: "integer",
+    hex: "text",
+    highlight: "text",
+    hll_hash: "hll",
+    hour: "integer",
+    ieee_divide: "decimal",
+    initcap: "text",
+    instr: "integer",
+    json_contains: "boolean",
+    json_insert: "json",
+    json_patch: "json",
+    json_query: "json",
+    json_query_array: "array<json>",
+    json_remove: "json",
+    json_replace: "json",
+    json_set: "json",
+    json_valid: "boolean",
+    json_value: "text",
+    json_value_array: "array<text>",
+    jsonlength: "integer",
+    julianday: "decimal",
+    lastval: "bigint",
+    length: "integer",
+    list_contains: "boolean",
+    ln: "decimal",
+    locate: "integer",
+    log: "decimal",
+    log10: "decimal",
+    lower: "text",
+    ltrim: "text",
+    md5: "text",
+    minute: "integer",
+    month: "integer",
+    months_between: "decimal",
+    newid: "uuid",
+    nextval: "bigint",
+    octet_length: "integer",
+    overlay: "text",
+    parse_json: "json",
+    pi: "decimal",
+    position: "integer",
+    pow: "decimal",
+    power: "decimal",
+    printf: "text",
+    quarter: "integer",
+    radians: "decimal",
+    rand: "decimal",
+    random: "decimal",
+    regexp_contains: "boolean",
+    regexp_count: "integer",
+    regexp_extract: "text",
+    regexp_extract_all: "array<text>",
+    regexp_instr: "integer",
+    regexp_like: "boolean",
+    regexp_match: "array<text>",
+    regexp_matches: "array<text>",
+    regexp_position: "integer",
+    regexp_replace: "text",
+    regexp_split: "array<text>",
+    regexp_split_to_array: "array<text>",
+    regexp_split_to_table: "text",
+    regexp_substr: "text",
+    replace: "text",
+    rlike: "boolean",
+    row_to_json: "json",
+    rtrim: "text",
+    safe_divide: "decimal",
+    scope_identity: "integer",
+    second: "integer",
+    setval: "bigint",
+    sha: "text",
+    sha1: "text",
+    sha224: "bytes",
+    sha256: "bytes",
+    sha384: "bytes",
+    sha512: "bytes",
+    sign: "integer",
+    sin: "decimal",
+    snippet: "text",
+    split: "array<text>",
+    split_part: "text",
+    sqlite_version: "text",
+    sqrt: "decimal",
+    st_area: "decimal",
+    st_asbinary: "bytes",
+    st_asgeojson: "text",
+    st_astext: "text",
+    st_aswkb: "bytes",
+    st_aswkt: "text",
+    st_contains: "boolean",
+    st_dimension: "integer",
+    st_distance: "decimal",
+    st_geogpoint: "geography",
+    st_intersects: "boolean",
+    st_length: "decimal",
+    st_makeenvelope: "geometry",
+    st_makepoint: "geometry",
+    st_ndims: "integer",
+    st_npoints: "integer",
+    st_point: "geometry",
+    st_srid: "integer",
+    st_within: "boolean",
+    st_x: "decimal",
+    st_y: "decimal",
+    starts_with: "boolean",
+    str_split: "array<text>",
+    string_to_array: "array<text>",
+    strpos: "integer",
+    substr: "text",
+    substring: "text",
+    tan: "decimal",
+    time: "time",
+    timestamp: "timestamp",
+    to_array: "array<variant>",
+    to_binary: "bytes",
+    to_bitmap: "bitmap",
+    to_boolean: "boolean",
+    to_char: "text",
+    to_decimal: "decimal",
+    to_geography: "geography",
+    to_geometry: "geometry",
+    to_hex: "text",
+    to_number: "decimal",
+    to_object: "object",
+    to_utf8: "bytes",
+    to_variant: "variant",
+    todate: "date",
+    trim: "text",
+    try_to_boolean: "boolean",
+    try_to_decimal: "decimal",
+    try_to_number: "decimal",
+    typeof: "text",
+    unhex: "bytes",
+    upper: "text",
+    user: "text",
+    uuid: "uuid",
+    uuid_string: "uuid",
+    version: "text",
+    week: "integer",
+    xxhash64: "integer",
+    year: "integer",
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions:   {},
+  tableFunctions: {},
   aggregate: {
-    "countType": "bigint",
-    "avgDefault": "decimal(14,4)",
-    "avgDecimal": "mysqlPlus4",
-    "sumDecimal": "mysqlPlus22",
+    countType: "bigint",
+    avgDefault: "decimal(14,4)",
+    avgDecimal: "mysqlPlus4",
+    sumDecimal: "mysqlPlus22",
   },
   commonTypes: {
-    "text": "mysqlMaxVarchar",
-    "decimalInteger": "mysqlScalePlus20",
+    text: "mysqlMaxVarchar",
+    decimalInteger: "mysqlScalePlus20",
   },
   cast: {
-    "adjustment": "mysqlCharBinaryLength",
+    adjustment: "mysqlCharBinaryLength",
   },
   arithmetic: {
-    "decimalInteger": "mysqlScalePlus21",
+    decimalInteger: "mysqlScalePlus21",
   },
   windowFunctionTypes: {
-    "row_number": "integer",
-    "rank": "integer",
-    "dense_rank": "integer",
-    "ntile": "integer",
-    "n_tile": "integer",
-    "percent_rank": "decimal",
-    "cume_dist": "decimal",
+    row_number: "integer",
+    rank: "integer",
+    dense_rank: "integer",
+    ntile: "integer",
+    n_tile: "integer",
+    percent_rank: "decimal",
+    cume_dist: "decimal",
   },
   specialParameterTypes: {},
   specialColumnTypes: {
-    "current_date": "date",
-    "current_time": "time",
-    "current_timestamp": "timestamp",
-    "localtimestamp": "timestamp",
+    current_date: "date",
+    current_time: "time",
+    current_timestamp: "timestamp",
+    localtimestamp: "timestamp",
   },
   qualifiedSpecialColumnTypes: {},
   pseudoColumnTypes: {},
   generatedNames: {
-    "countStar": "count(*)",
-    "add": "compact",
-    "upper": "call",
+    countStar: "count(*)",
+    add: "compact",
+    upper: "call",
   },
-  scriptPreprocessor: 'mysqlDelimiter',
-  includeDirectives: [{ kind: 'mysql' }],
-  complexTypeStyle: 'angle',
-  jdbcEscapeStyle: 'mysql',
+  scriptPreprocessor: "mysqlDelimiter",
+  includeDirectives: [{ kind: "mysql" }],
+  complexTypeStyle: "angle",
+  jdbcEscapeStyle: "mysql",
   jdbcEscape: {
-    ifnullFunction: 'coalesce',
-    temporalLiteral: 'raw',
+    ifnullFunction: "coalesce",
+    temporalLiteral: "raw",
     executeCall: false,
-    currentDateExpression: 'current_date',
-    currentTimeExpression: 'current_time',
+    currentDateExpression: "current_date",
+    currentTimeExpression: "current_time",
   },
-  jdbcParameterMarker: 'question',
+  jdbcParameterMarker: "question",
   parserFallbacks: {
-    createView: 'postgres',
-    tableMacro: 'duckdb',
-    embeddedSqlTableFunction: 'tsql',
+    createView: "postgres",
+    tableMacro: "duckdb",
+    embeddedSqlTableFunction: "tsql",
   },
   parameterizedTypeFormats: {
-    decimal: 'decimal({args})',
-    dec: 'decimal({args})',
-    numeric: 'decimal({args})',
-    number: 'decimal({args})',
+    decimal: "decimal({args})",
+    dec: "decimal({args})",
+    numeric: "decimal({args})",
+    number: "decimal({args})",
   },
   literalTypes: {
-    string: 'text',
+    string: "text",
   },
   dynamicTableFunctions: {
-    generateSeriesColumn: '$alias',
-    rangeColumn: '$alias',
+    generateSeriesColumn: "$alias",
+    rangeColumn: "$alias",
     enabledHandlers: [],
   },
   serializedSelect: {},
   outputTypeOverrides: {
-    "avg_null": "decimal(24,4)",
-    "bind_add_equiv": "bigint",
-    "bind_cast_equiv": "varchar(5)",
-    "bind_coalesce_equiv": "bigint",
-    "bit_flags": "bit(8)",
-    "bool_any": "bigint",
-    "bool_sum": "decimal(23,0)",
-    "case_all_null": "varbinary(0)",
-    "case_date_ts": "datetime",
-    "case_nulls_typed": "varchar(5)",
-    "case_num_text": "decimal(21,0)",
-    "co_null_typed": "bigint",
-    "co_num": "decimal(22,2)",
-    "co_text": "varchar(7)",
-    "collated_equal": "integer",
-    "concat_empty": "varchar(5)",
-    "concat_null": "varchar(3)",
-    "concat_text": "varchar(5)",
-    "concat_widen": "varchar(5)",
-    "count_distinct": "bigint",
-    "count_null": "bigint",
-    "count_star": "bigint",
-    "date_diff_days": "int",
-    "date_interval_plus": "date",
-    "dec_mul_dec": "decimal(12,4)",
-    "dec_plus_int": "decimal(23,2)",
-    "div_decimal": "decimal(12,6)",
-    "div_decimal_int": "decimal(10,6)",
-    "div_int": "decimal(24,4)",
-    "enum_value": "enum('a','b')",
-    "except_text": "varchar(7)",
-    "fixed_bytes": "binary(4)",
-    "fixed_char_text": "char(3)",
-    "geom_value": "geometry",
-    "geometrycollection_value": "geomcollection",
-    "ifnull_text": "varchar(7)",
-    "intersect_null_text": "varchar(5)",
-    "intersect_num": "decimal(21,0)",
-    "isnull_text": "nchar(3)",
-    "json_array_value": "json",
-    "json_doc": "json",
-    "json_items": "json",
-    "json_name": "longtext",
-    "json_object_value": "json",
-    "json_scalar_bool": "json",
-    "json_scalar_null": "json",
-    "json_scalar_num": "json",
-    "json_type_name": "varchar(17)",
-    "json_unquote_text": "longtext",
-    "large_bytes": "longblob",
-    "large_text": "longtext",
-    "line_value": "linestring",
-    "lit_decimal": "decimal(3,2)",
-    "lit_null": "varbinary(0)",
-    "lit_text": "varchar(3)",
-    "lit_ts": "datetime(3)",
-    "max_ts": "datetime",
-    "medium_bytes": "mediumblob",
-    "min_date": "date",
-    "min_null": "varchar(5)",
-    "minus_text": "varchar(7)",
-    "mod_num": "bigint",
-    "mul_num": "decimal(26,2)",
-    "multilinestring_value": "multilinestring",
-    "multipoint_value": "multipoint",
-    "multipolygon_value": "multipolygon",
-    "national_text": "varchar(5)",
-    "nullif_null_typed": "bigint",
-    "nullif_num": "decimal(6,2)",
-    "nullif_typed_null": "bigint",
-    "nvl_text": "varchar2(7)",
-    "point_value": "point",
-    "polygon_value": "polygon",
-    "pred_between": "integer",
-    "pred_eq": "integer",
-    "pred_in": "integer",
-    "pred_null": "integer",
-    "regular_bytes": "mysql_blob",
-    "regular_text": "mysql_text",
-    "rn": "bigint unsigned",
-    "round_num": "decimal(6,1)",
-    "set_null_int": "bigint",
-    "set_num": "decimal(21,0)",
-    "set_temporal": "datetime",
-    "set_text": "varchar(7)",
-    "set_value": "set('a','b')",
-    "substr_text": "varchar(3)",
-    "sum_null": "decimal(28,2)",
-    "timezone_convert": "datetime",
-    "tiny_bytes": "tinyblob",
-    "tiny_text": "tinytext",
-    "ts_diff_seconds": "bigint",
-    "ts_interval_plus": "datetime",
-    "ts_plus": "datetime(3)",
-    "tz_diff_seconds": "bigint",
-    "unicode_large_text": "mediumtext",
-    "unicode_text": "varchar(4)",
-    "unsigned_big": "bigint unsigned",
-    "unsigned_int": "int unsigned",
-    "unsigned_tiny": "tinyint unsigned",
-    "uuid_value": "varchar(36)",
-    "var_bytes": "varbinary(8)",
-    "win_avg": "decimal(24,4)",
-    "win_sum": "decimal(28,2)",
-    "year_value": "year",
+    avg_null: "decimal(24,4)",
+    bind_add_equiv: "bigint",
+    bind_cast_equiv: "varchar(5)",
+    bind_coalesce_equiv: "bigint",
+    bit_flags: "bit(8)",
+    bool_any: "bigint",
+    bool_sum: "decimal(23,0)",
+    case_all_null: "varbinary(0)",
+    case_date_ts: "datetime",
+    case_nulls_typed: "varchar(5)",
+    case_num_text: "decimal(21,0)",
+    co_null_typed: "bigint",
+    co_num: "decimal(22,2)",
+    co_text: "varchar(7)",
+    collated_equal: "integer",
+    concat_empty: "varchar(5)",
+    concat_null: "varchar(3)",
+    concat_text: "varchar(5)",
+    concat_widen: "varchar(5)",
+    count_distinct: "bigint",
+    count_null: "bigint",
+    count_star: "bigint",
+    date_diff_days: "int",
+    date_interval_plus: "date",
+    dec_mul_dec: "decimal(12,4)",
+    dec_plus_int: "decimal(23,2)",
+    div_decimal: "decimal(12,6)",
+    div_decimal_int: "decimal(10,6)",
+    div_int: "decimal(24,4)",
+    enum_value: "enum('a','b')",
+    except_text: "varchar(7)",
+    fixed_bytes: "binary(4)",
+    fixed_char_text: "char(3)",
+    geom_value: "geometry",
+    geometrycollection_value: "geomcollection",
+    ifnull_text: "varchar(7)",
+    intersect_null_text: "varchar(5)",
+    intersect_num: "decimal(21,0)",
+    isnull_text: "nchar(3)",
+    json_array_value: "json",
+    json_doc: "json",
+    json_items: "json",
+    json_name: "longtext",
+    json_object_value: "json",
+    json_scalar_bool: "json",
+    json_scalar_null: "json",
+    json_scalar_num: "json",
+    json_type_name: "varchar(17)",
+    json_unquote_text: "longtext",
+    large_bytes: "longblob",
+    large_text: "longtext",
+    line_value: "linestring",
+    lit_decimal: "decimal(3,2)",
+    lit_null: "varbinary(0)",
+    lit_text: "varchar(3)",
+    lit_ts: "datetime(3)",
+    max_ts: "datetime",
+    medium_bytes: "mediumblob",
+    min_date: "date",
+    min_null: "varchar(5)",
+    minus_text: "varchar(7)",
+    mod_num: "bigint",
+    mul_num: "decimal(26,2)",
+    multilinestring_value: "multilinestring",
+    multipoint_value: "multipoint",
+    multipolygon_value: "multipolygon",
+    national_text: "varchar(5)",
+    nullif_null_typed: "bigint",
+    nullif_num: "decimal(6,2)",
+    nullif_typed_null: "bigint",
+    nvl_text: "varchar2(7)",
+    point_value: "point",
+    polygon_value: "polygon",
+    pred_between: "integer",
+    pred_eq: "integer",
+    pred_in: "integer",
+    pred_null: "integer",
+    regular_bytes: "mysql_blob",
+    regular_text: "mysql_text",
+    rn: "bigint unsigned",
+    round_num: "decimal(6,1)",
+    set_null_int: "bigint",
+    set_num: "decimal(21,0)",
+    set_temporal: "datetime",
+    set_text: "varchar(7)",
+    set_value: "set('a','b')",
+    substr_text: "varchar(3)",
+    sum_null: "decimal(28,2)",
+    timezone_convert: "datetime",
+    tiny_bytes: "tinyblob",
+    tiny_text: "tinytext",
+    ts_diff_seconds: "bigint",
+    ts_interval_plus: "datetime",
+    ts_plus: "datetime(3)",
+    tz_diff_seconds: "bigint",
+    unicode_large_text: "mediumtext",
+    unicode_text: "varchar(4)",
+    unsigned_big: "bigint unsigned",
+    unsigned_int: "int unsigned",
+    unsigned_tiny: "tinyint unsigned",
+    uuid_value: "varchar(36)",
+    var_bytes: "varbinary(8)",
+    win_avg: "decimal(24,4)",
+    win_sum: "decimal(28,2)",
+    year_value: "year",
   },
   metadata: {
     builtinSchemaTables: [
@@ -449,8 +449,8 @@ export const dialectConfig = {
           { name: "role_host", type: "text" },
           { name: "is_grantable", type: "text" },
           { name: "is_default", type: "text" },
-          { name: "is_mandatory", type: "text" }
-        ]
+          { name: "is_mandatory", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -464,8 +464,8 @@ export const dialectConfig = {
           { name: "role_host", type: "text" },
           { name: "is_grantable", type: "text" },
           { name: "is_default", type: "text" },
-          { name: "is_mandatory", type: "text" }
-        ]
+          { name: "is_mandatory", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -474,8 +474,8 @@ export const dialectConfig = {
           { name: "character_set_name", type: "text" },
           { name: "default_collate_name", type: "text" },
           { name: "description", type: "text" },
-          { name: "maxlen", type: "integer" }
-        ]
+          { name: "maxlen", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -484,16 +484,16 @@ export const dialectConfig = {
           { name: "constraint_catalog", type: "text" },
           { name: "constraint_schema", type: "text" },
           { name: "constraint_name", type: "text" },
-          { name: "check_clause", type: "text" }
-        ]
+          { name: "check_clause", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "COLLATION_CHARACTER_SET_APPLICABILITY",
         columns: [
           { name: "collation_name", type: "text" },
-          { name: "character_set_name", type: "text" }
-        ]
+          { name: "character_set_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -505,8 +505,8 @@ export const dialectConfig = {
           { name: "is_default", type: "text" },
           { name: "is_compiled", type: "text" },
           { name: "sortlen", type: "integer" },
-          { name: "pad_attribute", type: "text" }
-        ]
+          { name: "pad_attribute", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -518,8 +518,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
           { name: "privilege_type", type: "text" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -528,8 +528,8 @@ export const dialectConfig = {
           { name: "schema_name", type: "text" },
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
-          { name: "histogram", type: "json" }
-        ]
+          { name: "histogram", type: "json" },
+        ],
       },
       {
         schema: "information_schema",
@@ -556,8 +556,8 @@ export const dialectConfig = {
           { name: "privileges", type: "text" },
           { name: "column_comment", type: "text" },
           { name: "generation_expression", type: "text" },
-          { name: "srs_id", type: "integer" }
-        ]
+          { name: "srs_id", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -568,8 +568,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
           { name: "engine_attribute", type: "json" },
-          { name: "secondary_engine_attribute", type: "json" }
-        ]
+          { name: "secondary_engine_attribute", type: "json" },
+        ],
       },
       {
         schema: "information_schema",
@@ -578,8 +578,8 @@ export const dialectConfig = {
           { name: "role_name", type: "text" },
           { name: "role_host", type: "text" },
           { name: "is_default", type: "text" },
-          { name: "is_mandatory", type: "text" }
-        ]
+          { name: "is_mandatory", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -590,8 +590,8 @@ export const dialectConfig = {
           { name: "comment", type: "text" },
           { name: "transactions", type: "text" },
           { name: "xa", type: "text" },
-          { name: "savepoints", type: "text" }
-        ]
+          { name: "savepoints", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -620,8 +620,8 @@ export const dialectConfig = {
           { name: "originator", type: "integer" },
           { name: "character_set_client", type: "text" },
           { name: "collation_connection", type: "text" },
-          { name: "database_collation", type: "text" }
-        ]
+          { name: "database_collation", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -664,8 +664,8 @@ export const dialectConfig = {
           { name: "check_time", type: "bytes" },
           { name: "checksum", type: "bytes" },
           { name: "status", type: "text" },
-          { name: "extra", type: "text" }
-        ]
+          { name: "extra", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -691,8 +691,8 @@ export const dialectConfig = {
           { name: "io_fix", type: "text" },
           { name: "is_old", type: "text" },
           { name: "free_page_clock", type: "integer" },
-          { name: "is_stale", type: "text" }
-        ]
+          { name: "is_stale", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -717,8 +717,8 @@ export const dialectConfig = {
           { name: "compressed", type: "text" },
           { name: "io_fix", type: "text" },
           { name: "is_old", type: "text" },
-          { name: "free_page_clock", type: "integer" }
-        ]
+          { name: "free_page_clock", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -755,8 +755,8 @@ export const dialectConfig = {
           { name: "lru_io_total", type: "integer" },
           { name: "lru_io_current", type: "integer" },
           { name: "uncompress_total", type: "integer" },
-          { name: "uncompress_current", type: "integer" }
-        ]
+          { name: "uncompress_current", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -764,8 +764,8 @@ export const dialectConfig = {
         columns: [
           { name: "space_id", type: "integer" },
           { name: "index_id", type: "integer" },
-          { name: "n_cached_pages", type: "integer" }
-        ]
+          { name: "n_cached_pages", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -776,8 +776,8 @@ export const dialectConfig = {
           { name: "compress_ops_ok", type: "integer" },
           { name: "compress_time", type: "integer" },
           { name: "uncompress_ops", type: "integer" },
-          { name: "uncompress_time", type: "integer" }
-        ]
+          { name: "uncompress_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -790,8 +790,8 @@ export const dialectConfig = {
           { name: "compress_ops_ok", type: "integer" },
           { name: "compress_time", type: "integer" },
           { name: "uncompress_ops", type: "integer" },
-          { name: "uncompress_time", type: "integer" }
-        ]
+          { name: "uncompress_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -804,8 +804,8 @@ export const dialectConfig = {
           { name: "compress_ops_ok", type: "integer" },
           { name: "compress_time", type: "integer" },
           { name: "uncompress_ops", type: "integer" },
-          { name: "uncompress_time", type: "integer" }
-        ]
+          { name: "uncompress_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -816,8 +816,8 @@ export const dialectConfig = {
           { name: "compress_ops_ok", type: "integer" },
           { name: "compress_time", type: "integer" },
           { name: "uncompress_ops", type: "integer" },
-          { name: "uncompress_time", type: "integer" }
-        ]
+          { name: "uncompress_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -828,8 +828,8 @@ export const dialectConfig = {
           { name: "pages_used", type: "integer" },
           { name: "pages_free", type: "integer" },
           { name: "relocation_ops", type: "integer" },
-          { name: "relocation_time", type: "integer" }
-        ]
+          { name: "relocation_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -840,8 +840,8 @@ export const dialectConfig = {
           { name: "pages_used", type: "integer" },
           { name: "pages_free", type: "integer" },
           { name: "relocation_ops", type: "integer" },
-          { name: "relocation_time", type: "integer" }
-        ]
+          { name: "relocation_time", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -854,16 +854,16 @@ export const dialectConfig = {
           { name: "prtype", type: "integer" },
           { name: "len", type: "integer" },
           { name: "has_default", type: "integer" },
-          { name: "default_value", type: "text" }
-        ]
+          { name: "default_value", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "INNODB_DATAFILES",
         columns: [
           { name: "space", type: "bytes" },
-          { name: "path", type: "text" }
-        ]
+          { name: "path", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -871,8 +871,8 @@ export const dialectConfig = {
         columns: [
           { name: "index_id", type: "bytes" },
           { name: "name", type: "text" },
-          { name: "pos", type: "integer" }
-        ]
+          { name: "pos", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -882,8 +882,8 @@ export const dialectConfig = {
           { name: "for_name", type: "text" },
           { name: "ref_name", type: "text" },
           { name: "n_cols", type: "integer" },
-          { name: "type", type: "integer" }
-        ]
+          { name: "type", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -892,37 +892,31 @@ export const dialectConfig = {
           { name: "id", type: "text" },
           { name: "for_col_name", type: "text" },
           { name: "ref_col_name", type: "text" },
-          { name: "pos", type: "integer" }
-        ]
+          { name: "pos", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
         name: "INNODB_FT_BEING_DELETED",
-        columns: [
-          { name: "doc_id", type: "integer" }
-        ]
+        columns: [{ name: "doc_id", type: "integer" }],
       },
       {
         schema: "information_schema",
         name: "INNODB_FT_CONFIG",
         columns: [
           { name: "key", type: "text" },
-          { name: "value", type: "text" }
-        ]
+          { name: "value", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "INNODB_FT_DEFAULT_STOPWORD",
-        columns: [
-          { name: "value", type: "text" }
-        ]
+        columns: [{ name: "value", type: "text" }],
       },
       {
         schema: "information_schema",
         name: "INNODB_FT_DELETED",
-        columns: [
-          { name: "doc_id", type: "integer" }
-        ]
+        columns: [{ name: "doc_id", type: "integer" }],
       },
       {
         schema: "information_schema",
@@ -933,8 +927,8 @@ export const dialectConfig = {
           { name: "last_doc_id", type: "integer" },
           { name: "doc_count", type: "integer" },
           { name: "doc_id", type: "integer" },
-          { name: "position", type: "integer" }
-        ]
+          { name: "position", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -945,8 +939,8 @@ export const dialectConfig = {
           { name: "last_doc_id", type: "integer" },
           { name: "doc_count", type: "integer" },
           { name: "doc_id", type: "integer" },
-          { name: "position", type: "integer" }
-        ]
+          { name: "position", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -959,8 +953,8 @@ export const dialectConfig = {
           { name: "n_fields", type: "integer" },
           { name: "page_no", type: "integer" },
           { name: "space", type: "integer" },
-          { name: "merge_threshold", type: "integer" }
-        ]
+          { name: "merge_threshold", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -982,8 +976,8 @@ export const dialectConfig = {
           { name: "time_reset", type: "timestamp" },
           { name: "status", type: "text" },
           { name: "type", type: "text" },
-          { name: "comment", type: "text" }
-        ]
+          { name: "comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -994,8 +988,8 @@ export const dialectConfig = {
           { name: "path", type: "text" },
           { name: "size", type: "integer" },
           { name: "state", type: "text" },
-          { name: "purpose", type: "text" }
-        ]
+          { name: "purpose", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1010,8 +1004,8 @@ export const dialectConfig = {
           { name: "zip_page_size", type: "integer" },
           { name: "space_type", type: "text" },
           { name: "instant_cols", type: "integer" },
-          { name: "total_row_versions", type: "integer" }
-        ]
+          { name: "total_row_versions", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1031,8 +1025,8 @@ export const dialectConfig = {
           { name: "server_version", type: "text" },
           { name: "space_version", type: "integer" },
           { name: "encryption", type: "text" },
-          { name: "state", type: "text" }
-        ]
+          { name: "state", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1042,8 +1036,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "path", type: "text" },
           { name: "flag", type: "bytes" },
-          { name: "space_type", type: "text" }
-        ]
+          { name: "space_type", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1057,8 +1051,8 @@ export const dialectConfig = {
           { name: "other_index_size", type: "integer" },
           { name: "modified_counter", type: "integer" },
           { name: "autoinc", type: "integer" },
-          { name: "ref_count", type: "integer" }
-        ]
+          { name: "ref_count", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1067,8 +1061,8 @@ export const dialectConfig = {
           { name: "table_id", type: "integer" },
           { name: "name", type: "text" },
           { name: "n_cols", type: "integer" },
-          { name: "space", type: "integer" }
-        ]
+          { name: "space", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1098,8 +1092,8 @@ export const dialectConfig = {
           { name: "trx_adaptive_hash_timeout", type: "integer" },
           { name: "trx_is_read_only", type: "integer" },
           { name: "trx_autocommit_non_locking", type: "integer" },
-          { name: "trx_schedule_weight", type: "integer" }
-        ]
+          { name: "trx_schedule_weight", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1107,8 +1101,8 @@ export const dialectConfig = {
         columns: [
           { name: "table_id", type: "integer" },
           { name: "pos", type: "integer" },
-          { name: "base_pos", type: "integer" }
-        ]
+          { name: "base_pos", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1125,16 +1119,16 @@ export const dialectConfig = {
           { name: "position_in_unique_constraint", type: "integer" },
           { name: "referenced_table_schema", type: "text" },
           { name: "referenced_table_name", type: "text" },
-          { name: "referenced_column_name", type: "text" }
-        ]
+          { name: "referenced_column_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "KEYWORDS",
         columns: [
           { name: "word", type: "text" },
-          { name: "reserved", type: "integer" }
-        ]
+          { name: "reserved", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1143,8 +1137,8 @@ export const dialectConfig = {
           { name: "query", type: "text" },
           { name: "trace", type: "text" },
           { name: "missing_bytes_beyond_max_mem_size", type: "integer" },
-          { name: "insufficient_privileges", type: "integer" }
-        ]
+          { name: "insufficient_privileges", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1165,8 +1159,8 @@ export const dialectConfig = {
           { name: "character_set_name", type: "text" },
           { name: "collation_name", type: "text" },
           { name: "dtd_identifier", type: "text" },
-          { name: "routine_type", type: "text" }
-        ]
+          { name: "routine_type", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1196,8 +1190,8 @@ export const dialectConfig = {
           { name: "checksum", type: "integer" },
           { name: "partition_comment", type: "text" },
           { name: "nodegroup", type: "text" },
-          { name: "tablespace_name", type: "text" }
-        ]
+          { name: "tablespace_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1213,8 +1207,8 @@ export const dialectConfig = {
           { name: "plugin_author", type: "text" },
           { name: "plugin_description", type: "text" },
           { name: "plugin_license", type: "text" },
-          { name: "load_option", type: "text" }
-        ]
+          { name: "load_option", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1227,8 +1221,8 @@ export const dialectConfig = {
           { name: "command", type: "text" },
           { name: "time", type: "integer" },
           { name: "state", type: "text" },
-          { name: "info", type: "text" }
-        ]
+          { name: "info", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1251,8 +1245,8 @@ export const dialectConfig = {
           { name: "swaps", type: "integer" },
           { name: "source_function", type: "text" },
           { name: "source_file", type: "text" },
-          { name: "source_line", type: "integer" }
-        ]
+          { name: "source_line", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1268,8 +1262,8 @@ export const dialectConfig = {
           { name: "update_rule", type: "text" },
           { name: "delete_rule", type: "text" },
           { name: "table_name", type: "text" },
-          { name: "referenced_table_name", type: "text" }
-        ]
+          { name: "referenced_table_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1279,8 +1273,8 @@ export const dialectConfig = {
           { name: "resource_group_type", type: "text" },
           { name: "resource_group_enabled", type: "integer" },
           { name: "vcpu_ids", type: "bytes" },
-          { name: "thread_priority", type: "integer" }
-        ]
+          { name: "thread_priority", type: "integer" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1295,8 +1289,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
           { name: "privilege_type", type: "variant" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1313,8 +1307,8 @@ export const dialectConfig = {
           { name: "routine_schema", type: "text" },
           { name: "routine_name", type: "text" },
           { name: "privilege_type", type: "variant" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1328,8 +1322,8 @@ export const dialectConfig = {
           { name: "table_schema", type: "text" },
           { name: "table_name", type: "text" },
           { name: "privilege_type", type: "variant" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1365,8 +1359,8 @@ export const dialectConfig = {
           { name: "definer", type: "text" },
           { name: "character_set_client", type: "text" },
           { name: "collation_connection", type: "text" },
-          { name: "database_collation", type: "text" }
-        ]
+          { name: "database_collation", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1376,8 +1370,8 @@ export const dialectConfig = {
           { name: "table_catalog", type: "text" },
           { name: "table_schema", type: "text" },
           { name: "privilege_type", type: "text" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1388,8 +1382,8 @@ export const dialectConfig = {
           { name: "default_character_set_name", type: "text" },
           { name: "default_collation_name", type: "text" },
           { name: "sql_path", type: "bytes" },
-          { name: "default_encryption", type: "text" }
-        ]
+          { name: "default_encryption", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1397,8 +1391,8 @@ export const dialectConfig = {
         columns: [
           { name: "catalog_name", type: "text" },
           { name: "schema_name", type: "text" },
-          { name: "options", type: "text" }
-        ]
+          { name: "options", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1410,8 +1404,8 @@ export const dialectConfig = {
           { name: "column_name", type: "text" },
           { name: "srs_name", type: "text" },
           { name: "srs_id", type: "integer" },
-          { name: "geometry_type_name", type: "text" }
-        ]
+          { name: "geometry_type_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1422,8 +1416,8 @@ export const dialectConfig = {
           { name: "organization", type: "text" },
           { name: "organization_coordsys_id", type: "integer" },
           { name: "definition", type: "text" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1432,8 +1426,8 @@ export const dialectConfig = {
           { name: "unit_name", type: "text" },
           { name: "unit_type", type: "text" },
           { name: "conversion_factor", type: "decimal" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1456,8 +1450,8 @@ export const dialectConfig = {
           { name: "comment", type: "text" },
           { name: "index_comment", type: "text" },
           { name: "is_visible", type: "text" },
-          { name: "expression", type: "text" }
-        ]
+          { name: "expression", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1469,8 +1463,8 @@ export const dialectConfig = {
           { name: "table_schema", type: "text" },
           { name: "table_name", type: "text" },
           { name: "constraint_type", type: "text" },
-          { name: "enforced", type: "text" }
-        ]
+          { name: "enforced", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1481,8 +1475,8 @@ export const dialectConfig = {
           { name: "constraint_name", type: "text" },
           { name: "table_name", type: "text" },
           { name: "engine_attribute", type: "json" },
-          { name: "secondary_engine_attribute", type: "json" }
-        ]
+          { name: "secondary_engine_attribute", type: "json" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1493,8 +1487,8 @@ export const dialectConfig = {
           { name: "table_schema", type: "text" },
           { name: "table_name", type: "text" },
           { name: "privilege_type", type: "text" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1520,8 +1514,8 @@ export const dialectConfig = {
           { name: "table_collation", type: "text" },
           { name: "checksum", type: "integer" },
           { name: "create_options", type: "text" },
-          { name: "table_comment", type: "text" }
-        ]
+          { name: "table_comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1531,16 +1525,16 @@ export const dialectConfig = {
           { name: "table_schema", type: "text" },
           { name: "table_name", type: "text" },
           { name: "engine_attribute", type: "json" },
-          { name: "secondary_engine_attribute", type: "json" }
-        ]
+          { name: "secondary_engine_attribute", type: "json" },
+        ],
       },
       {
         schema: "information_schema",
         name: "TABLESPACES_EXTENSIONS",
         columns: [
           { name: "tablespace_name", type: "text" },
-          { name: "engine_attribute", type: "json" }
-        ]
+          { name: "engine_attribute", type: "json" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1567,8 +1561,8 @@ export const dialectConfig = {
           { name: "definer", type: "text" },
           { name: "character_set_client", type: "text" },
           { name: "collation_connection", type: "text" },
-          { name: "database_collation", type: "text" }
-        ]
+          { name: "database_collation", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1576,8 +1570,8 @@ export const dialectConfig = {
         columns: [
           { name: "user", type: "text" },
           { name: "host", type: "text" },
-          { name: "attribute", type: "text" }
-        ]
+          { name: "attribute", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1586,8 +1580,8 @@ export const dialectConfig = {
           { name: "grantee", type: "text" },
           { name: "table_catalog", type: "text" },
           { name: "privilege_type", type: "text" },
-          { name: "is_grantable", type: "text" }
-        ]
+          { name: "is_grantable", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1598,8 +1592,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "specific_catalog", type: "text" },
           { name: "specific_schema", type: "text" },
-          { name: "specific_name", type: "text" }
-        ]
+          { name: "specific_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1610,8 +1604,8 @@ export const dialectConfig = {
           { name: "view_name", type: "text" },
           { name: "table_catalog", type: "text" },
           { name: "table_schema", type: "text" },
-          { name: "table_name", type: "text" }
-        ]
+          { name: "table_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -1626,8 +1620,8 @@ export const dialectConfig = {
           { name: "definer", type: "text" },
           { name: "security_type", type: "text" },
           { name: "character_set_client", type: "text" },
-          { name: "collation_connection", type: "text" }
-        ]
+          { name: "collation_connection", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1639,8 +1633,8 @@ export const dialectConfig = {
           { name: "table_name", type: "text" },
           { name: "column_name", type: "text" },
           { name: "timestamp", type: "timestamp" },
-          { name: "column_priv", type: "variant" }
-        ]
+          { name: "column_priv", type: "variant" },
+        ],
       },
       {
         schema: "mysql",
@@ -1648,8 +1642,8 @@ export const dialectConfig = {
         columns: [
           { name: "component_id", type: "integer" },
           { name: "component_group_id", type: "integer" },
-          { name: "component_urn", type: "text" }
-        ]
+          { name: "component_urn", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1676,8 +1670,8 @@ export const dialectConfig = {
           { name: "alter_routine_priv", type: "text" },
           { name: "execute_priv", type: "text" },
           { name: "event_priv", type: "text" },
-          { name: "trigger_priv", type: "text" }
-        ]
+          { name: "trigger_priv", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1686,8 +1680,8 @@ export const dialectConfig = {
           { name: "host", type: "text" },
           { name: "user", type: "text" },
           { name: "default_role_host", type: "text" },
-          { name: "default_role_user", type: "text" }
-        ]
+          { name: "default_role_user", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1699,8 +1693,8 @@ export const dialectConfig = {
           { name: "cost_value", type: "decimal" },
           { name: "last_update", type: "timestamp" },
           { name: "comment", type: "text" },
-          { name: "default_value", type: "decimal" }
-        ]
+          { name: "default_value", type: "decimal" },
+        ],
       },
       {
         schema: "mysql",
@@ -1709,8 +1703,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "ret", type: "integer" },
           { name: "dl", type: "text" },
-          { name: "type", type: "text" }
-        ]
+          { name: "type", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1721,8 +1715,8 @@ export const dialectConfig = {
           { name: "thread_id", type: "integer" },
           { name: "server_id", type: "integer" },
           { name: "command_type", type: "text" },
-          { name: "argument", type: "bytes" }
-        ]
+          { name: "argument", type: "bytes" },
+        ],
       },
       {
         schema: "mysql",
@@ -1731,8 +1725,8 @@ export const dialectConfig = {
           { name: "user", type: "text" },
           { name: "host", type: "text" },
           { name: "priv", type: "text" },
-          { name: "with_grant_option", type: "text" }
-        ]
+          { name: "with_grant_option", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1741,8 +1735,8 @@ export const dialectConfig = {
           { name: "source_uuid", type: "text" },
           { name: "interval_start", type: "integer" },
           { name: "interval_end", type: "integer" },
-          { name: "gtid_tag", type: "text" }
-        ]
+          { name: "gtid_tag", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1751,24 +1745,24 @@ export const dialectConfig = {
           { name: "help_category_id", type: "integer" },
           { name: "name", type: "text" },
           { name: "parent_category_id", type: "integer" },
-          { name: "url", type: "text" }
-        ]
+          { name: "url", type: "text" },
+        ],
       },
       {
         schema: "mysql",
         name: "help_keyword",
         columns: [
           { name: "help_keyword_id", type: "integer" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "mysql",
         name: "help_relation",
         columns: [
           { name: "help_topic_id", type: "integer" },
-          { name: "help_keyword_id", type: "integer" }
-        ]
+          { name: "help_keyword_id", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -1779,8 +1773,8 @@ export const dialectConfig = {
           { name: "help_category_id", type: "integer" },
           { name: "description", type: "text" },
           { name: "example", type: "text" },
-          { name: "url", type: "text" }
-        ]
+          { name: "url", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1793,8 +1787,8 @@ export const dialectConfig = {
           { name: "stat_name", type: "text" },
           { name: "stat_value", type: "integer" },
           { name: "sample_size", type: "integer" },
-          { name: "stat_description", type: "text" }
-        ]
+          { name: "stat_description", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1805,8 +1799,8 @@ export const dialectConfig = {
           { name: "last_update", type: "timestamp" },
           { name: "n_rows", type: "integer" },
           { name: "clustered_index_size", type: "integer" },
-          { name: "sum_of_other_index_sizes", type: "integer" }
-        ]
+          { name: "sum_of_other_index_sizes", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -1823,8 +1817,8 @@ export const dialectConfig = {
           { name: "orig_epoch", type: "integer" },
           { name: "gci", type: "integer" },
           { name: "next_position", type: "integer" },
-          { name: "next_file", type: "text" }
-        ]
+          { name: "next_file", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1833,16 +1827,16 @@ export const dialectConfig = {
           { name: "host", type: "text" },
           { name: "user", type: "text" },
           { name: "password_timestamp", type: "timestamp" },
-          { name: "password", type: "text" }
-        ]
+          { name: "password", type: "text" },
+        ],
       },
       {
         schema: "mysql",
         name: "plugin",
         columns: [
           { name: "name", type: "text" },
-          { name: "dl", type: "text" }
-        ]
+          { name: "dl", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1855,8 +1849,8 @@ export const dialectConfig = {
           { name: "routine_type", type: "text" },
           { name: "grantor", type: "text" },
           { name: "proc_priv", type: "variant" },
-          { name: "timestamp", type: "timestamp" }
-        ]
+          { name: "timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "mysql",
@@ -1868,8 +1862,8 @@ export const dialectConfig = {
           { name: "proxied_user", type: "text" },
           { name: "with_grant", type: "integer" },
           { name: "grantor", type: "text" },
-          { name: "timestamp", type: "timestamp" }
-        ]
+          { name: "timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "mysql",
@@ -1880,8 +1874,8 @@ export const dialectConfig = {
           { name: "port", type: "integer" },
           { name: "network_namespace", type: "text" },
           { name: "weight", type: "integer" },
-          { name: "managed_name", type: "text" }
-        ]
+          { name: "managed_name", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1890,16 +1884,16 @@ export const dialectConfig = {
           { name: "channel_name", type: "text" },
           { name: "managed_name", type: "text" },
           { name: "managed_type", type: "text" },
-          { name: "configuration", type: "json" }
-        ]
+          { name: "configuration", type: "json" },
+        ],
       },
       {
         schema: "mysql",
         name: "replication_group_configuration_version",
         columns: [
           { name: "name", type: "text" },
-          { name: "version", type: "integer" }
-        ]
+          { name: "version", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -1910,8 +1904,8 @@ export const dialectConfig = {
           { name: "enabled", type: "integer" },
           { name: "type", type: "text" },
           { name: "priority", type: "integer" },
-          { name: "error_handling", type: "text" }
-        ]
+          { name: "error_handling", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1921,8 +1915,8 @@ export const dialectConfig = {
           { name: "from_user", type: "text" },
           { name: "to_host", type: "text" },
           { name: "to_user", type: "text" },
-          { name: "with_admin_option", type: "text" }
-        ]
+          { name: "with_admin_option", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1932,8 +1926,8 @@ export const dialectConfig = {
           { name: "cost_value", type: "decimal" },
           { name: "last_update", type: "timestamp" },
           { name: "comment", type: "text" },
-          { name: "default_value", type: "decimal" }
-        ]
+          { name: "default_value", type: "decimal" },
+        ],
       },
       {
         schema: "mysql",
@@ -1947,8 +1941,8 @@ export const dialectConfig = {
           { name: "port", type: "integer" },
           { name: "socket", type: "text" },
           { name: "wrapper", type: "text" },
-          { name: "owner", type: "text" }
-        ]
+          { name: "owner", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -1986,8 +1980,8 @@ export const dialectConfig = {
           { name: "master_zstd_compression_level", type: "integer" },
           { name: "tls_ciphersuites", type: "text" },
           { name: "source_connection_auto_failover", type: "integer" },
-          { name: "gtid_only", type: "integer" }
-        ]
+          { name: "gtid_only", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -2007,8 +2001,8 @@ export const dialectConfig = {
           { name: "require_row_format", type: "integer" },
           { name: "require_table_primary_key_check", type: "text" },
           { name: "assign_gtids_to_anonymous_transactions_type", type: "text" },
-          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" }
-        ]
+          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -2026,8 +2020,8 @@ export const dialectConfig = {
           { name: "checkpoint_seqno", type: "integer" },
           { name: "checkpoint_group_size", type: "integer" },
           { name: "checkpoint_group_bitmap", type: "bytes" },
-          { name: "channel_name", type: "text" }
-        ]
+          { name: "channel_name", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -2044,8 +2038,8 @@ export const dialectConfig = {
           { name: "insert_id", type: "integer" },
           { name: "server_id", type: "integer" },
           { name: "sql_text", type: "bytes" },
-          { name: "thread_id", type: "integer" }
-        ]
+          { name: "thread_id", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -2058,32 +2052,32 @@ export const dialectConfig = {
           { name: "grantor", type: "text" },
           { name: "timestamp", type: "timestamp" },
           { name: "table_priv", type: "variant" },
-          { name: "column_priv", type: "variant" }
-        ]
+          { name: "column_priv", type: "variant" },
+        ],
       },
       {
         schema: "mysql",
         name: "time_zone",
         columns: [
           { name: "time_zone_id", type: "integer" },
-          { name: "use_leap_seconds", type: "text" }
-        ]
+          { name: "use_leap_seconds", type: "text" },
+        ],
       },
       {
         schema: "mysql",
         name: "time_zone_leap_second",
         columns: [
           { name: "transition_time", type: "integer" },
-          { name: "correction", type: "integer" }
-        ]
+          { name: "correction", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
         name: "time_zone_name",
         columns: [
           { name: "name", type: "text" },
-          { name: "time_zone_id", type: "integer" }
-        ]
+          { name: "time_zone_id", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -2091,8 +2085,8 @@ export const dialectConfig = {
         columns: [
           { name: "time_zone_id", type: "integer" },
           { name: "transition_time", type: "integer" },
-          { name: "transition_type_id", type: "integer" }
-        ]
+          { name: "transition_type_id", type: "integer" },
+        ],
       },
       {
         schema: "mysql",
@@ -2102,8 +2096,8 @@ export const dialectConfig = {
           { name: "transition_type_id", type: "integer" },
           { name: "offset", type: "integer" },
           { name: "is_dst", type: "integer" },
-          { name: "abbreviation", type: "text" }
-        ]
+          { name: "abbreviation", type: "text" },
+        ],
       },
       {
         schema: "mysql",
@@ -2159,8 +2153,8 @@ export const dialectConfig = {
           { name: "password_reuse_history", type: "integer" },
           { name: "password_reuse_time", type: "integer" },
           { name: "password_require_current", type: "text" },
-          { name: "user_attributes", type: "json" }
-        ]
+          { name: "user_attributes", type: "json" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2171,8 +2165,8 @@ export const dialectConfig = {
           { name: "current_connections", type: "integer" },
           { name: "total_connections", type: "integer" },
           { name: "max_session_controlled_memory", type: "integer" },
-          { name: "max_session_total_memory", type: "integer" }
-        ]
+          { name: "max_session_total_memory", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2191,16 +2185,16 @@ export const dialectConfig = {
           { name: "last_transaction_id", type: "text" },
           { name: "last_transaction_compressed_bytes", type: "integer" },
           { name: "last_transaction_uncompressed_bytes", type: "integer" },
-          { name: "last_transaction_timestamp", type: "timestamp" }
-        ]
+          { name: "last_transaction_timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "cond_instances",
         columns: [
           { name: "name", type: "text" },
-          { name: "object_instance_begin", type: "integer" }
-        ]
+          { name: "object_instance_begin", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2216,8 +2210,8 @@ export const dialectConfig = {
           { name: "blocking_engine_transaction_id", type: "integer" },
           { name: "blocking_thread_id", type: "integer" },
           { name: "blocking_event_id", type: "integer" },
-          { name: "blocking_object_instance_begin", type: "integer" }
-        ]
+          { name: "blocking_object_instance_begin", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2237,8 +2231,8 @@ export const dialectConfig = {
           { name: "lock_type", type: "text" },
           { name: "lock_mode", type: "text" },
           { name: "lock_status", type: "text" },
-          { name: "lock_data", type: "text" }
-        ]
+          { name: "lock_data", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2249,8 +2243,8 @@ export const dialectConfig = {
           { name: "prio", type: "text" },
           { name: "error_code", type: "text" },
           { name: "subsystem", type: "text" },
-          { name: "data", type: "text" }
-        ]
+          { name: "data", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2264,8 +2258,8 @@ export const dialectConfig = {
           { name: "sum_error_raised", type: "integer" },
           { name: "sum_error_handled", type: "integer" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2278,8 +2272,8 @@ export const dialectConfig = {
           { name: "sum_error_raised", type: "integer" },
           { name: "sum_error_handled", type: "integer" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2292,8 +2286,8 @@ export const dialectConfig = {
           { name: "sum_error_raised", type: "integer" },
           { name: "sum_error_handled", type: "integer" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2306,8 +2300,8 @@ export const dialectConfig = {
           { name: "sum_error_raised", type: "integer" },
           { name: "sum_error_handled", type: "integer" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2319,8 +2313,8 @@ export const dialectConfig = {
           { name: "sum_error_raised", type: "integer" },
           { name: "sum_error_handled", type: "integer" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2337,8 +2331,8 @@ export const dialectConfig = {
           { name: "work_completed", type: "integer" },
           { name: "work_estimated", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2355,8 +2349,8 @@ export const dialectConfig = {
           { name: "work_completed", type: "integer" },
           { name: "work_estimated", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2373,8 +2367,8 @@ export const dialectConfig = {
           { name: "work_completed", type: "integer" },
           { name: "work_estimated", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2387,8 +2381,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2400,8 +2394,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2413,8 +2407,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2426,8 +2420,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2438,8 +2432,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2490,8 +2484,8 @@ export const dialectConfig = {
           { name: "cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "execution_engine", type: "text" }
-        ]
+          { name: "execution_engine", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2504,8 +2498,8 @@ export const dialectConfig = {
           { name: "bucket_timer_high", type: "integer" },
           { name: "count_bucket", type: "integer" },
           { name: "count_bucket_and_lower", type: "integer" },
-          { name: "bucket_quantile", type: "decimal" }
-        ]
+          { name: "bucket_quantile", type: "decimal" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2516,8 +2510,8 @@ export const dialectConfig = {
           { name: "bucket_timer_high", type: "integer" },
           { name: "count_bucket", type: "integer" },
           { name: "count_bucket_and_lower", type: "integer" },
-          { name: "bucket_quantile", type: "decimal" }
-        ]
+          { name: "bucket_quantile", type: "decimal" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2568,8 +2562,8 @@ export const dialectConfig = {
           { name: "cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "execution_engine", type: "text" }
-        ]
+          { name: "execution_engine", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2620,8 +2614,8 @@ export const dialectConfig = {
           { name: "cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "execution_engine", type: "text" }
-        ]
+          { name: "execution_engine", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2657,8 +2651,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2702,8 +2696,8 @@ export const dialectConfig = {
           { name: "quantile_999", type: "integer" },
           { name: "query_sample_text", type: "text" },
           { name: "query_sample_seen", type: "timestamp" },
-          { name: "query_sample_timer_wait", type: "integer" }
-        ]
+          { name: "query_sample_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2738,8 +2732,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2780,8 +2774,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2816,8 +2810,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2852,8 +2846,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2887,8 +2881,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2917,8 +2911,8 @@ export const dialectConfig = {
           { name: "number_of_release_savepoint", type: "integer" },
           { name: "object_instance_begin", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2947,8 +2941,8 @@ export const dialectConfig = {
           { name: "number_of_release_savepoint", type: "integer" },
           { name: "object_instance_begin", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -2977,8 +2971,8 @@ export const dialectConfig = {
           { name: "number_of_release_savepoint", type: "integer" },
           { name: "object_instance_begin", type: "integer" },
           { name: "nesting_event_id", type: "integer" },
-          { name: "nesting_event_type", type: "text" }
-        ]
+          { name: "nesting_event_type", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3001,8 +2995,8 @@ export const dialectConfig = {
           { name: "sum_timer_read_only", type: "integer" },
           { name: "min_timer_read_only", type: "integer" },
           { name: "avg_timer_read_only", type: "integer" },
-          { name: "max_timer_read_only", type: "integer" }
-        ]
+          { name: "max_timer_read_only", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3024,8 +3018,8 @@ export const dialectConfig = {
           { name: "sum_timer_read_only", type: "integer" },
           { name: "min_timer_read_only", type: "integer" },
           { name: "avg_timer_read_only", type: "integer" },
-          { name: "max_timer_read_only", type: "integer" }
-        ]
+          { name: "max_timer_read_only", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3047,8 +3041,8 @@ export const dialectConfig = {
           { name: "sum_timer_read_only", type: "integer" },
           { name: "min_timer_read_only", type: "integer" },
           { name: "avg_timer_read_only", type: "integer" },
-          { name: "max_timer_read_only", type: "integer" }
-        ]
+          { name: "max_timer_read_only", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3070,8 +3064,8 @@ export const dialectConfig = {
           { name: "sum_timer_read_only", type: "integer" },
           { name: "min_timer_read_only", type: "integer" },
           { name: "avg_timer_read_only", type: "integer" },
-          { name: "max_timer_read_only", type: "integer" }
-        ]
+          { name: "max_timer_read_only", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3092,8 +3086,8 @@ export const dialectConfig = {
           { name: "sum_timer_read_only", type: "integer" },
           { name: "min_timer_read_only", type: "integer" },
           { name: "avg_timer_read_only", type: "integer" },
-          { name: "max_timer_read_only", type: "integer" }
-        ]
+          { name: "max_timer_read_only", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3117,8 +3111,8 @@ export const dialectConfig = {
           { name: "nesting_event_type", type: "text" },
           { name: "operation", type: "text" },
           { name: "number_of_bytes", type: "integer" },
-          { name: "flags", type: "integer" }
-        ]
+          { name: "flags", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3142,8 +3136,8 @@ export const dialectConfig = {
           { name: "nesting_event_type", type: "text" },
           { name: "operation", type: "text" },
           { name: "number_of_bytes", type: "integer" },
-          { name: "flags", type: "integer" }
-        ]
+          { name: "flags", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3167,8 +3161,8 @@ export const dialectConfig = {
           { name: "nesting_event_type", type: "text" },
           { name: "operation", type: "text" },
           { name: "number_of_bytes", type: "integer" },
-          { name: "flags", type: "integer" }
-        ]
+          { name: "flags", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3181,8 +3175,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3194,8 +3188,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3207,8 +3201,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3220,8 +3214,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3233,8 +3227,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3245,8 +3239,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3254,8 +3248,8 @@ export const dialectConfig = {
         columns: [
           { name: "file_name", type: "text" },
           { name: "event_name", type: "text" },
-          { name: "open_count", type: "integer" }
-        ]
+          { name: "open_count", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3283,8 +3277,8 @@ export const dialectConfig = {
           { name: "sum_timer_misc", type: "integer" },
           { name: "min_timer_misc", type: "integer" },
           { name: "avg_timer_misc", type: "integer" },
-          { name: "max_timer_misc", type: "integer" }
-        ]
+          { name: "max_timer_misc", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3314,24 +3308,24 @@ export const dialectConfig = {
           { name: "sum_timer_misc", type: "integer" },
           { name: "min_timer_misc", type: "integer" },
           { name: "avg_timer_misc", type: "integer" },
-          { name: "max_timer_misc", type: "integer" }
-        ]
+          { name: "max_timer_misc", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "global_status",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "global_variables",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3365,8 +3359,8 @@ export const dialectConfig = {
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
           { name: "first_error_seen", type: "timestamp" },
-          { name: "last_error_seen", type: "timestamp" }
-        ]
+          { name: "last_error_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3376,8 +3370,8 @@ export const dialectConfig = {
           { name: "current_connections", type: "integer" },
           { name: "total_connections", type: "integer" },
           { name: "max_session_controlled_memory", type: "integer" },
-          { name: "max_session_total_memory", type: "integer" }
-        ]
+          { name: "max_session_total_memory", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3389,16 +3383,16 @@ export const dialectConfig = {
           { name: "end_lsn", type: "integer" },
           { name: "size_in_bytes", type: "integer" },
           { name: "is_full", type: "integer" },
-          { name: "consumer_level", type: "integer" }
-        ]
+          { name: "consumer_level", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "keyring_component_status",
         columns: [
           { name: "status_key", type: "text" },
-          { name: "status_value", type: "text" }
-        ]
+          { name: "status_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3406,8 +3400,8 @@ export const dialectConfig = {
         columns: [
           { name: "key_id", type: "text" },
           { name: "key_owner", type: "text" },
-          { name: "backend_key_id", type: "text" }
-        ]
+          { name: "backend_key_id", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3416,8 +3410,8 @@ export const dialectConfig = {
           { name: "server_uuid", type: "text" },
           { name: "local", type: "json" },
           { name: "replication", type: "json" },
-          { name: "storage_engines", type: "json" }
-        ]
+          { name: "storage_engines", type: "json" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3435,8 +3429,8 @@ export const dialectConfig = {
           { name: "high_count_used", type: "integer" },
           { name: "low_number_of_bytes_used", type: "integer" },
           { name: "current_number_of_bytes_used", type: "integer" },
-          { name: "high_number_of_bytes_used", type: "integer" }
-        ]
+          { name: "high_number_of_bytes_used", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3453,8 +3447,8 @@ export const dialectConfig = {
           { name: "high_count_used", type: "integer" },
           { name: "low_number_of_bytes_used", type: "integer" },
           { name: "current_number_of_bytes_used", type: "integer" },
-          { name: "high_number_of_bytes_used", type: "integer" }
-        ]
+          { name: "high_number_of_bytes_used", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3471,8 +3465,8 @@ export const dialectConfig = {
           { name: "high_count_used", type: "integer" },
           { name: "low_number_of_bytes_used", type: "integer" },
           { name: "current_number_of_bytes_used", type: "integer" },
-          { name: "high_number_of_bytes_used", type: "integer" }
-        ]
+          { name: "high_number_of_bytes_used", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3489,8 +3483,8 @@ export const dialectConfig = {
           { name: "high_count_used", type: "integer" },
           { name: "low_number_of_bytes_used", type: "integer" },
           { name: "current_number_of_bytes_used", type: "integer" },
-          { name: "high_number_of_bytes_used", type: "integer" }
-        ]
+          { name: "high_number_of_bytes_used", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3506,8 +3500,8 @@ export const dialectConfig = {
           { name: "high_count_used", type: "integer" },
           { name: "low_number_of_bytes_used", type: "integer" },
           { name: "current_number_of_bytes_used", type: "integer" },
-          { name: "high_number_of_bytes_used", type: "integer" }
-        ]
+          { name: "high_number_of_bytes_used", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3523,8 +3517,8 @@ export const dialectConfig = {
           { name: "lock_status", type: "text" },
           { name: "source", type: "text" },
           { name: "owner_thread_id", type: "integer" },
-          { name: "owner_event_id", type: "integer" }
-        ]
+          { name: "owner_event_id", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3532,8 +3526,8 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "object_instance_begin", type: "integer" },
-          { name: "locked_by_thread_id", type: "integer" }
-        ]
+          { name: "locked_by_thread_id", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3546,8 +3540,8 @@ export const dialectConfig = {
           { name: "sum_timer_wait", type: "integer" },
           { name: "min_timer_wait", type: "integer" },
           { name: "avg_timer_wait", type: "integer" },
-          { name: "max_timer_wait", type: "integer" }
-        ]
+          { name: "max_timer_wait", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3556,16 +3550,16 @@ export const dialectConfig = {
           { name: "timer_name", type: "text" },
           { name: "timer_frequency", type: "integer" },
           { name: "timer_resolution", type: "integer" },
-          { name: "timer_overhead", type: "integer" }
-        ]
+          { name: "timer_overhead", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "persisted_variables",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3610,8 +3604,8 @@ export const dialectConfig = {
           { name: "sum_cpu_time", type: "integer" },
           { name: "max_controlled_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "count_secondary", type: "integer" }
-        ]
+          { name: "count_secondary", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3625,8 +3619,8 @@ export const dialectConfig = {
           { name: "time", type: "integer" },
           { name: "state", type: "text" },
           { name: "info", type: "text" },
-          { name: "execution_engine", type: "text" }
-        ]
+          { name: "execution_engine", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3638,8 +3632,8 @@ export const dialectConfig = {
           { name: "require_row_format", type: "text" },
           { name: "require_table_primary_key_check", type: "text" },
           { name: "assign_gtids_to_anonymous_transactions_type", type: "text" },
-          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" }
-        ]
+          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3650,8 +3644,8 @@ export const dialectConfig = {
           { name: "filter_rule", type: "text" },
           { name: "configured_by", type: "text" },
           { name: "active_since", type: "timestamp" },
-          { name: "counter", type: "integer" }
-        ]
+          { name: "counter", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3660,8 +3654,8 @@ export const dialectConfig = {
           { name: "filter_name", type: "text" },
           { name: "filter_rule", type: "text" },
           { name: "configured_by", type: "text" },
-          { name: "active_since", type: "timestamp" }
-        ]
+          { name: "active_since", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3670,8 +3664,8 @@ export const dialectConfig = {
           { name: "channel_name", type: "text" },
           { name: "service_state", type: "text" },
           { name: "remaining_delay", type: "integer" },
-          { name: "count_transactions_retries", type: "integer" }
-        ]
+          { name: "count_transactions_retries", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3691,8 +3685,8 @@ export const dialectConfig = {
           { name: "processing_transaction", type: "text" },
           { name: "processing_transaction_original_commit_timestamp", type: "timestamp" },
           { name: "processing_transaction_immediate_commit_timestamp", type: "timestamp" },
-          { name: "processing_transaction_start_buffer_timestamp", type: "timestamp" }
-        ]
+          { name: "processing_transaction_start_buffer_timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3721,8 +3715,8 @@ export const dialectConfig = {
           { name: "applying_transaction_retries_count", type: "integer" },
           { name: "applying_transaction_last_transient_error_number", type: "integer" },
           { name: "applying_transaction_last_transient_error_message", type: "text" },
-          { name: "applying_transaction_last_transient_error_timestamp", type: "timestamp" }
-        ]
+          { name: "applying_transaction_last_transient_error_timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3733,8 +3727,8 @@ export const dialectConfig = {
           { name: "port", type: "integer" },
           { name: "network_namespace", type: "text" },
           { name: "weight", type: "integer" },
-          { name: "managed_name", type: "text" }
-        ]
+          { name: "managed_name", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3743,8 +3737,8 @@ export const dialectConfig = {
           { name: "channel_name", type: "text" },
           { name: "managed_name", type: "text" },
           { name: "managed_type", type: "text" },
-          { name: "configuration", type: "json" }
-        ]
+          { name: "configuration", type: "json" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3776,8 +3770,8 @@ export const dialectConfig = {
           { name: "zstd_compression_level", type: "integer" },
           { name: "tls_ciphersuites", type: "text" },
           { name: "source_connection_auto_failover", type: "text" },
-          { name: "gtid_only", type: "text" }
-        ]
+          { name: "gtid_only", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3802,8 +3796,8 @@ export const dialectConfig = {
           { name: "queueing_transaction", type: "text" },
           { name: "queueing_transaction_original_commit_timestamp", type: "timestamp" },
           { name: "queueing_transaction_immediate_commit_timestamp", type: "timestamp" },
-          { name: "queueing_transaction_start_queue_timestamp", type: "timestamp" }
-        ]
+          { name: "queueing_transaction_start_queue_timestamp", type: "timestamp" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3821,8 +3815,8 @@ export const dialectConfig = {
           { name: "count_transactions_remote_in_applier_queue", type: "integer" },
           { name: "count_transactions_remote_applied", type: "integer" },
           { name: "count_transactions_local_proposed", type: "integer" },
-          { name: "count_transactions_local_rollback", type: "integer" }
-        ]
+          { name: "count_transactions_local_rollback", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3835,8 +3829,8 @@ export const dialectConfig = {
           { name: "member_state", type: "text" },
           { name: "member_role", type: "text" },
           { name: "member_version", type: "text" },
-          { name: "member_communication_stack", type: "text" }
-        ]
+          { name: "member_communication_stack", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3845,8 +3839,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "object_instance_begin", type: "integer" },
           { name: "write_locked_by_thread_id", type: "integer" },
-          { name: "read_locked_by_count", type: "integer" }
-        ]
+          { name: "read_locked_by_count", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3855,8 +3849,8 @@ export const dialectConfig = {
           { name: "processlist_id", type: "integer" },
           { name: "attr_name", type: "text" },
           { name: "attr_value", type: "text" },
-          { name: "ordinal_position", type: "integer" }
-        ]
+          { name: "ordinal_position", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3865,24 +3859,24 @@ export const dialectConfig = {
           { name: "processlist_id", type: "integer" },
           { name: "attr_name", type: "text" },
           { name: "attr_value", type: "text" },
-          { name: "ordinal_position", type: "integer" }
-        ]
+          { name: "ordinal_position", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "session_status",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "session_variables",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3892,16 +3886,16 @@ export const dialectConfig = {
           { name: "user", type: "text" },
           { name: "role", type: "text" },
           { name: "enabled", type: "text" },
-          { name: "history", type: "text" }
-        ]
+          { name: "history", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
         name: "setup_consumers",
         columns: [
           { name: "name", type: "text" },
-          { name: "enabled", type: "text" }
-        ]
+          { name: "enabled", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3913,8 +3907,8 @@ export const dialectConfig = {
           { name: "properties", type: "variant" },
           { name: "flags", type: "variant" },
           { name: "volatility", type: "integer" },
-          { name: "documentation", type: "text" }
-        ]
+          { name: "documentation", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3922,8 +3916,8 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "level", type: "text" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3932,8 +3926,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "frequency", type: "integer" },
           { name: "enabled", type: "text" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3944,8 +3938,8 @@ export const dialectConfig = {
           { name: "metric_type", type: "text" },
           { name: "num_type", type: "text" },
           { name: "unit", type: "text" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3955,8 +3949,8 @@ export const dialectConfig = {
           { name: "object_schema", type: "text" },
           { name: "object_name", type: "text" },
           { name: "enabled", type: "text" },
-          { name: "timed", type: "text" }
-        ]
+          { name: "timed", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3967,8 +3961,8 @@ export const dialectConfig = {
           { name: "history", type: "text" },
           { name: "properties", type: "variant" },
           { name: "volatility", type: "integer" },
-          { name: "documentation", type: "text" }
-        ]
+          { name: "documentation", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -3980,8 +3974,8 @@ export const dialectConfig = {
           { name: "socket_id", type: "integer" },
           { name: "ip", type: "text" },
           { name: "port", type: "integer" },
-          { name: "state", type: "text" }
-        ]
+          { name: "state", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4009,8 +4003,8 @@ export const dialectConfig = {
           { name: "sum_timer_misc", type: "integer" },
           { name: "min_timer_misc", type: "integer" },
           { name: "avg_timer_misc", type: "integer" },
-          { name: "max_timer_misc", type: "integer" }
-        ]
+          { name: "max_timer_misc", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4039,8 +4033,8 @@ export const dialectConfig = {
           { name: "sum_timer_misc", type: "integer" },
           { name: "min_timer_misc", type: "integer" },
           { name: "avg_timer_misc", type: "integer" },
-          { name: "max_timer_misc", type: "integer" }
-        ]
+          { name: "max_timer_misc", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4049,8 +4043,8 @@ export const dialectConfig = {
           { name: "user", type: "text" },
           { name: "host", type: "text" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4058,8 +4052,8 @@ export const dialectConfig = {
         columns: [
           { name: "host", type: "text" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4067,8 +4061,8 @@ export const dialectConfig = {
         columns: [
           { name: "thread_id", type: "integer" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4076,8 +4070,8 @@ export const dialectConfig = {
         columns: [
           { name: "user", type: "text" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4090,8 +4084,8 @@ export const dialectConfig = {
           { name: "owner_thread_id", type: "integer" },
           { name: "owner_event_id", type: "integer" },
           { name: "internal_lock", type: "text" },
-          { name: "external_lock", type: "text" }
-        ]
+          { name: "external_lock", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4135,8 +4129,8 @@ export const dialectConfig = {
           { name: "sum_timer_delete", type: "integer" },
           { name: "min_timer_delete", type: "integer" },
           { name: "avg_timer_delete", type: "integer" },
-          { name: "max_timer_delete", type: "integer" }
-        ]
+          { name: "max_timer_delete", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4179,8 +4173,8 @@ export const dialectConfig = {
           { name: "sum_timer_delete", type: "integer" },
           { name: "min_timer_delete", type: "integer" },
           { name: "avg_timer_delete", type: "integer" },
-          { name: "max_timer_delete", type: "integer" }
-        ]
+          { name: "max_timer_delete", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4253,8 +4247,8 @@ export const dialectConfig = {
           { name: "sum_timer_write_external", type: "integer" },
           { name: "min_timer_write_external", type: "integer" },
           { name: "avg_timer_write_external", type: "integer" },
-          { name: "max_timer_write_external", type: "integer" }
-        ]
+          { name: "max_timer_write_external", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4283,8 +4277,8 @@ export const dialectConfig = {
           { name: "max_controlled_memory", type: "integer" },
           { name: "total_memory", type: "integer" },
           { name: "max_total_memory", type: "integer" },
-          { name: "telemetry_active", type: "text" }
-        ]
+          { name: "telemetry_active", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4292,8 +4286,8 @@ export const dialectConfig = {
         columns: [
           { name: "channel", type: "text" },
           { name: "property", type: "text" },
-          { name: "value", type: "text" }
-        ]
+          { name: "value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4303,8 +4297,8 @@ export const dialectConfig = {
           { name: "udf_return_type", type: "text" },
           { name: "udf_type", type: "text" },
           { name: "udf_library", type: "text" },
-          { name: "udf_usage_count", type: "integer" }
-        ]
+          { name: "udf_usage_count", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4312,8 +4306,8 @@ export const dialectConfig = {
         columns: [
           { name: "thread_id", type: "integer" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "bytes" }
-        ]
+          { name: "variable_value", type: "bytes" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4323,8 +4317,8 @@ export const dialectConfig = {
           { name: "current_connections", type: "integer" },
           { name: "total_connections", type: "integer" },
           { name: "max_session_controlled_memory", type: "integer" },
-          { name: "max_session_total_memory", type: "integer" }
-        ]
+          { name: "max_session_total_memory", type: "integer" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4332,8 +4326,8 @@ export const dialectConfig = {
         columns: [
           { name: "thread_id", type: "integer" },
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "performance_schema",
@@ -4346,8 +4340,8 @@ export const dialectConfig = {
           { name: "max_value", type: "text" },
           { name: "set_time", type: "timestamp" },
           { name: "set_user", type: "text" },
-          { name: "set_host", type: "text" }
-        ]
+          { name: "set_host", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4364,8 +4358,8 @@ export const dialectConfig = {
           { name: "total_connections", type: "decimal" },
           { name: "unique_users", type: "integer" },
           { name: "current_memory", type: "text" },
-          { name: "total_memory_allocated", type: "text" }
-        ]
+          { name: "total_memory_allocated", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4373,8 +4367,8 @@ export const dialectConfig = {
         columns: [
           { name: "host", type: "text" },
           { name: "ios", type: "decimal" },
-          { name: "io_latency", type: "text" }
-        ]
+          { name: "io_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4384,8 +4378,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4395,8 +4389,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
-          { name: "avg_latency", type: "text" }
-        ]
+          { name: "avg_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4411,8 +4405,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "decimal" },
           { name: "rows_examined", type: "decimal" },
           { name: "rows_affected", type: "decimal" },
-          { name: "full_scans", type: "decimal" }
-        ]
+          { name: "full_scans", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4428,8 +4422,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "integer" },
           { name: "rows_examined", type: "integer" },
           { name: "rows_affected", type: "integer" },
-          { name: "full_scans", type: "integer" }
-        ]
+          { name: "full_scans", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -4441,8 +4435,8 @@ export const dialectConfig = {
           { name: "pages", type: "integer" },
           { name: "pages_hashed", type: "integer" },
           { name: "pages_old", type: "integer" },
-          { name: "rows_cached", type: "decimal" }
-        ]
+          { name: "rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4455,8 +4449,8 @@ export const dialectConfig = {
           { name: "pages", type: "integer" },
           { name: "pages_hashed", type: "integer" },
           { name: "pages_old", type: "integer" },
-          { name: "rows_cached", type: "decimal" }
-        ]
+          { name: "rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4491,8 +4485,8 @@ export const dialectConfig = {
           { name: "blocking_trx_rows_locked", type: "integer" },
           { name: "blocking_trx_rows_modified", type: "integer" },
           { name: "sql_kill_blocking_query", type: "text" },
-          { name: "sql_kill_blocking_connection", type: "text" }
-        ]
+          { name: "sql_kill_blocking_connection", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4505,8 +4499,8 @@ export const dialectConfig = {
           { name: "avg_latency", type: "text" },
           { name: "max_latency", type: "text" },
           { name: "thread_id", type: "integer" },
-          { name: "processlist_id", type: "integer" }
-        ]
+          { name: "processlist_id", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -4520,8 +4514,8 @@ export const dialectConfig = {
           { name: "total_written", type: "text" },
           { name: "avg_write", type: "text" },
           { name: "total", type: "text" },
-          { name: "write_pct", type: "decimal" }
-        ]
+          { name: "write_pct", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4535,8 +4529,8 @@ export const dialectConfig = {
           { name: "count_write", type: "integer" },
           { name: "write_latency", type: "text" },
           { name: "count_misc", type: "integer" },
-          { name: "misc_latency", type: "text" }
-        ]
+          { name: "misc_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4554,8 +4548,8 @@ export const dialectConfig = {
           { name: "count_write", type: "integer" },
           { name: "total_written", type: "text" },
           { name: "avg_written", type: "text" },
-          { name: "total_requested", type: "text" }
-        ]
+          { name: "total_requested", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4574,8 +4568,8 @@ export const dialectConfig = {
           { name: "avg_read", type: "text" },
           { name: "count_write", type: "integer" },
           { name: "total_written", type: "text" },
-          { name: "avg_written", type: "text" }
-        ]
+          { name: "avg_written", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4585,8 +4579,8 @@ export const dialectConfig = {
           { name: "file", type: "text" },
           { name: "latency", type: "text" },
           { name: "operation", type: "text" },
-          { name: "requested", type: "text" }
-        ]
+          { name: "requested", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4597,8 +4591,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "text" },
           { name: "current_avg_alloc", type: "text" },
           { name: "current_max_alloc", type: "text" },
-          { name: "total_allocated", type: "text" }
-        ]
+          { name: "total_allocated", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4610,8 +4604,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "text" },
           { name: "current_avg_alloc", type: "text" },
           { name: "current_max_alloc", type: "text" },
-          { name: "total_allocated", type: "text" }
-        ]
+          { name: "total_allocated", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4622,8 +4616,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "text" },
           { name: "current_avg_alloc", type: "text" },
           { name: "current_max_alloc", type: "text" },
-          { name: "total_allocated", type: "text" }
-        ]
+          { name: "total_allocated", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4635,15 +4629,13 @@ export const dialectConfig = {
           { name: "current_avg_alloc", type: "text" },
           { name: "high_count", type: "integer" },
           { name: "high_alloc", type: "text" },
-          { name: "high_avg_alloc", type: "text" }
-        ]
+          { name: "high_avg_alloc", type: "text" },
+        ],
       },
       {
         schema: "sys",
         name: "memory_global_total",
-        columns: [
-          { name: "total_allocated", type: "text" }
-        ]
+        columns: [{ name: "total_allocated", type: "text" }],
       },
       {
         schema: "sys",
@@ -4652,8 +4644,8 @@ export const dialectConfig = {
           { name: "variable_name", type: "text" },
           { name: "variable_value", type: "text" },
           { name: "type", type: "text" },
-          { name: "enabled", type: "text" }
-        ]
+          { name: "enabled", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4688,16 +4680,16 @@ export const dialectConfig = {
           { name: "trx_state", type: "text" },
           { name: "trx_autocommit", type: "text" },
           { name: "pid", type: "text" },
-          { name: "program_name", type: "text" }
-        ]
+          { name: "program_name", type: "text" },
+        ],
       },
       {
         schema: "sys",
         name: "ps_check_lost_instrumentation",
         columns: [
           { name: "variable_name", type: "text" },
-          { name: "variable_value", type: "text" }
-        ]
+          { name: "variable_value", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4712,8 +4704,8 @@ export const dialectConfig = {
           { name: "is_unsigned", type: "integer" },
           { name: "max_value", type: "integer" },
           { name: "auto_increment", type: "integer" },
-          { name: "auto_increment_ratio", type: "decimal" }
-        ]
+          { name: "auto_increment_ratio", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4729,8 +4721,8 @@ export const dialectConfig = {
           { name: "rows_updated", type: "integer" },
           { name: "update_latency", type: "text" },
           { name: "rows_deleted", type: "integer" },
-          { name: "delete_latency", type: "text" }
-        ]
+          { name: "delete_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4738,8 +4730,8 @@ export const dialectConfig = {
         columns: [
           { name: "db", type: "text" },
           { name: "object_type", type: "text" },
-          { name: "count", type: "integer" }
-        ]
+          { name: "count", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -4754,8 +4746,8 @@ export const dialectConfig = {
           { name: "dominant_index_columns", type: "text" },
           { name: "dominant_index_non_unique", type: "integer" },
           { name: "subpart_exists", type: "integer" },
-          { name: "sql_drop_index", type: "text" }
-        ]
+          { name: "sql_drop_index", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4778,8 +4770,8 @@ export const dialectConfig = {
           { name: "blocking_lock_type", type: "text" },
           { name: "blocking_lock_duration", type: "text" },
           { name: "sql_kill_blocking_query", type: "text" },
-          { name: "sql_kill_blocking_connection", type: "text" }
-        ]
+          { name: "sql_kill_blocking_connection", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4803,8 +4795,8 @@ export const dialectConfig = {
           { name: "io_write", type: "text" },
           { name: "io_write_latency", type: "text" },
           { name: "io_misc_requests", type: "decimal" },
-          { name: "io_misc_latency", type: "text" }
-        ]
+          { name: "io_misc_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4834,8 +4826,8 @@ export const dialectConfig = {
           { name: "innodb_buffer_pages", type: "integer" },
           { name: "innodb_buffer_pages_hashed", type: "integer" },
           { name: "innodb_buffer_pages_old", type: "integer" },
-          { name: "innodb_buffer_rows_cached", type: "decimal" }
-        ]
+          { name: "innodb_buffer_rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -4844,8 +4836,8 @@ export const dialectConfig = {
           { name: "object_schema", type: "text" },
           { name: "object_name", type: "text" },
           { name: "rows_full_scanned", type: "integer" },
-          { name: "latency", type: "text" }
-        ]
+          { name: "latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4853,8 +4845,8 @@ export const dialectConfig = {
         columns: [
           { name: "object_schema", type: "text" },
           { name: "object_name", type: "text" },
-          { name: "index_name", type: "text" }
-        ]
+          { name: "index_name", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4889,8 +4881,8 @@ export const dialectConfig = {
           { name: "trx_state", type: "text" },
           { name: "trx_autocommit", type: "text" },
           { name: "pid", type: "text" },
-          { name: "program_name", type: "text" }
-        ]
+          { name: "program_name", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4899,8 +4891,8 @@ export const dialectConfig = {
           { name: "thread_id", type: "integer" },
           { name: "ssl_version", type: "text" },
           { name: "ssl_cipher", type: "text" },
-          { name: "ssl_sessions_reused", type: "text" }
-        ]
+          { name: "ssl_sessions_reused", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4931,8 +4923,8 @@ export const dialectConfig = {
           { name: "max_total_memory", type: "text" },
           { name: "digest", type: "text" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "sys",
@@ -4947,8 +4939,8 @@ export const dialectConfig = {
           { name: "warning_pct", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4967,8 +4959,8 @@ export const dialectConfig = {
           { name: "rows_examined_avg", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -4989,8 +4981,8 @@ export const dialectConfig = {
           { name: "rows_examined_avg", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5008,8 +5000,8 @@ export const dialectConfig = {
           { name: "avg_rows_sorted", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5025,8 +5017,8 @@ export const dialectConfig = {
           { name: "tmp_tables_to_disk_pct", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5035,8 +5027,8 @@ export const dialectConfig = {
           { name: "variable", type: "text" },
           { name: "value", type: "text" },
           { name: "set_time", type: "timestamp" },
-          { name: "set_by", type: "text" }
-        ]
+          { name: "set_by", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5053,8 +5045,8 @@ export const dialectConfig = {
           { name: "total_connections", type: "decimal" },
           { name: "unique_hosts", type: "integer" },
           { name: "current_memory", type: "text" },
-          { name: "total_memory_allocated", type: "text" }
-        ]
+          { name: "total_memory_allocated", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5062,8 +5054,8 @@ export const dialectConfig = {
         columns: [
           { name: "user", type: "text" },
           { name: "ios", type: "decimal" },
-          { name: "io_latency", type: "text" }
-        ]
+          { name: "io_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5073,8 +5065,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5084,8 +5076,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
-          { name: "avg_latency", type: "text" }
-        ]
+          { name: "avg_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5100,8 +5092,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "decimal" },
           { name: "rows_examined", type: "decimal" },
           { name: "rows_affected", type: "decimal" },
-          { name: "full_scans", type: "decimal" }
-        ]
+          { name: "full_scans", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5117,16 +5109,16 @@ export const dialectConfig = {
           { name: "rows_sent", type: "integer" },
           { name: "rows_examined", type: "integer" },
           { name: "rows_affected", type: "integer" },
-          { name: "full_scans", type: "integer" }
-        ]
+          { name: "full_scans", type: "integer" },
+        ],
       },
       {
         schema: "sys",
         name: "version",
         columns: [
           { name: "sys_version", type: "text" },
-          { name: "mysql_version", type: "text" }
-        ]
+          { name: "mysql_version", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5137,8 +5129,8 @@ export const dialectConfig = {
           { name: "total_latency", type: "text" },
           { name: "min_latency", type: "text" },
           { name: "avg_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5149,8 +5141,8 @@ export const dialectConfig = {
           { name: "total_latency", type: "text" },
           { name: "min_latency", type: "text" },
           { name: "avg_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5161,8 +5153,8 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
           { name: "avg_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5173,8 +5165,8 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
           { name: "avg_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5184,8 +5176,8 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "text" },
           { name: "avg_latency", type: "text" },
-          { name: "max_latency", type: "text" }
-        ]
+          { name: "max_latency", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5202,8 +5194,8 @@ export const dialectConfig = {
           { name: "total_connections", type: "decimal" },
           { name: "unique_users", type: "integer" },
           { name: "current_memory", type: "decimal" },
-          { name: "total_memory_allocated", type: "decimal" }
-        ]
+          { name: "total_memory_allocated", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5211,8 +5203,8 @@ export const dialectConfig = {
         columns: [
           { name: "host", type: "text" },
           { name: "ios", type: "decimal" },
-          { name: "io_latency", type: "decimal" }
-        ]
+          { name: "io_latency", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5222,8 +5214,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5233,8 +5225,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
-          { name: "avg_latency", type: "integer" }
-        ]
+          { name: "avg_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5249,8 +5241,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "decimal" },
           { name: "rows_examined", type: "decimal" },
           { name: "rows_affected", type: "decimal" },
-          { name: "full_scans", type: "decimal" }
-        ]
+          { name: "full_scans", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5266,8 +5258,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "integer" },
           { name: "rows_examined", type: "integer" },
           { name: "rows_affected", type: "integer" },
-          { name: "full_scans", type: "integer" }
-        ]
+          { name: "full_scans", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5279,8 +5271,8 @@ export const dialectConfig = {
           { name: "pages", type: "integer" },
           { name: "pages_hashed", type: "integer" },
           { name: "pages_old", type: "integer" },
-          { name: "rows_cached", type: "decimal" }
-        ]
+          { name: "rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5293,8 +5285,8 @@ export const dialectConfig = {
           { name: "pages", type: "integer" },
           { name: "pages_hashed", type: "integer" },
           { name: "pages_old", type: "integer" },
-          { name: "rows_cached", type: "decimal" }
-        ]
+          { name: "rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5329,8 +5321,8 @@ export const dialectConfig = {
           { name: "blocking_trx_rows_locked", type: "integer" },
           { name: "blocking_trx_rows_modified", type: "integer" },
           { name: "sql_kill_blocking_query", type: "text" },
-          { name: "sql_kill_blocking_connection", type: "text" }
-        ]
+          { name: "sql_kill_blocking_connection", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5343,8 +5335,8 @@ export const dialectConfig = {
           { name: "avg_latency", type: "decimal" },
           { name: "max_latency", type: "integer" },
           { name: "thread_id", type: "integer" },
-          { name: "processlist_id", type: "integer" }
-        ]
+          { name: "processlist_id", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5358,8 +5350,8 @@ export const dialectConfig = {
           { name: "total_written", type: "integer" },
           { name: "avg_write", type: "decimal" },
           { name: "total", type: "integer" },
-          { name: "write_pct", type: "decimal" }
-        ]
+          { name: "write_pct", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5373,8 +5365,8 @@ export const dialectConfig = {
           { name: "count_write", type: "integer" },
           { name: "write_latency", type: "integer" },
           { name: "count_misc", type: "integer" },
-          { name: "misc_latency", type: "integer" }
-        ]
+          { name: "misc_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5392,8 +5384,8 @@ export const dialectConfig = {
           { name: "count_write", type: "integer" },
           { name: "total_written", type: "integer" },
           { name: "avg_written", type: "decimal" },
-          { name: "total_requested", type: "integer" }
-        ]
+          { name: "total_requested", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5412,8 +5404,8 @@ export const dialectConfig = {
           { name: "avg_read", type: "decimal" },
           { name: "count_write", type: "integer" },
           { name: "total_written", type: "integer" },
-          { name: "avg_written", type: "decimal" }
-        ]
+          { name: "avg_written", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5423,8 +5415,8 @@ export const dialectConfig = {
           { name: "file", type: "text" },
           { name: "latency", type: "integer" },
           { name: "operation", type: "text" },
-          { name: "requested", type: "integer" }
-        ]
+          { name: "requested", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5435,8 +5427,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "decimal" },
           { name: "current_avg_alloc", type: "decimal" },
           { name: "current_max_alloc", type: "integer" },
-          { name: "total_allocated", type: "decimal" }
-        ]
+          { name: "total_allocated", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5448,8 +5440,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "decimal" },
           { name: "current_avg_alloc", type: "decimal" },
           { name: "current_max_alloc", type: "integer" },
-          { name: "total_allocated", type: "decimal" }
-        ]
+          { name: "total_allocated", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5460,8 +5452,8 @@ export const dialectConfig = {
           { name: "current_allocated", type: "decimal" },
           { name: "current_avg_alloc", type: "decimal" },
           { name: "current_max_alloc", type: "integer" },
-          { name: "total_allocated", type: "decimal" }
-        ]
+          { name: "total_allocated", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5473,15 +5465,13 @@ export const dialectConfig = {
           { name: "current_avg_alloc", type: "decimal" },
           { name: "high_count", type: "integer" },
           { name: "high_alloc", type: "integer" },
-          { name: "high_avg_alloc", type: "decimal" }
-        ]
+          { name: "high_avg_alloc", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
         name: "x$memory_global_total",
-        columns: [
-          { name: "total_allocated", type: "decimal" }
-        ]
+        columns: [{ name: "total_allocated", type: "decimal" }],
       },
       {
         schema: "sys",
@@ -5516,24 +5506,24 @@ export const dialectConfig = {
           { name: "trx_state", type: "text" },
           { name: "trx_autocommit", type: "text" },
           { name: "pid", type: "text" },
-          { name: "program_name", type: "text" }
-        ]
+          { name: "program_name", type: "text" },
+        ],
       },
       {
         schema: "sys",
         name: "x$ps_digest_95th_percentile_by_avg_us",
         columns: [
           { name: "avg_us", type: "decimal" },
-          { name: "percentile", type: "decimal" }
-        ]
+          { name: "percentile", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
         name: "x$ps_digest_avg_latency_distribution",
         columns: [
           { name: "cnt", type: "integer" },
-          { name: "avg_us", type: "decimal" }
-        ]
+          { name: "avg_us", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5548,8 +5538,8 @@ export const dialectConfig = {
           { name: "sum_number_of_bytes_write", type: "decimal" },
           { name: "sum_timer_write", type: "decimal" },
           { name: "count_misc", type: "decimal" },
-          { name: "sum_timer_misc", type: "decimal" }
-        ]
+          { name: "sum_timer_misc", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5560,8 +5550,8 @@ export const dialectConfig = {
           { name: "index_name", type: "text" },
           { name: "non_unique", type: "integer" },
           { name: "subpart_exists", type: "integer" },
-          { name: "index_columns", type: "text" }
-        ]
+          { name: "index_columns", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5577,8 +5567,8 @@ export const dialectConfig = {
           { name: "rows_updated", type: "integer" },
           { name: "update_latency", type: "integer" },
           { name: "rows_deleted", type: "integer" },
-          { name: "delete_latency", type: "integer" }
-        ]
+          { name: "delete_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5601,8 +5591,8 @@ export const dialectConfig = {
           { name: "blocking_lock_type", type: "text" },
           { name: "blocking_lock_duration", type: "text" },
           { name: "sql_kill_blocking_query", type: "text" },
-          { name: "sql_kill_blocking_connection", type: "text" }
-        ]
+          { name: "sql_kill_blocking_connection", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5626,8 +5616,8 @@ export const dialectConfig = {
           { name: "io_write", type: "decimal" },
           { name: "io_write_latency", type: "decimal" },
           { name: "io_misc_requests", type: "decimal" },
-          { name: "io_misc_latency", type: "decimal" }
-        ]
+          { name: "io_misc_latency", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5657,8 +5647,8 @@ export const dialectConfig = {
           { name: "innodb_buffer_pages", type: "integer" },
           { name: "innodb_buffer_pages_hashed", type: "integer" },
           { name: "innodb_buffer_pages_old", type: "integer" },
-          { name: "innodb_buffer_rows_cached", type: "decimal" }
-        ]
+          { name: "innodb_buffer_rows_cached", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5667,8 +5657,8 @@ export const dialectConfig = {
           { name: "object_schema", type: "text" },
           { name: "object_name", type: "text" },
           { name: "rows_full_scanned", type: "integer" },
-          { name: "latency", type: "integer" }
-        ]
+          { name: "latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5703,8 +5693,8 @@ export const dialectConfig = {
           { name: "trx_state", type: "text" },
           { name: "trx_autocommit", type: "text" },
           { name: "pid", type: "text" },
-          { name: "program_name", type: "text" }
-        ]
+          { name: "program_name", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5736,8 +5726,8 @@ export const dialectConfig = {
           { name: "max_total_memory", type: "integer" },
           { name: "digest", type: "text" },
           { name: "first_seen", type: "timestamp" },
-          { name: "last_seen", type: "timestamp" }
-        ]
+          { name: "last_seen", type: "timestamp" },
+        ],
       },
       {
         schema: "sys",
@@ -5752,8 +5742,8 @@ export const dialectConfig = {
           { name: "warning_pct", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5772,8 +5762,8 @@ export const dialectConfig = {
           { name: "rows_examined_avg", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5794,8 +5784,8 @@ export const dialectConfig = {
           { name: "rows_examined_avg", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5813,8 +5803,8 @@ export const dialectConfig = {
           { name: "avg_rows_sorted", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5830,8 +5820,8 @@ export const dialectConfig = {
           { name: "tmp_tables_to_disk_pct", type: "decimal" },
           { name: "first_seen", type: "timestamp" },
           { name: "last_seen", type: "timestamp" },
-          { name: "digest", type: "text" }
-        ]
+          { name: "digest", type: "text" },
+        ],
       },
       {
         schema: "sys",
@@ -5848,8 +5838,8 @@ export const dialectConfig = {
           { name: "total_connections", type: "decimal" },
           { name: "unique_hosts", type: "integer" },
           { name: "current_memory", type: "decimal" },
-          { name: "total_memory_allocated", type: "decimal" }
-        ]
+          { name: "total_memory_allocated", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5857,8 +5847,8 @@ export const dialectConfig = {
         columns: [
           { name: "user", type: "text" },
           { name: "ios", type: "decimal" },
-          { name: "io_latency", type: "decimal" }
-        ]
+          { name: "io_latency", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5868,8 +5858,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "latency", type: "integer" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5879,8 +5869,8 @@ export const dialectConfig = {
           { name: "event_name", type: "text" },
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
-          { name: "avg_latency", type: "integer" }
-        ]
+          { name: "avg_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5895,8 +5885,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "decimal" },
           { name: "rows_examined", type: "decimal" },
           { name: "rows_affected", type: "decimal" },
-          { name: "full_scans", type: "decimal" }
-        ]
+          { name: "full_scans", type: "decimal" },
+        ],
       },
       {
         schema: "sys",
@@ -5912,8 +5902,8 @@ export const dialectConfig = {
           { name: "rows_sent", type: "integer" },
           { name: "rows_examined", type: "integer" },
           { name: "rows_affected", type: "integer" },
-          { name: "full_scans", type: "integer" }
-        ]
+          { name: "full_scans", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5924,8 +5914,8 @@ export const dialectConfig = {
           { name: "total_latency", type: "decimal" },
           { name: "min_latency", type: "integer" },
           { name: "avg_latency", type: "decimal" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5936,8 +5926,8 @@ export const dialectConfig = {
           { name: "total_latency", type: "decimal" },
           { name: "min_latency", type: "integer" },
           { name: "avg_latency", type: "decimal" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5948,8 +5938,8 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
           { name: "avg_latency", type: "integer" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5960,8 +5950,8 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
           { name: "avg_latency", type: "integer" },
-          { name: "max_latency", type: "integer" }
-        ]
+          { name: "max_latency", type: "integer" },
+        ],
       },
       {
         schema: "sys",
@@ -5971,89 +5961,79 @@ export const dialectConfig = {
           { name: "total", type: "integer" },
           { name: "total_latency", type: "integer" },
           { name: "avg_latency", type: "integer" },
-          { name: "max_latency", type: "integer" }
-        ]
-      }
+          { name: "max_latency", type: "integer" },
+        ],
+      },
     ],
     describeFunctionColumns: [
-      { name: 'Name', type: 'text' },
-      { name: 'Description', type: 'text' },
+      { name: "Name", type: "text" },
+      { name: "Description", type: "text" },
     ],
     explainColumns: [
-      { name: 'id', type: 'integer' },
-      { name: 'select_type', type: 'text' },
-      { name: 'table', type: 'text' },
-      { name: 'partitions', type: 'text' },
-      { name: 'type', type: 'text' },
-      { name: 'possible_keys', type: 'text' },
-      { name: 'key', type: 'text' },
-      { name: 'key_len', type: 'text' },
-      { name: 'ref', type: 'text' },
-      { name: 'rows', type: 'integer' },
-      { name: 'filtered', type: 'decimal' },
-      { name: 'Extra', type: 'text' },
+      { name: "id", type: "integer" },
+      { name: "select_type", type: "text" },
+      { name: "table", type: "text" },
+      { name: "partitions", type: "text" },
+      { name: "type", type: "text" },
+      { name: "possible_keys", type: "text" },
+      { name: "key", type: "text" },
+      { name: "key_len", type: "text" },
+      { name: "ref", type: "text" },
+      { name: "rows", type: "integer" },
+      { name: "filtered", type: "decimal" },
+      { name: "Extra", type: "text" },
     ],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
-      { name: 'created_on', type: 'timestamp' },
-      { name: 'name', type: 'text' },
-      { name: 'database_name', type: 'text' },
-      { name: 'schema_name', type: 'text' },
-      { name: 'kind', type: 'text' },
-      { name: 'comment', type: 'text' },
-      { name: 'cluster_by', type: 'text' },
-      { name: 'rows', type: 'integer' },
-      { name: 'bytes', type: 'integer' },
-      { name: 'owner', type: 'text' },
-      { name: 'retention_time', type: 'integer' },
-      { name: 'automatic_clustering', type: 'text' },
-      { name: 'change_tracking', type: 'boolean' },
-      { name: 'search_optimization', type: 'boolean' },
+      { name: "created_on", type: "timestamp" },
+      { name: "name", type: "text" },
+      { name: "database_name", type: "text" },
+      { name: "schema_name", type: "text" },
+      { name: "kind", type: "text" },
+      { name: "comment", type: "text" },
+      { name: "cluster_by", type: "text" },
+      { name: "rows", type: "integer" },
+      { name: "bytes", type: "integer" },
+      { name: "owner", type: "text" },
+      { name: "retention_time", type: "integer" },
+      { name: "automatic_clustering", type: "text" },
+      { name: "change_tracking", type: "boolean" },
+      { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
       {
-        pattern: '/^(?:list|ls)\\s+@/',
+        pattern: "/^(?:list|ls)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'md5', type: 'text' },
-          { name: 'last_modified', type: 'timestamp' },
+          { name: "name", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "md5", type: "text" },
+          { name: "last_modified", type: "timestamp" },
         ],
       },
       {
-        pattern: '/^get\\s+@/',
+        pattern: "/^get\\s+@/",
         columns: [
-          { name: 'file', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'status', type: 'text' },
-          { name: 'message', type: 'text' },
+          { name: "file", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "message", type: "text" },
         ],
       },
       {
-        pattern: '/^(?:remove|rm)\\s+@/',
+        pattern: "/^(?:remove|rm)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'result', type: 'text' },
+          { name: "name", type: "text" },
+          { name: "result", type: "text" },
         ],
       },
       {
-        pattern: '/^list\\s+(?:file|jar|archive)\\b/',
-        columns: [
-          { name: 'resource', type: 'text' },
-        ],
+        pattern: "/^list\\s+(?:file|jar|archive)\\b/",
+        columns: [{ name: "resource", type: "text" }],
       },
     ],
   },
   diagnosticRules: {
-    knownTableFunctionArgumentNames: [
-      'file',
-      'url',
-    ],
-    virtualTableArgumentNames: [
-      'highlight',
-      'snippet',
-      'bm25',
-      'fts5vocab',
-    ],
+    knownTableFunctionArgumentNames: ["file", "url"],
+    virtualTableArgumentNames: ["highlight", "snippet", "bm25", "fts5vocab"],
   },
 } satisfies DialectConfig;

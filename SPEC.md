@@ -123,15 +123,15 @@ selected dialect's conventions where practical.
 
 Examples:
 
-| Dialect | Native/display type | Internal normalized type |
-|---------|---------------------|--------------------------|
-| PostgreSQL | `text` | `text` |
-| Generic SQL | `VARCHAR(255)` | `text` |
-| Trino | `varchar` | `text` |
-| BigQuery | `string` | `text` |
-| SQL Server | `nvarchar(max)` | `text` |
-| Trino | `array(integer)` | `array<integer>` |
-| BigQuery | `array<int64>` | `array<integer>` |
+| Dialect     | Native/display type | Internal normalized type |
+| ----------- | ------------------- | ------------------------ |
+| PostgreSQL  | `text`              | `text`                   |
+| Generic SQL | `VARCHAR(255)`      | `text`                   |
+| Trino       | `varchar`           | `text`                   |
+| BigQuery    | `string`            | `text`                   |
+| SQL Server  | `nvarchar(max)`     | `text`                   |
+| Trino       | `array(integer)`    | `array<integer>`         |
+| BigQuery    | `array<int64>`      | `array<integer>`         |
 
 Do not use one global display spelling for all dialects. For example, Trino
 should expose Trino-style `varchar`, `timestamp(3)`, `array(integer)`, and

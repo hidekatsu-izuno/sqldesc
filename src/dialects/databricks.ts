@@ -1,432 +1,430 @@
-import type { DialectConfig } from '../types.js';
+import type { DialectConfig } from "../types.js";
 
 export const dialectConfig = {
-  name: 'databricks',
+  name: "databricks",
   aliases: [],
-  family: 'spark',
-  typeFamily: 'hive',
+  family: "spark",
+  typeFamily: "hive",
   displayTypes: {
-    bigint: 'BIGINT',
-    blob: 'BLOB',
-    boolean: 'BOOLEAN',
-    bytes: 'VARBINARY(255)',
-    clob: 'CLOB',
-    date: 'DATE',
-    datetime: 'TIMESTAMP',
-    decimal: 'DECIMAL',
-    double: 'DECIMAL',
-    integer: 'INTEGER',
-    json: 'VARCHAR(4000)',
-    jsonb: 'VARCHAR(4000)',
-    nclob: 'NCLOB',
-    text: 'VARCHAR(255)',
-    time: 'TIME',
-    timestamp: 'TIMESTAMP',
-    timestamptz: 'TIMESTAMP_WITH_TIMEZONE',
-    uuid: 'VARCHAR(36)',
-    xml: 'SQLXML',
+    bigint: "BIGINT",
+    blob: "BLOB",
+    boolean: "BOOLEAN",
+    bytes: "VARBINARY(255)",
+    clob: "CLOB",
+    date: "DATE",
+    datetime: "TIMESTAMP",
+    decimal: "DECIMAL",
+    double: "DECIMAL",
+    integer: "INTEGER",
+    json: "VARCHAR(4000)",
+    jsonb: "VARCHAR(4000)",
+    nclob: "NCLOB",
+    text: "VARCHAR(255)",
+    time: "TIME",
+    timestamp: "TIMESTAMP",
+    timestamptz: "TIMESTAMP_WITH_TIMEZONE",
+    uuid: "VARCHAR(36)",
+    xml: "SQLXML",
   },
   jdbcTypeMap: {
-    ARRAY: 'array<variant>',
-    BIGINT: 'bigint',
-    BINARY: 'bytes',
-    BIT: 'boolean',
-    BLOB: 'bytes',
-    BOOLEAN: 'boolean',
-    CHAR: 'text',
-    CLOB: 'text',
-    DATALINK: 'text',
-    DATE: 'date',
-    DECIMAL: 'decimal',
-    DISTINCT: 'variant',
-    DOUBLE: 'decimal',
-    FLOAT: 'decimal',
-    INTEGER: 'integer',
-    JAVA_OBJECT: 'variant',
-    LONGNVARCHAR: 'text',
-    LONGVARBINARY: 'bytes',
-    LONGVARCHAR: 'text',
-    NCHAR: 'text',
-    NCLOB: 'text',
-    NULL: 'unknown',
-    NUMERIC: 'decimal',
-    NVARCHAR: 'text',
-    OTHER: 'variant',
-    REAL: 'decimal',
-    REF: 'variant',
-    REF_CURSOR: 'variant',
-    ROWID: 'text',
-    SMALLINT: 'integer',
-    SQLXML: 'xml',
-    STRUCT: 'struct<>',
-    TIME: 'time',
-    TIMESTAMP: 'timestamp',
-    TIMESTAMP_WITH_TIMEZONE: 'timestamp',
-    TIME_WITH_TIMEZONE: 'time',
-    TINYINT: 'integer',
-    VARBINARY: 'bytes',
-    VARCHAR: 'text',
+    ARRAY: "array<variant>",
+    BIGINT: "bigint",
+    BINARY: "bytes",
+    BIT: "boolean",
+    BLOB: "bytes",
+    BOOLEAN: "boolean",
+    CHAR: "text",
+    CLOB: "text",
+    DATALINK: "text",
+    DATE: "date",
+    DECIMAL: "decimal",
+    DISTINCT: "variant",
+    DOUBLE: "decimal",
+    FLOAT: "decimal",
+    INTEGER: "integer",
+    JAVA_OBJECT: "variant",
+    LONGNVARCHAR: "text",
+    LONGVARBINARY: "bytes",
+    LONGVARCHAR: "text",
+    NCHAR: "text",
+    NCLOB: "text",
+    NULL: "unknown",
+    NUMERIC: "decimal",
+    NVARCHAR: "text",
+    OTHER: "variant",
+    REAL: "decimal",
+    REF: "variant",
+    REF_CURSOR: "variant",
+    ROWID: "text",
+    SMALLINT: "integer",
+    SQLXML: "xml",
+    STRUCT: "struct<>",
+    TIME: "time",
+    TIMESTAMP: "timestamp",
+    TIMESTAMP_WITH_TIMEZONE: "timestamp",
+    TIME_WITH_TIMEZONE: "time",
+    TINYINT: "integer",
+    VARBINARY: "bytes",
+    VARCHAR: "text",
   },
   scalarFunctionTypes: {
-    age: 'interval',
-    array_all: 'boolean',
-    array_any: 'boolean',
-    array_contains: 'boolean',
-    array_join: 'text',
-    array_length: 'integer',
-    array_lower: 'integer',
-    array_ndims: 'integer',
-    array_position: 'integer',
-    array_size: 'integer',
-    array_sum: 'integer',
-    array_to_string: 'text',
-    array_upper: 'integer',
-    as_array: 'array<variant>',
-    as_object: 'object',
-    as_varchar: 'text',
-    ascii: 'integer',
-    bit_length: 'integer',
-    byte_length: 'integer',
-    cardinality: 'integer',
-    cbrt: 'decimal',
-    char_length: 'integer',
-    character_length: 'integer',
-    contains: 'boolean',
-    convert_to: 'bytes',
-    cos: 'decimal',
-    current_catalog: 'text',
-    current_database: 'text',
-    current_datetime: 'datetime',
-    current_schema: 'text',
-    current_user: 'text',
-    currval: 'bigint',
-    date_parse: 'timestamp',
-    datetime: 'datetime',
-    day: 'integer',
-    degrees: 'decimal',
-    ends_with: 'boolean',
-    exp: 'decimal',
-    factorial: 'integer',
-    format_date: 'text',
-    from_base64: 'bytes',
-    gen_random_uuid: 'uuid',
-    generate_uuid: 'uuid',
-    grouping: 'integer',
-    grouping_id: 'integer',
-    hash: 'integer',
-    hex: 'text',
-    highlight: 'text',
-    hll_hash: 'hll',
-    hour: 'integer',
-    ieee_divide: 'decimal',
-    initcap: 'text',
-    instr: 'integer',
-    json_contains: 'boolean',
-    json_insert: 'json',
-    json_patch: 'json',
-    json_query: 'json',
-    json_query_array: 'array<json>',
-    json_remove: 'json',
-    json_replace: 'json',
-    json_set: 'json',
-    json_valid: 'boolean',
-    json_value: 'text',
-    json_value_array: 'array<text>',
-    jsonlength: 'integer',
-    julianday: 'decimal',
-    lastval: 'bigint',
-    length: 'integer',
-    list_contains: 'boolean',
-    ln: 'decimal',
-    locate: 'integer',
-    log: 'decimal',
-    log10: 'decimal',
-    lower: 'text',
-    ltrim: 'text',
-    md5: 'text',
-    minute: 'integer',
-    month: 'integer',
-    months_between: 'decimal',
-    newid: 'uuid',
-    nextval: 'bigint',
-    octet_length: 'integer',
-    overlay: 'text',
-    parse_json: 'json',
-    pi: 'decimal',
-    position: 'integer',
-    pow: 'decimal',
-    power: 'decimal',
-    printf: 'text',
-    quarter: 'integer',
-    radians: 'decimal',
-    rand: 'decimal',
-    random: 'decimal',
-    regexp_contains: 'boolean',
-    regexp_count: 'integer',
-    regexp_extract: 'text',
-    regexp_extract_all: 'array<text>',
-    regexp_instr: 'integer',
-    regexp_like: 'boolean',
-    regexp_match: 'array<text>',
-    regexp_matches: 'array<text>',
-    regexp_position: 'integer',
-    regexp_replace: 'text',
-    regexp_split: 'array<text>',
-    regexp_split_to_array: 'array<text>',
-    regexp_split_to_table: 'text',
-    regexp_substr: 'text',
-    replace: 'text',
-    rlike: 'boolean',
-    row_to_json: 'json',
-    rtrim: 'text',
-    safe_divide: 'decimal',
-    scope_identity: 'integer',
-    second: 'integer',
-    setval: 'bigint',
-    sha: 'text',
-    sha1: 'text',
-    sha224: 'bytes',
-    sha256: 'bytes',
-    sha384: 'bytes',
-    sha512: 'bytes',
-    sign: 'integer',
-    sin: 'decimal',
-    snippet: 'text',
-    split: 'array<text>',
-    split_part: 'text',
-    sqlite_version: 'text',
-    sqrt: 'decimal',
-    st_area: 'decimal',
-    st_asbinary: 'bytes',
-    st_asgeojson: 'text',
-    st_astext: 'text',
-    st_aswkb: 'bytes',
-    st_aswkt: 'text',
-    st_contains: 'boolean',
-    st_dimension: 'integer',
-    st_distance: 'decimal',
-    st_geogpoint: 'geography',
-    st_intersects: 'boolean',
-    st_length: 'decimal',
-    st_makeenvelope: 'geometry',
-    st_makepoint: 'geometry',
-    st_ndims: 'integer',
-    st_npoints: 'integer',
-    st_point: 'geometry',
-    st_srid: 'integer',
-    st_within: 'boolean',
-    st_x: 'decimal',
-    st_y: 'decimal',
-    starts_with: 'boolean',
-    str_split: 'array<text>',
-    string_to_array: 'array<text>',
-    strpos: 'integer',
-    substr: 'text',
-    substring: 'text',
-    tan: 'decimal',
-    time: 'time',
-    timestamp: 'timestamp',
-    to_array: 'array<variant>',
-    to_binary: 'bytes',
-    to_bitmap: 'bitmap',
-    to_boolean: 'boolean',
-    to_char: 'text',
-    to_decimal: 'decimal',
-    to_geography: 'geography',
-    to_geometry: 'geometry',
-    to_hex: 'text',
-    to_number: 'decimal',
-    to_object: 'object',
-    to_utf8: 'bytes',
-    to_variant: 'variant',
-    todate: 'date',
-    trim: 'text',
-    try_to_boolean: 'boolean',
-    try_to_decimal: 'decimal',
-    try_to_number: 'decimal',
-    typeof: 'text',
-    unhex: 'bytes',
-    upper: 'text',
-    user: 'text',
-    uuid: 'uuid',
-    uuid_string: 'uuid',
-    version: 'text',
-    week: 'integer',
-    xxhash64: 'integer',
-    year: 'integer',
+    age: "interval",
+    array_all: "boolean",
+    array_any: "boolean",
+    array_contains: "boolean",
+    array_join: "text",
+    array_length: "integer",
+    array_lower: "integer",
+    array_ndims: "integer",
+    array_position: "integer",
+    array_size: "integer",
+    array_sum: "integer",
+    array_to_string: "text",
+    array_upper: "integer",
+    as_array: "array<variant>",
+    as_object: "object",
+    as_varchar: "text",
+    ascii: "integer",
+    bit_length: "integer",
+    byte_length: "integer",
+    cardinality: "integer",
+    cbrt: "decimal",
+    char_length: "integer",
+    character_length: "integer",
+    contains: "boolean",
+    convert_to: "bytes",
+    cos: "decimal",
+    current_catalog: "text",
+    current_database: "text",
+    current_datetime: "datetime",
+    current_schema: "text",
+    current_user: "text",
+    currval: "bigint",
+    date_parse: "timestamp",
+    datetime: "datetime",
+    day: "integer",
+    degrees: "decimal",
+    ends_with: "boolean",
+    exp: "decimal",
+    factorial: "integer",
+    format_date: "text",
+    from_base64: "bytes",
+    gen_random_uuid: "uuid",
+    generate_uuid: "uuid",
+    grouping: "integer",
+    grouping_id: "integer",
+    hash: "integer",
+    hex: "text",
+    highlight: "text",
+    hll_hash: "hll",
+    hour: "integer",
+    ieee_divide: "decimal",
+    initcap: "text",
+    instr: "integer",
+    json_contains: "boolean",
+    json_insert: "json",
+    json_patch: "json",
+    json_query: "json",
+    json_query_array: "array<json>",
+    json_remove: "json",
+    json_replace: "json",
+    json_set: "json",
+    json_valid: "boolean",
+    json_value: "text",
+    json_value_array: "array<text>",
+    jsonlength: "integer",
+    julianday: "decimal",
+    lastval: "bigint",
+    length: "integer",
+    list_contains: "boolean",
+    ln: "decimal",
+    locate: "integer",
+    log: "decimal",
+    log10: "decimal",
+    lower: "text",
+    ltrim: "text",
+    md5: "text",
+    minute: "integer",
+    month: "integer",
+    months_between: "decimal",
+    newid: "uuid",
+    nextval: "bigint",
+    octet_length: "integer",
+    overlay: "text",
+    parse_json: "json",
+    pi: "decimal",
+    position: "integer",
+    pow: "decimal",
+    power: "decimal",
+    printf: "text",
+    quarter: "integer",
+    radians: "decimal",
+    rand: "decimal",
+    random: "decimal",
+    regexp_contains: "boolean",
+    regexp_count: "integer",
+    regexp_extract: "text",
+    regexp_extract_all: "array<text>",
+    regexp_instr: "integer",
+    regexp_like: "boolean",
+    regexp_match: "array<text>",
+    regexp_matches: "array<text>",
+    regexp_position: "integer",
+    regexp_replace: "text",
+    regexp_split: "array<text>",
+    regexp_split_to_array: "array<text>",
+    regexp_split_to_table: "text",
+    regexp_substr: "text",
+    replace: "text",
+    rlike: "boolean",
+    row_to_json: "json",
+    rtrim: "text",
+    safe_divide: "decimal",
+    scope_identity: "integer",
+    second: "integer",
+    setval: "bigint",
+    sha: "text",
+    sha1: "text",
+    sha224: "bytes",
+    sha256: "bytes",
+    sha384: "bytes",
+    sha512: "bytes",
+    sign: "integer",
+    sin: "decimal",
+    snippet: "text",
+    split: "array<text>",
+    split_part: "text",
+    sqlite_version: "text",
+    sqrt: "decimal",
+    st_area: "decimal",
+    st_asbinary: "bytes",
+    st_asgeojson: "text",
+    st_astext: "text",
+    st_aswkb: "bytes",
+    st_aswkt: "text",
+    st_contains: "boolean",
+    st_dimension: "integer",
+    st_distance: "decimal",
+    st_geogpoint: "geography",
+    st_intersects: "boolean",
+    st_length: "decimal",
+    st_makeenvelope: "geometry",
+    st_makepoint: "geometry",
+    st_ndims: "integer",
+    st_npoints: "integer",
+    st_point: "geometry",
+    st_srid: "integer",
+    st_within: "boolean",
+    st_x: "decimal",
+    st_y: "decimal",
+    starts_with: "boolean",
+    str_split: "array<text>",
+    string_to_array: "array<text>",
+    strpos: "integer",
+    substr: "text",
+    substring: "text",
+    tan: "decimal",
+    time: "time",
+    timestamp: "timestamp",
+    to_array: "array<variant>",
+    to_binary: "bytes",
+    to_bitmap: "bitmap",
+    to_boolean: "boolean",
+    to_char: "text",
+    to_decimal: "decimal",
+    to_geography: "geography",
+    to_geometry: "geometry",
+    to_hex: "text",
+    to_number: "decimal",
+    to_object: "object",
+    to_utf8: "bytes",
+    to_variant: "variant",
+    todate: "date",
+    trim: "text",
+    try_to_boolean: "boolean",
+    try_to_decimal: "decimal",
+    try_to_number: "decimal",
+    typeof: "text",
+    unhex: "bytes",
+    upper: "text",
+    user: "text",
+    uuid: "uuid",
+    uuid_string: "uuid",
+    version: "text",
+    week: "integer",
+    xxhash64: "integer",
+    year: "integer",
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions:   {},
+  tableFunctions: {},
   aggregate: {
-    "countType": "integer",
-    "avgDefault": "decimal",
-    "avgDecimal": "default",
-    "sumDecimal": "input",
+    countType: "integer",
+    avgDefault: "decimal",
+    avgDecimal: "default",
+    sumDecimal: "input",
   },
   commonTypes: {
-    "text": "none",
-    "decimalInteger": "none",
+    text: "none",
+    decimalInteger: "none",
   },
   cast: {
-    "adjustment": "none",
+    adjustment: "none",
   },
   arithmetic: {
-    "decimalInteger": "none",
+    decimalInteger: "none",
   },
   windowFunctionTypes: {
-    "row_number": "integer",
-    "rank": "integer",
-    "dense_rank": "integer",
-    "ntile": "integer",
-    "n_tile": "integer",
-    "percent_rank": "decimal",
-    "cume_dist": "decimal",
+    row_number: "integer",
+    rank: "integer",
+    dense_rank: "integer",
+    ntile: "integer",
+    n_tile: "integer",
+    percent_rank: "decimal",
+    cume_dist: "decimal",
   },
   specialParameterTypes: {},
   specialColumnTypes: {
-    "current_date": "date",
-    "current_time": "time",
-    "current_timestamp": "timestamp",
-    "localtimestamp": "timestamp",
+    current_date: "date",
+    current_time: "time",
+    current_timestamp: "timestamp",
+    localtimestamp: "timestamp",
   },
   qualifiedSpecialColumnTypes: {},
   pseudoColumnTypes: {},
   generatedNames: {
-    "countStar": "count(*)",
-    "add": "compact",
-    "upper": "call",
+    countStar: "count(*)",
+    add: "compact",
+    upper: "call",
   },
-  scriptPreprocessor: 'none',
+  scriptPreprocessor: "none",
   includeDirectives: [],
-  complexTypeStyle: 'angle',
-  jdbcEscapeStyle: 'standard',
+  complexTypeStyle: "angle",
+  jdbcEscapeStyle: "standard",
   jdbcEscape: {
-    ifnullFunction: 'coalesce',
-    temporalLiteral: 'standard',
+    ifnullFunction: "coalesce",
+    temporalLiteral: "standard",
     executeCall: false,
-    currentDateExpression: 'current_date',
-    currentTimeExpression: 'current_time',
+    currentDateExpression: "current_date",
+    currentTimeExpression: "current_time",
   },
-  jdbcParameterMarker: 'question',
+  jdbcParameterMarker: "question",
   parserFallbacks: {
-    createView: 'postgres',
-    tableMacro: 'duckdb',
-    embeddedSqlTableFunction: 'tsql',
+    createView: "postgres",
+    tableMacro: "duckdb",
+    embeddedSqlTableFunction: "tsql",
   },
   parameterizedTypeFormats: {
-    decimal: 'decimal({args})',
-    dec: 'decimal({args})',
-    numeric: 'decimal({args})',
-    number: 'decimal({args})',
+    decimal: "decimal({args})",
+    dec: "decimal({args})",
+    numeric: "decimal({args})",
+    number: "decimal({args})",
   },
   literalTypes: {
-    string: 'text',
+    string: "text",
   },
   dynamicTableFunctions: {
-    generateSeriesColumn: '$alias',
-    rangeColumn: '$alias',
-    enabledHandlers: [
-      'stack',
-    ],
+    generateSeriesColumn: "$alias",
+    rangeColumn: "$alias",
+    enabledHandlers: ["stack"],
   },
   serializedSelect: {},
   outputTypeOverrides: {
-    "ifnull_text": "varchar(7)",
-    "isnull_text": "nchar(3)",
-    "min_date": "date",
-    "nvl_text": "varchar2(7)",
+    ifnull_text: "varchar(7)",
+    isnull_text: "nchar(3)",
+    min_date: "date",
+    nvl_text: "varchar2(7)",
   },
   metadata: {
-    builtinSchemaTables:                 [
+    builtinSchemaTables: [
       {
         schema: "information_schema",
         name: "tables",
         columns: [
           {
             name: "table_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "name",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_type",
-            type: "text"
+            type: "text",
           },
           {
             name: "self_referencing_column_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "reference_generation",
-            type: "text"
+            type: "text",
           },
           {
             name: "user_defined_type_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "user_defined_type_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "user_defined_type_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "is_insertable_into",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_typed",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "commit_action",
-            type: "text"
+            type: "text",
           },
           {
             name: "created",
-            type: "timestamp"
+            type: "timestamp",
           },
           {
             name: "last_altered",
-            type: "timestamp"
+            type: "timestamp",
           },
           {
             name: "row_count",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "bytes",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "owner",
-            type: "text"
+            type: "text",
           },
           {
             name: "retention_time",
-            type: "text"
+            type: "text",
           },
           {
             name: "is_transient",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_temporary",
-            type: "boolean"
-          }
-        ]
+            type: "boolean",
+          },
+        ],
       },
       {
         schema: "information_schema",
@@ -434,181 +432,181 @@ export const dialectConfig = {
         columns: [
           {
             name: "table_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "column_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "ordinal_position",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "column_default",
-            type: "text"
+            type: "text",
           },
           {
             name: "is_nullable",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "data_type",
-            type: "text"
+            type: "text",
           },
           {
             name: "character_maximum_length",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "character_octet_length",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "numeric_precision",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "numeric_precision_radix",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "numeric_scale",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "datetime_precision",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "interval_type",
-            type: "text"
+            type: "text",
           },
           {
             name: "interval_precision",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "character_set_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "character_set_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "character_set_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "collation_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "collation_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "collation_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "domain_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "domain_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "domain_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "udt_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "udt_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "udt_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "scope_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "scope_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "scope_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "maximum_cardinality",
-            type: "integer"
+            type: "integer",
           },
           {
             name: "dtd_identifier",
-            type: "text"
+            type: "text",
           },
           {
             name: "is_self_referencing",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_identity",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "identity_generation",
-            type: "text"
+            type: "text",
           },
           {
             name: "identity_start",
-            type: "text"
+            type: "text",
           },
           {
             name: "identity_increment",
-            type: "text"
+            type: "text",
           },
           {
             name: "identity_maximum",
-            type: "text"
+            type: "text",
           },
           {
             name: "identity_minimum",
-            type: "text"
+            type: "text",
           },
           {
             name: "identity_cycle",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_generated",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "generation_expression",
-            type: "text"
+            type: "text",
           },
           {
             name: "is_updatable",
-            type: "boolean"
-          }
-        ]
+            type: "boolean",
+          },
+        ],
       },
       {
         schema: "information_schema",
@@ -616,78 +614,78 @@ export const dialectConfig = {
         columns: [
           {
             name: "project_id",
-            type: "text"
+            type: "text",
           },
           {
             name: "project_number",
-            type: "text"
+            type: "text",
           },
           {
             name: "catalog_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "schema_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "schema_owner",
-            type: "text"
+            type: "text",
           },
           {
             name: "default_character_set_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "default_character_set_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "default_character_set_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "sql_path",
-            type: "text"
-          }
-        ]
+            type: "text",
+          },
+        ],
       },
       {
         name: "information_schema.routines",
         columns: [
           {
             name: "specific_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "specific_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "specific_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "routine_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "routine_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "routine_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "routine_type",
-            type: "text"
+            type: "text",
           },
           {
             name: "data_type",
-            type: "text"
-          }
-        ]
+            type: "text",
+          },
+        ],
       },
       {
         schema: "information_schema",
@@ -695,115 +693,103 @@ export const dialectConfig = {
         columns: [
           {
             name: "table_catalog",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_schema",
-            type: "text"
+            type: "text",
           },
           {
             name: "table_name",
-            type: "text"
+            type: "text",
           },
           {
             name: "view_definition",
-            type: "text"
+            type: "text",
           },
           {
             name: "check_option",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_updatable",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_insertable_into",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_trigger_updatable",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_trigger_deletable",
-            type: "boolean"
+            type: "boolean",
           },
           {
             name: "is_trigger_insertable_into",
-            type: "boolean"
-          }
-        ]
-      }
+            type: "boolean",
+          },
+        ],
+      },
     ],
     describeFunctionColumns: [
-      { name: 'Name', type: 'text' },
-      { name: 'Description', type: 'text' },
+      { name: "Name", type: "text" },
+      { name: "Description", type: "text" },
     ],
-    explainColumns: [
-      { name: 'QUERY PLAN', type: 'text' },
-    ],
+    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
-      { name: 'created_on', type: 'timestamp' },
-      { name: 'name', type: 'text' },
-      { name: 'database_name', type: 'text' },
-      { name: 'schema_name', type: 'text' },
-      { name: 'kind', type: 'text' },
-      { name: 'comment', type: 'text' },
-      { name: 'cluster_by', type: 'text' },
-      { name: 'rows', type: 'integer' },
-      { name: 'bytes', type: 'integer' },
-      { name: 'owner', type: 'text' },
-      { name: 'retention_time', type: 'integer' },
-      { name: 'automatic_clustering', type: 'text' },
-      { name: 'change_tracking', type: 'boolean' },
-      { name: 'search_optimization', type: 'boolean' },
+      { name: "created_on", type: "timestamp" },
+      { name: "name", type: "text" },
+      { name: "database_name", type: "text" },
+      { name: "schema_name", type: "text" },
+      { name: "kind", type: "text" },
+      { name: "comment", type: "text" },
+      { name: "cluster_by", type: "text" },
+      { name: "rows", type: "integer" },
+      { name: "bytes", type: "integer" },
+      { name: "owner", type: "text" },
+      { name: "retention_time", type: "integer" },
+      { name: "automatic_clustering", type: "text" },
+      { name: "change_tracking", type: "boolean" },
+      { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
       {
-        pattern: '/^(?:list|ls)\\s+@/',
+        pattern: "/^(?:list|ls)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'md5', type: 'text' },
-          { name: 'last_modified', type: 'timestamp' },
+          { name: "name", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "md5", type: "text" },
+          { name: "last_modified", type: "timestamp" },
         ],
       },
       {
-        pattern: '/^get\\s+@/',
+        pattern: "/^get\\s+@/",
         columns: [
-          { name: 'file', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'status', type: 'text' },
-          { name: 'message', type: 'text' },
+          { name: "file", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "message", type: "text" },
         ],
       },
       {
-        pattern: '/^(?:remove|rm)\\s+@/',
+        pattern: "/^(?:remove|rm)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'result', type: 'text' },
+          { name: "name", type: "text" },
+          { name: "result", type: "text" },
         ],
       },
       {
-        pattern: '/^list\\s+(?:file|jar|archive)\\b/',
-        columns: [
-          { name: 'resource', type: 'text' },
-        ],
+        pattern: "/^list\\s+(?:file|jar|archive)\\b/",
+        columns: [{ name: "resource", type: "text" }],
       },
     ],
   },
   diagnosticRules: {
-    knownTableFunctionArgumentNames: [
-      'file',
-      'url',
-    ],
-    virtualTableArgumentNames: [
-      'highlight',
-      'snippet',
-      'bm25',
-      'fts5vocab',
-    ],
+    knownTableFunctionArgumentNames: ["file", "url"],
+    virtualTableArgumentNames: ["highlight", "snippet", "bm25", "fts5vocab"],
   },
 } satisfies DialectConfig;

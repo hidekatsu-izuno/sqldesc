@@ -1,15 +1,15 @@
-import type { AnalyzeResult } from './analyzer';
-import { DEFAULT_SCHEMA, DEFAULT_SQL, FALLBACK_DIALECTS } from './constants';
-import { formatColumnsTable, resultKindClass, resultKindLabel } from './format';
-import './styles.css';
+import type { AnalyzeResult } from "./analyzer";
+import { DEFAULT_SCHEMA, DEFAULT_SQL, FALLBACK_DIALECTS } from "./constants";
+import { formatColumnsTable, resultKindClass, resultKindLabel } from "./format";
+import "./styles.css";
 
-type TabId = 'columns' | 'statements' | 'messages' | 'json';
+type TabId = "columns" | "statements" | "messages" | "json";
 
-const app = document.querySelector<HTMLDivElement>('#app');
-if (!app) throw new Error('#app not found');
+const app = document.querySelector<HTMLDivElement>("#app");
+if (!app) throw new Error("#app not found");
 
-let activeTab: TabId = 'columns';
-let lastJson = '';
+let activeTab: TabId = "columns";
+let lastJson = "";
 let lastResult: AnalyzeResult | undefined;
 
 renderShell(FALLBACK_DIALECTS);
@@ -78,39 +78,39 @@ function renderShell(dialects: string[]): void {
     </div>
   `;
 
-  const dialectEl = mustGet<HTMLSelectElement>('#dialect');
-  const bindsEl = mustGet<HTMLInputElement>('#binds');
-  const analyzeBtn = mustGet<HTMLButtonElement>('#analyze');
-  const sqlEl = mustGet<HTMLTextAreaElement>('#sql');
+  const dialectEl = mustGet<HTMLSelectElement>("#dialect");
+  const bindsEl = mustGet<HTMLInputElement>("#binds");
+  const analyzeBtn = mustGet<HTMLButtonElement>("#analyze");
+  const sqlEl = mustGet<HTMLTextAreaElement>("#sql");
 
-  dialectEl.value = dialects.includes('generic') ? 'generic' : dialects[0] ?? 'generic';
-  bindsEl.value = 'int';
+  dialectEl.value = dialects.includes("generic") ? "generic" : (dialects[0] ?? "generic");
+  bindsEl.value = "int";
 
-  analyzeBtn.addEventListener('click', () => void runAnalysis());
+  analyzeBtn.addEventListener("click", () => void runAnalysis());
 
-  const inputBody = mustGet<HTMLDivElement>('.input-body');
-  const schemaSection = mustGet<HTMLDivElement>('.schema-section');
-  const schemaToggle = mustGet<HTMLButtonElement>('.schema-toggle');
-  schemaToggle.addEventListener('click', () => {
-    const open = schemaSection.classList.toggle('schema-open');
-    inputBody.classList.toggle('schema-open', open);
-    schemaToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const inputBody = mustGet<HTMLDivElement>(".input-body");
+  const schemaSection = mustGet<HTMLDivElement>(".schema-section");
+  const schemaToggle = mustGet<HTMLButtonElement>(".schema-toggle");
+  schemaToggle.addEventListener("click", () => {
+    const open = schemaSection.classList.toggle("schema-open");
+    inputBody.classList.toggle("schema-open", open);
+    schemaToggle.setAttribute("aria-expanded", open ? "true" : "false");
   });
 
-  for (const button of app!.querySelectorAll<HTMLButtonElement>('.tab')) {
-    button.addEventListener('click', () => {
+  for (const button of app!.querySelectorAll<HTMLButtonElement>(".tab")) {
+    button.addEventListener("click", () => {
       const tab = button.dataset.tab as TabId | undefined;
       if (!tab) return;
       activeTab = tab;
-      for (const item of app!.querySelectorAll<HTMLButtonElement>('.tab')) {
-        item.classList.toggle('active', item === button);
+      for (const item of app!.querySelectorAll<HTMLButtonElement>(".tab")) {
+        item.classList.toggle("active", item === button);
       }
       renderOutput();
     });
   }
 
-  sqlEl.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+  sqlEl.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault();
       void runAnalysis();
     }
@@ -118,60 +118,65 @@ function renderShell(dialects: string[]): void {
 }
 
 async function bootstrap(): Promise<void> {
-  setStatus('loading', 'Loading SQL engine…');
+  setStatus("loading", "Loading SQL engine…");
   try {
-    const { getSupportedDialects } = await import('./analyzer');
+    const { getSupportedDialects } = await import("./analyzer");
     const dialects = getSupportedDialects();
-    const dialectEl = mustGet<HTMLSelectElement>('#dialect');
+    const dialectEl = mustGet<HTMLSelectElement>("#dialect");
     const selected = dialectEl.value;
     dialectEl.innerHTML = renderDialectOptions(dialects);
-    dialectEl.value = dialects.includes(selected) ? selected : (dialects.includes('generic') ? 'generic' : dialects[0] ?? 'generic');
-    setStatus('idle', 'Enter SQL and click Analyze');
+    dialectEl.value = dialects.includes(selected)
+      ? selected
+      : dialects.includes("generic")
+        ? "generic"
+        : (dialects[0] ?? "generic");
+    setStatus("idle", "Enter SQL and click Analyze");
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    setStatus('error', `Failed to load SQL engine: ${message}`);
+    setStatus("error", `Failed to load SQL engine: ${message}`);
   }
 }
 
 async function runAnalysis(): Promise<void> {
-  const analyzeBtn = mustGet<HTMLButtonElement>('#analyze');
+  const analyzeBtn = mustGet<HTMLButtonElement>("#analyze");
   analyzeBtn.disabled = true;
-  setStatus('loading', 'Analyzing…');
+  setStatus("loading", "Analyzing…");
 
   try {
-    const { analyzeSql } = await import('./analyzer');
+    const { analyzeSql } = await import("./analyzer");
     const result = await analyzeSql({
-      sql: mustGet<HTMLTextAreaElement>('#sql').value,
-      dialect: mustGet<HTMLSelectElement>('#dialect').value,
-      binds: mustGet<HTMLInputElement>('#binds').value,
-      jdbc: mustGet<HTMLInputElement>('#jdbc').checked,
-      schemaSql: mustGet<HTMLTextAreaElement>('#schema').value,
+      sql: mustGet<HTMLTextAreaElement>("#sql").value,
+      dialect: mustGet<HTMLSelectElement>("#dialect").value,
+      binds: mustGet<HTMLInputElement>("#binds").value,
+      jdbc: mustGet<HTMLInputElement>("#jdbc").checked,
+      schemaSql: mustGet<HTMLTextAreaElement>("#schema").value,
     });
     lastResult = result;
     lastJson = JSON.stringify(result, null, 2);
     const columnCount = result.resultSets.reduce((sum, rs) => sum + rs.columns.length, 0);
     setStatus(
-      'success',
+      "success",
       `${result.statements.length} statements / ${result.resultSets.length} result sets / ${columnCount} columns`,
     );
     renderOutput();
   } catch (error) {
-    lastJson = '';
+    lastJson = "";
     lastResult = undefined;
     const message = error instanceof Error ? error.message : String(error);
-    setStatus('error', message);
-    mustGet<HTMLDivElement>('#output').innerHTML = `<pre class="error-box">${escapeHtml(message)}</pre>`;
+    setStatus("error", message);
+    mustGet<HTMLDivElement>("#output").innerHTML =
+      `<pre class="error-box">${escapeHtml(message)}</pre>`;
   } finally {
     analyzeBtn.disabled = false;
   }
 }
 
 function renderOutput(): void {
-  const outputEl = mustGet<HTMLDivElement>('#output');
+  const outputEl = mustGet<HTMLDivElement>("#output");
   const result = lastResult;
 
   if (!result) {
-    if (lastJson && activeTab === 'json') {
+    if (lastJson && activeTab === "json") {
       outputEl.innerHTML = `<pre class="json-box">${escapeHtml(lastJson)}</pre>`;
       return;
     }
@@ -180,16 +185,16 @@ function renderOutput(): void {
   }
 
   switch (activeTab) {
-    case 'columns':
+    case "columns":
       outputEl.innerHTML = renderColumnsPanel(result);
       break;
-    case 'statements':
+    case "statements":
       outputEl.innerHTML = renderStatementsPanel(result);
       break;
-    case 'messages':
+    case "messages":
       outputEl.innerHTML = renderMessagesPanel(result);
       break;
-    case 'json':
+    case "json":
       outputEl.innerHTML = `<pre class="json-box">${escapeHtml(lastJson)}</pre>`;
       break;
   }
@@ -200,10 +205,15 @@ function renderColumnsPanel(result: AnalyzeResult): string {
     return '<p class="placeholder">No result columns</p>';
   }
 
-  return result.resultSets.map((resultSet) => {
-    const title = result.resultSets.length > 1 ? `<h3 class="result-set-title">Result set ${resultSet.index}</h3>` : '';
-    return `${title}${renderTable(formatColumnsTable(resultSet.columns, { showJdbc: result.jdbcEnabled }))}`;
-  }).join('');
+  return result.resultSets
+    .map((resultSet) => {
+      const title =
+        result.resultSets.length > 1
+          ? `<h3 class="result-set-title">Result set ${resultSet.index}</h3>`
+          : "";
+      return `${title}${renderTable(formatColumnsTable(resultSet.columns, { showJdbc: result.jdbcEnabled }))}`;
+    })
+    .join("");
 }
 
 function renderStatementsPanel(result: AnalyzeResult): string {
@@ -211,14 +221,18 @@ function renderStatementsPanel(result: AnalyzeResult): string {
     return '<p class="placeholder">No statement information</p>';
   }
 
-  const rows = result.statements.map((statement) => `
+  const rows = result.statements
+    .map(
+      (statement) => `
     <tr>
       <td>${statement.index}</td>
       <td><code>${escapeHtml(statement.kind)}</code></td>
       <td><span class="${resultKindClass(statement.resultKind)}">${escapeHtml(resultKindLabel(statement.resultKind))}</span></td>
-      <td>${escapeHtml(statement.message ?? '')}</td>
+      <td>${escapeHtml(statement.message ?? "")}</td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join("");
 
   return `
     <div class="table-wrap">
@@ -238,20 +252,24 @@ function renderStatementsPanel(result: AnalyzeResult): string {
 }
 
 function renderMessagesPanel(result: AnalyzeResult): string {
-  const warnings = result.warnings.map((message) => `<li class="msg-warning">${escapeHtml(message)}</li>`).join('');
-  const diagnostics = result.diagnostics.map((diagnostic) => {
-    const location = diagnostic.line ? ` (${diagnostic.line}:${diagnostic.column ?? 0})` : '';
-    const severity = diagnostic.severity ?? 'info';
-    return `<li class="msg-${escapeHtml(severity)}"><strong>${escapeHtml(severity)}</strong>${escapeHtml(location)}: ${escapeHtml(diagnostic.message)}</li>`;
-  }).join('');
+  const warnings = result.warnings
+    .map((message) => `<li class="msg-warning">${escapeHtml(message)}</li>`)
+    .join("");
+  const diagnostics = result.diagnostics
+    .map((diagnostic) => {
+      const location = diagnostic.line ? ` (${diagnostic.line}:${diagnostic.column ?? 0})` : "";
+      const severity = diagnostic.severity ?? "info";
+      return `<li class="msg-${escapeHtml(severity)}"><strong>${escapeHtml(severity)}</strong>${escapeHtml(location)}: ${escapeHtml(diagnostic.message)}</li>`;
+    })
+    .join("");
 
   if (!warnings && !diagnostics) {
     return '<p class="placeholder">No warnings or diagnostics</p>';
   }
 
   return `
-    ${warnings ? `<section><h3 class="section-title">Warnings</h3><ul class="msg-list">${warnings}</ul></section>` : ''}
-    ${diagnostics ? `<section><h3 class="section-title">Diagnostics</h3><ul class="msg-list">${diagnostics}</ul></section>` : ''}
+    ${warnings ? `<section><h3 class="section-title">Warnings</h3><ul class="msg-list">${warnings}</ul></section>` : ""}
+    ${diagnostics ? `<section><h3 class="section-title">Diagnostics</h3><ul class="msg-list">${diagnostics}</ul></section>` : ""}
   `;
 }
 
@@ -261,8 +279,10 @@ function renderTable(rows: string[][]): string {
   }
 
   const [headers, ...body] = rows;
-  const head = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('');
-  const data = body.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('');
+  const head = headers.map((header) => `<th>${escapeHtml(header)}</th>`).join("");
+  const data = body
+    .map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`)
+    .join("");
 
   return `
     <div class="table-wrap">
@@ -275,11 +295,11 @@ function renderTable(rows: string[][]): string {
 }
 
 function renderDialectOptions(dialects: string[]): string {
-  return dialects.map((d) => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join('');
+  return dialects.map((d) => `<option value="${escapeAttr(d)}">${escapeHtml(d)}</option>`).join("");
 }
 
-function setStatus(kind: 'idle' | 'loading' | 'success' | 'error', message: string): void {
-  const statusEl = mustGet<HTMLDivElement>('#status');
+function setStatus(kind: "idle" | "loading" | "success" | "error", message: string): void {
+  const statusEl = mustGet<HTMLDivElement>("#status");
   statusEl.className = `status status-${kind}`;
   statusEl.textContent = message;
 }
@@ -292,12 +312,12 @@ function mustGet<T extends Element>(selector: string): T {
 
 function escapeHtml(value: string): string {
   return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function escapeAttr(value: string): string {
-  return escapeHtml(value).replaceAll("'", '&#39;');
+  return escapeHtml(value).replaceAll("'", "&#39;");
 }

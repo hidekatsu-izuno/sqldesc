@@ -3,23 +3,24 @@
   "version": "0.1.0",
   "description": "Infer SQL result-set columns from SQL, bind types, and schema files.",
   "license": "MIT",
-  "type": "module",
-  "sideEffects": false,
   "bin": {
     "sqldesc": "dist/cli.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
   },
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "fmt": "oxfmt",
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test --experimental-strip-types 'test/**/*.test.ts'",
     "test:doc": "npm run build && node --test --experimental-strip-types test/doc.test.ts",
@@ -31,6 +32,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.13.1",
+    "oxfmt": "^0.54.0",
     "typescript": "^5.9.3"
   },
   "engines": {

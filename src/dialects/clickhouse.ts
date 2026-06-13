@@ -1,343 +1,343 @@
-import type { DialectConfig } from '../types.js';
+import type { DialectConfig } from "../types.js";
 
 export const dialectConfig = {
-  name: 'clickhouse',
+  name: "clickhouse",
   aliases: [],
-  family: 'clickhouse',
-  typeFamily: 'clickhouse',
+  family: "clickhouse",
+  typeFamily: "clickhouse",
   displayTypes: {
-    bigint: 'BIGINT',
-    blob: 'BLOB',
-    boolean: 'BOOLEAN',
-    bytes: 'VARBINARY(255)',
-    clob: 'CLOB',
-    date: 'DATE',
-    datetime: 'TIMESTAMP',
-    decimal: 'DECIMAL',
-    double: 'DECIMAL',
-    integer: 'INTEGER',
-    json: 'VARCHAR(4000)',
-    jsonb: 'VARCHAR(4000)',
-    nclob: 'NCLOB',
-    text: 'VARCHAR(255)',
-    time: 'TIME',
-    timestamp: 'TIMESTAMP',
-    timestamptz: 'TIMESTAMP_WITH_TIMEZONE',
-    uuid: 'VARCHAR(36)',
-    xml: 'SQLXML',
+    bigint: "BIGINT",
+    blob: "BLOB",
+    boolean: "BOOLEAN",
+    bytes: "VARBINARY(255)",
+    clob: "CLOB",
+    date: "DATE",
+    datetime: "TIMESTAMP",
+    decimal: "DECIMAL",
+    double: "DECIMAL",
+    integer: "INTEGER",
+    json: "VARCHAR(4000)",
+    jsonb: "VARCHAR(4000)",
+    nclob: "NCLOB",
+    text: "VARCHAR(255)",
+    time: "TIME",
+    timestamp: "TIMESTAMP",
+    timestamptz: "TIMESTAMP_WITH_TIMEZONE",
+    uuid: "VARCHAR(36)",
+    xml: "SQLXML",
   },
   jdbcTypeMap: {
-    ARRAY: 'array<variant>',
-    BIGINT: 'bigint',
-    BINARY: 'bytes',
-    BIT: 'boolean',
-    BLOB: 'bytes',
-    BOOLEAN: 'boolean',
-    CHAR: 'text',
-    CLOB: 'text',
-    DATALINK: 'text',
-    DATE: 'date',
-    DECIMAL: 'decimal',
-    DISTINCT: 'variant',
-    DOUBLE: 'decimal',
-    FLOAT: 'decimal',
-    INTEGER: 'integer',
-    JAVA_OBJECT: 'variant',
-    LONGNVARCHAR: 'text',
-    LONGVARBINARY: 'bytes',
-    LONGVARCHAR: 'text',
-    NCHAR: 'text',
-    NCLOB: 'text',
-    NULL: 'unknown',
-    NUMERIC: 'decimal',
-    NVARCHAR: 'text',
-    OTHER: 'variant',
-    REAL: 'decimal',
-    REF: 'variant',
-    REF_CURSOR: 'variant',
-    ROWID: 'text',
-    SMALLINT: 'integer',
-    SQLXML: 'xml',
-    STRUCT: 'struct<>',
-    TIME: 'time',
-    TIMESTAMP: 'timestamp',
-    TIMESTAMP_WITH_TIMEZONE: 'timestamp',
-    TIME_WITH_TIMEZONE: 'time',
-    TINYINT: 'integer',
-    VARBINARY: 'bytes',
-    VARCHAR: 'text',
+    ARRAY: "array<variant>",
+    BIGINT: "bigint",
+    BINARY: "bytes",
+    BIT: "boolean",
+    BLOB: "bytes",
+    BOOLEAN: "boolean",
+    CHAR: "text",
+    CLOB: "text",
+    DATALINK: "text",
+    DATE: "date",
+    DECIMAL: "decimal",
+    DISTINCT: "variant",
+    DOUBLE: "decimal",
+    FLOAT: "decimal",
+    INTEGER: "integer",
+    JAVA_OBJECT: "variant",
+    LONGNVARCHAR: "text",
+    LONGVARBINARY: "bytes",
+    LONGVARCHAR: "text",
+    NCHAR: "text",
+    NCLOB: "text",
+    NULL: "unknown",
+    NUMERIC: "decimal",
+    NVARCHAR: "text",
+    OTHER: "variant",
+    REAL: "decimal",
+    REF: "variant",
+    REF_CURSOR: "variant",
+    ROWID: "text",
+    SMALLINT: "integer",
+    SQLXML: "xml",
+    STRUCT: "struct<>",
+    TIME: "time",
+    TIMESTAMP: "timestamp",
+    TIMESTAMP_WITH_TIMEZONE: "timestamp",
+    TIME_WITH_TIMEZONE: "time",
+    TINYINT: "integer",
+    VARBINARY: "bytes",
+    VARCHAR: "text",
   },
   scalarFunctionTypes: {
-    age: 'interval',
-    array_all: 'boolean',
-    array_any: 'boolean',
-    array_contains: 'boolean',
-    array_join: 'text',
-    array_length: 'integer',
-    array_lower: 'integer',
-    array_ndims: 'integer',
-    array_position: 'integer',
-    array_size: 'integer',
-    array_sum: 'integer',
-    array_to_string: 'text',
-    array_upper: 'integer',
-    as_array: 'array<variant>',
-    as_object: 'object',
-    as_varchar: 'text',
-    ascii: 'integer',
-    bit_length: 'integer',
-    byte_length: 'integer',
-    cardinality: 'integer',
-    cbrt: 'decimal',
-    char_length: 'integer',
-    character_length: 'integer',
-    contains: 'boolean',
-    convert_to: 'bytes',
-    cos: 'decimal',
-    current_catalog: 'text',
-    current_database: 'text',
-    current_datetime: 'datetime',
-    current_schema: 'text',
-    current_user: 'text',
-    currval: 'bigint',
-    date_parse: 'timestamp',
-    datetime: 'datetime',
-    day: 'integer',
-    degrees: 'decimal',
-    ends_with: 'boolean',
-    exp: 'decimal',
-    factorial: 'integer',
-    format_date: 'text',
-    from_base64: 'bytes',
-    gen_random_uuid: 'uuid',
-    generate_uuid: 'uuid',
-    grouping: 'integer',
-    grouping_id: 'integer',
-    hash: 'integer',
-    hex: 'text',
-    highlight: 'text',
-    hll_hash: 'hll',
-    hour: 'integer',
-    ieee_divide: 'decimal',
-    initcap: 'text',
-    instr: 'integer',
-    json_contains: 'boolean',
-    json_insert: 'json',
-    json_patch: 'json',
-    json_query: 'json',
-    json_query_array: 'array<json>',
-    json_remove: 'json',
-    json_replace: 'json',
-    json_set: 'json',
-    json_valid: 'boolean',
-    json_value: 'text',
-    json_value_array: 'array<text>',
-    jsonlength: 'integer',
-    julianday: 'decimal',
-    lastval: 'bigint',
-    length: 'integer',
-    list_contains: 'boolean',
-    ln: 'decimal',
-    locate: 'integer',
-    log: 'decimal',
-    log10: 'decimal',
-    lower: 'text',
-    ltrim: 'text',
-    md5: 'text',
-    minute: 'integer',
-    month: 'integer',
-    months_between: 'decimal',
-    newid: 'uuid',
-    nextval: 'bigint',
-    octet_length: 'integer',
-    overlay: 'text',
-    parse_json: 'json',
-    pi: 'decimal',
-    position: 'integer',
-    pow: 'decimal',
-    power: 'decimal',
-    printf: 'text',
-    quarter: 'integer',
-    radians: 'decimal',
-    rand: 'decimal',
-    random: 'decimal',
-    regexp_contains: 'boolean',
-    regexp_count: 'integer',
-    regexp_extract: 'text',
-    regexp_extract_all: 'array<text>',
-    regexp_instr: 'integer',
-    regexp_like: 'boolean',
-    regexp_match: 'array<text>',
-    regexp_matches: 'array<text>',
-    regexp_position: 'integer',
-    regexp_replace: 'text',
-    regexp_split: 'array<text>',
-    regexp_split_to_array: 'array<text>',
-    regexp_split_to_table: 'text',
-    regexp_substr: 'text',
-    replace: 'text',
-    rlike: 'boolean',
-    row_to_json: 'json',
-    rtrim: 'text',
-    safe_divide: 'decimal',
-    scope_identity: 'integer',
-    second: 'integer',
-    setval: 'bigint',
-    sha: 'text',
-    sha1: 'text',
-    sha224: 'bytes',
-    sha256: 'bytes',
-    sha384: 'bytes',
-    sha512: 'bytes',
-    sign: 'integer',
-    sin: 'decimal',
-    snippet: 'text',
-    split: 'array<text>',
-    split_part: 'text',
-    sqlite_version: 'text',
-    sqrt: 'decimal',
-    st_area: 'decimal',
-    st_asbinary: 'bytes',
-    st_asgeojson: 'text',
-    st_astext: 'text',
-    st_aswkb: 'bytes',
-    st_aswkt: 'text',
-    st_contains: 'boolean',
-    st_dimension: 'integer',
-    st_distance: 'decimal',
-    st_geogpoint: 'geography',
-    st_intersects: 'boolean',
-    st_length: 'decimal',
-    st_makeenvelope: 'geometry',
-    st_makepoint: 'geometry',
-    st_ndims: 'integer',
-    st_npoints: 'integer',
-    st_point: 'geometry',
-    st_srid: 'integer',
-    st_within: 'boolean',
-    st_x: 'decimal',
-    st_y: 'decimal',
-    starts_with: 'boolean',
-    str_split: 'array<text>',
-    string_to_array: 'array<text>',
-    strpos: 'integer',
-    substr: 'text',
-    substring: 'text',
-    tan: 'decimal',
-    time: 'time',
-    timestamp: 'timestamp',
-    to_array: 'array<variant>',
-    to_binary: 'bytes',
-    to_bitmap: 'bitmap',
-    to_boolean: 'boolean',
-    to_char: 'text',
-    to_decimal: 'decimal',
-    to_geography: 'geography',
-    to_geometry: 'geometry',
-    to_hex: 'text',
-    to_number: 'decimal',
-    to_object: 'object',
-    to_utf8: 'bytes',
-    to_variant: 'variant',
-    todate: 'date',
-    trim: 'text',
-    try_to_boolean: 'boolean',
-    try_to_decimal: 'decimal',
-    try_to_number: 'decimal',
-    typeof: 'text',
-    unhex: 'bytes',
-    upper: 'text',
-    user: 'text',
-    uuid: 'uuid',
-    uuid_string: 'uuid',
-    version: 'text',
-    week: 'integer',
-    xxhash64: 'integer',
-    year: 'integer',
+    age: "interval",
+    array_all: "boolean",
+    array_any: "boolean",
+    array_contains: "boolean",
+    array_join: "text",
+    array_length: "integer",
+    array_lower: "integer",
+    array_ndims: "integer",
+    array_position: "integer",
+    array_size: "integer",
+    array_sum: "integer",
+    array_to_string: "text",
+    array_upper: "integer",
+    as_array: "array<variant>",
+    as_object: "object",
+    as_varchar: "text",
+    ascii: "integer",
+    bit_length: "integer",
+    byte_length: "integer",
+    cardinality: "integer",
+    cbrt: "decimal",
+    char_length: "integer",
+    character_length: "integer",
+    contains: "boolean",
+    convert_to: "bytes",
+    cos: "decimal",
+    current_catalog: "text",
+    current_database: "text",
+    current_datetime: "datetime",
+    current_schema: "text",
+    current_user: "text",
+    currval: "bigint",
+    date_parse: "timestamp",
+    datetime: "datetime",
+    day: "integer",
+    degrees: "decimal",
+    ends_with: "boolean",
+    exp: "decimal",
+    factorial: "integer",
+    format_date: "text",
+    from_base64: "bytes",
+    gen_random_uuid: "uuid",
+    generate_uuid: "uuid",
+    grouping: "integer",
+    grouping_id: "integer",
+    hash: "integer",
+    hex: "text",
+    highlight: "text",
+    hll_hash: "hll",
+    hour: "integer",
+    ieee_divide: "decimal",
+    initcap: "text",
+    instr: "integer",
+    json_contains: "boolean",
+    json_insert: "json",
+    json_patch: "json",
+    json_query: "json",
+    json_query_array: "array<json>",
+    json_remove: "json",
+    json_replace: "json",
+    json_set: "json",
+    json_valid: "boolean",
+    json_value: "text",
+    json_value_array: "array<text>",
+    jsonlength: "integer",
+    julianday: "decimal",
+    lastval: "bigint",
+    length: "integer",
+    list_contains: "boolean",
+    ln: "decimal",
+    locate: "integer",
+    log: "decimal",
+    log10: "decimal",
+    lower: "text",
+    ltrim: "text",
+    md5: "text",
+    minute: "integer",
+    month: "integer",
+    months_between: "decimal",
+    newid: "uuid",
+    nextval: "bigint",
+    octet_length: "integer",
+    overlay: "text",
+    parse_json: "json",
+    pi: "decimal",
+    position: "integer",
+    pow: "decimal",
+    power: "decimal",
+    printf: "text",
+    quarter: "integer",
+    radians: "decimal",
+    rand: "decimal",
+    random: "decimal",
+    regexp_contains: "boolean",
+    regexp_count: "integer",
+    regexp_extract: "text",
+    regexp_extract_all: "array<text>",
+    regexp_instr: "integer",
+    regexp_like: "boolean",
+    regexp_match: "array<text>",
+    regexp_matches: "array<text>",
+    regexp_position: "integer",
+    regexp_replace: "text",
+    regexp_split: "array<text>",
+    regexp_split_to_array: "array<text>",
+    regexp_split_to_table: "text",
+    regexp_substr: "text",
+    replace: "text",
+    rlike: "boolean",
+    row_to_json: "json",
+    rtrim: "text",
+    safe_divide: "decimal",
+    scope_identity: "integer",
+    second: "integer",
+    setval: "bigint",
+    sha: "text",
+    sha1: "text",
+    sha224: "bytes",
+    sha256: "bytes",
+    sha384: "bytes",
+    sha512: "bytes",
+    sign: "integer",
+    sin: "decimal",
+    snippet: "text",
+    split: "array<text>",
+    split_part: "text",
+    sqlite_version: "text",
+    sqrt: "decimal",
+    st_area: "decimal",
+    st_asbinary: "bytes",
+    st_asgeojson: "text",
+    st_astext: "text",
+    st_aswkb: "bytes",
+    st_aswkt: "text",
+    st_contains: "boolean",
+    st_dimension: "integer",
+    st_distance: "decimal",
+    st_geogpoint: "geography",
+    st_intersects: "boolean",
+    st_length: "decimal",
+    st_makeenvelope: "geometry",
+    st_makepoint: "geometry",
+    st_ndims: "integer",
+    st_npoints: "integer",
+    st_point: "geometry",
+    st_srid: "integer",
+    st_within: "boolean",
+    st_x: "decimal",
+    st_y: "decimal",
+    starts_with: "boolean",
+    str_split: "array<text>",
+    string_to_array: "array<text>",
+    strpos: "integer",
+    substr: "text",
+    substring: "text",
+    tan: "decimal",
+    time: "time",
+    timestamp: "timestamp",
+    to_array: "array<variant>",
+    to_binary: "bytes",
+    to_bitmap: "bitmap",
+    to_boolean: "boolean",
+    to_char: "text",
+    to_decimal: "decimal",
+    to_geography: "geography",
+    to_geometry: "geometry",
+    to_hex: "text",
+    to_number: "decimal",
+    to_object: "object",
+    to_utf8: "bytes",
+    to_variant: "variant",
+    todate: "date",
+    trim: "text",
+    try_to_boolean: "boolean",
+    try_to_decimal: "decimal",
+    try_to_number: "decimal",
+    typeof: "text",
+    unhex: "bytes",
+    upper: "text",
+    user: "text",
+    uuid: "uuid",
+    uuid_string: "uuid",
+    version: "text",
+    week: "integer",
+    xxhash64: "integer",
+    year: "integer",
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions:   {},
+  tableFunctions: {},
   aggregate: {
-    "countType": "integer",
-    "avgDefault": "decimal",
-    "avgDecimal": "default",
-    "sumDecimal": "input",
+    countType: "integer",
+    avgDefault: "decimal",
+    avgDecimal: "default",
+    sumDecimal: "input",
   },
   commonTypes: {
-    "text": "none",
-    "decimalInteger": "none",
+    text: "none",
+    decimalInteger: "none",
   },
   cast: {
-    "adjustment": "none",
+    adjustment: "none",
   },
   arithmetic: {
-    "decimalInteger": "none",
+    decimalInteger: "none",
   },
   windowFunctionTypes: {
-    "row_number": "integer",
-    "rank": "integer",
-    "dense_rank": "integer",
-    "ntile": "integer",
-    "n_tile": "integer",
-    "percent_rank": "decimal",
-    "cume_dist": "decimal",
+    row_number: "integer",
+    rank: "integer",
+    dense_rank: "integer",
+    ntile: "integer",
+    n_tile: "integer",
+    percent_rank: "decimal",
+    cume_dist: "decimal",
   },
   specialParameterTypes: {},
   specialColumnTypes: {
-    "current_date": "date",
-    "current_time": "time",
-    "current_timestamp": "timestamp",
-    "localtimestamp": "timestamp",
+    current_date: "date",
+    current_time: "time",
+    current_timestamp: "timestamp",
+    localtimestamp: "timestamp",
   },
   qualifiedSpecialColumnTypes: {},
   pseudoColumnTypes: {},
   generatedNames: {
-    "countStar": "count(*)",
-    "add": "compact",
-    "upper": "call",
+    countStar: "count(*)",
+    add: "compact",
+    upper: "call",
   },
-  scriptPreprocessor: 'none',
+  scriptPreprocessor: "none",
   includeDirectives: [],
-  complexTypeStyle: 'angle',
-  jdbcEscapeStyle: 'standard',
+  complexTypeStyle: "angle",
+  jdbcEscapeStyle: "standard",
   jdbcEscape: {
-    ifnullFunction: 'coalesce',
-    temporalLiteral: 'standard',
+    ifnullFunction: "coalesce",
+    temporalLiteral: "standard",
     executeCall: false,
-    currentDateExpression: 'current_date',
-    currentTimeExpression: 'current_time',
+    currentDateExpression: "current_date",
+    currentTimeExpression: "current_time",
   },
-  jdbcParameterMarker: 'question',
+  jdbcParameterMarker: "question",
   parserFallbacks: {
-    createView: 'postgres',
-    tableMacro: 'duckdb',
-    embeddedSqlTableFunction: 'tsql',
+    createView: "postgres",
+    tableMacro: "duckdb",
+    embeddedSqlTableFunction: "tsql",
   },
   parameterizedTypeFormats: {
-    decimal: 'decimal({args})',
-    dec: 'decimal({args})',
-    numeric: 'decimal({args})',
-    number: 'decimal({args})',
+    decimal: "decimal({args})",
+    dec: "decimal({args})",
+    numeric: "decimal({args})",
+    number: "decimal({args})",
   },
   literalTypes: {
-    string: 'text',
+    string: "text",
   },
   dynamicTableFunctions: {
-    generateSeriesColumn: '$alias',
-    rangeColumn: '$alias',
+    generateSeriesColumn: "$alias",
+    rangeColumn: "$alias",
     enabledHandlers: [
-      'numbers',
-      'schemaStringTableFunctions',
-      'clickhouseRemote',
-      'externalConnection',
+      "numbers",
+      "schemaStringTableFunctions",
+      "clickhouseRemote",
+      "externalConnection",
     ],
   },
   serializedSelect: {},
   outputTypeOverrides: {
-    "ifnull_text": "varchar(7)",
-    "isnull_text": "nchar(3)",
-    "min_date": "date",
-    "nvl_text": "varchar2(7)",
+    ifnull_text: "varchar(7)",
+    isnull_text: "nchar(3)",
+    min_date: "date",
+    nvl_text: "varchar2(7)",
   },
   metadata: {
     builtinSchemaTables: [
@@ -346,32 +346,32 @@ export const dialectConfig = {
         name: "character_sets",
         columns: [
           { name: "character_set_name", type: "text" },
-          { name: "character_set_name", type: "text" }
-        ]
+          { name: "character_set_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "CHARACTER_SETS",
         columns: [
           { name: "character_set_name", type: "text" },
-          { name: "character_set_name", type: "text" }
-        ]
+          { name: "character_set_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "collations",
         columns: [
           { name: "collation_name", type: "text" },
-          { name: "collation_name", type: "text" }
-        ]
+          { name: "collation_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
         name: "COLLATIONS",
         columns: [
           { name: "collation_name", type: "text" },
-          { name: "collation_name", type: "text" }
-        ]
+          { name: "collation_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -428,8 +428,8 @@ export const dialectConfig = {
           { name: "domain_name", type: "text" },
           { name: "extra", type: "text" },
           { name: "column_comment", type: "text" },
-          { name: "column_type", type: "text" }
-        ]
+          { name: "column_type", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -486,8 +486,8 @@ export const dialectConfig = {
           { name: "domain_name", type: "text" },
           { name: "extra", type: "text" },
           { name: "column_comment", type: "text" },
-          { name: "column_type", type: "text" }
-        ]
+          { name: "column_type", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -496,8 +496,8 @@ export const dialectConfig = {
           { name: "engine", type: "text" },
           { name: "support", type: "text" },
           { name: "engine", type: "text" },
-          { name: "support", type: "text" }
-        ]
+          { name: "support", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -506,8 +506,8 @@ export const dialectConfig = {
           { name: "engine", type: "text" },
           { name: "support", type: "text" },
           { name: "engine", type: "text" },
-          { name: "support", type: "text" }
-        ]
+          { name: "support", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -536,8 +536,8 @@ export const dialectConfig = {
           { name: "position_in_unique_constraint", type: "integer" },
           { name: "referenced_table_schema", type: "text" },
           { name: "referenced_table_name", type: "text" },
-          { name: "referenced_column_name", type: "text" }
-        ]
+          { name: "referenced_column_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -566,8 +566,8 @@ export const dialectConfig = {
           { name: "position_in_unique_constraint", type: "integer" },
           { name: "referenced_table_schema", type: "text" },
           { name: "referenced_table_name", type: "text" },
-          { name: "referenced_column_name", type: "text" }
-        ]
+          { name: "referenced_column_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -594,8 +594,8 @@ export const dialectConfig = {
           { name: "update_rule", type: "text" },
           { name: "delete_rule", type: "text" },
           { name: "table_name", type: "text" },
-          { name: "referenced_table_name", type: "text" }
-        ]
+          { name: "referenced_table_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -622,8 +622,8 @@ export const dialectConfig = {
           { name: "update_rule", type: "text" },
           { name: "delete_rule", type: "text" },
           { name: "table_name", type: "text" },
-          { name: "referenced_table_name", type: "text" }
-        ]
+          { name: "referenced_table_name", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -642,8 +642,8 @@ export const dialectConfig = {
           { name: "default_character_set_catalog", type: "text" },
           { name: "default_character_set_schema", type: "text" },
           { name: "default_character_set_name", type: "text" },
-          { name: "sql_path", type: "text" }
-        ]
+          { name: "sql_path", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -662,8 +662,8 @@ export const dialectConfig = {
           { name: "default_character_set_catalog", type: "text" },
           { name: "default_character_set_schema", type: "text" },
           { name: "default_character_set_name", type: "text" },
-          { name: "sql_path", type: "text" }
-        ]
+          { name: "sql_path", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -704,8 +704,8 @@ export const dialectConfig = {
           { name: "comment", type: "text" },
           { name: "index_comment", type: "text" },
           { name: "is_visible", type: "text" },
-          { name: "expression", type: "text" }
-        ]
+          { name: "expression", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -746,8 +746,8 @@ export const dialectConfig = {
           { name: "comment", type: "text" },
           { name: "index_comment", type: "text" },
           { name: "is_visible", type: "text" },
-          { name: "expression", type: "text" }
-        ]
+          { name: "expression", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -770,8 +770,8 @@ export const dialectConfig = {
           { name: "data_length", type: "integer" },
           { name: "index_length", type: "integer" },
           { name: "table_collation", type: "text" },
-          { name: "table_comment", type: "text" }
-        ]
+          { name: "table_comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -794,8 +794,8 @@ export const dialectConfig = {
           { name: "data_length", type: "integer" },
           { name: "index_length", type: "integer" },
           { name: "table_collation", type: "text" },
-          { name: "table_comment", type: "text" }
-        ]
+          { name: "table_comment", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -820,8 +820,8 @@ export const dialectConfig = {
           { name: "is_insertable_into", type: "text" },
           { name: "is_trigger_updatable", type: "text" },
           { name: "is_trigger_deletable", type: "text" },
-          { name: "is_trigger_insertable_into", type: "text" }
-        ]
+          { name: "is_trigger_insertable_into", type: "text" },
+        ],
       },
       {
         schema: "information_schema",
@@ -846,16 +846,16 @@ export const dialectConfig = {
           { name: "is_insertable_into", type: "text" },
           { name: "is_trigger_updatable", type: "text" },
           { name: "is_trigger_deletable", type: "text" },
-          { name: "is_trigger_insertable_into", type: "text" }
-        ]
+          { name: "is_trigger_insertable_into", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "aggregate_function_combinators",
         columns: [
           { name: "name", type: "text" },
-          { name: "is_internal", type: "integer" }
-        ]
+          { name: "is_internal", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -868,8 +868,8 @@ export const dialectConfig = {
           { name: "first_update", type: "timestamp" },
           { name: "total_bytes", type: "integer" },
           { name: "entries.query_id", type: "array<variant>" },
-          { name: "entries.bytes", type: "array<variant>" }
-        ]
+          { name: "entries.bytes", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -896,8 +896,8 @@ export const dialectConfig = {
           { name: "schedule_time", type: "timestamp" },
           { name: "enqueue_time", type: "timestamp" },
           { name: "start_time", type: "timestamp" },
-          { name: "finish_time", type: "timestamp" }
-        ]
+          { name: "finish_time", type: "timestamp" },
+        ],
       },
       {
         schema: "system",
@@ -910,8 +910,8 @@ export const dialectConfig = {
           { name: "status", type: "text" },
           { name: "processing_start_time", type: "timestamp" },
           { name: "processing_end_time", type: "timestamp" },
-          { name: "exception", type: "text" }
-        ]
+          { name: "exception", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -924,8 +924,8 @@ export const dialectConfig = {
           { name: "type", type: "text" },
           { name: "changed", type: "integer" },
           { name: "description", type: "text" },
-          { name: "alterable", type: "integer" }
-        ]
+          { name: "alterable", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -941,8 +941,8 @@ export const dialectConfig = {
           { name: "deactivated", type: "integer" },
           { name: "scheduled", type: "integer" },
           { name: "delayed", type: "integer" },
-          { name: "executing", type: "integer" }
-        ]
+          { name: "executing", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -963,16 +963,16 @@ export const dialectConfig = {
           { name: "compressed_size", type: "integer" },
           { name: "files_read", type: "integer" },
           { name: "bytes_read", type: "integer" },
-          { name: "profileevents", type: "integer" }
-        ]
+          { name: "profileevents", type: "integer" },
+        ],
       },
       {
         schema: "system",
         name: "build_options",
         columns: [
           { name: "name", type: "text" },
-          { name: "value", type: "text" }
-        ]
+          { name: "value", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -988,8 +988,8 @@ export const dialectConfig = {
           { name: "pkey_algo", type: "text" },
           { name: "path", type: "text" },
           { name: "default", type: "integer" },
-          { name: "protocol", type: "text" }
-        ]
+          { name: "protocol", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1017,8 +1017,8 @@ export const dialectConfig = {
           { name: "unsynced_after_recovery", type: "integer" },
           { name: "replication_lag", type: "integer" },
           { name: "recovery_time", type: "integer" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1031,16 +1031,16 @@ export const dialectConfig = {
           { name: "is_encryption", type: "integer" },
           { name: "is_timeseries_codec", type: "integer" },
           { name: "is_experimental", type: "integer" },
-          { name: "description", type: "text" }
-        ]
+          { name: "description", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "collations",
         columns: [
           { name: "name", type: "text" },
-          { name: "language", type: "text" }
-        ]
+          { name: "language", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1069,8 +1069,8 @@ export const dialectConfig = {
           { name: "datetime_precision", type: "integer" },
           { name: "serialization_hint", type: "text" },
           { name: "statistics", type: "text" },
-          { name: "column", type: "text" }
-        ]
+          { name: "column", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1078,15 +1078,13 @@ export const dialectConfig = {
         columns: [
           { name: "word", type: "text" },
           { name: "context", type: "text" },
-          { name: "belongs", type: "text" }
-        ]
+          { name: "belongs", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "contributors",
-        columns: [
-          { name: "name", type: "text" }
-        ]
+        columns: [{ name: "name", type: "text" }],
       },
       {
         schema: "system",
@@ -1094,8 +1092,8 @@ export const dialectConfig = {
         columns: [
           { name: "role_name", type: "text" },
           { name: "with_admin_option", type: "integer" },
-          { name: "is_default", type: "integer" }
-        ]
+          { name: "is_default", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1103,8 +1101,8 @@ export const dialectConfig = {
         columns: [
           { name: "dashboard", type: "text" },
           { name: "title", type: "text" },
-          { name: "query", type: "text" }
-        ]
+          { name: "query", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1120,8 +1118,8 @@ export const dialectConfig = {
           { name: "granularity", type: "integer" },
           { name: "data_compressed_bytes", type: "integer" },
           { name: "data_uncompressed_bytes", type: "integer" },
-          { name: "marks_bytes", type: "integer" }
-        ]
+          { name: "marks_bytes", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1129,15 +1127,13 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "case_insensitive", type: "integer" },
-          { name: "alias_to", type: "text" }
-        ]
+          { name: "alias_to", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "database_engines",
-        columns: [
-          { name: "name", type: "text" }
-        ]
+        columns: [{ name: "name", type: "text" }],
       },
       {
         schema: "system",
@@ -1153,8 +1149,8 @@ export const dialectConfig = {
           { name: "log_ptr", type: "integer" },
           { name: "total_replicas", type: "integer" },
           { name: "zookeeper_exception", type: "text" },
-          { name: "is_session_expired", type: "integer" }
-        ]
+          { name: "is_session_expired", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1168,8 +1164,8 @@ export const dialectConfig = {
           { name: "engine_full", type: "text" },
           { name: "comment", type: "text" },
           { name: "is_external", type: "integer" },
-          { name: "database", type: "text" }
-        ]
+          { name: "database", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1186,8 +1182,8 @@ export const dialectConfig = {
           { name: "reason", type: "text" },
           { name: "min_block_number", type: "integer" },
           { name: "max_block_number", type: "integer" },
-          { name: "level", type: "integer" }
-        ]
+          { name: "level", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1197,8 +1193,8 @@ export const dialectConfig = {
           { name: "table", type: "text" },
           { name: "uuid", type: "uuid" },
           { name: "metadata_path", type: "text" },
-          { name: "is_permanently", type: "integer" }
-        ]
+          { name: "is_permanently", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1229,8 +1225,8 @@ export const dialectConfig = {
           { name: "error_count", type: "integer" },
           { name: "loading_duration", type: "decimal" },
           { name: "last_exception", type: "text" },
-          { name: "comment", type: "text" }
-        ]
+          { name: "comment", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1240,8 +1236,8 @@ export const dialectConfig = {
           { name: "value", type: "decimal" },
           { name: "description", type: "text" },
           { name: "labels", type: "text" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1261,8 +1257,8 @@ export const dialectConfig = {
           { name: "is_write_once", type: "integer" },
           { name: "is_remote", type: "integer" },
           { name: "is_broken", type: "integer" },
-          { name: "cache_path", type: "text" }
-        ]
+          { name: "cache_path", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1282,8 +1278,8 @@ export const dialectConfig = {
           { name: "exception_code", type: "integer" },
           { name: "exception_text", type: "text" },
           { name: "query_finish_time", type: "timestamp" },
-          { name: "query_duration_ms", type: "integer" }
-        ]
+          { name: "query_duration_ms", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1299,8 +1295,8 @@ export const dialectConfig = {
           { name: "broken_data_files", type: "integer" },
           { name: "broken_data_compressed_bytes", type: "integer" },
           { name: "last_exception", type: "text" },
-          { name: "last_exception_time", type: "timestamp" }
-        ]
+          { name: "last_exception_time", type: "timestamp" },
+        ],
       },
       {
         schema: "system",
@@ -1309,8 +1305,8 @@ export const dialectConfig = {
           { name: "hostname", type: "text" },
           { name: "ip_address", type: "text" },
           { name: "ip_family", type: "text" },
-          { name: "cached_at", type: "timestamp" }
-        ]
+          { name: "cached_at", type: "timestamp" },
+        ],
       },
       {
         schema: "system",
@@ -1322,8 +1318,8 @@ export const dialectConfig = {
           { name: "uuid", type: "uuid" },
           { name: "engine", type: "text" },
           { name: "metadata_dropped_path", type: "text" },
-          { name: "table_dropped_time", type: "timestamp" }
-        ]
+          { name: "table_dropped_time", type: "timestamp" },
+        ],
       },
       {
         schema: "system",
@@ -1397,8 +1393,8 @@ export const dialectConfig = {
           { name: "removal_state", type: "text" },
           { name: "bytes", type: "integer" },
           { name: "marks_size", type: "integer" },
-          { name: "part_name", type: "text" }
-        ]
+          { name: "part_name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1407,8 +1403,8 @@ export const dialectConfig = {
           { name: "role_name", type: "text" },
           { name: "with_admin_option", type: "integer" },
           { name: "is_current", type: "integer" },
-          { name: "is_default", type: "integer" }
-        ]
+          { name: "is_default", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1422,8 +1418,8 @@ export const dialectConfig = {
           { name: "last_error_format_string", type: "text" },
           { name: "last_error_trace", type: "array<variant>" },
           { name: "remote", type: "integer" },
-          { name: "query_id", type: "text" }
-        ]
+          { name: "query_id", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1432,8 +1428,8 @@ export const dialectConfig = {
           { name: "event", type: "text" },
           { name: "value", type: "integer" },
           { name: "description", type: "text" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1441,8 +1437,8 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "type", type: "text" },
-          { name: "enabled", type: "integer" }
-        ]
+          { name: "enabled", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1464,8 +1460,8 @@ export const dialectConfig = {
           { name: "unbound", type: "integer" },
           { name: "user_id", type: "text" },
           { name: "segment_type", type: "text" },
-          { name: "file_size", type: "integer" }
-        ]
+          { name: "file_size", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1503,8 +1499,8 @@ export const dialectConfig = {
           { name: "check_cache_probability", type: "decimal" },
           { name: "is_initialized", type: "integer" },
           { name: "current_size", type: "integer" },
-          { name: "current_elements_num", type: "integer" }
-        ]
+          { name: "current_elements_num", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1522,8 +1518,8 @@ export const dialectConfig = {
           { name: "has_external_schema", type: "integer" },
           { name: "prefers_large_blocks", type: "integer" },
           { name: "supports_append", type: "integer" },
-          { name: "supports_subsets_of_columns", type: "integer" }
-        ]
+          { name: "supports_subsets_of_columns", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1544,8 +1540,8 @@ export const dialectConfig = {
           { name: "introduced_in", type: "text" },
           { name: "categories", type: "text" },
           { name: "deterministic", type: "integer" },
-          { name: "higher_order", type: "integer" }
-        ]
+          { name: "higher_order", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1559,8 +1555,8 @@ export const dialectConfig = {
           { name: "table", type: "text" },
           { name: "column", type: "text" },
           { name: "is_partial_revoke", type: "integer" },
-          { name: "grant_option", type: "integer" }
-        ]
+          { name: "grant_option", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1575,8 +1571,8 @@ export const dialectConfig = {
           { name: "priority", type: "integer" },
           { name: "is_default", type: "integer" },
           { name: "tables.database", type: "array<variant>" },
-          { name: "tables.table", type: "array<variant>" }
-        ]
+          { name: "tables.table", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -1586,8 +1582,8 @@ export const dialectConfig = {
           { name: "value", type: "decimal" },
           { name: "description", type: "text" },
           { name: "labels", type: "text" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1598,8 +1594,8 @@ export const dialectConfig = {
           { name: "made_current_at", type: "timestamp" },
           { name: "snapshot_id", type: "integer" },
           { name: "parent_id", type: "integer" },
-          { name: "is_current_ancestor", type: "integer" }
-        ]
+          { name: "is_current_ancestor", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1611,8 +1607,8 @@ export const dialectConfig = {
           { name: "handler", type: "text" },
           { name: "entry_type", type: "text" },
           { name: "symbol", type: "text" },
-          { name: "parameters", type: "array<variant>" }
-        ]
+          { name: "parameters", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -1627,22 +1623,18 @@ export const dialectConfig = {
           { name: "curslabs", type: "integer" },
           { name: "curregs", type: "integer" },
           { name: "availregs", type: "integer" },
-          { name: "util", type: "decimal" }
-        ]
+          { name: "util", type: "decimal" },
+        ],
       },
       {
         schema: "system",
         name: "jemalloc_profile_text",
-        columns: [
-          { name: "line", type: "text" }
-        ]
+        columns: [{ name: "line", type: "text" }],
       },
       {
         schema: "system",
         name: "jemalloc_stats",
-        columns: [
-          { name: "stats", type: "text" }
-        ]
+        columns: [{ name: "stats", type: "text" }],
       },
       {
         schema: "system",
@@ -1668,15 +1660,13 @@ export const dialectConfig = {
           { name: "last_used", type: "timestamp" },
           { name: "rdkafka_stat", type: "text" },
           { name: "dependencies", type: "array<variant>" },
-          { name: "missing_dependencies", type: "array<variant>" }
-        ]
+          { name: "missing_dependencies", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
         name: "keywords",
-        columns: [
-          { name: "keyword", type: "text" }
-        ]
+        columns: [{ name: "keyword", type: "text" }],
       },
       {
         schema: "system",
@@ -1685,16 +1675,16 @@ export const dialectConfig = {
           { name: "library_name", type: "text" },
           { name: "license_type", type: "text" },
           { name: "license_path", type: "text" },
-          { name: "license_text", type: "text" }
-        ]
+          { name: "license_text", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "macros",
         columns: [
           { name: "macro", type: "text" },
-          { name: "substitution", type: "text" }
-        ]
+          { name: "substitution", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1711,8 +1701,8 @@ export const dialectConfig = {
           { name: "readonly", type: "integer" },
           { name: "type", type: "text" },
           { name: "is_obsolete", type: "integer" },
-          { name: "tier", type: "text" }
-        ]
+          { name: "tier", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1741,8 +1731,8 @@ export const dialectConfig = {
           { name: "memory_usage", type: "integer" },
           { name: "thread_id", type: "integer" },
           { name: "merge_type", type: "text" },
-          { name: "merge_algorithm", type: "text" }
-        ]
+          { name: "merge_algorithm", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1751,8 +1741,8 @@ export const dialectConfig = {
           { name: "metric", type: "text" },
           { name: "value", type: "integer" },
           { name: "description", type: "text" },
-          { name: "name", type: "text" }
-        ]
+          { name: "name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1761,8 +1751,8 @@ export const dialectConfig = {
           { name: "model_path", type: "text" },
           { name: "type", type: "text" },
           { name: "loading_start_time", type: "timestamp" },
-          { name: "loading_duration", type: "decimal" }
-        ]
+          { name: "loading_duration", type: "decimal" },
+        ],
       },
       {
         schema: "system",
@@ -1775,8 +1765,8 @@ export const dialectConfig = {
           { name: "target_disk_path", type: "text" },
           { name: "part_name", type: "text" },
           { name: "part_size", type: "integer" },
-          { name: "thread_id", type: "integer" }
-        ]
+          { name: "thread_id", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -1798,8 +1788,8 @@ export const dialectConfig = {
           { name: "latest_failed_part", type: "text" },
           { name: "latest_fail_time", type: "timestamp" },
           { name: "latest_fail_reason", type: "text" },
-          { name: "latest_fail_error_code_name", type: "text" }
-        ]
+          { name: "latest_fail_error_code_name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1808,29 +1798,23 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "collection", type: "text" },
           { name: "source", type: "text" },
-          { name: "create_query", type: "text" }
-        ]
+          { name: "create_query", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "numbers",
-        columns: [
-          { name: "number", type: "integer" }
-        ]
+        columns: [{ name: "number", type: "integer" }],
       },
       {
         schema: "system",
         name: "numbers_mt",
-        columns: [
-          { name: "number", type: "integer" }
-        ]
+        columns: [{ name: "number", type: "integer" }],
       },
       {
         schema: "system",
         name: "one",
-        columns: [
-          { name: "dummy", type: "integer" }
-        ]
+        columns: [{ name: "dummy", type: "integer" }],
       },
       {
         schema: "system",
@@ -1849,8 +1833,8 @@ export const dialectConfig = {
           { name: "state", type: "text" },
           { name: "rollback", type: "integer" },
           { name: "num_tries", type: "integer" },
-          { name: "last_exception", type: "text" }
-        ]
+          { name: "last_exception", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1924,8 +1908,8 @@ export const dialectConfig = {
           { name: "removal_state", type: "text" },
           { name: "bytes", type: "integer" },
           { name: "marks_size", type: "integer" },
-          { name: "part_name", type: "text" }
-        ]
+          { name: "part_name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -1989,15 +1973,13 @@ export const dialectConfig = {
           { name: "subcolumns.marks_bytes", type: "array<variant>" },
           { name: "bytes", type: "integer" },
           { name: "marks_size", type: "integer" },
-          { name: "part_name", type: "text" }
-        ]
+          { name: "part_name", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "primes",
-        columns: [
-          { name: "prime", type: "integer" }
-        ]
+        columns: [{ name: "prime", type: "integer" }],
       },
       {
         schema: "system",
@@ -2006,8 +1988,8 @@ export const dialectConfig = {
           { name: "privilege", type: "boolean" },
           { name: "aliases", type: "array<variant>" },
           { name: "level", type: "text" },
-          { name: "parent_group", type: "boolean" }
-        ]
+          { name: "parent_group", type: "boolean" },
+        ],
       },
       {
         schema: "system",
@@ -2058,8 +2040,8 @@ export const dialectConfig = {
           { name: "profileevents.names", type: "array<variant>" },
           { name: "profileevents.values", type: "array<variant>" },
           { name: "settings.names", type: "array<variant>" },
-          { name: "settings.values", type: "array<variant>" }
-        ]
+          { name: "settings.values", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2127,8 +2109,8 @@ export const dialectConfig = {
           { name: "exception", type: "text" },
           { name: "bytes", type: "integer" },
           { name: "marks_size", type: "integer" },
-          { name: "part_name", type: "text" }
-        ]
+          { name: "part_name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2184,8 +2166,8 @@ export const dialectConfig = {
           { name: "column_modification_time", type: "timestamp" },
           { name: "bytes", type: "integer" },
           { name: "marks_size", type: "integer" },
-          { name: "part_name", type: "text" }
-        ]
+          { name: "part_name", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2197,8 +2179,8 @@ export const dialectConfig = {
           { name: "type", type: "text" },
           { name: "sorting_key", type: "array<variant>" },
           { name: "query", type: "text" },
-          { name: "settings", type: "text" }
-        ]
+          { name: "settings", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2213,8 +2195,8 @@ export const dialectConfig = {
           { name: "shared", type: "integer" },
           { name: "compressed", type: "integer" },
           { name: "expires_at", type: "timestamp" },
-          { name: "key_hash", type: "integer" }
-        ]
+          { name: "key_hash", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2222,8 +2204,8 @@ export const dialectConfig = {
         columns: [
           { name: "key_hash", type: "integer" },
           { name: "entry_size", type: "integer" },
-          { name: "matching_marks", type: "text" }
-        ]
+          { name: "matching_marks", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2243,8 +2225,8 @@ export const dialectConfig = {
           { name: "max_execution_time", type: "decimal" },
           { name: "max_written_bytes", type: "integer" },
           { name: "max_failed_sequential_authentications", type: "integer" },
-          { name: "max_queries_per_normalized_hash", type: "integer" }
-        ]
+          { name: "max_queries_per_normalized_hash", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2278,8 +2260,8 @@ export const dialectConfig = {
           { name: "failed_sequential_authentications", type: "integer" },
           { name: "max_failed_sequential_authentications", type: "integer" },
           { name: "queries_per_normalized_hash", type: "integer" },
-          { name: "max_queries_per_normalized_hash", type: "integer" }
-        ]
+          { name: "max_queries_per_normalized_hash", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2292,8 +2274,8 @@ export const dialectConfig = {
           { name: "durations", type: "array<variant>" },
           { name: "apply_to_all", type: "integer" },
           { name: "apply_to_list", type: "array<variant>" },
-          { name: "apply_to_except", type: "array<variant>" }
-        ]
+          { name: "apply_to_except", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2328,8 +2310,8 @@ export const dialectConfig = {
           { name: "failed_sequential_authentications", type: "integer" },
           { name: "max_failed_sequential_authentications", type: "integer" },
           { name: "queries_per_normalized_hash", type: "integer" },
-          { name: "max_queries_per_normalized_hash", type: "integer" }
-        ]
+          { name: "max_queries_per_normalized_hash", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2342,8 +2324,8 @@ export const dialectConfig = {
           { name: "remote_path", type: "text" },
           { name: "size", type: "integer" },
           { name: "common_prefix_for_blobs", type: "text" },
-          { name: "cache_paths", type: "array<variant>" }
-        ]
+          { name: "cache_paths", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2386,8 +2368,8 @@ export const dialectConfig = {
           { name: "last_queue_update_exception", type: "text" },
           { name: "zookeeper_exception", type: "text" },
           { name: "replica_is_active", type: "integer" },
-          { name: "readonly_duration", type: "integer" }
-        ]
+          { name: "readonly_duration", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2408,8 +2390,8 @@ export const dialectConfig = {
           { name: "interserver_scheme", type: "text" },
           { name: "uri", type: "text" },
           { name: "to_detached", type: "integer" },
-          { name: "thread_id", type: "integer" }
-        ]
+          { name: "thread_id", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2426,8 +2408,8 @@ export const dialectConfig = {
           { name: "readonly", type: "integer" },
           { name: "type", type: "text" },
           { name: "is_obsolete", type: "integer" },
-          { name: "tier", type: "text" }
-        ]
+          { name: "tier", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2453,8 +2435,8 @@ export const dialectConfig = {
           { name: "num_postponed", type: "integer" },
           { name: "postpone_reason", type: "text" },
           { name: "last_postpone_time", type: "timestamp" },
-          { name: "merge_type", type: "text" }
-        ]
+          { name: "merge_type", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2464,8 +2446,8 @@ export const dialectConfig = {
           { name: "read_disks", type: "array<variant>" },
           { name: "write_disks", type: "array<variant>" },
           { name: "unit", type: "text" },
-          { name: "create_query", type: "text" }
-        ]
+          { name: "create_query", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2474,8 +2456,8 @@ export const dialectConfig = {
           { name: "database", type: "text" },
           { name: "table", type: "text" },
           { name: "name", type: "text" },
-          { name: "value", type: "integer" }
-        ]
+          { name: "value", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2486,8 +2468,8 @@ export const dialectConfig = {
           { name: "granted_role_name", type: "text" },
           { name: "granted_role_id", type: "uuid" },
           { name: "granted_role_is_default", type: "integer" },
-          { name: "with_admin_option", type: "integer" }
-        ]
+          { name: "with_admin_option", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2495,8 +2477,8 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "id", type: "uuid" },
-          { name: "storage", type: "text" }
-        ]
+          { name: "storage", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2512,8 +2494,8 @@ export const dialectConfig = {
           { name: "is_restrictive", type: "integer" },
           { name: "apply_to_all", type: "integer" },
           { name: "apply_to_list", type: "array<variant>" },
-          { name: "apply_to_except", type: "array<variant>" }
-        ]
+          { name: "apply_to_except", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2526,8 +2508,8 @@ export const dialectConfig = {
           { name: "type", type: "text" },
           { name: "changed", type: "integer" },
           { name: "description", type: "text" },
-          { name: "alterable", type: "integer" }
-        ]
+          { name: "alterable", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2540,8 +2522,8 @@ export const dialectConfig = {
           { name: "status", type: "text" },
           { name: "processing_start_time", type: "timestamp" },
           { name: "processing_end_time", type: "timestamp" },
-          { name: "exception", type: "text" }
-        ]
+          { name: "exception", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2573,8 +2555,8 @@ export const dialectConfig = {
           { name: "max_speed", type: "decimal" },
           { name: "max_burst", type: "decimal" },
           { name: "throttling_us", type: "integer" },
-          { name: "tokens", type: "decimal" }
-        ]
+          { name: "tokens", type: "decimal" },
+        ],
       },
       {
         schema: "system",
@@ -2587,8 +2569,8 @@ export const dialectConfig = {
           { name: "registration_time", type: "timestamp" },
           { name: "schema", type: "text" },
           { name: "number_of_rows", type: "integer" },
-          { name: "schema_inference_mode", type: "text" }
-        ]
+          { name: "schema_inference_mode", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2601,8 +2583,8 @@ export const dialectConfig = {
           { name: "description", type: "text" },
           { name: "type", type: "text" },
           { name: "changeable_without_restart", type: "text" },
-          { name: "is_obsolete", type: "integer" }
-        ]
+          { name: "is_obsolete", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2620,8 +2602,8 @@ export const dialectConfig = {
           { name: "default", type: "text" },
           { name: "alias_for", type: "text" },
           { name: "is_obsolete", type: "integer" },
-          { name: "tier", type: "text" }
-        ]
+          { name: "tier", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2629,8 +2611,8 @@ export const dialectConfig = {
         columns: [
           { name: "type", type: "text" },
           { name: "version", type: "text" },
-          { name: "changes", type: "array<variant>" }
-        ]
+          { name: "changes", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2645,8 +2627,8 @@ export const dialectConfig = {
           { name: "min", type: "text" },
           { name: "max", type: "text" },
           { name: "writability", type: "text" },
-          { name: "inherit_profile", type: "text" }
-        ]
+          { name: "inherit_profile", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2658,8 +2640,8 @@ export const dialectConfig = {
           { name: "num_elements", type: "integer" },
           { name: "apply_to_all", type: "integer" },
           { name: "apply_to_list", type: "array<variant>" },
-          { name: "apply_to_except", type: "array<variant>" }
-        ]
+          { name: "apply_to_except", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2669,8 +2651,8 @@ export const dialectConfig = {
           { name: "thread_id", type: "integer" },
           { name: "query_id", type: "text" },
           { name: "trace", type: "array<variant>" },
-          { name: "untracked_memory", type: "integer" }
-        ]
+          { name: "untracked_memory", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2685,8 +2667,8 @@ export const dialectConfig = {
           { name: "move_factor", type: "decimal" },
           { name: "prefer_not_to_merge", type: "integer" },
           { name: "perform_ttl_move_on_insert", type: "integer" },
-          { name: "load_balancing", type: "text" }
-        ]
+          { name: "load_balancing", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -2696,8 +2678,8 @@ export const dialectConfig = {
           { name: "symbol_demangled", type: "text" },
           { name: "function_id", type: "integer" },
           { name: "address_begin", type: "integer" },
-          { name: "address_end", type: "integer" }
-        ]
+          { name: "address_end", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2711,8 +2693,8 @@ export const dialectConfig = {
           { name: "supports_ttl", type: "integer" },
           { name: "supports_replication", type: "integer" },
           { name: "supports_deduplication", type: "integer" },
-          { name: "supports_parallel_insert", type: "integer" }
-        ]
+          { name: "supports_parallel_insert", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2720,8 +2702,8 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "description", type: "text" },
-          { name: "allow_readonly", type: "integer" }
-        ]
+          { name: "allow_readonly", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2767,22 +2749,18 @@ export const dialectConfig = {
           { name: "loading_dependent_database", type: "array<variant>" },
           { name: "loading_dependent_table", type: "array<variant>" },
           { name: "definer", type: "text" },
-          { name: "table", type: "text" }
-        ]
+          { name: "table", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "time_zones",
-        columns: [
-          { name: "time_zone", type: "text" }
-        ]
+        columns: [{ name: "time_zone", type: "text" }],
       },
       {
         schema: "system",
         name: "tokenizers",
-        columns: [
-          { name: "name", type: "text" }
-        ]
+        columns: [{ name: "name", type: "text" }],
       },
       {
         schema: "system",
@@ -2907,8 +2885,8 @@ export const dialectConfig = {
           { name: "uppercase_mapping", type: "text" },
           { name: "bidi_paired_bracket", type: "text" },
           { name: "script_extensions", type: "array<variant>" },
-          { name: "identifier_type", type: "array<variant>" }
-        ]
+          { name: "identifier_type", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2934,8 +2912,8 @@ export const dialectConfig = {
           { name: "send_chunk_header", type: "integer" },
           { name: "execute_direct", type: "integer" },
           { name: "lifetime", type: "integer" },
-          { name: "deterministic", type: "integer" }
-        ]
+          { name: "deterministic", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2944,8 +2922,8 @@ export const dialectConfig = {
           { name: "name", type: "text" },
           { name: "type", type: "text" },
           { name: "params", type: "text" },
-          { name: "precedence", type: "integer" }
-        ]
+          { name: "precedence", type: "integer" },
+        ],
       },
       {
         schema: "system",
@@ -2956,8 +2934,8 @@ export const dialectConfig = {
           { name: "peak_memory_usage", type: "integer" },
           { name: "profileevents", type: "integer" },
           { name: "profileevents.names", type: "array<variant>" },
-          { name: "profileevents.values", type: "array<variant>" }
-        ]
+          { name: "profileevents.values", type: "array<variant>" },
+        ],
       },
       {
         schema: "system",
@@ -2979,8 +2957,8 @@ export const dialectConfig = {
           { name: "grantees_any", type: "integer" },
           { name: "grantees_list", type: "array<variant>" },
           { name: "grantees_except", type: "array<variant>" },
-          { name: "default_database", type: "text" }
-        ]
+          { name: "default_database", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -3002,16 +2980,16 @@ export const dialectConfig = {
           { name: "read_bytes", type: "integer" },
           { name: "total_rows", type: "integer" },
           { name: "written_rows", type: "integer" },
-          { name: "written_bytes", type: "integer" }
-        ]
+          { name: "written_bytes", type: "integer" },
+        ],
       },
       {
         schema: "system",
         name: "warnings",
         columns: [
           { name: "message", type: "text" },
-          { name: "message_format_string", type: "text" }
-        ]
+          { name: "message_format_string", type: "text" },
+        ],
       },
       {
         schema: "system",
@@ -3019,79 +2997,71 @@ export const dialectConfig = {
         columns: [
           { name: "name", type: "text" },
           { name: "parent", type: "text" },
-          { name: "create_query", type: "text" }
-        ]
+          { name: "create_query", type: "text" },
+        ],
       },
       {
         schema: "system",
         name: "zeros",
-        columns: [
-          { name: "zero", type: "integer" }
-        ]
+        columns: [{ name: "zero", type: "integer" }],
       },
       {
         schema: "system",
         name: "zeros_mt",
-        columns: [
-          { name: "zero", type: "integer" }
-        ]
-      }
+        columns: [{ name: "zero", type: "integer" }],
+      },
     ],
     describeFunctionColumns: [
-      { name: 'Name', type: 'text' },
-      { name: 'Description', type: 'text' },
+      { name: "Name", type: "text" },
+      { name: "Description", type: "text" },
     ],
-    explainColumns: [
-      { name: 'QUERY PLAN', type: 'text' },
-    ],
+    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
-      { name: 'created_on', type: 'timestamp' },
-      { name: 'name', type: 'text' },
-      { name: 'database_name', type: 'text' },
-      { name: 'schema_name', type: 'text' },
-      { name: 'kind', type: 'text' },
-      { name: 'comment', type: 'text' },
-      { name: 'cluster_by', type: 'text' },
-      { name: 'rows', type: 'integer' },
-      { name: 'bytes', type: 'integer' },
-      { name: 'owner', type: 'text' },
-      { name: 'retention_time', type: 'integer' },
-      { name: 'automatic_clustering', type: 'text' },
-      { name: 'change_tracking', type: 'boolean' },
-      { name: 'search_optimization', type: 'boolean' },
+      { name: "created_on", type: "timestamp" },
+      { name: "name", type: "text" },
+      { name: "database_name", type: "text" },
+      { name: "schema_name", type: "text" },
+      { name: "kind", type: "text" },
+      { name: "comment", type: "text" },
+      { name: "cluster_by", type: "text" },
+      { name: "rows", type: "integer" },
+      { name: "bytes", type: "integer" },
+      { name: "owner", type: "text" },
+      { name: "retention_time", type: "integer" },
+      { name: "automatic_clustering", type: "text" },
+      { name: "change_tracking", type: "boolean" },
+      { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
       {
-        pattern: '/^(?:list|ls)\\s+@/',
+        pattern: "/^(?:list|ls)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'md5', type: 'text' },
-          { name: 'last_modified', type: 'timestamp' },
+          { name: "name", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "md5", type: "text" },
+          { name: "last_modified", type: "timestamp" },
         ],
       },
       {
-        pattern: '/^get\\s+@/',
+        pattern: "/^get\\s+@/",
         columns: [
-          { name: 'file', type: 'text' },
-          { name: 'size', type: 'integer' },
-          { name: 'status', type: 'text' },
-          { name: 'message', type: 'text' },
+          { name: "file", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "message", type: "text" },
         ],
       },
       {
-        pattern: '/^(?:remove|rm)\\s+@/',
+        pattern: "/^(?:remove|rm)\\s+@/",
         columns: [
-          { name: 'name', type: 'text' },
-          { name: 'result', type: 'text' },
+          { name: "name", type: "text" },
+          { name: "result", type: "text" },
         ],
       },
       {
-        pattern: '/^list\\s+(?:file|jar|archive)\\b/',
-        columns: [
-          { name: 'resource', type: 'text' },
-        ],
+        pattern: "/^list\\s+(?:file|jar|archive)\\b/",
+        columns: [{ name: "resource", type: "text" }],
       },
     ],
   },
@@ -3099,15 +3069,7 @@ export const dialectConfig = {
     suppressDiagnosticPatterns: [
       "^Function 'length' argument 1 expects a string or binary argument, found array$",
     ],
-    knownTableFunctionArgumentNames: [
-      'file',
-      'url',
-    ],
-    virtualTableArgumentNames: [
-      'highlight',
-      'snippet',
-      'bm25',
-      'fts5vocab',
-    ],
+    knownTableFunctionArgumentNames: ["file", "url"],
+    virtualTableArgumentNames: ["highlight", "snippet", "bm25", "fts5vocab"],
   },
 } satisfies DialectConfig;
