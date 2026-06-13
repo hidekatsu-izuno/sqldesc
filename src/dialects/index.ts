@@ -32,7 +32,7 @@ import { dialectConfig as teradata } from './teradata.js';
 import { dialectConfig as tidb } from './tidb.js';
 import { dialectConfig as trino } from './trino.js';
 import { dialectConfig as tsql } from './tsql.js';
-import type { DialectConfig } from './types.js';
+import type { DialectConfig } from '../types.js';
 
 export const dialectConfigs = [
   athena,
@@ -81,4 +81,4 @@ export function dialectAliasKey(value: string): string {
   return value.toLowerCase().replace(/[-_\s]+/g, '');
 }
 
-export type { DialectConfig } from './types.js';
+export type { DialectConfig } from '../types.js';

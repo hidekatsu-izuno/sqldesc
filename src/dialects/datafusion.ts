@@ -1,4 +1,4 @@
-import type { DialectConfig } from './types.js';
+import type { DialectConfig } from '../types.js';
 
 export const dialectConfig = {
   name: 'datafusion',

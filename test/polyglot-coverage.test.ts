@@ -5,7 +5,7 @@ import { describeQuery } from '../dist/describe.js';
 import { dialectConfigs } from '../dist/dialects/index.js';
 
 import type { DescribeResult, ValidationSchema } from '../dist/types.js';
-import type { DialectConfig } from '../dist/dialects/types.js';
+import type { DialectConfig } from '../dist/types.js';
 
 const coverageSchema: ValidationSchema = {
   tables: [

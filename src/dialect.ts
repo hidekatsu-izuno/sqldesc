@@ -1,7 +1,7 @@
 import { getDialects } from '@polyglot-sql/sdk';
 import { dialectAliasByKey, dialectAliasKey, dialectConfigByName } from './dialects/index.js';
 import type { DialectConfig } from './dialects/index.js';
-import type { DialectTableFunctionColumnConfig } from './dialects/types.js';
+import type { DialectTableFunctionColumnConfig } from './types.js';
 
 export type ConfigColumn = DialectTableFunctionColumnConfig;
 

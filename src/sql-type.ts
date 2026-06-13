@@ -1,5 +1,5 @@
 import { getDialectConfig, normalizeDialect } from './dialect.js';
-import type { DialectConfig, TypeFamily } from './dialects/types.js';
+import type { DialectConfig, TypeFamily } from './types.js';
 
 export interface SqlType {
   readonly nativeType: string;
