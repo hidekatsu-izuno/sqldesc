@@ -43,6 +43,11 @@ describe('dialect configuration registry', () => {
       assert.strictEqual(config.scalarFunctionTypes.st_distance, 'decimal');
       assert.ok(Object.keys(config.tableFunctions).length > 0);
       assert.deepStrictEqual(config.tableFunctions.json_each?.[0], { name: 'key', type: 'text' });
+      assert.ok(config.aggregate.countType);
+      assert.ok(config.commonTypes.text);
+      assert.ok(config.cast.adjustment);
+      assert.ok(config.arithmetic.decimalInteger);
+      assert.strictEqual(config.windowFunctionTypes.percent_rank, 'decimal');
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
       assert.deepStrictEqual(imports, ['./types.js']);
       const exports = [...source.matchAll(/^export\s+/gm)];
@@ -87,6 +92,16 @@ describe('dialect configuration registry', () => {
       ['word', 'text'],
       ['catcode', 'text'],
     ]);
+  });
+
+  it('keeps type inference policies in dialect configs', () => {
+    const mysql = dialectConfigs.find((config) => config.name === 'mysql');
+    const trino = dialectConfigs.find((config) => config.name === 'trino');
+    const oracle = dialectConfigs.find((config) => config.name === 'oracle');
+    assert.strictEqual(mysql?.aggregate.avgDecimal, 'mysqlPlus4');
+    assert.strictEqual(mysql?.cast.adjustment, 'mysqlCharBinaryLength');
+    assert.strictEqual(trino?.windowFunctionTypes.row_number, 'bigint');
+    assert.strictEqual(oracle?.arithmetic.allNumberType, 'decimal');
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

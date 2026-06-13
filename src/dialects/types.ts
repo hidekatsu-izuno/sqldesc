@@ -38,6 +38,35 @@ export interface DialectTableFunctionColumnConfig {
   readonly nullable?: boolean;
 }
 
+export type AvgDecimalPolicy = 'default' | 'mysqlPlus4' | 'tsqlScaleAtLeast6';
+export type AvgDefaultPolicy = 'integerPreserving' | string;
+export type SumDecimalPolicy = 'input' | 'mysqlPlus22' | 'decimal38' | 'numeric' | 'number';
+export type CommonTextTypePolicy = 'none' | 'mysqlMaxVarchar' | 'firstText' | 'varchar';
+export type CommonDecimalIntegerPolicy = 'none' | 'mysqlScalePlus20' | 'tsqlScalePlus10' | 'decimal' | 'firstType';
+export type CastAdjustmentPolicy = 'none' | 'mysqlCharBinaryLength';
+export type ArithmeticDecimalPolicy = 'none' | 'mysqlScalePlus21' | 'tsqlDuckdbPrecision' | 'decimal';
+
+export interface DialectAggregateConfig {
+  readonly countType: string;
+  readonly avgDefault: AvgDefaultPolicy;
+  readonly avgDecimal: AvgDecimalPolicy;
+  readonly sumDecimal: SumDecimalPolicy;
+}
+
+export interface DialectCommonTypeConfig {
+  readonly text: CommonTextTypePolicy;
+  readonly decimalInteger: CommonDecimalIntegerPolicy;
+}
+
+export interface DialectCastConfig {
+  readonly adjustment: CastAdjustmentPolicy;
+}
+
+export interface DialectArithmeticConfig {
+  readonly allNumberType?: string;
+  readonly decimalInteger: ArithmeticDecimalPolicy;
+}
+
 export interface DialectConfig {
   readonly name: string;
   readonly aliases: readonly string[];
@@ -47,6 +76,11 @@ export interface DialectConfig {
   readonly jdbcTypeMap: Readonly<Record<string, string>>;
   readonly scalarFunctionTypes: Readonly<Record<string, string>>;
   readonly tableFunctions: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
+  readonly aggregate: DialectAggregateConfig;
+  readonly commonTypes: DialectCommonTypeConfig;
+  readonly cast: DialectCastConfig;
+  readonly arithmetic: DialectArithmeticConfig;
+  readonly windowFunctionTypes: Readonly<Record<string, string>>;
   readonly scriptPreprocessor: ScriptPreprocessor;
   readonly includeDirectives: readonly IncludeDirectiveConfig[];
   readonly complexTypeStyle: ComplexTypeStyle;

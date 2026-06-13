@@ -330,6 +330,31 @@ export const dialectConfig = {
     "string_split": [{ name: "value", type: "text" }],
     "ts_debug": [{ name: "alias", type: "text" }, { name: "description", type: "text" }, { name: "token", type: "text" }, { name: "dictionaries", type: "text[]" }, { name: "dictionary", type: "text" }, { name: "lexemes", type: "text[]" }],
   },
+  aggregate: {
+    "countType": "bigint",
+    "avgDefault": "double",
+    "avgDecimal": "default",
+    "sumDecimal": "decimal38",
+  },
+  commonTypes: {
+    "text": "varchar",
+    "decimalInteger": "decimal",
+  },
+  cast: {
+    "adjustment": "none",
+  },
+  arithmetic: {
+    "decimalInteger": "tsqlDuckdbPrecision",
+  },
+  windowFunctionTypes: {
+    "row_number": "integer",
+    "rank": "integer",
+    "dense_rank": "integer",
+    "ntile": "integer",
+    "n_tile": "integer",
+    "percent_rank": "decimal",
+    "cume_dist": "decimal",
+  },
   scriptPreprocessor: 'dotCommand',
   includeDirectives: [{ kind: 'dot' }],
   complexTypeStyle: 'angle',

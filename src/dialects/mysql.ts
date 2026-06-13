@@ -327,6 +327,31 @@ export const dialectConfig = {
     "string_split": [{ name: "value", type: "text" }],
     "ts_debug": [{ name: "alias", type: "text" }, { name: "description", type: "text" }, { name: "token", type: "text" }, { name: "dictionaries", type: "text[]" }, { name: "dictionary", type: "text" }, { name: "lexemes", type: "text[]" }],
   },
+  aggregate: {
+    "countType": "bigint",
+    "avgDefault": "decimal(14,4)",
+    "avgDecimal": "mysqlPlus4",
+    "sumDecimal": "mysqlPlus22",
+  },
+  commonTypes: {
+    "text": "mysqlMaxVarchar",
+    "decimalInteger": "mysqlScalePlus20",
+  },
+  cast: {
+    "adjustment": "mysqlCharBinaryLength",
+  },
+  arithmetic: {
+    "decimalInteger": "mysqlScalePlus21",
+  },
+  windowFunctionTypes: {
+    "row_number": "integer",
+    "rank": "integer",
+    "dense_rank": "integer",
+    "ntile": "integer",
+    "n_tile": "integer",
+    "percent_rank": "decimal",
+    "cume_dist": "decimal",
+  },
   scriptPreprocessor: 'mysqlDelimiter',
   includeDirectives: [{ kind: 'mysql' }],
   complexTypeStyle: 'angle',

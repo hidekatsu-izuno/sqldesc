@@ -2524,9 +2524,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
 }
 
 function dialectCountType(dialect: string): string {
-  if (['postgresql', 'mysql', 'mariadb', 'singlestore', 'tidb', 'duckdb', 'trino', 'presto', 'athena'].includes(dialect)) return 'bigint';
-  if (dialect === 'oracle') return 'number';
-  return 'integer';
+  return getDialectConfig(dialect).aggregate.countType;
 }
 
 function dialectAvgType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string {
@@ -2534,17 +2532,14 @@ function dialectAvgType(expression: AstExpression, schema: ValidationSchema, bin
   const inner = firstAggregateExpression(isRecord(avg) ? avg : expression);
   const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
   const decimal = innerType ? decimalTypeParts(innerType) : undefined;
-  if (decimal && ['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${decimal.precision + 4},${decimal.scale + 4})`;
-  if (decimal && dialect === 'tsql') return `decimal(38,${Math.max(decimal.scale, 6)})`;
-  if (dialect === 'tsql') {
+  const policy = getDialectConfig(dialect).aggregate;
+  if (decimal && policy.avgDecimal === 'mysqlPlus4') return `decimal(${decimal.precision + 4},${decimal.scale + 4})`;
+  if (decimal && policy.avgDecimal === 'tsqlScaleAtLeast6') return `decimal(38,${Math.max(decimal.scale, 6)})`;
+  if (policy.avgDefault === 'integerPreserving') {
     if (innerType && ['integer', 'bigint'].includes(normalizeDataTypeName(innerType))) return innerType;
     return 'decimal';
   }
-  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return 'decimal(14,4)';
-  if (dialect === 'duckdb') return 'double';
-  if (dialect === 'oracle') return 'number';
-  if (dialect === 'postgresql') return 'numeric';
-  return 'decimal';
+  return policy.avgDefault;
 }
 
 function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string | undefined {
@@ -2552,10 +2547,11 @@ function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSc
   const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
   const decimal = innerType ? decimalTypeParts(innerType) : undefined;
   if (!decimal) return innerType;
-  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${decimal.precision + 22},${decimal.scale})`;
-  if (dialect === 'tsql' || dialect === 'duckdb' || dialect === 'trino' || dialect === 'presto' || dialect === 'athena') return `decimal(38,${decimal.scale})`;
-  if (dialect === 'postgresql') return 'numeric';
-  if (dialect === 'oracle') return 'number';
+  const policy = getDialectConfig(dialect).aggregate.sumDecimal;
+  if (policy === 'mysqlPlus22') return `decimal(${decimal.precision + 22},${decimal.scale})`;
+  if (policy === 'decimal38') return `decimal(38,${decimal.scale})`;
+  if (policy === 'numeric') return 'numeric';
+  if (policy === 'number') return 'number';
   return innerType;
 }
 
@@ -3600,19 +3596,20 @@ function commonArgumentType(args: AstExpression[], schema: ValidationSchema, bin
 
 function commonTypeFromTypesForDialect(types: string[], dialect: string): string | undefined {
   if (types.length < 2) return undefined;
+  const policy = getDialectConfig(dialect).commonTypes;
   if (types.some((type) => isTextLikeType(type))) {
     const textTypes = types.filter(isTextLikeType);
     const maxLength = maxTypeLength(textTypes);
-    if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect) && maxLength) return `varchar(${maxLength})`;
-    if ((dialect === 'tsql' || dialect === 'oracle') && textTypes[0]) return textTypes[0];
-    if (dialect === 'postgresql' || dialect === 'duckdb') return 'varchar';
+    if (policy.text === 'mysqlMaxVarchar' && maxLength) return `varchar(${maxLength})`;
+    if (policy.text === 'firstText' && textTypes[0]) return textTypes[0];
+    if (policy.text === 'varchar') return 'varchar';
   }
   const decimal = types.map(decimalTypeParts).find(Boolean);
   if (decimal && types.some(isIntegerLikeType)) {
-    if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${20 + decimal.scale},${decimal.scale})`;
-    if (dialect === 'tsql') return `decimal(${10 + decimal.scale},${decimal.scale})`;
-    if (dialect === 'postgresql' || dialect === 'duckdb') return 'decimal';
-    if (dialect === 'oracle') return types[0] ?? 'number';
+    if (policy.decimalInteger === 'mysqlScalePlus20') return `decimal(${20 + decimal.scale},${decimal.scale})`;
+    if (policy.decimalInteger === 'tsqlScalePlus10') return `decimal(${10 + decimal.scale},${decimal.scale})`;
+    if (policy.decimalInteger === 'decimal') return 'decimal';
+    if (policy.decimalInteger === 'firstType') return types[0] ?? 'number';
   }
   return undefined;
 }
@@ -3642,9 +3639,13 @@ function inferWindowFunctionType(expression: AstExpression, schema: ValidationSc
   if (!isRecord(windowFunction) || !isRecord(windowFunction.this)) return undefined;
   const inner = windowFunction.this;
   if (isAst(inner, 'row_number') || isAst(inner, 'rank') || isAst(inner, 'dense_rank') || isAst(inner, 'ntile') || isAst(inner, 'n_tile')) {
-    return ['trino', 'presto', 'athena'].includes(dialect) ? 'bigint' : 'integer';
+    const name = Object.keys(getDialectConfig(dialect).windowFunctionTypes).find((key) => isAst(inner, key));
+    return name ? getDialectConfig(dialect).windowFunctionTypes[name] : 'integer';
   }
-  if (isAst(inner, 'percent_rank') || isAst(inner, 'cume_dist')) return 'decimal';
+  if (isAst(inner, 'percent_rank') || isAst(inner, 'cume_dist')) {
+    const name = Object.keys(getDialectConfig(dialect).windowFunctionTypes).find((key) => isAst(inner, key));
+    return name ? getDialectConfig(dialect).windowFunctionTypes[name] : 'decimal';
+  }
   const valueFunction = getAst(inner, 'lag') ?? getAst(inner, 'lead') ?? getAst(inner, 'first_value') ?? getAst(inner, 'last_value') ?? getAst(inner, 'nth_value');
   if (isRecord(valueFunction) && isRecord(valueFunction.this)) {
     return inferColumn(valueFunction.this, 'window_value', schema, binds, 'generic').type;
@@ -3679,7 +3680,7 @@ function inferCastType(expression: AstExpression, dialect: string): string | und
 }
 
 function adjustCastResultType(type: string | undefined, dialect: string): string | undefined {
-  if (!type || dialect !== 'mysql') return type;
+  if (!type || getDialectConfig(dialect).cast.adjustment !== 'mysqlCharBinaryLength') return type;
   const match = /^(char|character|binary)\((\d+)\)$/i.exec(type);
   if (!match) return type;
   return match[1]?.toLowerCase() === 'binary' ? `varbinary(${match[2]})` : `varchar(${match[2]})`;
@@ -3691,11 +3692,12 @@ function adjustArithmeticResultType(type: string, expression: AstExpression, dia
   const parts = [arithmetic.left, arithmetic.right, arithmetic.this, arithmetic.expression].filter(isRecord);
   const types = parts.map((part) => inferCastType(part, dialect) ?? inferLiteralType(part)).filter((partType): partType is string => Boolean(partType));
   const decimal = types.map(decimalTypeParts).find(Boolean);
-  if (dialect === 'oracle' && types.length > 0 && types.every((partType) => /^(?:number|decimal|numeric)(?:\(\d+,\d+\))?$/i.test(partType))) return 'decimal';
+  const policy = getDialectConfig(dialect).arithmetic;
+  if (policy.allNumberType && types.length > 0 && types.every((partType) => /^(?:number|decimal|numeric)(?:\(\d+,\d+\))?$/i.test(partType))) return policy.allNumberType;
   if (!decimal || !types.some((partType) => isIntegerLikeType(partType))) return undefined;
-  if (dialect === 'mysql') return `decimal(${21 + decimal.scale},${decimal.scale})`;
-  if (dialect === 'tsql' || dialect === 'duckdb') return `decimal(${Math.max(10, decimal.precision - decimal.scale) + decimal.scale + 1},${decimal.scale})`;
-  if (dialect === 'postgresql') return 'decimal';
+  if (policy.decimalInteger === 'mysqlScalePlus21') return `decimal(${21 + decimal.scale},${decimal.scale})`;
+  if (policy.decimalInteger === 'tsqlDuckdbPrecision') return `decimal(${Math.max(10, decimal.precision - decimal.scale) + decimal.scale + 1},${decimal.scale})`;
+  if (policy.decimalInteger === 'decimal') return 'decimal';
   return type;
 }
 

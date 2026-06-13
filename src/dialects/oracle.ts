@@ -327,6 +327,32 @@ export const dialectConfig = {
     "string_split": [{ name: "value", type: "text" }],
     "ts_debug": [{ name: "alias", type: "text" }, { name: "description", type: "text" }, { name: "token", type: "text" }, { name: "dictionaries", type: "text[]" }, { name: "dictionary", type: "text" }, { name: "lexemes", type: "text[]" }],
   },
+  aggregate: {
+    "countType": "number",
+    "avgDefault": "number",
+    "avgDecimal": "default",
+    "sumDecimal": "number",
+  },
+  commonTypes: {
+    "text": "firstText",
+    "decimalInteger": "firstType",
+  },
+  cast: {
+    "adjustment": "none",
+  },
+  arithmetic: {
+    "allNumberType": "decimal",
+    "decimalInteger": "none",
+  },
+  windowFunctionTypes: {
+    "row_number": "integer",
+    "rank": "integer",
+    "dense_rank": "integer",
+    "ntile": "integer",
+    "n_tile": "integer",
+    "percent_rank": "decimal",
+    "cume_dist": "decimal",
+  },
   scriptPreprocessor: 'sqlplus',
   includeDirectives: [{ kind: 'oracle' }],
   complexTypeStyle: 'angle',
