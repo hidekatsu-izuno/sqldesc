@@ -1,5 +1,5 @@
 import type { DescribeColumn, DescribeResult, StatementResultKind, StatementSummary } from 'sqldesc';
-import { describeQuery, getSupportedDialects, parseCreateTables, sqlTypeToJdbcType } from 'sqldesc';
+import { describeQuery, getSupportedDialects, parseBinds, parseCreateTables, sqlTypeToJdbcType } from 'sqldesc';
 
 export { getSupportedDialects };
 export type { DescribeColumn, DescribeResult, StatementResultKind, StatementSummary };
@@ -45,7 +45,7 @@ export async function analyzeSql(input: AnalyzeInput): Promise<AnalyzeResult> {
   const result = await describeQuery({
     sql: input.sql,
     dialect: input.dialect,
-    binds: input.binds.trim() || undefined,
+    binds: parseBinds(input.binds.trim() || undefined),
     jdbc: input.jdbc || undefined,
     schema,
   });

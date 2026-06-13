@@ -1,3 +1,4 @@
+import { parseBinds } from '../binds.js';
 import { describeQuery } from '../describe.js';
 import { parseTestDocFile } from './parser.js';
 import { parseCreateTables } from '../schema.js';
@@ -65,7 +66,7 @@ export async function runTestDoc(doc: ParsedTestDoc): Promise<DocTestReport> {
 
 async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise<void> {
   const dialect = testCase.when.dialect ?? testCase.given.dialect ?? doc.defaultDialect;
-  const binds = testCase.when.binds ?? testCase.given.binds;
+  const binds = parseBinds(testCase.when.binds ?? testCase.given.binds);
   const schema = resolveSchema(testCase.given, doc.prepares, dialect);
 
   if (testCase.then.kind === 'error') {
@@ -91,7 +92,7 @@ async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise
 
 async function expectError(
   testCase: DocTestCase,
-  input: { dialect: string; binds?: string; schema?: ValidationSchema },
+  input: { dialect: string; binds?: ReturnType<typeof parseBinds>; schema?: ValidationSchema },
 ): Promise<void> {
   try {
     await describeQuery({

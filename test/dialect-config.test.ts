@@ -121,10 +121,7 @@ describe('dialect configuration registry', () => {
     assert.strictEqual(normalizeDialect('bq'), 'bigquery');
     assert.strictEqual(displayTypeName('text', 'tsql'), 'nvarchar(max)');
     assert.strictEqual(sqlTypeToJdbcType('jsonb', 'postgres'), 'OTHER');
-    assert.strictEqual(normalizeJdbcBindTypes({
-      mode: 'positional',
-      binds: [{ index: 1, type: 'jdbc:JAVA_OBJECT' }],
-    }, 'postgres').binds[0]?.type, 'json');
+    assert.strictEqual(normalizeJdbcBindTypes(['jdbc:JAVA_OBJECT'], 'postgres')?.[0], 'json');
   });
 
   it('keeps output type override data in dialect configs', () => {

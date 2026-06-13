@@ -11,13 +11,11 @@ export {
 } from './sql-type.js';
 export type { SqlType } from './sql-type.js';
 export type {
-  BindSpec,
+  Binds,
   DescribeColumn,
   DescribeInput,
   DescribeResult,
   Diagnostic,
-  NamedBind,
-  PositionalBind,
   SchemaColumn,
   SchemaFunction,
   SchemaLoadOptions,

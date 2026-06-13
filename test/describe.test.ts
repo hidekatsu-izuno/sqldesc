@@ -119,7 +119,7 @@ describe('describeQuery', () => {
     const result = await describeQuery({
       sql: 'select id as user_id, age + ? as next_age from users',
       schema,
-      binds: 'int',
+      binds: ['int'],
     });
     assert.partialDeepStrictEqual(result.columns[0], { name: 'user_id', type: 'INTEGER' });
     assert.partialDeepStrictEqual(result.columns[1], { name: 'next_age', type: 'INTEGER' });
@@ -184,7 +184,7 @@ describe('describeQuery', () => {
   });
 
   it('describes casts and literals', async () => {
-    const result = await describeQuery({ sql: 'select cast(? as text) as label, 1 as one', binds: 'int' });
+    const result = await describeQuery({ sql: 'select cast(? as text) as label, 1 as one', binds: ['int'] });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
       ['label', 'VARCHAR(255)'],
       ['one', 'INTEGER'],
@@ -192,16 +192,16 @@ describe('describeQuery', () => {
   });
 
   it('describes named bind projections', async () => {
-    const result = await describeQuery({ sql: 'select :id as id, @name as name', binds: 'id=integer,name=text' });
+    const result = await describeQuery({ sql: 'select :id as id, @name as name', binds: { id: 'integer', name: 'text' } });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
       ['id', 'INTEGER'],
       ['name', 'VARCHAR(255)'],
     ]);
 
-    const positionalExpressionResult = await describeQuery({ sql: 'select coalesce(?, 1) as n', binds: 'int' });
+    const positionalExpressionResult = await describeQuery({ sql: 'select coalesce(?, 1) as n', binds: ['int'] });
     assert.partialDeepStrictEqual(positionalExpressionResult.columns[0], { name: 'n', type: 'INTEGER', source: 'expression' });
 
-    const namedExpressionResult = await describeQuery({ sql: 'select greatest(:score, 1) as score', binds: 'score=decimal' });
+    const namedExpressionResult = await describeQuery({ sql: 'select greatest(:score, 1) as score', binds: { score: 'decimal' } });
     assert.partialDeepStrictEqual(namedExpressionResult.columns[0], { name: 'score', type: 'DECIMAL', source: 'expression' });
   });
 
@@ -408,7 +408,7 @@ describe('describeQuery', () => {
       sql: 'insert into users(id, name) values (1, ?) returning id, name',
       dialect: 'postgres',
       schema,
-      binds: 'text',
+      binds: ['text'],
     });
     assert.deepStrictEqual(result.columns.map((column) => [column.name, column.type]), [
       ['id', 'integer'],

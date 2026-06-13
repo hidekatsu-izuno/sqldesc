@@ -41,7 +41,7 @@ describe('JDBC SQL transformation', () => {
     const result = await describeQuery({
       sql: "select {fn UCASE(?)} as label, {d '2024-01-02'} as created_on",
       dialect: 'postgres',
-      binds: 'text',
+      binds: ['text'],
       jdbc: true,
     });
 
@@ -56,7 +56,7 @@ describe('JDBC SQL transformation', () => {
     const result = await describeQuery({
       sql: 'select ? as label',
       dialect: 'sqlserver',
-      binds: 'text',
+      binds: ['text'],
       jdbc: true,
     });
 
@@ -70,13 +70,10 @@ describe('JDBC SQL transformation', () => {
     const postgresResult = await describeQuery({
       sql: 'select ? as values',
       dialect: 'postgres',
-      binds: 'jdbc:ARRAY',
+      binds: ['jdbc:ARRAY'],
       jdbc: true,
     });
-    assert.deepStrictEqual(postgresResult.binds, {
-      mode: 'positional',
-      binds: [{ index: 1, type: 'array<variant>' }],
-    });
+    assert.deepStrictEqual(postgresResult.binds, ['array<variant>']);
     assert.deepStrictEqual(postgresResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['values', 'array<variant>', 'bind'],
     ]);
@@ -84,7 +81,7 @@ describe('JDBC SQL transformation', () => {
     const mysqlResult = await describeQuery({
       sql: 'select ? as payload',
       dialect: 'mysql',
-      binds: 'jdbc:ARRAY',
+      binds: ['jdbc:ARRAY'],
       jdbc: true,
     });
     assert.deepStrictEqual(mysqlResult.columns.map((column) => [column.name, column.type, column.source]), [
@@ -94,7 +91,7 @@ describe('JDBC SQL transformation', () => {
     const sqlServerResult = await describeQuery({
       sql: 'select ? as label',
       dialect: 'sqlserver',
-      binds: 'jdbc:java.sql.Types.NVARCHAR',
+      binds: ['jdbc:java.sql.Types.NVARCHAR'],
       jdbc: true,
     });
     assert.deepStrictEqual(sqlServerResult.columns.map((column) => [column.name, column.type, column.source]), [
@@ -104,7 +101,7 @@ describe('JDBC SQL transformation', () => {
     const oracleResult = await describeQuery({
       sql: 'select ? as n from dual',
       dialect: 'oracle',
-      binds: 'jdbc:INTEGER',
+      binds: ['jdbc:INTEGER'],
       jdbc: true,
     });
     assert.deepStrictEqual(oracleResult.columns.map((column) => [column.name, column.type, column.source]), [
@@ -114,7 +111,7 @@ describe('JDBC SQL transformation', () => {
     const plainResult = await describeQuery({
       sql: 'select ? as raw_type',
       dialect: 'postgres',
-      binds: 'jdbc:ARRAY',
+      binds: ['jdbc:ARRAY'],
     });
     assert.deepStrictEqual(plainResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['raw_type', 'jdbc:array', 'bind'],
@@ -123,17 +120,11 @@ describe('JDBC SQL transformation', () => {
 
   it('normalizes named JDBC bind types through the library helper', () => {
     assert.deepStrictEqual(normalizeJdbcBindTypes({
-      mode: 'named',
-      binds: [
-        { name: 'id', type: 'jdbc:Types.BIGINT' },
-        { name: 'payload', type: 'jdbc:OTHER' },
-      ],
+      id: 'jdbc:Types.BIGINT',
+      payload: 'jdbc:OTHER',
     }, 'postgres'), {
-      mode: 'named',
-      binds: [
-        { name: 'id', type: 'bigint' },
-        { name: 'payload', type: 'json' },
-      ],
+      id: 'bigint',
+      payload: 'json',
     });
   });
 });

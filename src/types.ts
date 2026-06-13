@@ -1,19 +1,4 @@
-export type BindMode = 'positional' | 'named';
-
-export interface PositionalBind {
-  index: number;
-  type: string;
-}
-
-export interface NamedBind {
-  name: string;
-  type: string;
-}
-
-export type BindSpec =
-  | { mode: 'none'; binds: [] }
-  | { mode: 'positional'; binds: PositionalBind[] }
-  | { mode: 'named'; binds: NamedBind[] };
+export type Binds = string[] | Record<string, string>;
 
 export interface SchemaLoadOptions {
   cwd?: string;
@@ -59,7 +44,7 @@ export interface DescribeInput {
   sql: string;
   dialect?: string;
   jdbc?: boolean;
-  binds?: string | BindSpec;
+  binds?: Binds;
   schema?: ValidationSchema;
 }
 
@@ -89,7 +74,7 @@ export interface DescribeResult {
   statements: StatementSummary[];
   warnings: string[];
   diagnostics: Diagnostic[];
-  binds: BindSpec;
+  binds?: Binds;
   schema: ValidationSchema;
 }
 

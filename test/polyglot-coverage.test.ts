@@ -993,16 +993,16 @@ const broadNoResultCases = [
 ] as const;
 
 const bindPlaceholderCases = [
-  { sql: 'select ? as v', binds: 'integer' },
-  { sql: 'select $1 as v', binds: 'integer' },
-  { sql: 'select :id as v', binds: 'id=integer' },
-  { sql: 'select @id as v', binds: 'id=integer' },
-  { sql: 'select $id as v', binds: 'id=integer' },
-  { sql: 'select coalesce(?, 1) as v', binds: 'integer' },
-  { sql: 'select coalesce(:id, 1) as v', binds: 'id=integer' },
-  { sql: 'select cast(? as varchar) as v', binds: 'integer' },
-  { sql: 'select ? + 1 as v', binds: 'integer' },
-  { sql: "select ? || 'x' as v", binds: 'text' },
+  { sql: 'select ? as v', binds: ['integer'] },
+  { sql: 'select $1 as v', binds: ['integer'] },
+  { sql: 'select :id as v', binds: { id: 'integer' } },
+  { sql: 'select @id as v', binds: { id: 'integer' } },
+  { sql: 'select $id as v', binds: { id: 'integer' } },
+  { sql: 'select coalesce(?, 1) as v', binds: ['integer'] },
+  { sql: 'select coalesce(:id, 1) as v', binds: { id: 'integer' } },
+  { sql: 'select cast(? as varchar) as v', binds: ['integer'] },
+  { sql: 'select ? + 1 as v', binds: ['integer'] },
+  { sql: "select ? || 'x' as v", binds: ['text'] },
 ] as const;
 
 const expressionShapeCases = [

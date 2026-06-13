@@ -1,5 +1,5 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
-import { parseBinds } from './binds.js';
+import { namedBindType, positionalBindType } from './binds.js';
 import {
   adjustedOutputType,
   assertSupportedDialect,
@@ -14,7 +14,7 @@ import { mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from 
 import { displayTypeName, normalizeTypeName } from './sql-type.js';
 import type {
   AstExpression,
-  BindSpec,
+  Binds,
   ColumnInference,
   DescribeColumn,
   DescribeInput,
@@ -38,8 +38,7 @@ import type {
 export async function describeQuery(input: DescribeInput): Promise<DescribeResult> {
   const dialect = assertSupportedDialect(input.dialect);
   const sql = input.jdbc ? transformJdbcSql(input.sql, dialect) : input.sql;
-  const parsedBinds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
-  const binds = input.jdbc ? normalizeJdbcBindTypes(parsedBinds, dialect) : parsedBinds;
+  const binds = input.jdbc ? normalizeJdbcBindTypes(input.binds, dialect) : input.binds;
   const schema = input.schema ?? { tables: [] };
   const effectiveSchema = schemaWithBuiltinMetadata(schema, dialect);
   const warnings: string[] = [];
@@ -110,7 +109,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
 function describeOutputItems(
   outputItems: OutputItem[],
   schema: ValidationSchema,
-  binds: BindSpec,
+  binds: Binds | undefined,
   dialect: string,
   warnings: string[],
 ): DescribeColumn[] {
@@ -134,7 +133,7 @@ function inferColumn(
   expression: AstExpression,
   name: string,
   schema: ValidationSchema,
-  binds: BindSpec,
+  binds: Binds | undefined,
   dialect: string,
   explicitSource?: string,
   tableAliases?: TableAliasMap,
@@ -378,7 +377,7 @@ function inferWholeRowType(expression: AstExpression, schema: ValidationSchema, 
   };
 }
 
-function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
+function inferExpressionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (isAst(expression, 'boolean')) return 'boolean';
   if (isAst(expression, 'pi')) return 'decimal';
   if (isAst(expression, 'match_against')) return 'decimal';
@@ -435,7 +434,7 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   return undefined;
 }
 
-function inferMethodCallType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferMethodCallType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   const methodCall = getAst(expression, 'method_call');
   if (!isRecord(methodCall)) return undefined;
   const name = identifierName(methodCall.method)?.toLowerCase();
@@ -455,7 +454,7 @@ function inferMethodCallType(expression: AstExpression, schema: ValidationSchema
   return undefined;
 }
 
-function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
+function inferAggregateType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (isAst(expression, 'count')) return dialectCountType(dialect);
   if (isAst(expression, 'avg')) return dialectAvgType(expression, schema, binds, tableAliases, dialect);
   const avg = getAst(expression, 'avg');
@@ -546,7 +545,7 @@ function dialectCountType(dialect: string): string {
   return getDialectConfig(dialect).aggregate.countType;
 }
 
-function dialectAvgType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string {
+function dialectAvgType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, tableAliases: TableAliasMap | undefined, dialect: string): string {
   const avg = getAst(expression, 'avg');
   const inner = firstAggregateExpression(isRecord(avg) ? avg : expression);
   const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
@@ -561,7 +560,7 @@ function dialectAvgType(expression: AstExpression, schema: ValidationSchema, bin
   return policy.avgDefault;
 }
 
-function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases: TableAliasMap | undefined, dialect: string): string | undefined {
+function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSchema, binds: Binds | undefined, tableAliases: TableAliasMap | undefined, dialect: string): string | undefined {
   const inner = firstAggregateExpression(aggregate);
   const innerType = inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : undefined;
   const decimal = innerType ? decimalTypeParts(innerType) : undefined;
@@ -574,7 +573,7 @@ function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSc
   return innerType;
 }
 
-function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
+function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: Binds | undefined, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
   if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return dialectCountType(dialect);
   if ([
     'avg',
@@ -668,7 +667,7 @@ function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, s
   return undefined;
 }
 
-function inferAggregateExpressionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap): string {
+function inferAggregateExpressionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, tableAliases?: TableAliasMap): string {
   return inferColumn(expression, 'aggregate', schema, binds, 'generic', undefined, tableAliases).type;
 }
 
@@ -680,7 +679,7 @@ function firstAggregateExpression(aggregate: Record<string, unknown>): AstExpres
   ].filter(isRecord));
 }
 
-function inferScalarSubqueryType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferScalarSubqueryType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   const subquery = getAst(expression, 'subquery');
   if (!isRecord(subquery) || !isRecord(subquery.this)) return undefined;
   const items = outputItemsForStatement(subquery.this, schema);
@@ -773,7 +772,7 @@ function hasAstKey(value: unknown, key: string): boolean {
   });
 }
 
-function inferTemporalFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferTemporalFunctionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   if (getAst(expression, 'interval')) return 'interval';
   const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub');
   if (isRecord(arithmetic)) {
@@ -923,7 +922,7 @@ function inferIdentifierHashRandomType(expression: AstExpression, dialect = 'gen
   return undefined;
 }
 
-function inferConditionalType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
+function inferConditionalType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, dialect = 'generic'): string | undefined {
   const coalesceExpression = getAst(expression, 'coalesce') ?? getAst(expression, 'nullif');
   if (isRecord(coalesceExpression)) {
     return bindFirstArgumentType(coalesceExpression, binds) ?? commonArgumentType(functionArguments(coalesceExpression), schema, binds, dialect);
@@ -965,7 +964,7 @@ function inferConditionalType(expression: AstExpression, schema: ValidationSchem
   return undefined;
 }
 
-function inferConstructorType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferConstructorType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   const array = getAst(expression, 'array_func');
   if (isRecord(array) && Array.isArray(array.expressions)) {
     const type = commonArgumentType(array.expressions.filter(isRecord), schema, binds) ?? 'unknown';
@@ -1043,7 +1042,7 @@ function inferConstructorType(expression: AstExpression, schema: ValidationSchem
   return undefined;
 }
 
-function namedStructFields(args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string[] {
+function namedStructFields(args: AstExpression[], schema: ValidationSchema, binds: Binds | undefined): string[] {
   const fields: string[] = [];
   for (let index = 0; index + 1 < args.length; index += 2) {
     const name = literalString(args[index]) ?? `field_${(index / 2) + 1}`;
@@ -1064,7 +1063,7 @@ function structFieldsFromSchemaString(schema: string): string[] {
   });
 }
 
-function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   if (![
     'transform',
     'list_transform',
@@ -1103,7 +1102,7 @@ function inferHigherOrderArrayFunctionType(name: string, args: AstExpression[], 
   return `array<${bodyType ?? elementType ?? 'unknown'}>`;
 }
 
-function inferLambdaBodyType(expression: AstExpression, parameters: Map<string, string>, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferLambdaBodyType(expression: AstExpression, parameters: Map<string, string>, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   const column = getAst(expression, 'column');
   const columnName = isRecord(column) ? identifierName(column.name)?.toLowerCase() : undefined;
   if (columnName && parameters.has(columnName)) return parameters.get(columnName);
@@ -1121,7 +1120,7 @@ function inferLambdaBodyType(expression: AstExpression, parameters: Map<string, 
   return inferColumn(expression, 'lambda_body', schema, binds, 'generic').type;
 }
 
-function namedArgumentStructFields(args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string[] {
+function namedArgumentStructFields(args: AstExpression[], schema: ValidationSchema, binds: Binds | undefined): string[] {
   return args.flatMap((arg, index) => {
     const namedArgument = isRecord(arg.named_argument) ? arg.named_argument : undefined;
     const name = identifierName(namedArgument?.name) ?? `field_${index + 1}`;
@@ -1132,7 +1131,7 @@ function namedArgumentStructFields(args: AstExpression[], schema: ValidationSche
   });
 }
 
-function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
+function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, dialect = 'generic'): string | undefined {
   if (getAst(expression, 'lower') || getAst(expression, 'upper') || getAst(expression, 'trim') || getAst(expression, 'initcap')) return 'text';
   if (getAst(expression, 'substring') || getAst(expression, 'substr')) return 'text';
   if (getAst(expression, 'overlay')) return 'text';
@@ -1482,7 +1481,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   return undefined;
 }
 
-function bindFirstArgumentType(functionNode: Record<string, unknown>, binds: BindSpec): string | undefined {
+function bindFirstArgumentType(functionNode: Record<string, unknown>, binds: Binds | undefined): string | undefined {
   const first = functionArguments(functionNode)[0];
   return isRecord(first) ? inferBindType(first, binds) : undefined;
 }
@@ -1494,7 +1493,7 @@ function sqliteUnixepochType(functionNode: Record<string, unknown>): 'integer' |
   return hasSubsecondModifier ? 'decimal' : 'integer';
 }
 
-function inferBindSensitiveFunctionType(expression: AstExpression, binds: BindSpec): string | undefined {
+function inferBindSensitiveFunctionType(expression: AstExpression, binds: Binds | undefined): string | undefined {
   const coalesce = getAst(expression, 'coalesce') ?? getAst(expression, 'nullif');
   if (isRecord(coalesce)) return bindFirstArgumentType(coalesce, binds);
   const fn = getAst(expression, 'function');
@@ -1505,7 +1504,7 @@ function inferBindSensitiveFunctionType(expression: AstExpression, binds: BindSp
     : undefined;
 }
 
-function inferMapFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferMapFunctionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   const mapFromArrays = getAst(expression, 'map_from_arrays');
   if (isRecord(mapFromArrays)) {
     const keyArray = isRecord(mapFromArrays.this) ? inferColumn(mapFromArrays.this, 'map_keys', schema, binds, 'generic').type : undefined;
@@ -1580,13 +1579,13 @@ function inferMapFunctionType(expression: AstExpression, schema: ValidationSchem
   return undefined;
 }
 
-function mapArgumentTypes(expression: unknown, schema: ValidationSchema, binds: BindSpec): [string, string] | undefined {
+function mapArgumentTypes(expression: unknown, schema: ValidationSchema, binds: Binds | undefined): [string, string] | undefined {
   if (!isRecord(expression)) return undefined;
   const type = inferColumn(expression, 'map_arg', schema, binds, 'generic').type;
   return type === 'unknown' ? undefined : mapKeyValueTypes(type);
 }
 
-function firstArrayArgumentType(args: AstExpression[], schema: ValidationSchema, binds: BindSpec): string | undefined {
+function firstArrayArgumentType(args: AstExpression[], schema: ValidationSchema, binds: Binds | undefined): string | undefined {
   return args
     .map((arg) => inferColumn(arg, 'array_arg', schema, binds, 'generic').type)
     .find((type) => arrayElementType(type) || /^array\s*</i.test(type));
@@ -1600,7 +1599,7 @@ function functionArguments(functionNode: Record<string, unknown>): AstExpression
   ];
 }
 
-function commonArgumentType(args: AstExpression[], schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
+function commonArgumentType(args: AstExpression[], schema: ValidationSchema, binds: Binds | undefined, dialect = 'generic'): string | undefined {
   const types = args
     .map((arg, index) => inferCastType(arg, dialect) ?? inferColumn(arg, `arg_${index + 1}`, schema, binds, dialect).type)
     .filter((type) => type !== 'unknown');
@@ -1653,7 +1652,7 @@ function commonTypeFromTypes(types: string[]): string | undefined {
   return types[0];
 }
 
-function inferWindowFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
+function inferWindowFunctionType(expression: AstExpression, schema: ValidationSchema, binds: Binds | undefined, dialect = 'generic'): string | undefined {
   const windowFunction = getAst(expression, 'window_function');
   if (!isRecord(windowFunction) || !isRecord(windowFunction.this)) return undefined;
   const inner = windowFunction.this;
@@ -1748,21 +1747,18 @@ function inferLiteralType(expression: AstExpression, dialect = 'generic'): strin
   return undefined;
 }
 
-function inferBindType(expression: AstExpression, binds: BindSpec): string | undefined {
-  if (binds.mode === 'none') return undefined;
+function inferBindType(expression: AstExpression, binds: Binds | undefined): string | undefined {
+  if (!binds) return undefined;
   const placeholder = getAst(expression, 'placeholder') ?? getAst(expression, 'parameter');
   if (!isRecord(placeholder)) return undefined;
-  if (binds.mode === 'positional') {
+  if (Array.isArray(binds)) {
     const index = typeof placeholder.index === 'number' ? placeholder.index : 1;
-    const type = binds.binds.find((bind) => bind.index === index)?.type;
+    const type = positionalBindType(binds, index);
     return type ? normalizeDataTypeName(type) : undefined;
   }
-  if (binds.mode === 'named') {
-    const name = typeof placeholder.name === 'string' ? placeholder.name : undefined;
-    const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
-    return type ? normalizeDataTypeName(type) : undefined;
-  }
-  return undefined;
+  const name = typeof placeholder.name === 'string' ? placeholder.name : undefined;
+  const type = name ? namedBindType(binds, name) : undefined;
+  return type ? normalizeDataTypeName(type) : undefined;
 }
 
 function findSchemaColumn(
@@ -1989,22 +1985,20 @@ function isNumericString(value: string): boolean {
   return /^\d+$/.test(value);
 }
 
-function inferNamedBindFromColumn(expression: AstExpression, binds: BindSpec): string | undefined {
+function inferNamedBindFromColumn(expression: AstExpression, binds: Binds | undefined): string | undefined {
+  if (!binds) return undefined;
   const column = getAst(expression, 'column');
   if (!isRecord(column)) return undefined;
   const rawName = identifierName(column.name);
-  if (binds.mode === 'positional') {
+  if (Array.isArray(binds)) {
     const index = rawName?.match(/^\$(\d+)$/)?.[1]
       ?? rawName?.match(/^@P(\d+)$/i)?.[1];
-    const type = index ? binds.binds.find((bind) => bind.index === Number(index))?.type : undefined;
+    const type = index ? positionalBindType(binds, Number(index)) : undefined;
     return type ? normalizeDataTypeName(type) : undefined;
   }
-  if (binds.mode === 'named') {
-    const name = rawName?.match(/^[@$]([A-Za-z_]\w*)$/)?.[1];
-    const type = name ? binds.binds.find((bind) => bind.name === name)?.type : undefined;
-    return type ? normalizeDataTypeName(type) : undefined;
-  }
-  return undefined;
+  const name = rawName?.match(/^[@$]([A-Za-z_]\w*)$/)?.[1];
+  const type = name ? namedBindType(binds, name) : undefined;
+  return type ? normalizeDataTypeName(type) : undefined;
 }
 
 function extractOutputItems(parsedAst: unknown, schema: ValidationSchema, dialect = 'generic'): OutputItem[] {
@@ -2673,8 +2667,8 @@ function allComparisonsAreCompatible(parsedAst: unknown, schema: ValidationSchem
   });
   return comparisons.length > 0 && comparisons.every(([left, right]) => {
     if (!isColumnLikeExpression(left) || !isColumnLikeExpression(right)) return true;
-    const leftType = inferColumn(left, 'comparison_left', comparisonSchema, { mode: 'none', binds: [] }, 'generic').type;
-    const rightType = inferColumn(right, 'comparison_right', comparisonSchema, { mode: 'none', binds: [] }, 'generic').type;
+    const leftType = inferColumn(left, 'comparison_left', comparisonSchema, undefined, 'generic').type;
+    const rightType = inferColumn(right, 'comparison_right', comparisonSchema, undefined, 'generic').type;
     return areSetOperationTypesCompatible(leftType, rightType);
   });
 }
@@ -2732,8 +2726,8 @@ function compatibleSetOperationColumns(parsedAst: unknown, schema: ValidationSch
       left.forEach((item, index) => {
         const rightItem = right[index];
         if (!rightItem) return;
-        const leftType = inferColumn(item.expression, item.name ?? 'set_left', item.schema ?? schema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases).type;
-        const rightType = inferColumn(rightItem.expression, rightItem.name ?? 'set_right', rightItem.schema ?? schema, { mode: 'none', binds: [] }, 'generic', rightItem.source, rightItem.tableAliases).type;
+        const leftType = inferColumn(item.expression, item.name ?? 'set_left', item.schema ?? schema, undefined, 'generic', item.source, item.tableAliases).type;
+        const rightType = inferColumn(rightItem.expression, rightItem.name ?? 'set_right', rightItem.schema ?? schema, undefined, 'generic', rightItem.source, rightItem.tableAliases).type;
         if (areSetOperationTypesCompatible(leftType, rightType)) columns.add(`${kind}:${index + 1}`);
       });
     }
@@ -3424,7 +3418,7 @@ function inferCreateFunctionBodyReturnType(createFunction: Record<string, unknow
         return [{ name, type: dataTypeToString(parameter.data_type) ?? 'unknown' }];
       })
     : [];
-  return inferColumn(returnExpression, 'return', { tables: [{ name: '__function_parameters', columns: parameterColumns }] }, { mode: 'none', binds: [] }, 'generic').type;
+  return inferColumn(returnExpression, 'return', { tables: [{ name: '__function_parameters', columns: parameterColumns }] }, undefined, 'generic').type;
 }
 
 function createFunctionReturnExpression(createFunction: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -3468,7 +3462,7 @@ function inferRawScalarMacroReturnType(definition: { parameters: string[]; expre
     if (!statement) return undefined;
     const item = outputItemsForStatement(statement, parameterSchema, context, dialect)[0];
     if (!item) return undefined;
-    const inferred = inferColumn(item.expression, item.name ?? 'return', item.schema ?? parameterSchema, { mode: 'none', binds: [] }, dialect, item.source, item.tableAliases, item.functionReturnTypes);
+    const inferred = inferColumn(item.expression, item.name ?? 'return', item.schema ?? parameterSchema, undefined, dialect, item.source, item.tableAliases, item.functionReturnTypes);
     return inferred.type === 'unknown' ? undefined : inferred.type;
   } catch {
     return undefined;
@@ -5463,7 +5457,7 @@ function outputItemsFromValues(values: Record<string, unknown>, schema: Validati
 function valuesColumnExpression(rows: unknown[], index: number, fallback: AstExpression, schema: ValidationSchema): AstExpression {
   const columnExpressions = rows
     .flatMap((row) => isRecord(row) && Array.isArray(row.expressions) && isRecord(row.expressions[index]) ? [row.expressions[index]] : []);
-  const type = commonArgumentType(columnExpressions, schema, { mode: 'none', binds: [] });
+  const type = commonArgumentType(columnExpressions, schema, undefined);
   return type
     ? {
         cast: {
@@ -5489,7 +5483,7 @@ function outputItemsFromSetOperation(setOperation: Record<string, unknown>, sche
 
 function commonResultType(items: OutputItem[], fallbackSchema: ValidationSchema, dialect = 'generic'): string | undefined {
   const types = items
-    .map((item) => inferCastType(item.expression, dialect) ?? inferColumn(item.expression, item.name ?? 'set_column', item.schema ?? fallbackSchema, { mode: 'none', binds: [] }, dialect, item.source, item.tableAliases).type)
+    .map((item) => inferCastType(item.expression, dialect) ?? inferColumn(item.expression, item.name ?? 'set_column', item.schema ?? fallbackSchema, undefined, dialect, item.source, item.tableAliases).type)
     .filter((type) => type !== 'unknown');
   const nonNullTypes = types.filter((type) => type !== 'null');
   const resultDecimalInteger = getDialectConfig(dialect).commonTypes.resultDecimalInteger;
@@ -5713,7 +5707,7 @@ function pivotValueName(expression: unknown): string | undefined {
 
 function firstAggregateType(pivot: Record<string, unknown>, schema: ValidationSchema): string | undefined {
   const expression = Array.isArray(pivot.expressions) ? pivot.expressions.find(isRecord) : undefined;
-  return expression ? inferExpressionType(expression, schema, { mode: 'none', binds: [] }) : undefined;
+  return expression ? inferExpressionType(expression, schema, undefined) : undefined;
 }
 
 function referencedColumnNames(expression: unknown): string[] {
@@ -5761,7 +5755,7 @@ function explodeColumnTypes(expression: unknown, schema: ValidationSchema): stri
   if (!isRecord(expression)) return ['unknown'];
   const elementType = unnestElementType(expression, schema);
   if (elementType) return [elementType];
-  const column = inferColumn(expression, 'explode', schema, { mode: 'none', binds: [] }, 'generic');
+  const column = inferColumn(expression, 'explode', schema, undefined, 'generic');
   if (column.type === 'unknown') return ['unknown'];
   const mapTypes = mapKeyValueTypes(column.type);
   if (mapTypes) return mapTypes;
@@ -5901,7 +5895,7 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     if (table) return { ...table, name: alias };
   }
   if ((handlers.has('generateSeries') && name === 'generate_series') || (handlers.has('range') && name === 'range')) {
-    const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] });
+    const type = commonArgumentType(functionArguments(fn), { tables: [] }, undefined);
     const policy = getDialectConfig(dialect).dynamicTableFunctions;
     const configuredColumnName = name === 'generate_series' ? policy.generateSeriesColumn : policy.rangeColumn;
     const columnName = configuredColumnName === '$alias' ? alias : configuredColumnName;
@@ -5916,11 +5910,11 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     if (table) return { ...table, name: alias };
   }
   if (handlers.has('sequence') && name === 'sequence') {
-    const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] }) ?? 'integer';
+    const type = commonArgumentType(functionArguments(fn), { tables: [] }, undefined) ?? 'integer';
     return { name: alias, columns: [{ name: alias, type }] };
   }
   if (handlers.has('generateArray') && name === 'generate_array') {
-    const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] }) ?? 'integer';
+    const type = commonArgumentType(functionArguments(fn), { tables: [] }, undefined) ?? 'integer';
     return { name: alias, columns: [{ name: alias, type }] };
   }
   if (handlers.has('fileColumns') && ['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_ndjson', 'read_ndjson_auto', 'read_parquet', 'read_xlsx'].includes(name)) {
@@ -5975,7 +5969,7 @@ function stackTable(fn: Record<string, unknown>, alias: string, schema: Validati
       const columnValues = values.filter((_, valueIndex) => valueIndex % columnCount === index);
       return {
         name: `col${index}`,
-        type: commonArgumentType(columnValues, schema, { mode: 'none', binds: [] }) ?? 'unknown',
+        type: commonArgumentType(columnValues, schema, undefined) ?? 'unknown',
       };
     }),
   };
@@ -6073,7 +6067,7 @@ function tableFunctionDefaultType(functionName: string, expression: unknown, sch
   if (functionName === 'string_split') return 'text';
   if (functionName === 'generate_series' || functionName === 'range') {
     const fn = getAst(expression, 'function');
-    const type = isRecord(fn) ? commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] }) : undefined;
+    const type = isRecord(fn) ? commonArgumentType(functionArguments(fn), schema, undefined) : undefined;
     return type && /date|time|timestamp/i.test(type) ? type : 'integer';
   }
   return 'unknown';
@@ -6260,7 +6254,7 @@ function matchRecognizeMeasureColumns(matchRecognize: Record<string, unknown>, s
     if (!isRecord(expression)) return [];
     const output = unwrapAlias(expression);
     const name = output.name ?? inferNameFromAst(output.expression, 1);
-    const inferred = inferColumn(output.expression, name, schema, { mode: 'none', binds: [] }, 'generic');
+    const inferred = inferColumn(output.expression, name, schema, undefined, 'generic');
     return [{ name, type: inferred.type, nullable: inferred.nullable }];
   });
 }
@@ -6321,16 +6315,16 @@ function tableFunctionColumnTypes(expression: unknown, schema: ValidationSchema)
   if (!isRecord(fn)) return [];
   const name = String(fn.name ?? '').toLowerCase();
   if (name === 'generate_series' || name === 'range') {
-    const type = commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    const type = commonArgumentType(functionArguments(fn), schema, undefined);
     if (type && /date|time|timestamp/i.test(type)) return [type];
     return ['integer'];
   }
   if (name === 'explode' || name === 'explode_outer' || name === 'inline' || name === 'inline_outer') {
-    const type = firstArrayArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    const type = firstArrayArgumentType(functionArguments(fn), schema, undefined);
     return [type ? arrayElementType(type) ?? type : 'unknown'];
   }
   if (name === 'posexplode' || name === 'posexplode_outer') {
-    const type = firstArrayArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    const type = firstArrayArgumentType(functionArguments(fn), schema, undefined);
     return ['integer', type ? arrayElementType(type) ?? type : 'unknown'];
   }
   return [];
@@ -6346,11 +6340,11 @@ function unnestMapEntryTypes(unnest: Record<string, unknown>, schema: Validation
   const fn = getAst(input, 'function');
   if (isRecord(fn) && String(fn.name ?? '').toLowerCase() === 'map') {
     const args = functionArguments(fn);
-    const keyType = arrayElementType(inferColumn(args[0], 'map_keys', schema, { mode: 'none', binds: [] }, 'generic').type) ?? 'unknown';
-    const valueType = arrayElementType(inferColumn(args[1], 'map_values', schema, { mode: 'none', binds: [] }, 'generic').type) ?? 'unknown';
+    const keyType = arrayElementType(inferColumn(args[0], 'map_keys', schema, undefined, 'generic').type) ?? 'unknown';
+    const valueType = arrayElementType(inferColumn(args[1], 'map_values', schema, undefined, 'generic').type) ?? 'unknown';
     return [keyType, valueType];
   }
-  const type = inferColumn(input, 'unnest_map', schema, { mode: 'none', binds: [] }, 'generic').type;
+  const type = inferColumn(input, 'unnest_map', schema, undefined, 'generic').type;
   const mapTypes = mapKeyValueTypes(type);
   return mapTypes ? [...mapTypes] : undefined;
 }
@@ -6370,7 +6364,7 @@ function unnestStructColumns(unnest: Record<string, unknown>, schema: Validation
     const columns = functionArguments(struct).flatMap((arg, index) => {
       const unwrapped = unwrapAlias(arg);
       const name = unwrapped.name ?? inferNameFromAst(unwrapped.expression, index + 1);
-      const inferred = inferColumn(unwrapped.expression, name, schema, { mode: 'none', binds: [] }, 'generic');
+      const inferred = inferColumn(unwrapped.expression, name, schema, undefined, 'generic');
       return [{ name, type: inferred.type, nullable: inferred.nullable }];
     });
     if (columns.length > 0) return columns;
@@ -6382,23 +6376,23 @@ function unnestElementType(expression: unknown, schema: ValidationSchema): strin
   if (!isRecord(expression)) return undefined;
   const array = getAst(expression, 'array_func');
   if (isRecord(array) && Array.isArray(array.expressions)) {
-    return commonArgumentType(array.expressions.filter(isRecord), schema, { mode: 'none', binds: [] });
+    return commonArgumentType(array.expressions.filter(isRecord), schema, undefined);
   }
   const fn = getAst(expression, 'function');
   if (isRecord(fn) && String(fn.name ?? '').toLowerCase() === 'array') {
-    return commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] });
+    return commonArgumentType(functionArguments(fn), schema, undefined);
   }
   if (isRecord(fn) && String(fn.name ?? '').toLowerCase() === 'sequence') {
-    return commonArgumentType(functionArguments(fn), schema, { mode: 'none', binds: [] }) ?? 'integer';
+    return commonArgumentType(functionArguments(fn), schema, undefined) ?? 'integer';
   }
-  const column = inferColumn(expression, 'unnest', schema, { mode: 'none', binds: [] }, 'generic');
+  const column = inferColumn(expression, 'unnest', schema, undefined, 'generic');
   if (column.type !== 'unknown') return arrayElementType(column.type);
   return undefined;
 }
 
 function columnsFromOutputItems(items: OutputItem[], explicitColumns: unknown[], schema: ValidationSchema): SchemaColumn[] {
   return items.map((item, index) => {
-    const inferred = inferColumn(item.expression, item.name ?? `column_${index + 1}`, item.schema ?? schema, { mode: 'none', binds: [] }, 'generic', item.source, item.tableAliases, item.functionReturnTypes);
+    const inferred = inferColumn(item.expression, item.name ?? `column_${index + 1}`, item.schema ?? schema, undefined, 'generic', item.source, item.tableAliases, item.functionReturnTypes);
     return {
       name: columnDefinitionName(explicitColumns[index]) ?? item.name ?? `column_${index + 1}`,
       type: inferred.type,

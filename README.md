@@ -62,7 +62,7 @@ import { describeQuery, loadSchema, parseBinds } from 'sqldesc';
 const schema = await loadSchema(['schemas/**/*.sql']);
 const result = await describeQuery({
   sql: 'select id, name from users where id = ?',
-  binds: 'int',
+  binds: ['int'],
   schema,
 });
 
@@ -73,7 +73,7 @@ console.log(result.resultSets);
 Exports:
 
 - `describeQuery(input)`
-- `parseBinds(spec)`
+- `parseBinds(spec)` — CLI-oriented helper that parses `"int,text"` or `"id=int,name=text"` into `Binds`
 - `loadSchema(patterns, options)`
 - `getSupportedDialects()`
 - `isSupportedDialect(name)`

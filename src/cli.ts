@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { describeQuery } from './describe.js';
 import { getSupportedDialects } from './dialect.js';
+import { parseBinds } from './binds.js';
 import { loadSchema } from './schema.js';
 
 type CliIo = {
@@ -84,7 +85,7 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
     const result = await describeQuery({
       sql,
       dialect: values.dialect,
-      binds: values.binds,
+      binds: parseBinds(values.binds),
       jdbc: values.jdbc,
       schema,
     });

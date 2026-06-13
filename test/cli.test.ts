@@ -23,7 +23,7 @@ describe('sqldesc CLI', () => {
     assert.strictEqual(result.code, 0);
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [{ index: 1, name: 'n', type: 'INTEGER' }]);
-    assert.partialDeepStrictEqual(json.binds, { mode: 'positional', binds: [{ index: 1, type: 'int' }] });
+    assert.partialDeepStrictEqual(json.binds, ['int']);
   });
 
   it('translates JDBC SQL before describing inline SQL', async () => {
@@ -277,11 +277,8 @@ describe('sqldesc CLI', () => {
     const json = JSON.parse(result.stdout);
     assert.partialDeepStrictEqual(json.columns, [{ name: 'label', type: 'VARCHAR(255)' }]);
     assert.partialDeepStrictEqual(json.binds, {
-      mode: 'named',
-      binds: [
-        { name: 'flag', type: 'boolean' },
-        { name: 'label', type: 'text' },
-      ],
+      flag: 'boolean',
+      label: 'text',
     });
     assert.deepStrictEqual(json.warnings, []);
     assert.deepStrictEqual(json.diagnostics, []);

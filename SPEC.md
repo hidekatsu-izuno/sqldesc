@@ -32,11 +32,13 @@ and JSON output.
 The library entry point is `describeQuery(input)`. The stable input shape is:
 
 ```ts
+type Binds = string[] | Record<string, string>;
+
 interface DescribeInput {
   sql: string;
   dialect?: string;
   jdbc?: boolean;
-  binds?: string | BindSpec;
+  binds?: Binds;
   schema?: ValidationSchema;
 }
 ```
@@ -50,7 +52,7 @@ interface DescribeResult {
   statements: StatementSummary[];
   warnings: string[];
   diagnostics: Diagnostic[];
-  binds: BindSpec;
+  binds?: Binds;
   schema: ValidationSchema;
 }
 ```
