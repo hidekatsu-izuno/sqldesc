@@ -1,27 +1,12 @@
 import { getDialects } from '@polyglot-sql/sdk';
-
-const DIALECT_ALIASES: Record<string, string> = {
-  bq: 'bigquery',
-  cockroach: 'cockroachdb',
-  googlebigquery: 'bigquery',
-  memsql: 'singlestore',
-  mssql: 'tsql',
-  pg: 'postgresql',
-  pgsql: 'postgresql',
-  postgres: 'postgresql',
-  postgresql: 'postgresql',
-  singlestoredb: 'singlestore',
-  sqlserver: 'tsql',
-  sqlite3: 'sqlite',
-  transactsql: 'tsql',
-  tsql: 'tsql',
-};
+import { dialectAliasByKey, dialectAliasKey, dialectConfigByName } from './dialects/index.js';
+import type { DialectConfig } from './dialects/index.js';
 
 export function normalizeDialect(dialect?: string): string {
   const trimmed = dialect?.trim();
   if (!trimmed) return 'generic';
-  const normalizedKey = trimmed.toLowerCase().replace(/[-_\s]+/g, '');
-  return DIALECT_ALIASES[normalizedKey] ?? trimmed.toLowerCase();
+  const lower = trimmed.toLowerCase();
+  return dialectAliasByKey.get(dialectAliasKey(trimmed)) ?? lower;
 }
 
 export function getSupportedDialects(): string[] {
@@ -39,4 +24,9 @@ export function assertSupportedDialect(dialect?: string): string {
     throw new Error(`Unsupported SQL dialect "${dialect ?? normalized}". Run "sqldesc --dialects" to list supported dialects.`);
   }
   return normalized;
+}
+
+export function getDialectConfig(dialect?: string): DialectConfig {
+  const normalized = normalizeDialect(dialect);
+  return dialectConfigByName.get(normalized) ?? dialectConfigByName.get('generic')!;
 }

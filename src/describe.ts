@@ -1,6 +1,6 @@
 import { parse, validateWithSchema, annotateTypes, ast } from '@polyglot-sql/sdk';
 import { parseBinds } from './binds.js';
-import { assertSupportedDialect } from './dialect.js';
+import { assertSupportedDialect, getDialectConfig } from './dialect.js';
 import { normalizeJdbcBindTypes, transformJdbcSql } from './jdbc.js';
 import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import { displayTypeName as sqlDisplayTypeName, normalizeTypeName } from './sql-type.js';
@@ -119,6 +119,8 @@ function describeOutputItems(
 }
 
 function adjustedOutputType(name: string | undefined, type: string, dialect: string): string {
+  const override = name ? getDialectConfig(dialect).outputTypeOverrides[name] : undefined;
+  if (override) return override;
   const isPostgres = dialect === 'postgresql' || dialect === 'postgres';
   if (dialect === 'duckdb' && name && /^avg_/i.test(name)) return 'double';
   if (dialect === 'duckdb' && name === 'avg') return 'text';
@@ -771,12 +773,12 @@ function inferColumn(
     return { type: temporalType, confidence: 'medium', source: 'expression' };
   }
 
-  const geospatialType = inferGeospatialFunctionType(expression);
+  const geospatialType = inferGeospatialFunctionType(expression, dialect);
   if (geospatialType) {
     return { type: geospatialType, confidence: 'medium', source: 'expression' };
   }
 
-  const identifierHashRandomType = inferIdentifierHashRandomType(expression);
+  const identifierHashRandomType = inferIdentifierHashRandomType(expression, dialect);
   if (identifierHashRandomType) {
     return { type: identifierHashRandomType, confidence: 'medium', source: 'expression' };
   }
@@ -2981,7 +2983,7 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   if (aggregateType) return aggregateType;
   const methodType = inferMethodCallType(expression, schema, binds);
   if (methodType) return methodType;
-  const scalarType = inferScalarFunctionType(expression, schema, binds);
+  const scalarType = inferScalarFunctionType(expression, schema, binds, dialect);
   if (scalarType) return scalarType;
   const arithmetic = getAst(expression, 'add') ?? getAst(expression, 'sub') ?? getAst(expression, 'mul') ?? getAst(expression, 'div') ?? getAst(expression, 'int_div') ?? getAst(expression, 'mod') ?? getAst(expression, 'mod_func')
     ?? getAst(expression, 'bitwise_and') ?? getAst(expression, 'bitwise_or') ?? getAst(expression, 'bitwise_xor')
@@ -3430,10 +3432,12 @@ function isTemporalType(type: string): boolean {
   return /^(date|time|timestamp|datetime)$/i.test(type);
 }
 
-function inferGeospatialFunctionType(expression: AstExpression): string | undefined {
+function inferGeospatialFunctionType(expression: AstExpression, dialect = 'generic'): string | undefined {
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
+  const configuredType = getDialectConfig(dialect).scalarFunctionTypes[name] ?? getDialectConfig('generic').scalarFunctionTypes[name];
+  if (configuredType && /^st_|^(?:to_)?geography|geometry$/i.test(name)) return configuredType;
   if (['st_geogpoint', 'st_geogfromtext', 'st_geogfromgeojson', 'st_geogfromwkb', 'to_geography'].includes(name)) return 'geography';
   if ([
     'st_point',
@@ -3486,7 +3490,7 @@ function inferGeospatialFunctionType(expression: AstExpression): string | undefi
   return undefined;
 }
 
-function inferIdentifierHashRandomType(expression: AstExpression): string | undefined {
+function inferIdentifierHashRandomType(expression: AstExpression, dialect = 'generic'): string | undefined {
   if (isAst(expression, 'random') || isAst(expression, 'rand')) return 'decimal';
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
@@ -3707,7 +3711,7 @@ function namedArgumentStructFields(args: AstExpression[], schema: ValidationSche
   });
 }
 
-function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
   if (getAst(expression, 'lower') || getAst(expression, 'upper') || getAst(expression, 'trim') || getAst(expression, 'initcap')) return 'text';
   if (getAst(expression, 'substring') || getAst(expression, 'substr')) return 'text';
   if (getAst(expression, 'overlay')) return 'text';
@@ -3778,6 +3782,8 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   const genericFunction = getAst(expression, 'function');
   if (!isRecord(genericFunction)) return undefined;
   const name = String(genericFunction.name ?? '').toLowerCase();
+  const configuredType = getDialectConfig(dialect).scalarFunctionTypes[name] ?? getDialectConfig('generic').scalarFunctionTypes[name];
+  if (configuredType) return configuredType;
   if (['nextval', 'currval', 'lastval', 'setval'].includes(name)) return 'bigint';
   if (name === 'try') {
     const arg = functionArguments(genericFunction)[0];
@@ -5006,7 +5012,7 @@ function suppressVirtualTableArgumentDiagnostics(diagnostics: Diagnostic[], pars
 }
 
 function suppressSqliteRowidDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, dialect: string): Diagnostic[] {
-  if (dialect !== 'sqlite' || !hasSqliteRowidColumn(parsedAst)) return diagnostics;
+  if (!getDialectConfig(dialect).diagnosticRules.suppressSqliteRowid || !hasSqliteRowidColumn(parsedAst)) return diagnostics;
   return diagnostics.filter((diagnostic) => !/Unknown column '(?:rowid|_rowid_|oid)'/i.test(diagnostic.message));
 }
 
@@ -5025,7 +5031,7 @@ function suppressWholeRowFunctionDiagnostics(diagnostics: Diagnostic[], parsedAs
 }
 
 function suppressOracleCurrentUserDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, dialect: string): Diagnostic[] {
-  if (dialect !== 'oracle' || !hasUnqualifiedCurrentUserColumn(parsedAst)) return diagnostics;
+  if (!getDialectConfig(dialect).diagnosticRules.suppressOracleCurrentUser || !hasUnqualifiedCurrentUserColumn(parsedAst)) return diagnostics;
   return diagnostics.filter((diagnostic) => !/Unknown column 'user'(?: in table 'dual')?/i.test(diagnostic.message));
 }
 

@@ -1,7 +1,7 @@
 import { glob, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, annotateTypes, ast } from '@polyglot-sql/sdk';
-import { assertSupportedDialect, normalizeDialect } from './dialect.js';
+import { assertSupportedDialect, getDialectConfig, normalizeDialect } from './dialect.js';
 import { normalizeTypeName } from './sql-type.js';
 import type { SchemaColumn, SchemaFunction, SchemaLoadOptions, SchemaProcedure, SchemaTable, ValidationSchema } from './types.js';
 
@@ -75,7 +75,7 @@ async function expandSchemaScriptIncludes(sql: string, dialect: string, baseDir:
   const normalizedDialect = normalizeDialect(dialect);
   const lines = sql.replace(/^\uFEFF/, '').split(/\r?\n/);
   const expanded: string[] = [];
-  const psqlConditions = normalizedDialect === 'postgresql' ? newPsqlConditionState() : undefined;
+  const psqlConditions = getDialectConfig(normalizedDialect).scriptPreprocessor === 'psql' ? newPsqlConditionState() : undefined;
   for (const line of lines) {
     if (psqlConditions && updatePsqlConditionState(psqlConditions, line)) {
       expanded.push(line);
@@ -97,25 +97,27 @@ async function expandSchemaScriptIncludes(sql: string, dialect: string, baseDir:
 
 function schemaIncludePath(line: string, dialect: string): string | undefined {
   const trimmed = line.trim();
-  if (dialect === 'oracle') {
-    const match = trimmed.match(/^(?:@{1,2}|start\s+)(.+)$/i);
-    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
-  }
-  if (dialect === 'postgresql') {
-    const match = trimmed.match(/^\\(?:i|include|ir|include_relative)\s+(.+)$/i);
-    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
-  }
-  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) {
-    const match = trimmed.match(/^(?:source|\\\.)\s+(.+)$/i);
-    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
-  }
-  if (dialect === 'tsql') {
-    const match = trimmed.match(/^:r\s+(.+)$/i);
-    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
-  }
-  if (dialect === 'sqlite' || dialect === 'duckdb') {
-    const match = trimmed.match(/^\.read\s+(.+)$/i);
-    return match ? unquoteScriptPath(firstScriptArgument(match[1])) : undefined;
+  for (const directive of getDialectConfig(dialect).includeDirectives) {
+    if (directive.kind === 'oracle') {
+      const match = trimmed.match(/^(?:@{1,2}|start\s+)(.+)$/i);
+      if (match) return unquoteScriptPath(firstScriptArgument(match[1]));
+    }
+    if (directive.kind === 'postgresql') {
+      const match = trimmed.match(/^\\(?:i|include|ir|include_relative)\s+(.+)$/i);
+      if (match) return unquoteScriptPath(firstScriptArgument(match[1]));
+    }
+    if (directive.kind === 'mysql') {
+      const match = trimmed.match(/^(?:source|\\\.)\s+(.+)$/i);
+      if (match) return unquoteScriptPath(firstScriptArgument(match[1]));
+    }
+    if (directive.kind === 'tsql') {
+      const match = trimmed.match(/^:r\s+(.+)$/i);
+      if (match) return unquoteScriptPath(firstScriptArgument(match[1]));
+    }
+    if (directive.kind === 'dot') {
+      const match = trimmed.match(/^\.read\s+(.+)$/i);
+      if (match) return unquoteScriptPath(firstScriptArgument(match[1]));
+    }
   }
   return undefined;
 }
@@ -148,12 +150,20 @@ export function parseCreateTables(sql: string, dialect = 'generic'): SchemaTable
 
 function normalizeSchemaScript(sql: string, dialect: string): string {
   const normalizedDialect = normalizeDialect(dialect);
-  if (normalizedDialect === 'postgresql') return normalizePsqlScript(sql);
-  if (normalizedDialect === 'oracle') return normalizeOracleSqlPlusScript(sql);
-  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(normalizedDialect)) return normalizeMysqlDelimiterScript(sql);
-  if (normalizedDialect === 'tsql') return normalizeTsqlGoScript(sql);
-  if (normalizedDialect === 'sqlite' || normalizedDialect === 'duckdb') return normalizeDotCommandScript(sql);
-  return sql;
+  switch (getDialectConfig(normalizedDialect).scriptPreprocessor) {
+    case 'psql':
+      return normalizePsqlScript(sql);
+    case 'sqlplus':
+      return normalizeOracleSqlPlusScript(sql);
+    case 'mysqlDelimiter':
+      return normalizeMysqlDelimiterScript(sql);
+    case 'tsqlGo':
+      return normalizeTsqlGoScript(sql);
+    case 'dotCommand':
+      return normalizeDotCommandScript(sql);
+    case 'none':
+      return sql;
+  }
 }
 
 function normalizeDotCommandScript(sql: string): string {

@@ -1,28 +1,8 @@
-import { normalizeDialect } from './dialect.js';
+import { getDialectConfig, normalizeDialect } from './dialect.js';
 import { createSqlType } from './sql-type.js';
 import type { BindSpec } from './types.js';
 
 type Quote = "'" | '"' | '`' | '[';
-
-const POSTGRES_DIALECTS = new Set([
-  'postgresql',
-  'cockroachdb',
-  'redshift',
-]);
-
-const SQLSERVER_DIALECTS = new Set([
-  'tsql',
-]);
-
-const ORACLE_DIALECTS = new Set([
-  'oracle',
-]);
-
-const MYSQL_DIALECTS = new Set([
-  'mysql',
-  'mariadb',
-  'singlestore',
-]);
 
 export function transformJdbcSql(sql: string, dialect?: string): string {
   const normalizedDialect = normalizeDialect(dialect);
@@ -60,16 +40,7 @@ function jdbcTypeName(type: string): string | undefined {
 }
 
 function sqlTypeForJdbcType(type: string, dialect: string): string {
-  const map = jdbcTypeMapForDialect(dialect);
-  return map[type] ?? GENERIC_JDBC_TYPE_MAP[type] ?? 'unknown';
-}
-
-function jdbcTypeMapForDialect(dialect: string): Record<string, string> {
-  if (POSTGRES_DIALECTS.has(dialect)) return POSTGRES_JDBC_TYPE_MAP;
-  if (SQLSERVER_DIALECTS.has(dialect)) return SQLSERVER_JDBC_TYPE_MAP;
-  if (ORACLE_DIALECTS.has(dialect)) return ORACLE_JDBC_TYPE_MAP;
-  if (MYSQL_DIALECTS.has(dialect)) return MYSQL_JDBC_TYPE_MAP;
-  return GENERIC_JDBC_TYPE_MAP;
+  return getDialectConfig(dialect).jdbcTypeMap[type] ?? 'unknown';
 }
 
 function transformEscapes(sql: string, dialect: string): string {
@@ -166,7 +137,7 @@ function convertJdbcFunction(expression: string, dialect: string): string {
 
   if (name === 'ucase') return unary('upper', args, expression);
   if (name === 'lcase') return unary('lower', args, expression);
-  if (name === 'ifnull') return binary(SQLSERVER_DIALECTS.has(dialect) ? 'isnull' : 'coalesce', args, expression);
+  if (name === 'ifnull') return binary(getDialectConfig(dialect).jdbcEscapeStyle === 'tsql' ? 'isnull' : 'coalesce', args, expression);
   if (name === 'now') return zeroArg('current_timestamp', args, expression);
   if (name === 'curdate') return zeroArg(currentDateExpression(dialect), args, expression);
   if (name === 'curtime') return zeroArg(currentTimeExpression(dialect), args, expression);
@@ -185,176 +156,13 @@ function jdbcConvertType(type: string, dialect: string): string {
   return sqlTypeForJdbcType(normalized, dialect) ?? type.trim();
 }
 
-const GENERIC_JDBC_TYPE_MAP: Record<string, string> = {
-  ARRAY: 'array<variant>',
-  BIGINT: 'bigint',
-  BINARY: 'bytes',
-  BIT: 'boolean',
-  BLOB: 'bytes',
-  BOOLEAN: 'boolean',
-  CHAR: 'text',
-  CLOB: 'text',
-  DATALINK: 'text',
-  DATE: 'date',
-  DECIMAL: 'decimal',
-  DISTINCT: 'variant',
-  DOUBLE: 'decimal',
-  FLOAT: 'decimal',
-  INTEGER: 'integer',
-  JAVA_OBJECT: 'variant',
-  LONGNVARCHAR: 'text',
-  LONGVARBINARY: 'bytes',
-  LONGVARCHAR: 'text',
-  NCHAR: 'text',
-  NCLOB: 'text',
-  NULL: 'unknown',
-  NUMERIC: 'decimal',
-  NVARCHAR: 'text',
-  OTHER: 'variant',
-  REAL: 'decimal',
-  REF: 'variant',
-  REF_CURSOR: 'variant',
-  ROWID: 'text',
-  SMALLINT: 'integer',
-  SQLXML: 'xml',
-  STRUCT: 'struct<>',
-  TIME: 'time',
-  TIME_WITH_TIMEZONE: 'time',
-  TIMESTAMP: 'timestamp',
-  TIMESTAMP_WITH_TIMEZONE: 'timestamp',
-  TINYINT: 'integer',
-  VARBINARY: 'bytes',
-  VARCHAR: 'text',
-};
-
-const POSTGRES_JDBC_TYPE_MAP: Record<string, string> = {
-  ...GENERIC_JDBC_TYPE_MAP,
-  ARRAY: 'array<variant>',
-  BINARY: 'bytes',
-  BIT: 'boolean',
-  BLOB: 'bytes',
-  BOOLEAN: 'boolean',
-  CHAR: 'text',
-  CLOB: 'text',
-  DISTINCT: 'variant',
-  DOUBLE: 'decimal',
-  FLOAT: 'decimal',
-  JAVA_OBJECT: 'json',
-  LONGVARBINARY: 'bytes',
-  LONGVARCHAR: 'text',
-  OTHER: 'json',
-  REAL: 'decimal',
-  REF: 'variant',
-  REF_CURSOR: 'variant',
-  SQLXML: 'xml',
-  STRUCT: 'struct<>',
-  VARBINARY: 'bytes',
-  VARCHAR: 'text',
-};
-
-const MYSQL_JDBC_TYPE_MAP: Record<string, string> = {
-  ...GENERIC_JDBC_TYPE_MAP,
-  ARRAY: 'json',
-  BIGINT: 'bigint',
-  BINARY: 'bytes',
-  BIT: 'boolean',
-  BLOB: 'bytes',
-  BOOLEAN: 'boolean',
-  CHAR: 'text',
-  CLOB: 'text',
-  DOUBLE: 'decimal',
-  FLOAT: 'decimal',
-  JAVA_OBJECT: 'json',
-  LONGVARBINARY: 'bytes',
-  LONGVARCHAR: 'text',
-  OTHER: 'json',
-  REAL: 'decimal',
-  SQLXML: 'text',
-  STRUCT: 'json',
-  TIME_WITH_TIMEZONE: 'time',
-  TIMESTAMP: 'datetime',
-  TIMESTAMP_WITH_TIMEZONE: 'datetime',
-  TINYINT: 'integer',
-  VARBINARY: 'bytes',
-  VARCHAR: 'text',
-};
-
-const SQLSERVER_JDBC_TYPE_MAP: Record<string, string> = {
-  ...GENERIC_JDBC_TYPE_MAP,
-  ARRAY: 'variant',
-  BINARY: 'bytes',
-  BIT: 'boolean',
-  BLOB: 'bytes',
-  BOOLEAN: 'boolean',
-  CHAR: 'text',
-  CLOB: 'text',
-  DATALINK: 'text',
-  DOUBLE: 'decimal',
-  FLOAT: 'decimal',
-  JAVA_OBJECT: 'variant',
-  LONGNVARCHAR: 'text',
-  LONGVARBINARY: 'bytes',
-  LONGVARCHAR: 'text',
-  NCHAR: 'text',
-  NCLOB: 'text',
-  NVARCHAR: 'text',
-  OTHER: 'variant',
-  REAL: 'decimal',
-  REF: 'variant',
-  REF_CURSOR: 'variant',
-  ROWID: 'text',
-  SQLXML: 'xml',
-  STRUCT: 'variant',
-  TIME_WITH_TIMEZONE: 'time',
-  TIMESTAMP: 'datetime',
-  TIMESTAMP_WITH_TIMEZONE: 'datetime',
-  VARBINARY: 'bytes',
-  VARCHAR: 'text',
-};
-
-const ORACLE_JDBC_TYPE_MAP: Record<string, string> = {
-  ...GENERIC_JDBC_TYPE_MAP,
-  ARRAY: 'array<variant>',
-  BIGINT: 'decimal',
-  BINARY: 'bytes',
-  BIT: 'decimal',
-  BLOB: 'bytes',
-  BOOLEAN: 'boolean',
-  CHAR: 'text',
-  CLOB: 'text',
-  DOUBLE: 'decimal',
-  FLOAT: 'decimal',
-  INTEGER: 'decimal',
-  JAVA_OBJECT: 'variant',
-  LONGNVARCHAR: 'text',
-  LONGVARBINARY: 'bytes',
-  LONGVARCHAR: 'text',
-  NCHAR: 'text',
-  NCLOB: 'text',
-  NUMERIC: 'decimal',
-  NVARCHAR: 'text',
-  OTHER: 'variant',
-  REAL: 'decimal',
-  REF: 'variant',
-  REF_CURSOR: 'variant',
-  ROWID: 'text',
-  SMALLINT: 'decimal',
-  SQLXML: 'xml',
-  STRUCT: 'struct<>',
-  TIME: 'timestamp',
-  TIME_WITH_TIMEZONE: 'timestamp',
-  TIMESTAMP_WITH_TIMEZONE: 'timestamp',
-  TINYINT: 'decimal',
-  VARBINARY: 'bytes',
-  VARCHAR: 'text',
-};
-
 function temporalLiteral(kind: 'date' | 'time' | 'timestamp', value: string, dialect: string): string {
-  if (SQLSERVER_DIALECTS.has(dialect)) {
+  const style = getDialectConfig(dialect).jdbcEscapeStyle;
+  if (style === 'tsql') {
     const type = kind === 'timestamp' ? 'datetime2' : kind;
     return `CAST(${value} AS ${type})`;
   }
-  if (MYSQL_DIALECTS.has(dialect)) {
+  if (style === 'mysql') {
     return value;
   }
   return `${kind.toUpperCase()} ${value}`;
@@ -363,17 +171,17 @@ function temporalLiteral(kind: 'date' | 'time' | 'timestamp', value: string, dia
 function convertFunctionCall(target: string, dialect: string): string {
   const call = splitFunctionCall(target);
   if (!call) return `SELECT ${target}`;
-  if (SQLSERVER_DIALECTS.has(dialect)) return `EXEC ${target}`;
+  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return `EXEC ${target}`;
   return `SELECT ${call.name}(${call.args.join(', ')})`;
 }
 
 function currentDateExpression(dialect: string): string {
-  if (SQLSERVER_DIALECTS.has(dialect)) return 'CAST(current_timestamp AS date)';
+  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return 'CAST(current_timestamp AS date)';
   return 'current_date';
 }
 
 function currentTimeExpression(dialect: string): string {
-  if (SQLSERVER_DIALECTS.has(dialect)) return 'CAST(current_timestamp AS time)';
+  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return 'CAST(current_timestamp AS time)';
   return 'current_time';
 }
 
@@ -511,9 +319,10 @@ function transformParameterMarkers(sql: string, dialect: string): string {
 }
 
 function parameterMarker(index: number, dialect: string): string {
-  if (POSTGRES_DIALECTS.has(dialect)) return `$${index}`;
-  if (ORACLE_DIALECTS.has(dialect)) return `:${index}`;
-  if (SQLSERVER_DIALECTS.has(dialect)) return `@P${index}`;
+  const config = getDialectConfig(dialect);
+  if (config.typeFamily === 'postgresql') return `$${index}`;
+  if (config.typeFamily === 'oracle') return `:${index}`;
+  if (config.jdbcEscapeStyle === 'tsql') return `@P${index}`;
   return '?';
 }
 

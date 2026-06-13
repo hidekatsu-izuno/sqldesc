@@ -1,4 +1,5 @@
-import { normalizeDialect } from './dialect.js';
+import { getDialectConfig, normalizeDialect } from './dialect.js';
+import type { DialectConfig, TypeFamily } from './dialects/types.js';
 
 export interface SqlType {
   readonly nativeType: string;
@@ -6,8 +7,6 @@ export interface SqlType {
   toNativeType(): string;
   toJdbcType(): string;
 }
-
-type TypeFamily = 'postgresql' | 'mysql' | 'sqlite' | 'tsql' | 'oracle' | 'duckdb' | 'bigquery' | 'trino' | 'generic';
 
 const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   integer: 'INTEGER',
@@ -39,110 +38,16 @@ const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   unknown: 'NULL',
 };
 
-export abstract class BaseSqlType implements SqlType {
-  readonly nativeType: string;
-  readonly normalizedType: string;
-
-  constructor(type: string) {
-    this.normalizedType = normalizeTypeName(type);
-    this.nativeType = this.display(this.normalizedType);
-  }
-
-  toNativeType(): string {
-    return this.nativeType;
-  }
-
-  toJdbcType(): string {
-    if (this.normalizedType.startsWith('array<')) return 'ARRAY';
-    if (this.normalizedType.startsWith('map<')) return 'JAVA_OBJECT';
-    if (this.normalizedType.startsWith('struct<')) return 'STRUCT';
-    const parameterized = /^([a-z_][\w]*)\(/.exec(this.normalizedType);
-    if (parameterized) {
-      const base = normalizeTypeName(parameterized[1] ?? '');
-      return JDBC_TYPE_BY_NORMALIZED[base] ?? 'OTHER';
-    }
-    return JDBC_TYPE_BY_NORMALIZED[this.normalizedType] ?? 'OTHER';
-  }
-
-  protected abstract display(normalizedType: string): string;
-}
-
-export class GenericSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'generic');
-  }
-}
-
-export class PostgresSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'postgresql');
-  }
-}
-
-export class MySqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'mysql');
-  }
-}
-
-export class SqliteSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'sqlite');
-  }
-}
-
-export class TsqlSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'tsql');
-  }
-}
-
-export class OracleSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'oracle');
-  }
-}
-
-export class DuckDbSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'duckdb');
-  }
-}
-
-export class BigQuerySqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'bigquery');
-  }
-}
-
-export class TrinoSqlType extends BaseSqlType {
-  protected display(normalizedType: string): string {
-    return displayByFamily(normalizedType, 'trino');
-  }
-}
-
 export function createSqlType(type: string, dialect?: string): SqlType {
-  const family = dialectTypeFamily(normalizeDialect(dialect));
-  switch (family) {
-    case 'postgresql':
-      return new PostgresSqlType(type);
-    case 'mysql':
-      return new MySqlType(type);
-    case 'sqlite':
-      return new SqliteSqlType(type);
-    case 'tsql':
-      return new TsqlSqlType(type);
-    case 'oracle':
-      return new OracleSqlType(type);
-    case 'duckdb':
-      return new DuckDbSqlType(type);
-    case 'bigquery':
-      return new BigQuerySqlType(type);
-    case 'trino':
-      return new TrinoSqlType(type);
-    default:
-      return new GenericSqlType(type);
-  }
+  const config = getDialectConfig(normalizeDialect(dialect));
+  const normalizedType = normalizeTypeName(type);
+  const nativeType = displayByDialect(normalizedType, config);
+  return {
+    nativeType,
+    normalizedType,
+    toNativeType: () => nativeType,
+    toJdbcType: () => jdbcTypeForNormalizedType(normalizedType),
+  };
 }
 
 export function normalizeTypeName(value: string): string {
@@ -193,263 +98,69 @@ export function toJdbcType(type: string, dialect?: string): string {
 }
 
 export function dialectTypeFamily(dialect: string): TypeFamily {
-  if (dialect === 'postgresql' || dialect === 'redshift' || dialect === 'cockroachdb') return 'postgresql';
-  if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return 'mysql';
-  if (dialect === 'sqlite') return 'sqlite';
-  if (dialect === 'tsql') return 'tsql';
-  if (dialect === 'oracle') return 'oracle';
-  if (dialect === 'duckdb') return 'duckdb';
-  if (dialect === 'bigquery') return 'bigquery';
-  if (dialect === 'trino' || dialect === 'presto' || dialect === 'athena') return 'trino';
-  return 'generic';
+  return getDialectConfig(dialect).typeFamily;
 }
 
-function displayByFamily(normalized: string, family: TypeFamily): string {
+function jdbcTypeForNormalizedType(normalizedType: string): string {
+  if (normalizedType.startsWith('array<')) return 'ARRAY';
+  if (normalizedType.startsWith('map<')) return 'JAVA_OBJECT';
+  if (normalizedType.startsWith('struct<')) return 'STRUCT';
+  const parameterized = /^([a-z_][\w]*)\(/.exec(normalizedType);
+  if (parameterized) {
+    const base = normalizeTypeName(parameterized[1] ?? '');
+    return JDBC_TYPE_BY_NORMALIZED[base] ?? 'OTHER';
+  }
+  return JDBC_TYPE_BY_NORMALIZED[normalizedType] ?? 'OTHER';
+}
+
+function displayByDialect(normalized: string, config: DialectConfig): string {
   if (normalized === 'unknown') return 'unknown';
-  if (normalized.startsWith('array<')) return displayComplexType(normalized, family);
-  if (normalized.startsWith('map<')) return displayComplexType(normalized, family);
-  if (normalized.startsWith('struct<')) return displayComplexType(normalized, family);
+  if (normalized.startsWith('array<')) return displayComplexType(normalized, config);
+  if (normalized.startsWith('map<')) return displayComplexType(normalized, config);
+  if (normalized.startsWith('struct<')) return displayComplexType(normalized, config);
 
   const parameterized = /^([a-z_][\w]*)\(([^)]*)\)$/.exec(normalized);
   if (parameterized) {
     const [, base, args] = parameterized;
     if (['decimal', 'dec', 'numeric', 'number'].includes(base)) {
-      if (family === 'postgresql') return `numeric(${args})`;
-      if (family === 'oracle') return `number(${args})`;
+      if (config.typeFamily === 'postgresql') return `numeric(${args})`;
+      if (config.typeFamily === 'oracle') return `number(${args})`;
       return `decimal(${args})`;
     }
-    if (base === 'datetime2' && family === 'tsql') return `datetime2(${args})`;
-    if (base === 'timestamptz' && (family === 'postgresql' || family === 'oracle')) return `timestamp(${args}) with time zone`;
-    if (base === 'timestampltz' && family === 'oracle') return `timestamp(${args}) with local time zone`;
+    if (base === 'datetime2' && config.typeFamily === 'tsql') return `datetime2(${args})`;
+    if (base === 'timestamptz' && (config.typeFamily === 'postgresql' || config.typeFamily === 'oracle')) return `timestamp(${args}) with time zone`;
+    if (base === 'timestampltz' && config.typeFamily === 'oracle') return `timestamp(${args}) with local time zone`;
     return normalized;
   }
 
-  return DISPLAY_MAPS[family]?.[normalized] ?? normalized;
+  return config.displayTypes[normalized] ?? normalized;
 }
 
-function displayComplexType(type: string, family: TypeFamily): string {
-  if (family === 'bigquery') return type.replace(/^array</, 'array<').replace(/^struct</, 'struct<');
-  if (family === 'trino') return displayTrinoComplexType(type);
+function displayComplexType(type: string, config: DialectConfig): string {
+  if (config.complexTypeStyle === 'trino') return displayTrinoComplexType(type, config);
   return type;
 }
 
-function displayTrinoComplexType(type: string): string {
+function displayTrinoComplexType(type: string, config: DialectConfig): string {
   const arrayMatch = /^array<([\s\S]+)>$/.exec(type);
-  if (arrayMatch?.[1]) return `array(${displayTrinoTypeArgument(arrayMatch[1])})`;
+  if (arrayMatch?.[1]) return `array(${displayTrinoTypeArgument(arrayMatch[1], config)})`;
   const mapMatch = /^map<([\s\S]+)>$/.exec(type);
   if (mapMatch?.[1]) {
     const args = splitTopLevel(mapMatch[1], ',');
-    return `map(${args.map(displayTrinoTypeArgument).join(', ')})`;
+    return `map(${args.map((arg) => displayTrinoTypeArgument(arg, config)).join(', ')})`;
   }
   const structMatch = /^struct<([\s\S]+)>$/.exec(type);
   if (structMatch?.[1]) return `row(${structMatch[1]})`;
   return type;
 }
 
-function displayTrinoTypeArgument(type: string): string {
+function displayTrinoTypeArgument(type: string, config: DialectConfig): string {
   const normalized = normalizeTypeName(type);
   if (normalized.startsWith('array<') || normalized.startsWith('map<') || normalized.startsWith('struct<')) {
-    return displayTrinoComplexType(normalized);
+    return displayTrinoComplexType(normalized, config);
   }
-  return DISPLAY_MAPS.trino[normalized] ?? normalized;
+  return config.displayTypes[normalized] ?? normalized;
 }
-
-const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
-  postgresql: {
-    integer: 'integer',
-    bigint: 'bigint',
-    decimal: 'numeric',
-    double: 'numeric',
-    boolean: 'boolean',
-    postgres_varchar: 'character varying',
-    text: 'text',
-    clob: 'text',
-    nclob: 'text',
-    bytes: 'bytea',
-    blob: 'bytea',
-    json: 'json',
-    jsonb: 'jsonb',
-    date: 'date',
-    time: 'time',
-    timestamp: 'timestamp without time zone',
-    timestamptz: 'timestamp with time zone',
-    datetime: 'timestamp',
-    uuid: 'uuid',
-  },
-  mysql: {
-    integer: 'int',
-    bigint: 'bigint',
-    decimal: 'decimal',
-    boolean: 'tinyint(1)',
-    text: 'varchar(255)',
-    mysql_text: 'text',
-    mysql_blob: 'blob',
-    clob: 'longtext',
-    nclob: 'longtext',
-    bytes: 'varbinary(255)',
-    blob: 'longblob',
-    json: 'json',
-    jsonb: 'json',
-    date: 'date',
-    time: 'time',
-    timestamp: 'timestamp',
-    timestamptz: 'timestamp',
-    datetime: 'datetime',
-    uuid: 'char(36)',
-  },
-  sqlite: {
-    integer: 'integer',
-    bigint: 'integer',
-    decimal: 'real',
-    double: 'real',
-    boolean: 'integer',
-    text: 'text',
-    clob: 'text',
-    nclob: 'text',
-    bytes: 'blob',
-    blob: 'blob',
-    json: 'text',
-    jsonb: 'blob',
-    date: 'text',
-    time: 'text',
-    timestamp: 'text',
-    timestamptz: 'text',
-    datetime: 'text',
-    uuid: 'text',
-  },
-  tsql: {
-    integer: 'int',
-    tsql_tinyint: 'tinyint',
-    tsql_smallint: 'smallint',
-    bigint: 'bigint',
-    tsql_real: 'real',
-    tsql_float: 'float',
-    decimal: 'decimal(38, 10)',
-    boolean: 'bit',
-    text: 'nvarchar(max)',
-    clob: 'nvarchar(max)',
-    nclob: 'nvarchar(max)',
-    bytes: 'varbinary(255)',
-    blob: 'varbinary(max)',
-    json: 'nvarchar(max)',
-    jsonb: 'nvarchar(max)',
-    xml: 'xml',
-    date: 'date',
-    time: 'time',
-    timestamp: 'datetime2(7)',
-    tsql_rowversion: 'timestamp',
-    timestamptz: 'datetimeoffset',
-    datetime2: 'datetime2(7)',
-    datetime: 'datetime',
-    uuid: 'uniqueidentifier',
-  },
-  oracle: {
-    integer: 'number(10)',
-    bigint: 'number(19)',
-    decimal: 'number',
-    boolean: 'number(1)',
-    text: 'varchar2(255)',
-    clob: 'clob',
-    nclob: 'nclob',
-    bytes: 'raw(255)',
-    blob: 'blob',
-    json: 'json',
-    jsonb: 'json',
-    xml: 'xmltype',
-    date: 'date',
-    time: 'timestamp',
-    timestamp: 'timestamp(6)',
-    timestamptz: 'timestamp(6) with time zone',
-    timestampltz: 'timestamp(6) with local time zone',
-    datetime: 'timestamp',
-    uuid: 'raw(16)',
-  },
-  duckdb: {
-    integer: 'integer',
-    bigint: 'bigint',
-    decimal: 'decimal(18, 3)',
-    double: 'double',
-    boolean: 'boolean',
-    duck_bit: 'bit',
-    text: 'varchar',
-    clob: 'varchar',
-    nclob: 'varchar',
-    bytes: 'blob',
-    blob: 'blob',
-    json: 'json',
-    jsonb: 'json',
-    date: 'date',
-    time: 'time',
-    timestamp: 'timestamp',
-    timestamp_s: 'timestamp_s',
-    timestamp_ms: 'timestamp_ms',
-    timestamp_ns: 'timestamp_ns',
-    timestamptz: 'timestamp with time zone',
-    datetime: 'timestamp',
-    uuid: 'uuid',
-  },
-  bigquery: {
-    integer: 'int64',
-    bigint: 'int64',
-    bignumeric: 'bignumeric',
-    decimal: 'numeric',
-    boolean: 'bool',
-    text: 'string',
-    clob: 'string',
-    nclob: 'string',
-    bytes: 'bytes',
-    blob: 'bytes',
-    json: 'json',
-    jsonb: 'json',
-    date: 'date',
-    time: 'time',
-    timestamp: 'timestamp',
-    timestamptz: 'timestamp',
-    datetime: 'datetime',
-    uuid: 'string',
-  },
-  trino: {
-    integer: 'integer',
-    bigint: 'bigint',
-    decimal: 'decimal',
-    double: 'double',
-    boolean: 'boolean',
-    text: 'varchar',
-    clob: 'varchar',
-    nclob: 'varchar',
-    bytes: 'varbinary',
-    blob: 'varbinary',
-    json: 'json',
-    jsonb: 'json',
-    date: 'date',
-    time: 'time',
-    timestamp: 'timestamp(3)',
-    timestamptz: 'timestamp(3) with time zone',
-    datetime: 'timestamp(3)',
-    uuid: 'uuid',
-  },
-  generic: {
-    integer: 'INTEGER',
-    bigint: 'BIGINT',
-    decimal: 'DECIMAL',
-    double: 'DECIMAL',
-    boolean: 'BOOLEAN',
-    text: 'VARCHAR(255)',
-    clob: 'CLOB',
-    nclob: 'NCLOB',
-    bytes: 'VARBINARY(255)',
-    blob: 'BLOB',
-    json: 'VARCHAR(4000)',
-    jsonb: 'VARCHAR(4000)',
-    xml: 'SQLXML',
-    date: 'DATE',
-    time: 'TIME',
-    timestamp: 'TIMESTAMP',
-    timestamptz: 'TIMESTAMP_WITH_TIMEZONE',
-    datetime: 'TIMESTAMP',
-    uuid: 'VARCHAR(36)',
-  },
-};
 
 function parseParameterizedType(value: string): string | undefined {
   const match = /^([a-z_][\w\s]*)\s*\(([\s\S]*)\)$/i.exec(value.trim());
