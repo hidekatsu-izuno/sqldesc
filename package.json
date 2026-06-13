@@ -4,6 +4,7 @@
   "description": "Infer SQL result-set columns from SQL, bind types, and schema files.",
   "license": "MIT",
   "type": "module",
+  "sideEffects": false,
   "bin": {
     "sqldesc": "./dist/cli.js"
   },
