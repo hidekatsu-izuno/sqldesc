@@ -6,7 +6,7 @@
   "type": "module",
   "sideEffects": false,
   "bin": {
-    "sqldesc": "./dist/cli.js"
+    "sqldesc": "dist/cli.js"
   },
   "exports": {
     ".": {
