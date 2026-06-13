@@ -355,6 +355,20 @@ export const dialectConfig = {
     "percent_rank": "decimal",
     "cume_dist": "decimal",
   },
+  specialParameterTypes: {},
+  specialColumnTypes: {
+    "current_date": "date",
+    "current_time": "time",
+    "current_timestamp": "timestamp",
+    "localtimestamp": "timestamp",
+  },
+  qualifiedSpecialColumnTypes: {},
+  pseudoColumnTypes: {},
+  generatedNames: {
+    "countStar": "count_star()",
+    "add": "duckdbParenthesized",
+    "upper": "duckdbQuotedCall",
+  },
   scriptPreprocessor: 'dotCommand',
   includeDirectives: [{ kind: 'dot' }],
   complexTypeStyle: 'angle',
@@ -454,5 +468,16 @@ export const dialectConfig = {
     "win_sum": "decimal",
   },
   metadata: {},
-  diagnosticRules: {},
+  diagnosticRules: {
+    knownTableFunctionArgumentNames: [
+      'file',
+      'url',
+    ],
+    virtualTableArgumentNames: [
+      'highlight',
+      'snippet',
+      'bm25',
+      'fts5vocab',
+    ],
+  },
 } satisfies DialectConfig;

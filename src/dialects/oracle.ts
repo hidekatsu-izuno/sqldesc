@@ -336,6 +336,7 @@ export const dialectConfig = {
   commonTypes: {
     "text": "firstText",
     "decimalInteger": "firstType",
+    "resultDecimalInteger": "number",
   },
   cast: {
     "adjustment": "none",
@@ -352,6 +353,32 @@ export const dialectConfig = {
     "n_tile": "integer",
     "percent_rank": "decimal",
     "cume_dist": "decimal",
+  },
+  specialParameterTypes: {},
+  specialColumnTypes: {
+    "current_date": "date",
+    "current_time": "time",
+    "current_timestamp": "timestamp",
+    "localtimestamp": "timestamp",
+    "connect_by_iscycle": "integer",
+    "connect_by_isleaf": "integer",
+    "user": "text",
+    "nextval": "integer",
+    "currval": "integer",
+  },
+  qualifiedSpecialColumnTypes: {
+    "nextval": "integer",
+    "currval": "integer",
+  },
+  pseudoColumnTypes: {
+    "rowid": "text",
+    "level": "integer",
+    "rownum": "integer",
+  },
+  generatedNames: {
+    "countStar": "COUNT(*)",
+    "add": "oracleUpperCompact",
+    "upper": "oracleUpperCall",
   },
   scriptPreprocessor: 'sqlplus',
   includeDirectives: [{ kind: 'oracle' }],
@@ -456,5 +483,16 @@ export const dialectConfig = {
     "xml_value": "xmltype",
   },
   metadata: { oracleCurrentUserColumn: true },
-  diagnosticRules: { suppressOracleCurrentUser: true },
+  diagnosticRules: {
+    knownTableFunctionArgumentNames: [
+      'file',
+      'url',
+    ],
+    virtualTableArgumentNames: [
+      'highlight',
+      'snippet',
+      'bm25',
+      'fts5vocab',
+    ], suppressOracleCurrentUser: true 
+  },
 } satisfies DialectConfig;

@@ -48,6 +48,11 @@ describe('dialect configuration registry', () => {
       assert.ok(config.cast.adjustment);
       assert.ok(config.arithmetic.decimalInteger);
       assert.strictEqual(config.windowFunctionTypes.percent_rank, 'decimal');
+      assert.strictEqual(typeof config.generatedNames.countStar, 'string');
+      assert.strictEqual(config.specialColumnTypes.current_date, 'date');
+      assert.ok(config.qualifiedSpecialColumnTypes);
+      assert.deepStrictEqual(config.diagnosticRules.knownTableFunctionArgumentNames, ['file', 'url']);
+      assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes('highlight'));
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
       assert.deepStrictEqual(imports, ['./types.js']);
       const exports = [...source.matchAll(/^export\s+/gm)];
@@ -102,6 +107,10 @@ describe('dialect configuration registry', () => {
     assert.strictEqual(mysql?.cast.adjustment, 'mysqlCharBinaryLength');
     assert.strictEqual(trino?.windowFunctionTypes.row_number, 'bigint');
     assert.strictEqual(oracle?.arithmetic.allNumberType, 'decimal');
+    assert.strictEqual(oracle?.specialColumnTypes.user, 'text');
+    assert.strictEqual(oracle?.qualifiedSpecialColumnTypes.nextval, 'integer');
+    assert.strictEqual(oracle?.commonTypes.resultDecimalInteger, 'number');
+    assert.strictEqual(oracle?.generatedNames.upper, 'oracleUpperCall');
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

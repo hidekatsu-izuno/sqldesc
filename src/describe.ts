@@ -74,8 +74,8 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   returnedDiagnostics = suppressCurrentTemporalIdentifierDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressWholeRowFunctionDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
   returnedDiagnostics = suppressNamedFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
-  returnedDiagnostics = suppressKnownTableFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
-  returnedDiagnostics = suppressVirtualTableArgumentDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
+  returnedDiagnostics = suppressKnownTableFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst, dialect);
+  returnedDiagnostics = suppressVirtualTableArgumentDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema, dialect);
   returnedDiagnostics = suppressSqliteRowidDiagnostics(returnedDiagnostics, annotatedAst, dialect);
   returnedDiagnostics = suppressResolvedColumnDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressResolvedSourceDiagnostics(returnedDiagnostics, allColumns);
@@ -285,36 +285,29 @@ function inferColumn(
 }
 
 function inferSpecialIdentifierType(expression: AstExpression, dialect: string): string | undefined {
+  const config = getDialectConfig(dialect);
   const parameter = getAst(expression, 'parameter');
   if (isRecord(parameter) && String(parameter.style ?? '').toLowerCase() === 'doubleat') {
     const name = String(parameter.name ?? '').toLowerCase();
-    if (['spid', 'rowcount', 'fetch_status', 'nestlevel', 'trancount'].includes(name)) return 'integer';
-    if (name === 'identity') return 'integer';
-    if (['servername', 'servicename', 'version', 'language', 'lock_timeout'].includes(name)) return 'text';
+    const type = config.specialParameterTypes[name];
+    if (type) return type;
   }
 
   const column = getAst(expression, 'column');
-  if (isRecord(column) && !identifierName(column.table)) {
+  if (isRecord(column)) {
     const name = identifierName(column.name)?.toLowerCase();
-    if (name === 'current_date') return 'date';
-    if (name === 'current_time') return 'time';
-    if (name === 'current_timestamp' || name === 'localtimestamp') return 'timestamp';
-    if (dialect === 'oracle' && ['connect_by_iscycle', 'connect_by_isleaf'].includes(name ?? '')) return 'integer';
-  }
-  if (dialect === 'oracle' && isRecord(column) && !identifierName(column.table) && identifierName(column.name)?.toLowerCase() === 'user') {
-    return 'text';
-  }
-  if (dialect === 'oracle' && isRecord(column) && ['nextval', 'currval'].includes(identifierName(column.name)?.toLowerCase() ?? '')) {
-    return 'integer';
+    const type = name
+      ? identifierName(column.table)
+        ? config.qualifiedSpecialColumnTypes[name]
+        : config.specialColumnTypes[name]
+      : undefined;
+    if (type) return type;
   }
   const pseudocolumn = getAst(expression, 'pseudocolumn');
-  if (dialect === 'oracle' && isRecord(pseudocolumn)) {
+  if (isRecord(pseudocolumn)) {
     const kind = String(pseudocolumn.kind ?? '').toLowerCase();
-    if (kind === 'rowid') return 'text';
-    if (['level', 'rownum'].includes(kind)) return 'integer';
-  }
-  if (dialect === 'sqlite' && isRecord(column) && ['rowid', '_rowid_', 'oid'].includes(identifierName(column.name)?.toLowerCase() ?? '')) {
-    return 'integer';
+    const type = config.pseudoColumnTypes[kind];
+    if (type) return type;
   }
 
   return undefined;
@@ -4398,8 +4391,8 @@ function suppressNamedFunctionArgumentDiagnostics(diagnostics: Diagnostic[], par
   });
 }
 
-function suppressKnownTableFunctionArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown): Diagnostic[] {
-  const names = knownTableFunctionArgumentNames(parsedAst);
+function suppressKnownTableFunctionArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, dialect: string): Diagnostic[] {
+  const names = knownTableFunctionArgumentNames(parsedAst, dialect);
   if (names.size === 0) return diagnostics;
   return diagnostics.filter((diagnostic) => {
     const match = diagnostic.message.match(/Unknown column '([^']+)'/);
@@ -4407,8 +4400,8 @@ function suppressKnownTableFunctionArgumentDiagnostics(diagnostics: Diagnostic[]
   });
 }
 
-function suppressVirtualTableArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema): Diagnostic[] {
-  const names = virtualTableArgumentNames(parsedAst, schema);
+function suppressVirtualTableArgumentDiagnostics(diagnostics: Diagnostic[], parsedAst: unknown, schema: ValidationSchema, dialect: string): Diagnostic[] {
+  const names = virtualTableArgumentNames(parsedAst, schema, dialect);
   if (names.size === 0) return diagnostics;
   return diagnostics.filter((diagnostic) => {
     const match = diagnostic.message.match(/Unknown column '([^']+)'(?: in table '([^']+)')?/);
@@ -4503,12 +4496,14 @@ function wholeRowFunctionArgumentNames(value: unknown): Set<string> {
   return names;
 }
 
-function knownTableFunctionArgumentNames(value: unknown): Set<string> {
+function knownTableFunctionArgumentNames(value: unknown, dialect: string): Set<string> {
+  const knownFunctions = new Set(getDialectConfig(dialect).diagnosticRules.knownTableFunctionArgumentNames);
+  if (knownFunctions.size === 0) return new Set();
   const names = new Set<string>();
   visitAst(value, (node) => {
     if (!isRecord(node.function)) return;
     const functionName = String(node.function.name ?? '').toLowerCase();
-    if (!['file', 'url'].includes(functionName)) return;
+    if (!knownFunctions.has(functionName)) return;
     const formatArg = functionArguments(node.function)[1];
     const column = isRecord(formatArg) ? getAst(formatArg, 'column') : undefined;
     const name = isRecord(column) && !identifierName(column.table) ? identifierName(column.name) : undefined;
@@ -4517,12 +4512,14 @@ function knownTableFunctionArgumentNames(value: unknown): Set<string> {
   return names;
 }
 
-function virtualTableArgumentNames(value: unknown, schema: ValidationSchema): Set<string> {
+function virtualTableArgumentNames(value: unknown, schema: ValidationSchema, dialect: string): Set<string> {
+  const knownFunctions = new Set(getDialectConfig(dialect).diagnosticRules.virtualTableArgumentNames);
+  if (knownFunctions.size === 0) return new Set();
   const names = new Set<string>();
   visitAst(value, (node) => {
     if (!isRecord(node.function)) return;
     const functionName = String(node.function.name ?? '').toLowerCase();
-    if (!['highlight', 'snippet', 'bm25', 'fts5vocab'].includes(functionName)) return;
+    if (!knownFunctions.has(functionName)) return;
     const firstArg = functionArguments(node.function)[0];
     const column = isRecord(firstArg) ? getAst(firstArg, 'column') : undefined;
     const name = isRecord(column) && !identifierName(column.table) ? identifierName(column.name) : undefined;
@@ -7397,7 +7394,7 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
 }
 
 function isMysqlLikeDialect(dialect: string): boolean {
-  return ['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect.toLowerCase());
+  return getDialectConfig(dialect).family === 'mysql';
 }
 
 function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
@@ -7562,7 +7559,8 @@ function commonResultType(items: OutputItem[], fallbackSchema: ValidationSchema,
     .map((item) => inferCastType(item.expression, dialect) ?? inferColumn(item.expression, item.name ?? 'set_column', item.schema ?? fallbackSchema, { mode: 'none', binds: [] }, dialect, item.source, item.tableAliases).type)
     .filter((type) => type !== 'unknown');
   const nonNullTypes = types.filter((type) => type !== 'null');
-  if (dialect === 'oracle' && nonNullTypes.some(decimalTypeParts) && nonNullTypes.some(isIntegerLikeType)) return 'number';
+  const resultDecimalInteger = getDialectConfig(dialect).commonTypes.resultDecimalInteger;
+  if (resultDecimalInteger && nonNullTypes.some(decimalTypeParts) && nonNullTypes.some(isIntegerLikeType)) return resultDecimalInteger;
   const dialectCommon = commonTypeFromTypesForDialect(nonNullTypes, dialect);
   if (dialectCommon) return dialectCommon;
   return commonTypeFromTypes(types);
@@ -8849,37 +8847,35 @@ function inferNameFromAst(expression: AstExpression, index: number): string {
 }
 
 function generatedExpressionName(expression: AstExpression, dialect: string): string | undefined {
+  const policy = getDialectConfig(dialect).generatedNames;
   const count = getAst(expression, 'count');
   if (isRecord(count) && count.star === true) {
-    if (dialect === 'tsql') return '';
-    if (dialect === 'postgresql') return 'count';
-    if (dialect === 'duckdb') return 'count_star()';
-    if (dialect === 'oracle') return 'COUNT(*)';
-    return 'count(*)';
+    return policy.countStar;
   }
   const add = getAst(expression, 'add');
   if (isRecord(add)) {
     const left = simpleGeneratedExpressionPart(add.left, dialect);
     const right = simpleGeneratedExpressionPart(add.right, dialect);
     if (left && right) {
-      if (dialect === 'tsql') return '';
-      if (dialect === 'postgresql') return '?column?';
-      if (dialect === 'duckdb') return `(${left} + ${right})`;
-      return dialect === 'oracle' ? `${left.toUpperCase()}+${right.toUpperCase()}` : `${left}+${right}`;
+      if (policy.add === 'empty') return '';
+      if (policy.add === 'postgresColumn') return '?column?';
+      if (policy.add === 'duckdbParenthesized') return `(${left} + ${right})`;
+      if (policy.add === 'oracleUpperCompact') return `${left.toUpperCase()}+${right.toUpperCase()}`;
+      return `${left}+${right}`;
     }
   }
   const upper = getAst(expression, 'upper');
   if (isRecord(upper) && isRecord(upper.this)) {
     const arg = simpleGeneratedExpressionPart(upper.this, dialect);
     if (arg) {
-      if (dialect === 'tsql') return '';
-      if (dialect === 'postgresql') return 'upper';
-      if (dialect === 'oracle') return `UPPER(${arg.toUpperCase()})`;
-      if (dialect === 'duckdb') return `upper("${arg}")`;
+      if (policy.upper === 'empty') return '';
+      if (policy.upper === 'postgresFunction') return 'upper';
+      if (policy.upper === 'oracleUpperCall') return `UPPER(${arg.toUpperCase()})`;
+      if (policy.upper === 'duckdbQuotedCall') return `upper("${arg}")`;
       return `upper(${arg})`;
     }
   }
-  return dialect === 'tsql' ? '' : undefined;
+  return policy.fallback;
 }
 
 function simpleGeneratedExpressionPart(expression: unknown, dialect: string): string | undefined {

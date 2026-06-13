@@ -30,6 +30,8 @@ export interface DialectMetadataConfig {
 export interface DialectDiagnosticRulesConfig {
   readonly suppressSqliteRowid?: boolean;
   readonly suppressOracleCurrentUser?: boolean;
+  readonly knownTableFunctionArgumentNames: readonly string[];
+  readonly virtualTableArgumentNames: readonly string[];
 }
 
 export interface DialectTableFunctionColumnConfig {
@@ -45,6 +47,8 @@ export type CommonTextTypePolicy = 'none' | 'mysqlMaxVarchar' | 'firstText' | 'v
 export type CommonDecimalIntegerPolicy = 'none' | 'mysqlScalePlus20' | 'tsqlScalePlus10' | 'decimal' | 'firstType';
 export type CastAdjustmentPolicy = 'none' | 'mysqlCharBinaryLength';
 export type ArithmeticDecimalPolicy = 'none' | 'mysqlScalePlus21' | 'tsqlDuckdbPrecision' | 'decimal';
+export type GeneratedAddNameStyle = 'empty' | 'postgresColumn' | 'duckdbParenthesized' | 'oracleUpperCompact' | 'compact';
+export type GeneratedUpperNameStyle = 'empty' | 'postgresFunction' | 'oracleUpperCall' | 'duckdbQuotedCall' | 'call';
 
 export interface DialectAggregateConfig {
   readonly countType: string;
@@ -56,6 +60,7 @@ export interface DialectAggregateConfig {
 export interface DialectCommonTypeConfig {
   readonly text: CommonTextTypePolicy;
   readonly decimalInteger: CommonDecimalIntegerPolicy;
+  readonly resultDecimalInteger?: string;
 }
 
 export interface DialectCastConfig {
@@ -65,6 +70,13 @@ export interface DialectCastConfig {
 export interface DialectArithmeticConfig {
   readonly allNumberType?: string;
   readonly decimalInteger: ArithmeticDecimalPolicy;
+}
+
+export interface DialectGeneratedNamesConfig {
+  readonly fallback?: string;
+  readonly countStar: string;
+  readonly add: GeneratedAddNameStyle;
+  readonly upper: GeneratedUpperNameStyle;
 }
 
 export interface DialectConfig {
@@ -81,6 +93,11 @@ export interface DialectConfig {
   readonly cast: DialectCastConfig;
   readonly arithmetic: DialectArithmeticConfig;
   readonly windowFunctionTypes: Readonly<Record<string, string>>;
+  readonly specialParameterTypes: Readonly<Record<string, string>>;
+  readonly specialColumnTypes: Readonly<Record<string, string>>;
+  readonly qualifiedSpecialColumnTypes: Readonly<Record<string, string>>;
+  readonly pseudoColumnTypes: Readonly<Record<string, string>>;
+  readonly generatedNames: DialectGeneratedNamesConfig;
   readonly scriptPreprocessor: ScriptPreprocessor;
   readonly includeDirectives: readonly IncludeDirectiveConfig[];
   readonly complexTypeStyle: ComplexTypeStyle;

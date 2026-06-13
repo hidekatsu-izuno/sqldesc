@@ -351,6 +351,23 @@ export const dialectConfig = {
     "percent_rank": "decimal",
     "cume_dist": "decimal",
   },
+  specialParameterTypes: {},
+  specialColumnTypes: {
+    "current_date": "date",
+    "current_time": "time",
+    "current_timestamp": "timestamp",
+    "localtimestamp": "timestamp",
+    "rowid": "integer",
+    "_rowid_": "integer",
+    "oid": "integer",
+  },
+  qualifiedSpecialColumnTypes: {},
+  pseudoColumnTypes: {},
+  generatedNames: {
+    "countStar": "count(*)",
+    "add": "compact",
+    "upper": "call",
+  },
   scriptPreprocessor: 'dotCommand',
   includeDirectives: [{ kind: 'dot' }],
   complexTypeStyle: 'angle',
@@ -425,5 +442,16 @@ export const dialectConfig = {
     "zero_blob": "blob",
   },
   metadata: { sqliteRowidColumns: ['rowid', '_rowid_', 'oid'] },
-  diagnosticRules: { suppressSqliteRowid: true },
+  diagnosticRules: {
+    knownTableFunctionArgumentNames: [
+      'file',
+      'url',
+    ],
+    virtualTableArgumentNames: [
+      'highlight',
+      'snippet',
+      'bm25',
+      'fts5vocab',
+    ], suppressSqliteRowid: true 
+  },
 } satisfies DialectConfig;
