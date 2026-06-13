@@ -19,6 +19,7 @@ export type ComplexTypeStyle = 'angle' | 'trino';
 export type JdbcEscapeStyle = 'standard' | 'mysql' | 'tsql';
 export type JdbcParameterMarkerStyle = 'question' | 'postgresOrdinal' | 'oracleOrdinal' | 'tsqlOrdinal';
 export type LiteralStringTypePolicy = 'text' | 'varcharLength';
+export type JdbcTemporalLiteralStyle = 'standard' | 'raw' | 'cast';
 
 export interface IncludeDirectiveConfig {
   readonly kind: 'oracle' | 'postgresql' | 'mysql' | 'tsql' | 'dot';
@@ -31,6 +32,8 @@ export interface DialectMetadataConfig {
   readonly explainColumns: readonly DialectTableFunctionColumnConfig[];
   readonly snowflakeDescribeObjectColumns: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
   readonly showTablesColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showTableListingColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly commandResultColumns: readonly DialectCommandResultConfig[];
 }
 
 export interface DialectDiagnosticRulesConfig {
@@ -44,6 +47,11 @@ export interface DialectTableFunctionColumnConfig {
   readonly name: string;
   readonly type: string;
   readonly nullable?: boolean;
+}
+
+export interface DialectCommandResultConfig {
+  readonly pattern: string;
+  readonly columns: readonly DialectTableFunctionColumnConfig[];
 }
 
 export type AvgDecimalPolicy = 'default' | 'mysqlPlus4' | 'tsqlScaleAtLeast6';
@@ -92,11 +100,26 @@ export interface DialectLiteralTypesConfig {
 export interface DialectDynamicTableFunctionConfig {
   readonly generateSeriesColumn: string;
   readonly rangeColumn: string;
+  readonly enabledHandlers: readonly string[];
 }
 
 export interface DialectSerializedSelectConfig {
   readonly forJson?: string;
   readonly forXml?: string;
+}
+
+export interface DialectJdbcEscapeConfig {
+  readonly ifnullFunction: string;
+  readonly temporalLiteral: JdbcTemporalLiteralStyle;
+  readonly executeCall: boolean;
+  readonly currentDateExpression: string;
+  readonly currentTimeExpression: string;
+}
+
+export interface DialectParserFallbackConfig {
+  readonly createView: string;
+  readonly tableMacro: string;
+  readonly embeddedSqlTableFunction: string;
 }
 
 export interface DialectConfig {
@@ -123,7 +146,9 @@ export interface DialectConfig {
   readonly includeDirectives: readonly IncludeDirectiveConfig[];
   readonly complexTypeStyle: ComplexTypeStyle;
   readonly jdbcEscapeStyle: JdbcEscapeStyle;
+  readonly jdbcEscape: DialectJdbcEscapeConfig;
   readonly jdbcParameterMarker: JdbcParameterMarkerStyle;
+  readonly parserFallbacks: DialectParserFallbackConfig;
   readonly parameterizedTypeFormats: Readonly<Record<string, string>>;
   readonly literalTypes: DialectLiteralTypesConfig;
   readonly dynamicTableFunctions: DialectDynamicTableFunctionConfig;

@@ -5073,12 +5073,13 @@ function tableFromRawCreateView(sql: string, schema: ValidationSchema, context: 
     ? splitTopLevel(headerMatch[2], ',').map((column) => ({ name: { name: cleanIdentifier(column.trim()) } }))
     : [];
   try {
-    const parsed = parse(query, 'postgres' as never) as PolyglotParseResult;
+    const fallbackDialect = getDialectConfig().parserFallbacks.createView;
+    const parsed = parse(query, fallbackDialect as never) as PolyglotParseResult;
     if (!parsed.success) return undefined;
     const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
     const statement = statements.find(isRecord);
     if (!statement) return undefined;
-    const items = outputItemsForStatement(statement, schema, context, 'postgres');
+    const items = outputItemsForStatement(statement, schema, context, fallbackDialect);
     const columns = columnsFromOutputItems(items, explicitColumns, schema);
     return columns.length > 0 ? { name: ref.name, ...(ref.schema ? { schema: ref.schema } : {}), columns } : undefined;
   } catch {
@@ -5093,12 +5094,13 @@ function tableFromRawCreateTableMacro(sql: string, schema: ValidationSchema, con
   if (!name) return undefined;
   const query = create[2].trim();
   try {
-    const parsed = parse(query, 'duckdb' as never) as PolyglotParseResult;
+    const fallbackDialect = getDialectConfig().parserFallbacks.tableMacro;
+    const parsed = parse(query, fallbackDialect as never) as PolyglotParseResult;
     if (!parsed.success) return undefined;
     const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
     const statement = statements.find(isRecord);
     if (!statement) return undefined;
-    const items = outputItemsForStatement(statement, schema, context, 'duckdb');
+    const items = outputItemsForStatement(statement, schema, context, fallbackDialect);
     const columns = columnsFromOutputItems(items, [], schema);
     return columns.length > 0 ? { name, columns } : undefined;
   } catch {
@@ -5973,8 +5975,10 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
       ['Comment', 'text'],
     ]);
   }
-  if (subject.startsWith('table ')) return snowflakeTableListingColumns();
-  if (subject === 'all tables') return snowflakeTableListingColumns();
+  if (subject.startsWith('table ') || subject === 'all tables') {
+    const columns = getDialectConfig(dialect).metadata.showTableListingColumns;
+    return columns ? staticConfigColumns(columns) : [];
+  }
   if (subject === 'warnings' || subject === 'errors') {
     return staticColumns([
       ['Level', 'text'],
@@ -6718,25 +6722,6 @@ function outputItemsFromSummarize(): OutputItem[] {
   ]);
 }
 
-function snowflakeTableListingColumns(): OutputItem[] {
-  return staticColumns([
-    ['created_on', 'timestamp'],
-    ['name', 'text'],
-    ['database_name', 'text'],
-    ['schema_name', 'text'],
-    ['kind', 'text'],
-    ['comment', 'text'],
-    ['cluster_by', 'text'],
-    ['rows', 'integer'],
-    ['bytes', 'integer'],
-    ['owner', 'text'],
-    ['retention_time', 'integer'],
-    ['automatic_clustering', 'text'],
-    ['change_tracking', 'boolean'],
-    ['search_optimization', 'boolean'],
-  ]);
-}
-
 function outputItemsFromAnalyze(analyze: Record<string, unknown>): OutputItem[] {
   return String(analyze.kind ?? '').toLowerCase() === 'table' || isRecord(analyze.this) ? tableMaintenanceStatusColumns() : [];
 }
@@ -6752,9 +6737,8 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
   const procedureColumns = staticProcedureColumns(commandProcedureName(text));
   if (procedureColumns.length > 0) return procedureColumns;
   if (/^(optimize|repair|check|checksum)\s+table\b/.test(text)) return tableMaintenanceStatusColumns();
-  if (/^(?:list|ls)\s+@/.test(text)) return snowflakeListColumns();
-  if (/^get\s+@/.test(text)) return snowflakeGetColumns();
-  if (/^(?:remove|rm)\s+@/.test(text)) return snowflakeRemoveColumns();
+  const configuredCommandColumns = commandResultColumns(text, dialect);
+  if (configuredCommandColumns.length > 0) return configuredCommandColumns;
   if (/^exists\s+(?:table|database|view|dictionary)\b/.test(text)) return staticColumns([['result', 'boolean']]);
   if (/^explain\b/.test(text)) return explainColumns(dialect);
   if (/^show\s+clusters\b/.test(text)) return clickHouseClustersColumns();
@@ -6769,7 +6753,6 @@ function outputItemsFromCommand(command: Record<string, unknown>, schema: Valida
     ['comment', 'text'],
   ]);
   if (/^show\s+functions\b/.test(text)) return staticColumns([['name', 'text']]);
-  if (/^list\s+(?:file|jar|archive)\b/.test(text)) return sparkListResourceColumns();
   if (/^show\s+databases\b/.test(text)) return outputItemsFromShow({ this: 'databases' });
   if (/^show\s+schemas\b/.test(text)) return outputItemsFromShow({ this: 'schemas' });
   if (/^show\s+tables\b/.test(text)) return outputItemsFromShow({ this: 'tables' });
@@ -7027,12 +7010,6 @@ function clickHouseMutationsColumns(): OutputItem[] {
   ]);
 }
 
-function sparkListResourceColumns(): OutputItem[] {
-  return staticColumns([
-    ['resource', 'text'],
-  ]);
-}
-
 function outputItemsFromPut(): OutputItem[] {
   return staticColumns([
     ['source', 'text'],
@@ -7043,31 +7020,6 @@ function outputItemsFromPut(): OutputItem[] {
     ['target_compression', 'text'],
     ['status', 'text'],
     ['message', 'text'],
-  ]);
-}
-
-function snowflakeListColumns(): OutputItem[] {
-  return staticColumns([
-    ['name', 'text'],
-    ['size', 'integer'],
-    ['md5', 'text'],
-    ['last_modified', 'timestamp'],
-  ]);
-}
-
-function snowflakeGetColumns(): OutputItem[] {
-  return staticColumns([
-    ['file', 'text'],
-    ['size', 'integer'],
-    ['status', 'text'],
-    ['message', 'text'],
-  ]);
-}
-
-function snowflakeRemoveColumns(): OutputItem[] {
-  return staticColumns([
-    ['name', 'text'],
-    ['result', 'text'],
   ]);
 }
 
@@ -7345,6 +7297,14 @@ function outputItemsFromPragma(pragma: Record<string, unknown>): OutputItem[] {
 
 function isMysqlLikeDialect(dialect: string): boolean {
   return getDialectConfig(dialect).family === 'mysql';
+}
+
+function commandResultColumns(command: string, dialect: string): OutputItem[] {
+  for (const result of getDialectConfig(dialect).metadata.commandResultColumns) {
+    const match = result.pattern.match(/^\/(.*)\/([a-z]*)$/i);
+    if (match && new RegExp(match[1], match[2]).test(command)) return staticConfigColumns(result.columns);
+  }
+  return [];
 }
 
 function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
@@ -7904,9 +7864,10 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
   const name = unqualifiedFunctionName(fn);
   if (name === 'table') {
     const firstArg = functionArguments(fn).find(isRecord);
-    const dbmsXplan = oracleDbmsXplanTable(firstArg, alias);
+    const handlers = new Set(getDialectConfig(dialect).dynamicTableFunctions.enabledHandlers);
+    const dbmsXplan = handlers.has('oracleDbmsXplan') ? oracleDbmsXplanTable(firstArg, alias) : undefined;
     if (dbmsXplan) return dbmsXplan;
-    const collectionType = oracleCollectionTableType(firstArg);
+    const collectionType = handlers.has('oracleCollection') ? oracleCollectionTableType(firstArg) : undefined;
     if (collectionType) return { name: alias, columns: [{ name: alias, type: collectionType }] };
     const wrapped = isRecord(firstArg) ? tableFromKnownTableFunction(firstArg, alias, schema, dialect) : undefined;
     if (wrapped) return wrapped;
@@ -7926,10 +7887,11 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     const columnName = configuredColumnName === '$alias' ? alias : configuredColumnName;
     return { name: alias, columns: [{ name: columnName, type: type && /date|time|timestamp/i.test(type) ? type : 'integer' }] };
   }
-  if (name === 'fts5vocab') return sqliteFts5VocabTable(fn, alias);
-  if (name.startsWith('pragma_')) return sqlitePragmaFunctionTable(name, alias);
+  const handlers = new Set(getDialectConfig(dialect).dynamicTableFunctions.enabledHandlers);
+  if (handlers.has('sqliteFts5Vocab') && name === 'fts5vocab') return sqliteFts5VocabTable(fn, alias);
+  if (handlers.has('sqlitePragma') && name.startsWith('pragma_')) return sqlitePragmaFunctionTable(name, alias);
   if (name === 'numbers' || name === 'numbers_mt') return { name: alias, columns: [{ name: alias, type: 'integer' }] };
-  if (['remote', 'remotesecure', 'cluster', 'clusterallreplicas'].includes(name)) {
+  if (handlers.has('clickhouseRemote') && ['remote', 'remotesecure', 'cluster', 'clusterallreplicas'].includes(name)) {
     const tableName = remoteTableFunctionTableName(functionArguments(fn));
     const table = tableName ? schema.tables.find((candidate) => candidate.name.toLowerCase() === tableName.toLowerCase()) : undefined;
     if (table) return { ...table, name: alias };
@@ -7950,13 +7912,13 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     const columns = columnsFromSchemaString(lastSchemaLikeLiteral(functionArguments(fn)));
     if (columns.length > 0) return { name: alias, columns };
   }
-  if (['mysql', 'postgresql', 'odbc', 'jdbc'].includes(name)) {
+  if (handlers.has('externalConnection') && ['mysql', 'postgresql', 'odbc', 'jdbc'].includes(name)) {
     const args = functionArguments(fn);
     const tableName = name === 'mysql' || name === 'postgresql' ? stringLiteralValue(args[2]) : lastStringLiteral(args);
     const table = tableName ? schema.tables.find((candidate) => candidate.name.toLowerCase() === tableName.toLowerCase()) : undefined;
     if (table) return { ...table, name: alias };
   }
-  if (name === 'openquery' || name === 'openrowset') {
+  if (handlers.has('embeddedSql') && (name === 'openquery' || name === 'openrowset')) {
     const queryTable = tableFromEmbeddedSqlTableFunction(fn, alias, schema);
     if (queryTable) return queryTable;
   }
@@ -8056,12 +8018,13 @@ function tableFromEmbeddedSqlTableFunction(fn: Record<string, unknown>, alias: s
   }
   if (!sql) return undefined;
   try {
-    const parsed = parse(sql, 'tsql' as never) as PolyglotParseResult;
+    const fallbackDialect = getDialectConfig().parserFallbacks.embeddedSqlTableFunction;
+    const parsed = parse(sql, fallbackDialect as never) as PolyglotParseResult;
     if (!parsed.success) return undefined;
     const statements = Array.isArray(parsed.ast) ? parsed.ast : [parsed.ast];
     const statement = statements.find(isRecord);
     if (!statement) return undefined;
-    const items = outputItemsForStatement(statement, schema, emptyStatementContext(), 'tsql');
+    const items = outputItemsForStatement(statement, schema, emptyStatementContext(), fallbackDialect);
     const columns = columnsFromOutputItems(items, [], schema);
     return columns.length > 0 ? { name: alias, columns } : undefined;
   } catch {

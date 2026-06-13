@@ -137,7 +137,7 @@ function convertJdbcFunction(expression: string, dialect: string): string {
 
   if (name === 'ucase') return unary('upper', args, expression);
   if (name === 'lcase') return unary('lower', args, expression);
-  if (name === 'ifnull') return binary(getDialectConfig(dialect).jdbcEscapeStyle === 'tsql' ? 'isnull' : 'coalesce', args, expression);
+  if (name === 'ifnull') return binary(getDialectConfig(dialect).jdbcEscape.ifnullFunction, args, expression);
   if (name === 'now') return zeroArg('current_timestamp', args, expression);
   if (name === 'curdate') return zeroArg(currentDateExpression(dialect), args, expression);
   if (name === 'curtime') return zeroArg(currentTimeExpression(dialect), args, expression);
@@ -157,12 +157,12 @@ function jdbcConvertType(type: string, dialect: string): string {
 }
 
 function temporalLiteral(kind: 'date' | 'time' | 'timestamp', value: string, dialect: string): string {
-  const style = getDialectConfig(dialect).jdbcEscapeStyle;
-  if (style === 'tsql') {
+  const style = getDialectConfig(dialect).jdbcEscape.temporalLiteral;
+  if (style === 'cast') {
     const type = kind === 'timestamp' ? 'datetime2' : kind;
     return `CAST(${value} AS ${type})`;
   }
-  if (style === 'mysql') {
+  if (style === 'raw') {
     return value;
   }
   return `${kind.toUpperCase()} ${value}`;
@@ -171,18 +171,16 @@ function temporalLiteral(kind: 'date' | 'time' | 'timestamp', value: string, dia
 function convertFunctionCall(target: string, dialect: string): string {
   const call = splitFunctionCall(target);
   if (!call) return `SELECT ${target}`;
-  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return `EXEC ${target}`;
+  if (getDialectConfig(dialect).jdbcEscape.executeCall) return `EXEC ${target}`;
   return `SELECT ${call.name}(${call.args.join(', ')})`;
 }
 
 function currentDateExpression(dialect: string): string {
-  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return 'CAST(current_timestamp AS date)';
-  return 'current_date';
+  return getDialectConfig(dialect).jdbcEscape.currentDateExpression;
 }
 
 function currentTimeExpression(dialect: string): string {
-  if (getDialectConfig(dialect).jdbcEscapeStyle === 'tsql') return 'CAST(current_timestamp AS time)';
-  return 'current_time';
+  return getDialectConfig(dialect).jdbcEscape.currentTimeExpression;
 }
 
 function unary(name: string, args: string[], fallback: string): string {

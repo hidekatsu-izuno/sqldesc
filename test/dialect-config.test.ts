@@ -53,12 +53,17 @@ describe('dialect configuration registry', () => {
       assert.strictEqual(config.specialColumnTypes.current_date, 'date');
       assert.ok(config.qualifiedSpecialColumnTypes);
       assert.ok(config.parameterizedTypeFormats.decimal);
+      assert.ok(config.jdbcEscape.ifnullFunction);
       assert.ok(config.jdbcParameterMarker);
+      assert.ok(config.parserFallbacks.createView);
       assert.ok(config.literalTypes.string);
       assert.ok(config.dynamicTableFunctions.generateSeriesColumn);
+      assert.ok(config.dynamicTableFunctions.enabledHandlers.includes('embeddedSql'));
       assert.ok(config.serializedSelect);
       assert.ok(config.metadata.describeFunctionColumns.length > 0);
       assert.ok(config.metadata.explainColumns.length > 0);
+      assert.ok(config.metadata.showTableListingColumns?.length);
+      assert.ok(config.metadata.commandResultColumns.length > 0);
       assert.deepStrictEqual(config.diagnosticRules.knownTableFunctionArgumentNames, ['file', 'url']);
       assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes('highlight'));
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
@@ -123,6 +128,8 @@ describe('dialect configuration registry', () => {
     const tsql = dialectConfigs.find((config) => config.name === 'tsql');
     assert.strictEqual(duckdb?.scalarFunctionTypePatterns['/^avg(?:_|$)/i'], 'double');
     assert.strictEqual(tsql?.serializedSelect.forJson, 'json');
+    assert.strictEqual(tsql?.jdbcEscape.executeCall, true);
+    assert.strictEqual(tsql?.jdbcEscape.currentDateExpression, 'CAST(current_timestamp AS date)');
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

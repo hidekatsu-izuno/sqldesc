@@ -373,7 +373,19 @@ export const dialectConfig = {
   includeDirectives: [{ kind: 'dot' }],
   complexTypeStyle: 'angle',
   jdbcEscapeStyle: 'standard',
+  jdbcEscape: {
+    ifnullFunction: 'coalesce',
+    temporalLiteral: 'standard',
+    executeCall: false,
+    currentDateExpression: 'current_date',
+    currentTimeExpression: 'current_time',
+  },
   jdbcParameterMarker: 'question',
+  parserFallbacks: {
+    createView: 'postgres',
+    tableMacro: 'duckdb',
+    embeddedSqlTableFunction: 'tsql',
+  },
   parameterizedTypeFormats: {
     decimal: 'decimal({args})',
     dec: 'decimal({args})',
@@ -386,6 +398,15 @@ export const dialectConfig = {
   dynamicTableFunctions: {
     generateSeriesColumn: 'value',
     rangeColumn: '$alias',
+    enabledHandlers: [
+      'oracleDbmsXplan',
+      'oracleCollection',
+      'sqliteFts5Vocab',
+      'sqlitePragma',
+      'clickhouseRemote',
+      'externalConnection',
+      'embeddedSql',
+    ],
   },
   serializedSelect: {},
   outputTypeOverrides: {
@@ -474,6 +495,55 @@ export const dialectConfig = {
       { name: 'comment', type: 'text' },
     ],
     snowflakeDescribeObjectColumns: {},
+    showTableListingColumns: [
+      { name: 'created_on', type: 'timestamp' },
+      { name: 'name', type: 'text' },
+      { name: 'database_name', type: 'text' },
+      { name: 'schema_name', type: 'text' },
+      { name: 'kind', type: 'text' },
+      { name: 'comment', type: 'text' },
+      { name: 'cluster_by', type: 'text' },
+      { name: 'rows', type: 'integer' },
+      { name: 'bytes', type: 'integer' },
+      { name: 'owner', type: 'text' },
+      { name: 'retention_time', type: 'integer' },
+      { name: 'automatic_clustering', type: 'text' },
+      { name: 'change_tracking', type: 'boolean' },
+      { name: 'search_optimization', type: 'boolean' },
+    ],
+    commandResultColumns: [
+      {
+        pattern: '/^(?:list|ls)\\s+@/',
+        columns: [
+          { name: 'name', type: 'text' },
+          { name: 'size', type: 'integer' },
+          { name: 'md5', type: 'text' },
+          { name: 'last_modified', type: 'timestamp' },
+        ],
+      },
+      {
+        pattern: '/^get\\s+@/',
+        columns: [
+          { name: 'file', type: 'text' },
+          { name: 'size', type: 'integer' },
+          { name: 'status', type: 'text' },
+          { name: 'message', type: 'text' },
+        ],
+      },
+      {
+        pattern: '/^(?:remove|rm)\\s+@/',
+        columns: [
+          { name: 'name', type: 'text' },
+          { name: 'result', type: 'text' },
+        ],
+      },
+      {
+        pattern: '/^list\\s+(?:file|jar|archive)\\b/',
+        columns: [
+          { name: 'resource', type: 'text' },
+        ],
+      },
+    ],
   },
   diagnosticRules: {
     knownTableFunctionArgumentNames: [
