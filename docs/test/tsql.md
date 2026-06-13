@@ -5522,6 +5522,74 @@ verify: true
 - `Error`: `Parse error`
 
 ---
+# Docker 実測メタデータ
+
+`mcr.microsoft.com/mssql/server:2022-latest` の `sys.all_columns` から取得した metadata schema を検証する。
+
+---
+
+## sys.tables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT name, create_date FROM sys.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | nvarchar(max) | sys.tables.name |
+| create_date | datetime2(7) | sys.tables.create_date |
+
+---
+
+## INFORMATION_SCHEMA.TABLES
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| TABLE_NAME | nvarchar(max) | INFORMATION_SCHEMA.TABLES.table_name |
+
+---
 # 既知の限界
 
 | カテゴリ | 例 | 期待される挙動 |

@@ -40,6 +40,7 @@ export interface DialectMetadataConfig {
 export interface DialectDiagnosticRulesConfig {
   readonly suppressSqliteRowid?: boolean;
   readonly suppressOracleCurrentUser?: boolean;
+  readonly suppressDiagnosticPatterns?: readonly string[];
   readonly knownTableFunctionArgumentNames: readonly string[];
   readonly virtualTableArgumentNames: readonly string[];
 }

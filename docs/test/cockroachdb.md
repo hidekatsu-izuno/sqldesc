@@ -220,3 +220,39 @@ verify: true
 | Index_comment | text | cast |
 
 ---
+# Docker 実測メタデータ
+
+`cockroachdb/cockroach:latest` の `information_schema.columns` から取得した metadata schema を検証する。
+
+---
+
+## information_schema.tables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: cockroachdb
+```
+
+```sql
+SELECT table_name FROM information_schema.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| table_name | text | information_schema.tables.table_name |
+
+---

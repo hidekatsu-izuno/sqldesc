@@ -9315,6 +9315,36 @@ verify: true
 
 ---
 
+## sqlite_schema metadata
+
+Docker image `nouchka/sqlite3:latest` で確認できる SQLite catalog schema を検証する。
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```sql
+SELECT type, name FROM sqlite_schema
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| type | text | sqlite_schema.type |
+| name | text | sqlite_schema.name |
+
+---
+
 ## 複数再帰 CTE
 
 ### Given

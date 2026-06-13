@@ -261,77 +261,31 @@ export const dialectConfig = {
     year: 'integer',
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions: {
-    "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
-    "current_setting": [{ name: "$alias", type: "text" }],
-    "duckdb_columns": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "table_name", type: "text" }, { name: "column_name", type: "text" }, { name: "column_index", type: "integer" }, { name: "data_type", type: "text" }, { name: "is_nullable", type: "boolean" }],
-    "duckdb_constraints": [{ name: "database_name", type: "text" }, { name: "database_oid", type: "integer" }, { name: "schema_name", type: "text" }, { name: "schema_oid", type: "integer" }, { name: "table_name", type: "text" }, { name: "table_oid", type: "integer" }, { name: "constraint_index", type: "integer" }, { name: "constraint_type", type: "text" }, { name: "constraint_text", type: "text" }, { name: "expression", type: "text" }, { name: "constraint_column_indexes", type: "array<integer>" }, { name: "constraint_column_names", type: "array<text>" }],
-    "duckdb_databases": [{ name: "database_name", type: "text" }, { name: "database_oid", type: "integer" }, { name: "path", type: "text" }, { name: "internal", type: "boolean" }],
-    "duckdb_extensions": [{ name: "extension_name", type: "text" }, { name: "loaded", type: "boolean" }, { name: "installed", type: "boolean" }, { name: "install_path", type: "text" }, { name: "description", type: "text" }, { name: "aliases", type: "array<text>" }],
-    "duckdb_functions": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "function_name", type: "text" }, { name: "function_type", type: "text" }, { name: "return_type", type: "text" }],
-    "duckdb_indexes": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "index_name", type: "text" }, { name: "table_name", type: "text" }, { name: "is_unique", type: "boolean" }, { name: "sql", type: "text" }],
-    "duckdb_keywords": [{ name: "keyword_name", type: "text" }, { name: "keyword_category", type: "text" }],
-    "duckdb_memory": [{ name: "tag", type: "text" }, { name: "memory_usage_bytes", type: "integer" }, { name: "temporary_storage_bytes", type: "integer" }],
-    "duckdb_schemas": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "internal", type: "boolean" }],
-    "duckdb_sequences": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "sequence_name", type: "text" }, { name: "start_value", type: "integer" }, { name: "min_value", type: "integer" }, { name: "max_value", type: "integer" }, { name: "increment_by", type: "integer" }, { name: "cycle", type: "boolean" }],
-    "duckdb_settings": [{ name: "name", type: "text" }, { name: "value", type: "text" }, { name: "description", type: "text" }, { name: "input_type", type: "text" }, { name: "scope", type: "text" }, { name: "aliases", type: "array<text>" }],
-    "duckdb_tables": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "table_name", type: "text" }, { name: "table_type", type: "text" }, { name: "temporary", type: "boolean" }],
-    "duckdb_types": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "type_name", type: "text" }, { name: "type_size", type: "integer" }, { name: "logical_type", type: "text" }, { name: "labels", type: "array<text>" }],
-    "duckdb_views": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "view_name", type: "text" }, { name: "temporary", type: "boolean" }, { name: "sql", type: "text" }],
-    "flatten": [{ name: "seq", type: "integer" }, { name: "key", type: "text" }, { name: "path", type: "text" }, { name: "index", type: "integer" }, { name: "value", type: "variant" }, { name: "this", type: "variant" }],
-    "generator": [],
-    "generate_date_array": [{ name: "$alias", type: "date" }],
-    "generate_subscripts": [{ name: "$alias", type: "integer" }],
-    "generate_timestamp_array": [{ name: "$alias", type: "timestamp" }],
-    "glob": [{ name: "file", type: "text" }],
-    "infer_schema": [{ name: "expression", type: "text" }, { name: "column_name", type: "text" }, { name: "type", type: "text" }, { name: "nullable", type: "boolean" }, { name: "filenames", type: "array<text>" }, { name: "order_id", type: "integer" }],
-    "json_array_elements": [{ name: "$alias", type: "json" }],
-    "json_array_elements_text": [{ name: "$alias", type: "text" }],
-    "json_each": [{ name: "key", type: "text" }, { name: "value", type: "json" }, { name: "type", type: "text" }, { name: "atom", type: "json" }, { name: "id", type: "integer" }, { name: "parent", type: "integer" }, { name: "fullkey", type: "text" }, { name: "path", type: "text" }],
-    "json_each_text": [{ name: "key", type: "text" }, { name: "value", type: "text" }],
-    "json_object_keys": [{ name: "$alias", type: "text" }],
-    "json_tree": [{ name: "key", type: "text" }, { name: "value", type: "json" }, { name: "type", type: "text" }, { name: "atom", type: "json" }, { name: "id", type: "integer" }, { name: "parent", type: "integer" }, { name: "fullkey", type: "text" }, { name: "path", type: "text" }],
-    "jsonb_array_elements": [{ name: "$alias", type: "json" }],
-    "jsonb_array_elements_text": [{ name: "$alias", type: "text" }],
-    "jsonb_each": [{ name: "key", type: "text" }, { name: "value", type: "json" }],
-    "jsonb_each_text": [{ name: "key", type: "text" }, { name: "value", type: "text" }],
-    "jsonb_object_keys": [{ name: "$alias", type: "text" }],
-    "opendatasource": [{ name: "$alias", type: "unknown" }],
-    "openquery": [{ name: "$alias", type: "unknown" }],
-    "openrowset": [{ name: "$alias", type: "unknown" }],
-    "parquet_file_metadata": [{ name: "file_name", type: "text" }, { name: "created_by", type: "text" }, { name: "num_rows", type: "integer" }, { name: "num_row_groups", type: "integer" }, { name: "format_version", type: "text" }, { name: "encryption_algorithm", type: "text" }, { name: "footer_signing_key_metadata", type: "text" }],
-    "parquet_kv_metadata": [{ name: "file_name", type: "text" }, { name: "key", type: "text" }, { name: "value", type: "bytes" }],
-    "parquet_metadata": [{ name: "file_name", type: "text" }, { name: "row_group_id", type: "integer" }, { name: "row_group_num_rows", type: "integer" }, { name: "row_group_num_columns", type: "integer" }, { name: "row_group_bytes", type: "integer" }, { name: "column_id", type: "integer" }, { name: "file_offset", type: "integer" }, { name: "num_values", type: "integer" }, { name: "path_in_schema", type: "text" }, { name: "type", type: "text" }, { name: "stats_min", type: "text" }, { name: "stats_max", type: "text" }, { name: "stats_null_count", type: "integer" }, { name: "total_compressed_size", type: "integer" }, { name: "total_uncompressed_size", type: "integer" }],
-    "parquet_schema": [{ name: "file_name", type: "text" }, { name: "name", type: "text" }, { name: "type", type: "text" }, { name: "type_length", type: "text" }, { name: "repetition_type", type: "text" }, { name: "num_children", type: "integer" }, { name: "converted_type", type: "text" }, { name: "scale", type: "integer" }, { name: "precision", type: "integer" }, { name: "field_id", type: "integer" }, { name: "logical_type", type: "text" }],
-    "pg_available_extension_versions": [{ name: "name", type: "text" }, { name: "version", type: "text" }, { name: "installed", type: "boolean" }, { name: "superuser", type: "boolean" }, { name: "trusted", type: "boolean" }, { name: "relocatable", type: "boolean" }, { name: "schema", type: "text" }, { name: "requires", type: "array<text>" }, { name: "comment", type: "text" }],
-    "pg_get_keywords": [{ name: "word", type: "text" }, { name: "catcode", type: "text" }, { name: "catdesc", type: "text" }, { name: "baredesc", type: "text" }],
-    "pg_get_object_address": [{ name: "classid", type: "oid" }, { name: "objid", type: "oid" }, { name: "objsubid", type: "integer" }],
-    "pg_logical_slot_get_changes": [{ name: "lsn", type: "pg_lsn" }, { name: "xid", type: "xid" }, { name: "data", type: "text" }],
-    "pg_logical_slot_peek_changes": [{ name: "lsn", type: "pg_lsn" }, { name: "xid", type: "xid" }, { name: "data", type: "text" }],
-    "pg_ls_archive_statusdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_dir": [{ name: "$alias", type: "text" }],
-    "pg_ls_logdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_tmpdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_waldir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_options_to_table": [{ name: "option_name", type: "text" }, { name: "option_value", type: "text" }],
-    "pg_read_binary_file": [{ name: "$alias", type: "bytes" }],
-    "pg_read_file": [{ name: "$alias", type: "text" }],
-    "pg_stat_file": [{ name: "size", type: "bigint" }, { name: "access", type: "timestamp" }, { name: "modification", type: "timestamp" }, { name: "change", type: "timestamp" }, { name: "creation", type: "timestamp" }, { name: "isdir", type: "boolean" }],
-    "pg_stat_get_activity": [{ name: "datid", type: "oid" }, { name: "pid", type: "integer" }, { name: "usesysid", type: "oid" }, { name: "application_name", type: "text" }, { name: "state", type: "text" }, { name: "query", type: "text" }, { name: "query_start", type: "timestamp" }, { name: "backend_start", type: "timestamp" }, { name: "xact_start", type: "timestamp" }, { name: "waiting", type: "boolean" }],
-    "pg_stat_get_snapshot_timestamp": [{ name: "$alias", type: "timestamp" }],
-    "pg_timezone_abbrevs": [{ name: "abbrev", type: "text" }, { name: "utc_offset", type: "interval" }, { name: "is_dst", type: "boolean" }],
-    "pg_timezone_names": [{ name: "name", type: "text" }, { name: "abbrev", type: "text" }, { name: "utc_offset", type: "interval" }, { name: "is_dst", type: "boolean" }],
-    "pragma_table_info": [{ name: "cid", type: "integer" }, { name: "name", type: "text" }, { name: "type", type: "text" }, { name: "notnull", type: "integer" }, { name: "dflt_value", type: "text" }, { name: "pk", type: "integer" }],
-    "read_blob": [{ name: "filename", type: "text" }, { name: "content", type: "blob" }],
-    "read_json_objects": [{ name: "json", type: "json" }],
-    "read_ndjson_objects": [{ name: "json", type: "json" }],
-    "read_text": [{ name: "filename", type: "text" }, { name: "content", type: "text" }],
-    "regexp_matches": [{ name: "$alias", type: "array<text>" }],
-    "regexp_split_to_array": [{ name: "$alias", type: "array<text>" }],
-    "regexp_split_to_table": [{ name: "$alias", type: "text" }],
-    "split_to_table": [{ name: "seq", type: "integer" }, { name: "index", type: "integer" }, { name: "value", type: "text" }],
-    "string_split": [{ name: "value", type: "text" }],
-    "ts_debug": [{ name: "alias", type: "text" }, { name: "description", type: "text" }, { name: "token", type: "text" }, { name: "dictionaries", type: "text[]" }, { name: "dictionary", type: "text" }, { name: "lexemes", type: "text[]" }],
+  tableFunctions:   {
+    opendatasource: [
+      {
+        name: "$alias",
+        type: "unknown"
+      }
+    ],
+    openquery: [
+      {
+        name: "$alias",
+        type: "unknown"
+      }
+    ],
+    openrowset: [
+      {
+        name: "$alias",
+        type: "unknown"
+      }
+    ],
+    string_split: [
+      {
+        name: "value",
+        type: "text"
+      }
+    ]
   },
   aggregate: {
     "countType": "integer",
@@ -416,12 +370,6 @@ export const dialectConfig = {
     generateSeriesColumn: '$alias',
     rangeColumn: '$alias',
     enabledHandlers: [
-      'oracleDbmsXplan',
-      'oracleCollection',
-      'sqliteFts5Vocab',
-      'sqlitePragma',
-      'clickhouseRemote',
-      'externalConnection',
       'embeddedSql',
     ],
   },
@@ -535,5583 +483,13031 @@ export const dialectConfig = {
   },
   metadata: {
     builtinSchemaTables: [
-        {
-            "schema": "information_schema",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "self_referencing_column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "reference_generation",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_insertable_into",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_typed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "commit_action",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "retention_time",
-                    "type": "text"
-                },
-                {
-                    "name": "is_transient",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_temporary",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "character_maximum_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "character_octet_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision_radix",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "datetime_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "interval_type",
-                    "type": "text"
-                },
-                {
-                    "name": "interval_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_name",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_name",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_name",
-                    "type": "text"
-                },
-                {
-                    "name": "maximum_cardinality",
-                    "type": "integer"
-                },
-                {
-                    "name": "dtd_identifier",
-                    "type": "text"
-                },
-                {
-                    "name": "is_self_referencing",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_identity",
-                    "type": "boolean"
-                },
-                {
-                    "name": "identity_generation",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_start",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_increment",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_maximum",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_minimum",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_cycle",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_generated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generation_expression",
-                    "type": "text"
-                },
-                {
-                    "name": "is_updatable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "schemata",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "sql_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.schemata",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "sql_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "ddl",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.routines",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.datasets",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "location",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "views",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "view_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "check_option",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_updatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_insertable_into",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_updatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_deletable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_insertable_into",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "routines",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "external_name",
-                    "type": "text"
-                },
-                {
-                    "name": "external_language",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "functions",
-            "columns": [
-                {
-                    "name": "function_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "function_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "function_name",
-                    "type": "text"
-                },
-                {
-                    "name": "function_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "argument_signature",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "function_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "table_constraints",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "initially_deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "enforced",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "key_column_usage",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "position_in_unique_constraint",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "referential_constraints",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "match_option",
-                    "type": "text"
-                },
-                {
-                    "name": "update_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "triggers",
-            "columns": [
-                {
-                    "name": "trigger_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "trigger_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "trigger_name",
-                    "type": "text"
-                },
-                {
-                    "name": "event_manipulation",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_table",
-                    "type": "text"
-                },
-                {
-                    "name": "action_order",
-                    "type": "integer"
-                },
-                {
-                    "name": "action_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "action_statement",
-                    "type": "text"
-                },
-                {
-                    "name": "action_orientation",
-                    "type": "text"
-                },
-                {
-                    "name": "action_timing",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "parameters",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "parameter_mode",
-                    "type": "text"
-                },
-                {
-                    "name": "is_result",
-                    "type": "text"
-                },
-                {
-                    "name": "as_locator",
-                    "type": "text"
-                },
-                {
-                    "name": "parameter_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "character_maximum_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "statistics",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "non_unique",
-                    "type": "boolean"
-                },
-                {
-                    "name": "index_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "seq_in_index",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "collation",
-                    "type": "text"
-                },
-                {
-                    "name": "cardinality",
-                    "type": "integer"
-                },
-                {
-                    "name": "sub_part",
-                    "type": "integer"
-                },
-                {
-                    "name": "packed",
-                    "type": "text"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                },
-                {
-                    "name": "index_type",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                },
-                {
-                    "name": "index_comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "table_privileges",
-            "columns": [
-                {
-                    "name": "grantor",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "privilege_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_grantable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "with_hierarchy",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "column_privileges",
-            "columns": [
-                {
-                    "name": "grantor",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "privilege_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_grantable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "query_history",
-            "columns": [
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "query_text",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "query_type",
-                    "type": "text"
-                },
-                {
-                    "name": "session_id",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "role_name",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_name",
-                    "type": "text"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_produced",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_scanned",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_written",
-                    "type": "integer"
-                },
-                {
-                    "name": "execution_status",
-                    "type": "text"
-                },
-                {
-                    "name": "error_code",
-                    "type": "text"
-                },
-                {
-                    "name": "error_message",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "warehouses",
-            "columns": [
-                {
-                    "name": "warehouse_name",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_type",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_size",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "min_cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "auto_suspend",
-                    "type": "integer"
-                },
-                {
-                    "name": "auto_resume",
-                    "type": "boolean"
-                },
-                {
-                    "name": "resource_monitor",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_master",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_schema",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_temp_master",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_temp_schema",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.views",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "view_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "check_option",
-                    "type": "boolean"
-                },
-                {
-                    "name": "use_standard_sql",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.jobs",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "user_email",
-                    "type": "text"
-                },
-                {
-                    "name": "job_id",
-                    "type": "text"
-                },
-                {
-                    "name": "job_type",
-                    "type": "text"
-                },
-                {
-                    "name": "statement_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "total_bytes_processed",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_slot_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "error_result",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.jobs_by_user",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "user_email",
-                    "type": "text"
-                },
-                {
-                    "name": "job_id",
-                    "type": "text"
-                },
-                {
-                    "name": "job_type",
-                    "type": "text"
-                },
-                {
-                    "name": "statement_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "total_bytes_processed",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_slot_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "error_result",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.reservations",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ignore_idle_slots",
-                    "type": "text"
-                },
-                {
-                    "name": "slot_capacity",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "update_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_tables",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "tableowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "hasindexes",
-                    "type": "boolean"
-                },
-                {
-                    "name": "hasrules",
-                    "type": "boolean"
-                },
-                {
-                    "name": "hastriggers",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_roles",
-            "columns": [
-                {
-                    "name": "rolname",
-                    "type": "text"
-                },
-                {
-                    "name": "rolsuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolinherit",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreaterole",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcanlogin",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolreplication",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolconnlimit",
-                    "type": "integer"
-                },
-                {
-                    "name": "rolpassword",
-                    "type": "text"
-                },
-                {
-                    "name": "rolvaliduntil",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "rolconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "oid",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "setting",
-                    "type": "text"
-                },
-                {
-                    "name": "unit",
-                    "type": "text"
-                },
-                {
-                    "name": "category",
-                    "type": "text"
-                },
-                {
-                    "name": "short_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "extra_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "context",
-                    "type": "text"
-                },
-                {
-                    "name": "vartype",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                },
-                {
-                    "name": "min_val",
-                    "type": "text"
-                },
-                {
-                    "name": "max_val",
-                    "type": "text"
-                },
-                {
-                    "name": "enumvals",
-                    "type": "text"
-                },
-                {
-                    "name": "boot_val",
-                    "type": "text"
-                },
-                {
-                    "name": "reset_val",
-                    "type": "text"
-                },
-                {
-                    "name": "pending_restart",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_stat_database",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "numbackends",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_commit",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_rollback",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_hit",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_returned",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_fetched",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_inserted",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_updated",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_deleted",
-                    "type": "integer"
-                },
-                {
-                    "name": "stats_reset",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_user",
-            "columns": [
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usecreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usesuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "userepl",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usebypassrls",
-                    "type": "boolean"
-                },
-                {
-                    "name": "valuntil",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "useconfig",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_indexes",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "indexname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "indexdef",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_locks",
-            "columns": [
-                {
-                    "name": "locktype",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "integer"
-                },
-                {
-                    "name": "relation",
-                    "type": "integer"
-                },
-                {
-                    "name": "page",
-                    "type": "integer"
-                },
-                {
-                    "name": "tuple",
-                    "type": "integer"
-                },
-                {
-                    "name": "virtualxid",
-                    "type": "text"
-                },
-                {
-                    "name": "transactionid",
-                    "type": "text"
-                },
-                {
-                    "name": "classid",
-                    "type": "integer"
-                },
-                {
-                    "name": "objid",
-                    "type": "integer"
-                },
-                {
-                    "name": "objsubid",
-                    "type": "integer"
-                },
-                {
-                    "name": "virtualtransaction",
-                    "type": "text"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "mode",
-                    "type": "text"
-                },
-                {
-                    "name": "granted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "fastpath",
-                    "type": "boolean"
-                },
-                {
-                    "name": "waitstart",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_class",
-            "columns": [
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "relnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relkind",
-                    "type": "text"
-                },
-                {
-                    "name": "relowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "relam",
-                    "type": "integer"
-                },
-                {
-                    "name": "relfilenode",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltablespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relpages",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltuples",
-                    "type": "integer"
-                },
-                {
-                    "name": "relhasindex",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relisshared",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relpersistence",
-                    "type": "text"
-                },
-                {
-                    "name": "relrowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_class",
-            "columns": [
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "relnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relkind",
-                    "type": "text"
-                },
-                {
-                    "name": "relowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "relam",
-                    "type": "integer"
-                },
-                {
-                    "name": "relfilenode",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltablespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relpages",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltuples",
-                    "type": "integer"
-                },
-                {
-                    "name": "relhasindex",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relisshared",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relpersistence",
-                    "type": "text"
-                },
-                {
-                    "name": "relrowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_namespace",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspname",
-                    "type": "text"
-                },
-                {
-                    "name": "nspowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspacl",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_namespace",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspname",
-                    "type": "text"
-                },
-                {
-                    "name": "nspowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspacl",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_available_extensions",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "default_version",
-                    "type": "text"
-                },
-                {
-                    "name": "installed_version",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_extension",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "extname",
-                    "type": "text"
-                },
-                {
-                    "name": "extowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "extnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "extrelocatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "extversion",
-                    "type": "text"
-                },
-                {
-                    "name": "extconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "extcondition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_extension",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "extname",
-                    "type": "text"
-                },
-                {
-                    "name": "extowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "extnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "extrelocatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "extversion",
-                    "type": "text"
-                },
-                {
-                    "name": "extconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "extcondition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_type",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "typname",
-                    "type": "text"
-                },
-                {
-                    "name": "typnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "typowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "typlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "typbyval",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typtype",
-                    "type": "text"
-                },
-                {
-                    "name": "typcategory",
-                    "type": "text"
-                },
-                {
-                    "name": "typispreferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typbasetype",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_type",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "typname",
-                    "type": "text"
-                },
-                {
-                    "name": "typnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "typowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "typlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "typbyval",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typtype",
-                    "type": "text"
-                },
-                {
-                    "name": "typcategory",
-                    "type": "text"
-                },
-                {
-                    "name": "typispreferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typbasetype",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_proc",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "proname",
-                    "type": "text"
-                },
-                {
-                    "name": "pronamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "proowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "prolang",
-                    "type": "text"
-                },
-                {
-                    "name": "procost",
-                    "type": "decimal"
-                },
-                {
-                    "name": "prorows",
-                    "type": "decimal"
-                },
-                {
-                    "name": "provariadic",
-                    "type": "text"
-                },
-                {
-                    "name": "prokind",
-                    "type": "text"
-                },
-                {
-                    "name": "prosecdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proleakproof",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proisstrict",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proretset",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_proc",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "proname",
-                    "type": "text"
-                },
-                {
-                    "name": "pronamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "proowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "prolang",
-                    "type": "text"
-                },
-                {
-                    "name": "procost",
-                    "type": "decimal"
-                },
-                {
-                    "name": "prorows",
-                    "type": "decimal"
-                },
-                {
-                    "name": "provariadic",
-                    "type": "text"
-                },
-                {
-                    "name": "prokind",
-                    "type": "text"
-                },
-                {
-                    "name": "prosecdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proleakproof",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proisstrict",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proretset",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_constraint",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conname",
-                    "type": "text"
-                },
-                {
-                    "name": "connamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "contype",
-                    "type": "text"
-                },
-                {
-                    "name": "condeferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "condeferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "convalidated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "conrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "confrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conkey",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_constraint",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conname",
-                    "type": "text"
-                },
-                {
-                    "name": "connamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "contype",
-                    "type": "text"
-                },
-                {
-                    "name": "condeferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "condeferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "convalidated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "conrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "confrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conkey",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_attribute",
-            "columns": [
-                {
-                    "name": "attrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attname",
-                    "type": "text"
-                },
-                {
-                    "name": "atttypid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnum",
-                    "type": "integer"
-                },
-                {
-                    "name": "attndims",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "atthasdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attisdropped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attislocal",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_attribute",
-            "columns": [
-                {
-                    "name": "attrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attname",
-                    "type": "text"
-                },
-                {
-                    "name": "atttypid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnum",
-                    "type": "integer"
-                },
-                {
-                    "name": "attndims",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "atthasdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attisdropped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attislocal",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_stat_user_indexes",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "indexrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "indexrelname",
-                    "type": "text"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_user_indexes",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "indexrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "indexrelname",
-                    "type": "text"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "setting",
-                    "type": "text"
-                },
-                {
-                    "name": "unit",
-                    "type": "text"
-                },
-                {
-                    "name": "category",
-                    "type": "text"
-                },
-                {
-                    "name": "short_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "extra_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "context",
-                    "type": "text"
-                },
-                {
-                    "name": "vartype",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                },
-                {
-                    "name": "pending_restart",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_activity",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "leader_pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "application_name",
-                    "type": "text"
-                },
-                {
-                    "name": "client_addr",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "query_start",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_user_tables",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "seq_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "seq_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_ins",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_upd",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_del",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_database",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "numbackends",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_commit",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_rollback",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_hit",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_returned",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_fetched",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_roles",
-            "columns": [
-                {
-                    "name": "rolname",
-                    "type": "text"
-                },
-                {
-                    "name": "rolsuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolinherit",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreaterole",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcanlogin",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolconnlimit",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_user",
-            "columns": [
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usecreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usesuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "userepl",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usebypassrls",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_database",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "datdba",
-                    "type": "integer"
-                },
-                {
-                    "name": "encoding",
-                    "type": "text"
-                },
-                {
-                    "name": "datcollate",
-                    "type": "text"
-                },
-                {
-                    "name": "datctype",
-                    "type": "text"
-                },
-                {
-                    "name": "datistemplate",
-                    "type": "boolean"
-                },
-                {
-                    "name": "datallowconn",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_indexes",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "indexname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "indexdef",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_views",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_matviews",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "ispopulated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_views",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_matviews",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "ispopulated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "processlist",
-            "columns": [
-                {
-                    "name": "ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "USER",
-                    "type": "text"
-                },
-                {
-                    "name": "HOST",
-                    "type": "text"
-                },
-                {
-                    "name": "DB",
-                    "type": "text"
-                },
-                {
-                    "name": "COMMAND",
-                    "type": "text"
-                },
-                {
-                    "name": "TIME",
-                    "type": "integer"
-                },
-                {
-                    "name": "STATE",
-                    "type": "text"
-                },
-                {
-                    "name": "INFO",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "mysql",
-            "name": "user",
-            "columns": [
-                {
-                    "name": "Host",
-                    "type": "text"
-                },
-                {
-                    "name": "User",
-                    "type": "text"
-                },
-                {
-                    "name": "Select_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Insert_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Update_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Delete_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Create_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Drop_priv",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "threads",
-            "columns": [
-                {
-                    "name": "THREAD_ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "TYPE",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "PROCESSLIST_USER",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_HOST",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_DB",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_COMMAND",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "global_variables",
-            "columns": [
-                {
-                    "name": "VARIABLE_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "VARIABLE_VALUE",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "global_status",
-            "columns": [
-                {
-                    "name": "VARIABLE_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "VARIABLE_VALUE",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "events_statements_summary_by_digest",
-            "columns": [
-                {
-                    "name": "SCHEMA_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "DIGEST",
-                    "type": "text"
-                },
-                {
-                    "name": "DIGEST_TEXT",
-                    "type": "text"
-                },
-                {
-                    "name": "COUNT_STAR",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "MIN_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "AVG_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "MAX_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_AFFECTED",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_SENT",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_EXAMINED",
-                    "type": "integer"
-                },
-                {
-                    "name": "FIRST_SEEN",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "LAST_SEEN",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "events",
-            "columns": [
-                {
-                    "name": "EVENT_CATALOG",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_SCHEMA",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "DEFINER",
-                    "type": "text"
-                },
-                {
-                    "name": "TIME_ZONE",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_BODY",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_DEFINITION",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_TYPE",
-                    "type": "text"
-                },
-                {
-                    "name": "STATUS",
-                    "type": "text"
-                },
-                {
-                    "name": "CREATED",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "LAST_ALTERED",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "schema_table_statistics",
-            "columns": [
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "total_latency",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_fetched",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_inserted",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_updated",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_deleted",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "is_ms_shipped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_filetable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_memory_optimized",
-                    "type": "boolean"
-                },
-                {
-                    "name": "max_column_id_used",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "system_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_identity",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_computed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_rowguidcol",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "objects",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "parent_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "is_ms_shipped",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "schemas",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "principal_id",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "source_database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "owner_sid",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "compatibility_level",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "user_access_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "is_read_only",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_auto_close_on",
-                    "type": "boolean"
-                },
-                {
-                    "name": "state_desc",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "types",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "system_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "principal_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_user_defined",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_assembly_type",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_table_type",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_sessions",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "login_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "host_name",
-                    "type": "text"
-                },
-                {
-                    "name": "program_name",
-                    "type": "text"
-                },
-                {
-                    "name": "login_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "cpu_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "memory_usage",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_scheduled_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "logical_reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_request_start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_request_end_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_requests",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "request_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "command",
-                    "type": "text"
-                },
-                {
-                    "name": "database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocking_session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "wait_type",
-                    "type": "text"
-                },
-                {
-                    "name": "wait_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "cpu_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "logical_reads",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "indexes",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "index_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "is_unique",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_primary_key",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_unique_constraint",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_disabled",
-                    "type": "boolean"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "foreign_keys",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "parent_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "referenced_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_disabled",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_not_trusted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "delete_referential_action_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "update_referential_action_desc",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_connections",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "connect_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "net_transport",
-                    "type": "text"
-                },
-                {
-                    "name": "protocol_type",
-                    "type": "text"
-                },
-                {
-                    "name": "auth_scheme",
-                    "type": "text"
-                },
-                {
-                    "name": "num_reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "client_net_address",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "engine",
-                    "type": "text"
-                },
-                {
-                    "name": "is_temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "total_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "metadata_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "default_kind",
-                    "type": "text"
-                },
-                {
-                    "name": "default_expression",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "functions",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_aggregate",
-                    "type": "boolean"
-                },
-                {
-                    "name": "case_insensitive",
-                    "type": "text"
-                },
-                {
-                    "name": "alias_to",
-                    "type": "text"
-                },
-                {
-                    "name": "create_query",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "origin",
-                    "type": "text"
-                },
-                {
-                    "name": "description",
-                    "type": "text"
-                },
-                {
-                    "name": "syntax",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "engine",
-                    "type": "text"
-                },
-                {
-                    "name": "data_path",
-                    "type": "text"
-                },
-                {
-                    "name": "metadata_path",
-                    "type": "text"
-                },
-                {
-                    "name": "uuid",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "parts",
-            "columns": [
-                {
-                    "name": "partition",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "active",
-                    "type": "boolean"
-                },
-                {
-                    "name": "marks",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_on_disk",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "processes",
-            "columns": [
-                {
-                    "name": "is_initial_query",
-                    "type": "boolean"
-                },
-                {
-                    "name": "user",
-                    "type": "text"
-                },
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "address",
-                    "type": "text"
-                },
-                {
-                    "name": "elapsed",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "merges",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "elapsed",
-                    "type": "integer"
-                },
-                {
-                    "name": "progress",
-                    "type": "decimal"
-                },
-                {
-                    "name": "num_parts",
-                    "type": "integer"
-                },
-                {
-                    "name": "result_part_name",
-                    "type": "text"
-                },
-                {
-                    "name": "partition_id",
-                    "type": "text"
-                },
-                {
-                    "name": "is_mutation",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "mutations",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "mutation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "command",
-                    "type": "text"
-                },
-                {
-                    "name": "create_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "parts_to_do",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_done",
-                    "type": "boolean"
-                },
-                {
-                    "name": "latest_failed_part",
-                    "type": "text"
-                },
-                {
-                    "name": "latest_fail_reason",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "value",
-                    "type": "text"
-                },
-                {
-                    "name": "changed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "description",
-                    "type": "text"
-                },
-                {
-                    "name": "min",
-                    "type": "text"
-                },
-                {
-                    "name": "max",
-                    "type": "text"
-                },
-                {
-                    "name": "readonly",
-                    "type": "boolean"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "query_log",
-            "columns": [
-                {
-                    "name": "hostname",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "event_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "query_duration_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "written_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "written_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "user",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "svv",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "svv_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "svv_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "svv_columns",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "svv_redshift_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "stv_recents",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "db_name",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "stv_sessions",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "process",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "db_name",
-                    "type": "text"
-                },
-                {
-                    "name": "timeout_sec",
-                    "type": "integer"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "stl_query",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "integer"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "xid",
-                    "type": "integer"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "endtime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "aborted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "label",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "all",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_tab_columns",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_default",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "user_tables",
-            "columns": [
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "empty_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "avg_space",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "all_users",
-            "columns": [
-                {
-                    "name": "username",
-                    "type": "text"
-                },
-                {
-                    "name": "user_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "common",
-                    "type": "text"
-                },
-                {
-                    "name": "oracle_maintained",
-                    "type": "text"
-                },
-                {
-                    "name": "inherited",
-                    "type": "text"
-                },
-                {
-                    "name": "default_collation",
-                    "type": "text"
-                },
-                {
-                    "name": "implicit",
-                    "type": "text"
-                },
-                {
-                    "name": "all_shard",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "all_objects",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "object_name",
-                    "type": "text"
-                },
-                {
-                    "name": "subobject_name",
-                    "type": "text"
-                },
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "object_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_ddl_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generated",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "all_views",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "view_name",
-                    "type": "text"
-                },
-                {
-                    "name": "text",
-                    "type": "text"
-                },
-                {
-                    "name": "text_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "type_text",
-                    "type": "text"
-                },
-                {
-                    "name": "type_text_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "oid_text",
-                    "type": "text"
-                },
-                {
-                    "name": "oid_text_length",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_constraints",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "search_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "r_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "r_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "validated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "last_change",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_constraints",
-            "columns": [
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "search_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "r_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "r_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "validated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "last_change",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_objects",
-            "columns": [
-                {
-                    "name": "object_name",
-                    "type": "text"
-                },
-                {
-                    "name": "subobject_name",
-                    "type": "text"
-                },
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "object_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_ddl_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generated",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "user_tab_columns",
-            "columns": [
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "user_indexes",
-            "columns": [
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "index_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "uniqueness",
-                    "type": "text"
-                },
-                {
-                    "name": "compression",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "blevel",
-                    "type": "integer"
-                },
-                {
-                    "name": "leaf_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "distinct_keys",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_ind_columns",
-            "columns": [
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "descend",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "dba_tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "cluster_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "empty_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "dual",
-            "columns": [
-                {
-                    "name": "dummy",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "v$session",
-            "columns": [
-                {
-                    "name": "sid",
-                    "type": "integer"
-                },
-                {
-                    "name": "serial#",
-                    "type": "integer"
-                },
-                {
-                    "name": "username",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "machine",
-                    "type": "text"
-                },
-                {
-                    "name": "program",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "exa_all_tables",
-            "columns": [
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_commit",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "has_distribution_key",
-                    "type": "boolean"
-                },
-                {
-                    "name": "delete_percentage",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "exa_all_columns",
-            "columns": [
-                {
-                    "name": "column_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "column_table",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "column_is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "column_type",
-                    "type": "text"
-                },
-                {
-                    "name": "column_maxsize",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_num_prec",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_num_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "__TABLES__",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "table_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_modified_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "size_bytes",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "__TABLES_SUMMARY__",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "table_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_modified_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "size_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "query_history",
-            "columns": [
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "query_text",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "execution_status",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "users",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "login_name",
-                    "type": "text"
-                },
-                {
-                    "name": "display_name",
-                    "type": "text"
-                },
-                {
-                    "name": "email",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "roles",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "warehouses",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "size",
-                    "type": "text"
-                },
-                {
-                    "name": "auto_resume",
-                    "type": "boolean"
-                },
-                {
-                    "name": "auto_suspend",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "database_id",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "database_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "schemata",
-            "columns": [
-                {
-                    "name": "catalog_id",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "grants_to_roles",
-            "columns": [
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modified_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "privilege",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_on",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_to",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee_name",
-                    "type": "text"
-                },
-                {
-                    "name": "grant_option",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_by",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "segments",
-            "columns": [
-                {
-                    "name": "segment_id",
-                    "type": "text"
-                },
-                {
-                    "name": "datasource",
-                    "type": "text"
-                },
-                {
-                    "name": "start",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "size",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_published",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "servers",
-            "columns": [
-                {
-                    "name": "server",
-                    "type": "text"
-                },
-                {
-                    "name": "host",
-                    "type": "text"
-                },
-                {
-                    "name": "plaintext_port",
-                    "type": "integer"
-                },
-                {
-                    "name": "tls_port",
-                    "type": "integer"
-                },
-                {
-                    "name": "curr_size",
-                    "type": "text"
-                },
-                {
-                    "name": "max_size",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "tasks",
-            "columns": [
-                {
-                    "name": "task_id",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "datasource",
-                    "type": "text"
-                },
-                {
-                    "name": "created_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "location",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "supervisors",
-            "columns": [
-                {
-                    "name": "supervisor_id",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "detailed_state",
-                    "type": "text"
-                },
-                {
-                    "name": "healthy",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                }
-            ]
-        }
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "CHECK_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "check_clause", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "COLUMN_DOMAIN_USAGE",
+        columns: [
+          { name: "domain_catalog", type: "text" },
+          { name: "domain_schema", type: "text" },
+          { name: "domain_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "COLUMN_PRIVILEGES",
+        columns: [
+          { name: "grantor", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "COLUMNS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "column_default", type: "text" },
+          { name: "is_nullable", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "character_set_catalog", type: "text" },
+          { name: "character_set_schema", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "collation_catalog", type: "text" },
+          { name: "collation_schema", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "domain_catalog", type: "text" },
+          { name: "domain_schema", type: "text" },
+          { name: "domain_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "CONSTRAINT_COLUMN_USAGE",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "CONSTRAINT_TABLE_USAGE",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "DOMAIN_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "domain_catalog", type: "text" },
+          { name: "domain_schema", type: "text" },
+          { name: "domain_name", type: "text" },
+          { name: "is_deferrable", type: "text" },
+          { name: "initially_deferred", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "DOMAINS",
+        columns: [
+          { name: "domain_catalog", type: "text" },
+          { name: "domain_schema", type: "text" },
+          { name: "domain_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "collation_catalog", type: "text" },
+          { name: "collation_schema", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "character_set_catalog", type: "text" },
+          { name: "character_set_schema", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "domain_default", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "KEY_COLUMN_USAGE",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "PARAMETERS",
+        columns: [
+          { name: "specific_catalog", type: "text" },
+          { name: "specific_schema", type: "text" },
+          { name: "specific_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "parameter_mode", type: "text" },
+          { name: "is_result", type: "text" },
+          { name: "as_locator", type: "text" },
+          { name: "parameter_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "collation_catalog", type: "text" },
+          { name: "collation_schema", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "character_set_catalog", type: "text" },
+          { name: "character_set_schema", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "interval_type", type: "text" },
+          { name: "interval_precision", type: "integer" },
+          { name: "user_defined_type_catalog", type: "text" },
+          { name: "user_defined_type_schema", type: "text" },
+          { name: "user_defined_type_name", type: "text" },
+          { name: "scope_catalog", type: "text" },
+          { name: "scope_schema", type: "text" },
+          { name: "scope_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "REFERENTIAL_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "unique_constraint_catalog", type: "text" },
+          { name: "unique_constraint_schema", type: "text" },
+          { name: "unique_constraint_name", type: "text" },
+          { name: "match_option", type: "text" },
+          { name: "update_rule", type: "text" },
+          { name: "delete_rule", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "ROUTINE_COLUMNS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "column_default", type: "text" },
+          { name: "is_nullable", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "character_set_catalog", type: "text" },
+          { name: "character_set_schema", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "collation_catalog", type: "text" },
+          { name: "collation_schema", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "domain_catalog", type: "text" },
+          { name: "domain_schema", type: "text" },
+          { name: "domain_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "ROUTINES",
+        columns: [
+          { name: "specific_catalog", type: "text" },
+          { name: "specific_schema", type: "text" },
+          { name: "specific_name", type: "text" },
+          { name: "routine_catalog", type: "text" },
+          { name: "routine_schema", type: "text" },
+          { name: "routine_name", type: "text" },
+          { name: "routine_type", type: "text" },
+          { name: "module_catalog", type: "text" },
+          { name: "module_schema", type: "text" },
+          { name: "module_name", type: "text" },
+          { name: "udt_catalog", type: "text" },
+          { name: "udt_schema", type: "text" },
+          { name: "udt_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "collation_catalog", type: "text" },
+          { name: "collation_schema", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "character_set_catalog", type: "text" },
+          { name: "character_set_schema", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "interval_type", type: "text" },
+          { name: "interval_precision", type: "integer" },
+          { name: "type_udt_catalog", type: "text" },
+          { name: "type_udt_schema", type: "text" },
+          { name: "type_udt_name", type: "text" },
+          { name: "scope_catalog", type: "text" },
+          { name: "scope_schema", type: "text" },
+          { name: "scope_name", type: "text" },
+          { name: "maximum_cardinality", type: "integer" },
+          { name: "dtd_identifier", type: "text" },
+          { name: "routine_body", type: "text" },
+          { name: "routine_definition", type: "text" },
+          { name: "external_name", type: "text" },
+          { name: "external_language", type: "text" },
+          { name: "parameter_style", type: "text" },
+          { name: "is_deterministic", type: "text" },
+          { name: "sql_data_access", type: "text" },
+          { name: "is_null_call", type: "text" },
+          { name: "sql_path", type: "text" },
+          { name: "schema_level_routine", type: "text" },
+          { name: "max_dynamic_result_sets", type: "integer" },
+          { name: "is_user_defined_cast", type: "text" },
+          { name: "is_implicitly_invocable", type: "text" },
+          { name: "created", type: "timestamp" },
+          { name: "last_altered", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "SCHEMATA",
+        columns: [
+          { name: "catalog_name", type: "text" },
+          { name: "schema_name", type: "text" },
+          { name: "schema_owner", type: "text" },
+          { name: "default_character_set_catalog", type: "text" },
+          { name: "default_character_set_schema", type: "text" },
+          { name: "default_character_set_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "SEQUENCES",
+        columns: [
+          { name: "sequence_catalog", type: "text" },
+          { name: "sequence_schema", type: "text" },
+          { name: "sequence_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_precision_radix", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "start_value", type: "variant" },
+          { name: "minimum_value", type: "variant" },
+          { name: "maximum_value", type: "variant" },
+          { name: "increment", type: "variant" },
+          { name: "cycle_option", type: "boolean" },
+          { name: "declared_data_type", type: "text" },
+          { name: "declared_numeric_precision", type: "integer" },
+          { name: "declared_numeric_scale", type: "integer" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "TABLE_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "constraint_type", type: "text" },
+          { name: "is_deferrable", type: "text" },
+          { name: "initially_deferred", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "TABLE_PRIVILEGES",
+        columns: [
+          { name: "grantor", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "TABLES",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "table_type", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "VIEW_COLUMN_USAGE",
+        columns: [
+          { name: "view_catalog", type: "text" },
+          { name: "view_schema", type: "text" },
+          { name: "view_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "VIEW_TABLE_USAGE",
+        columns: [
+          { name: "view_catalog", type: "text" },
+          { name: "view_schema", type: "text" },
+          { name: "view_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" }
+        ]
+      },
+      {
+        schema: "INFORMATION_SCHEMA",
+        name: "VIEWS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "view_definition", type: "text" },
+          { name: "check_option", type: "text" },
+          { name: "is_updatable", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "all_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "all_objects",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "all_parameters",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "parameter_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "is_output", type: "boolean" },
+          { name: "is_cursor_ref", type: "boolean" },
+          { name: "has_default_value", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "default_value", type: "variant" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "is_readonly", type: "boolean" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "all_sql_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "uses_quoted_identifier", type: "boolean" },
+          { name: "is_schema_bound", type: "boolean" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_recompiled", type: "boolean" },
+          { name: "null_on_null_input", type: "boolean" },
+          { name: "execute_as_principal_id", type: "integer" },
+          { name: "uses_native_compilation", type: "boolean" },
+          { name: "inline_type", type: "boolean" },
+          { name: "is_inlineable", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "all_views",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "has_replication_filter", type: "boolean" },
+          { name: "has_opaque_metadata", type: "boolean" },
+          { name: "has_unchecked_assembly_data", type: "boolean" },
+          { name: "with_check_option", type: "boolean" },
+          { name: "is_date_correlation_view", type: "boolean" },
+          { name: "is_tracked_by_cdc", type: "boolean" },
+          { name: "has_snapshot", type: "boolean" },
+          { name: "ledger_view_type", type: "integer" },
+          { name: "ledger_view_type_desc", type: "text" },
+          { name: "is_dropped_ledger_view", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "allocation_units",
+        columns: [
+          { name: "allocation_unit_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "container_id", type: "integer" },
+          { name: "data_space_id", type: "integer" },
+          { name: "total_pages", type: "integer" },
+          { name: "used_pages", type: "integer" },
+          { name: "data_pages", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "assemblies",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "assembly_id", type: "integer" },
+          { name: "clr_name", type: "text" },
+          { name: "permission_set", type: "integer" },
+          { name: "permission_set_desc", type: "text" },
+          { name: "is_visible", type: "boolean" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_user_defined", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "assembly_files",
+        columns: [
+          { name: "assembly_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "file_id", type: "integer" },
+          { name: "content", type: "bytes" },
+          { name: "sha2_256", type: "bytes" },
+          { name: "sha2_512", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "assembly_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "assembly_id", type: "integer" },
+          { name: "assembly_class", type: "text" },
+          { name: "assembly_method", type: "text" },
+          { name: "null_on_null_input", type: "boolean" },
+          { name: "execute_as_principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "assembly_references",
+        columns: [
+          { name: "assembly_id", type: "integer" },
+          { name: "referenced_assembly_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "assembly_types",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_user_defined", type: "boolean" },
+          { name: "is_assembly_type", type: "boolean" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "assembly_id", type: "integer" },
+          { name: "assembly_class", type: "text" },
+          { name: "is_binary_ordered", type: "boolean" },
+          { name: "is_fixed_length", type: "boolean" },
+          { name: "prog_id", type: "text" },
+          { name: "assembly_qualified_name", type: "text" },
+          { name: "is_table_type", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "asymmetric_keys",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "asymmetric_key_id", type: "integer" },
+          { name: "pvt_key_encryption_type", type: "text" },
+          { name: "pvt_key_encryption_type_desc", type: "text" },
+          { name: "thumbprint", type: "bytes" },
+          { name: "algorithm", type: "text" },
+          { name: "algorithm_desc", type: "text" },
+          { name: "key_length", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "string_sid", type: "text" },
+          { name: "public_key", type: "bytes" },
+          { name: "attested_by", type: "text" },
+          { name: "provider_type", type: "text" },
+          { name: "cryptographic_provider_guid", type: "uuid" },
+          { name: "cryptographic_provider_algid", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_databases_cluster",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "group_database_id", type: "uuid" },
+          { name: "database_name", type: "text" },
+          { name: "truncation_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_group_listener_ip_addresses",
+        columns: [
+          { name: "listener_id", type: "text" },
+          { name: "ip_address", type: "text" },
+          { name: "ip_subnet_mask", type: "text" },
+          { name: "is_dhcp", type: "boolean" },
+          { name: "network_subnet_ip", type: "text" },
+          { name: "network_subnet_prefix_length", type: "integer" },
+          { name: "network_subnet_ipv4_mask", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_group_listeners",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "listener_id", type: "text" },
+          { name: "dns_name", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "is_conformant", type: "boolean" },
+          { name: "ip_configuration_string_from_cluster", type: "text" },
+          { name: "is_distributed_network_name", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_groups",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "name", type: "text" },
+          { name: "resource_id", type: "text" },
+          { name: "resource_group_id", type: "text" },
+          { name: "failure_condition_level", type: "integer" },
+          { name: "health_check_timeout", type: "integer" },
+          { name: "automated_backup_preference", type: "integer" },
+          { name: "automated_backup_preference_desc", type: "text" },
+          { name: "version", type: "integer" },
+          { name: "basic_features", type: "boolean" },
+          { name: "dtc_support", type: "boolean" },
+          { name: "db_failover", type: "boolean" },
+          { name: "is_distributed", type: "boolean" },
+          { name: "cluster_type", type: "integer" },
+          { name: "cluster_type_desc", type: "text" },
+          { name: "required_synchronized_secondaries_to_commit", type: "integer" },
+          { name: "sequence_number", type: "integer" },
+          { name: "is_contained", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_groups_cluster",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "name", type: "text" },
+          { name: "resource_id", type: "text" },
+          { name: "resource_group_id", type: "text" },
+          { name: "failure_condition_level", type: "integer" },
+          { name: "health_check_timeout", type: "integer" },
+          { name: "automated_backup_preference", type: "integer" },
+          { name: "automated_backup_preference_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_read_only_routing_lists",
+        columns: [
+          { name: "replica_id", type: "uuid" },
+          { name: "routing_priority", type: "integer" },
+          { name: "read_only_replica_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "availability_replicas",
+        columns: [
+          { name: "replica_id", type: "uuid" },
+          { name: "group_id", type: "uuid" },
+          { name: "replica_metadata_id", type: "integer" },
+          { name: "replica_server_name", type: "text" },
+          { name: "owner_sid", type: "bytes" },
+          { name: "endpoint_url", type: "text" },
+          { name: "availability_mode", type: "integer" },
+          { name: "availability_mode_desc", type: "text" },
+          { name: "failover_mode", type: "integer" },
+          { name: "failover_mode_desc", type: "text" },
+          { name: "session_timeout", type: "integer" },
+          { name: "primary_role_allow_connections", type: "integer" },
+          { name: "primary_role_allow_connections_desc", type: "text" },
+          { name: "secondary_role_allow_connections", type: "integer" },
+          { name: "secondary_role_allow_connections_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "backup_priority", type: "integer" },
+          { name: "read_only_routing_url", type: "text" },
+          { name: "seeding_mode", type: "integer" },
+          { name: "seeding_mode_desc", type: "text" },
+          { name: "read_write_routing_url", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "backup_devices",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "physical_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "certificates",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "certificate_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "pvt_key_encryption_type", type: "text" },
+          { name: "pvt_key_encryption_type_desc", type: "text" },
+          { name: "is_active_for_begin_dialog", type: "boolean" },
+          { name: "issuer_name", type: "text" },
+          { name: "cert_serial_number", type: "text" },
+          { name: "sid", type: "bytes" },
+          { name: "string_sid", type: "text" },
+          { name: "subject", type: "text" },
+          { name: "expiry_date", type: "timestamp" },
+          { name: "start_date", type: "timestamp" },
+          { name: "thumbprint", type: "bytes" },
+          { name: "attested_by", type: "text" },
+          { name: "pvt_key_last_backup_date", type: "timestamp" },
+          { name: "key_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "change_tracking_databases",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "is_auto_cleanup_on", type: "integer" },
+          { name: "retention_period", type: "integer" },
+          { name: "retention_period_units", type: "integer" },
+          { name: "retention_period_units_desc", type: "text" },
+          { name: "max_cleanup_version", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "change_tracking_tables",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "is_track_columns_updated_on", type: "boolean" },
+          { name: "min_valid_version", type: "integer" },
+          { name: "begin_version", type: "integer" },
+          { name: "cleanup_version", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "check_constraints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_not_for_replication", type: "boolean" },
+          { name: "is_not_trusted", type: "boolean" },
+          { name: "parent_column_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_system_named", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_encryption_key_values",
+        columns: [
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_master_key_id", type: "integer" },
+          { name: "encrypted_value", type: "bytes" },
+          { name: "encryption_algorithm_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_encryption_keys",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_master_keys",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "column_master_key_id", type: "integer" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "key_store_provider_name", type: "text" },
+          { name: "key_path", type: "text" },
+          { name: "allow_enclave_computations", type: "integer" },
+          { name: "signature", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_store_dictionaries",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "dictionary_id", type: "integer" },
+          { name: "version", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "last_id", type: "integer" },
+          { name: "entry_count", type: "integer" },
+          { name: "on_disk_size", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_store_row_groups",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "row_group_id", type: "integer" },
+          { name: "delta_store_hobt_id", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_description", type: "text" },
+          { name: "total_rows", type: "integer" },
+          { name: "deleted_rows", type: "integer" },
+          { name: "size_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_store_segments",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "segment_id", type: "integer" },
+          { name: "version", type: "integer" },
+          { name: "encoding_type", type: "integer" },
+          { name: "row_count", type: "integer" },
+          { name: "has_nulls", type: "integer" },
+          { name: "base_id", type: "integer" },
+          { name: "magnitude", type: "decimal" },
+          { name: "primary_dictionary_id", type: "integer" },
+          { name: "secondary_dictionary_id", type: "integer" },
+          { name: "min_data_id", type: "integer" },
+          { name: "max_data_id", type: "integer" },
+          { name: "null_value", type: "integer" },
+          { name: "on_disk_size", type: "integer" },
+          { name: "collation_id", type: "integer" },
+          { name: "min_deep_data", type: "bytes" },
+          { name: "max_deep_data", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_type_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "user_type_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "column_xml_schema_collection_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "computed_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_persisted", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "configurations",
+        columns: [
+          { name: "configuration_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" },
+          { name: "minimum", type: "variant" },
+          { name: "maximum", type: "variant" },
+          { name: "value_in_use", type: "variant" },
+          { name: "description", type: "text" },
+          { name: "is_dynamic", type: "boolean" },
+          { name: "is_advanced", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "conversation_endpoints",
+        columns: [
+          { name: "conversation_handle", type: "uuid" },
+          { name: "conversation_id", type: "uuid" },
+          { name: "is_initiator", type: "boolean" },
+          { name: "service_contract_id", type: "integer" },
+          { name: "conversation_group_id", type: "uuid" },
+          { name: "service_id", type: "integer" },
+          { name: "lifetime", type: "timestamp" },
+          { name: "state", type: "text" },
+          { name: "state_desc", type: "text" },
+          { name: "far_service", type: "text" },
+          { name: "far_broker_instance", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "far_principal_id", type: "integer" },
+          { name: "outbound_session_key_identifier", type: "uuid" },
+          { name: "inbound_session_key_identifier", type: "uuid" },
+          { name: "security_timestamp", type: "timestamp" },
+          { name: "dialog_timer", type: "timestamp" },
+          { name: "send_sequence", type: "integer" },
+          { name: "last_send_tran_id", type: "bytes" },
+          { name: "end_dialog_sequence", type: "integer" },
+          { name: "receive_sequence", type: "integer" },
+          { name: "receive_sequence_frag", type: "integer" },
+          { name: "system_sequence", type: "integer" },
+          { name: "first_out_of_order_sequence", type: "integer" },
+          { name: "last_out_of_order_sequence", type: "integer" },
+          { name: "last_out_of_order_frag", type: "integer" },
+          { name: "is_system", type: "boolean" },
+          { name: "priority", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "conversation_groups",
+        columns: [
+          { name: "conversation_group_id", type: "uuid" },
+          { name: "service_id", type: "integer" },
+          { name: "is_system", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "conversation_priorities",
+        columns: [
+          { name: "priority_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "service_contract_id", type: "integer" },
+          { name: "local_service_id", type: "integer" },
+          { name: "remote_service_name", type: "text" },
+          { name: "priority", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "credentials",
+        columns: [
+          { name: "credential_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "credential_identity", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "target_type", type: "text" },
+          { name: "target_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "crypt_properties",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "thumbprint", type: "bytes" },
+          { name: "crypt_type", type: "text" },
+          { name: "crypt_type_desc", type: "text" },
+          { name: "crypt_property", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "cryptographic_providers",
+        columns: [
+          { name: "provider_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "guid", type: "uuid" },
+          { name: "version", type: "text" },
+          { name: "dll_path", type: "text" },
+          { name: "is_enabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "data_spaces",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "data_space_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "is_default", type: "boolean" },
+          { name: "is_system", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_audit_specification_details",
+        columns: [
+          { name: "database_specification_id", type: "integer" },
+          { name: "audit_action_id", type: "text" },
+          { name: "audit_action_name", type: "text" },
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "audited_principal_id", type: "integer" },
+          { name: "audited_result", type: "text" },
+          { name: "is_group", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_audit_specifications",
+        columns: [
+          { name: "database_specification_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "audit_guid", type: "uuid" },
+          { name: "is_state_enabled", type: "boolean" },
+          { name: "is_session_context_enabled", type: "boolean" },
+          { name: "session_context_keys", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_automatic_tuning_configurations",
+        columns: [
+          { name: "option", type: "text" },
+          { name: "option_value", type: "text" },
+          { name: "type", type: "text" },
+          { name: "type_value", type: "variant" },
+          { name: "details", type: "text" },
+          { name: "state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_automatic_tuning_mode",
+        columns: [
+          { name: "desired_state", type: "integer" },
+          { name: "desired_state_desc", type: "text" },
+          { name: "actual_state", type: "integer" },
+          { name: "actual_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_automatic_tuning_options",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "desired_state", type: "integer" },
+          { name: "desired_state_desc", type: "text" },
+          { name: "actual_state", type: "integer" },
+          { name: "actual_state_desc", type: "text" },
+          { name: "reason", type: "integer" },
+          { name: "reason_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_credentials",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "credential_id", type: "integer" },
+          { name: "credential_identity", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "target_type", type: "text" },
+          { name: "target_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_files",
+        columns: [
+          { name: "file_id", type: "integer" },
+          { name: "file_guid", type: "uuid" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "data_space_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "physical_name", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "max_size", type: "integer" },
+          { name: "growth", type: "integer" },
+          { name: "is_media_read_only", type: "boolean" },
+          { name: "is_read_only", type: "boolean" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_percent_growth", type: "boolean" },
+          { name: "is_name_reserved", type: "boolean" },
+          { name: "is_persistent_log_buffer", type: "boolean" },
+          { name: "create_lsn", type: "decimal" },
+          { name: "drop_lsn", type: "decimal" },
+          { name: "read_only_lsn", type: "decimal" },
+          { name: "read_write_lsn", type: "decimal" },
+          { name: "differential_base_lsn", type: "decimal" },
+          { name: "differential_base_guid", type: "uuid" },
+          { name: "differential_base_time", type: "timestamp" },
+          { name: "redo_start_lsn", type: "decimal" },
+          { name: "redo_start_fork_guid", type: "uuid" },
+          { name: "redo_target_lsn", type: "decimal" },
+          { name: "redo_target_fork_guid", type: "uuid" },
+          { name: "backup_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_filestream_options",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "non_transacted_access", type: "integer" },
+          { name: "non_transacted_access_desc", type: "text" },
+          { name: "directory_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_ledger_blocks",
+        columns: [
+          { name: "block_id", type: "integer" },
+          { name: "transactions_root_hash", type: "bytes" },
+          { name: "block_size", type: "integer" },
+          { name: "previous_block_hash", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_ledger_digest_locations",
+        columns: [
+          { name: "path", type: "text" },
+          { name: "last_digest_block_id", type: "integer" },
+          { name: "is_current", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_ledger_transactions",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "block_id", type: "integer" },
+          { name: "transaction_ordinal", type: "integer" },
+          { name: "commit_time", type: "timestamp" },
+          { name: "principal_name", type: "text" },
+          { name: "table_hashes", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_mirroring",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "mirroring_guid", type: "uuid" },
+          { name: "mirroring_state", type: "integer" },
+          { name: "mirroring_state_desc", type: "text" },
+          { name: "mirroring_role", type: "integer" },
+          { name: "mirroring_role_desc", type: "text" },
+          { name: "mirroring_role_sequence", type: "integer" },
+          { name: "mirroring_safety_level", type: "integer" },
+          { name: "mirroring_safety_level_desc", type: "text" },
+          { name: "mirroring_safety_sequence", type: "integer" },
+          { name: "mirroring_partner_name", type: "text" },
+          { name: "mirroring_partner_instance", type: "text" },
+          { name: "mirroring_witness_name", type: "text" },
+          { name: "mirroring_witness_state", type: "integer" },
+          { name: "mirroring_witness_state_desc", type: "text" },
+          { name: "mirroring_failover_lsn", type: "decimal" },
+          { name: "mirroring_connection_timeout", type: "integer" },
+          { name: "mirroring_redo_queue", type: "integer" },
+          { name: "mirroring_redo_queue_type", type: "text" },
+          { name: "mirroring_end_of_log_lsn", type: "decimal" },
+          { name: "mirroring_replication_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_mirroring_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "role", type: "integer" },
+          { name: "role_desc", type: "text" },
+          { name: "is_encryption_enabled", type: "boolean" },
+          { name: "connection_auth", type: "integer" },
+          { name: "connection_auth_desc", type: "text" },
+          { name: "certificate_id", type: "integer" },
+          { name: "encryption_algorithm", type: "integer" },
+          { name: "encryption_algorithm_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_mirroring_witnesses",
+        columns: [
+          { name: "database_name", type: "text" },
+          { name: "principal_server_name", type: "text" },
+          { name: "mirror_server_name", type: "text" },
+          { name: "safety_level", type: "integer" },
+          { name: "safety_level_desc", type: "text" },
+          { name: "safety_sequence_number", type: "integer" },
+          { name: "role_sequence_number", type: "integer" },
+          { name: "mirroring_guid", type: "uuid" },
+          { name: "family_guid", type: "uuid" },
+          { name: "is_suspended", type: "boolean" },
+          { name: "is_suspended_sequence_number", type: "integer" },
+          { name: "partner_sync_state", type: "integer" },
+          { name: "partner_sync_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_permissions",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "grantee_principal_id", type: "integer" },
+          { name: "grantor_principal_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "permission_name", type: "text" },
+          { name: "state", type: "text" },
+          { name: "state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_principals",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "default_schema_name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "owning_principal_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "is_fixed_role", type: "boolean" },
+          { name: "authentication_type", type: "integer" },
+          { name: "authentication_type_desc", type: "text" },
+          { name: "default_language_name", type: "text" },
+          { name: "default_language_lcid", type: "integer" },
+          { name: "allow_encrypted_value_modifications", type: "boolean" },
+          { name: "tenant_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_query_store_internal_state",
+        columns: [
+          { name: "pending_message_count", type: "integer" },
+          { name: "messaging_memory_used_mb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_query_store_options",
+        columns: [
+          { name: "desired_state", type: "integer" },
+          { name: "desired_state_desc", type: "text" },
+          { name: "actual_state", type: "integer" },
+          { name: "actual_state_desc", type: "text" },
+          { name: "readonly_reason", type: "integer" },
+          { name: "current_storage_size_mb", type: "integer" },
+          { name: "flush_interval_seconds", type: "integer" },
+          { name: "interval_length_minutes", type: "integer" },
+          { name: "max_storage_size_mb", type: "integer" },
+          { name: "stale_query_threshold_days", type: "integer" },
+          { name: "max_plans_per_query", type: "integer" },
+          { name: "query_capture_mode", type: "integer" },
+          { name: "query_capture_mode_desc", type: "text" },
+          { name: "capture_policy_execution_count", type: "integer" },
+          { name: "capture_policy_total_compile_cpu_time_ms", type: "integer" },
+          { name: "capture_policy_total_execution_cpu_time_ms", type: "integer" },
+          { name: "capture_policy_stale_threshold_hours", type: "integer" },
+          { name: "size_based_cleanup_mode", type: "integer" },
+          { name: "size_based_cleanup_mode_desc", type: "text" },
+          { name: "wait_stats_capture_mode", type: "integer" },
+          { name: "wait_stats_capture_mode_desc", type: "text" },
+          { name: "actual_state_additional_info", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_recovery_status",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "database_guid", type: "uuid" },
+          { name: "family_guid", type: "uuid" },
+          { name: "last_log_backup_lsn", type: "decimal" },
+          { name: "recovery_fork_guid", type: "uuid" },
+          { name: "first_recovery_fork_guid", type: "uuid" },
+          { name: "fork_point_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_role_members",
+        columns: [
+          { name: "role_principal_id", type: "integer" },
+          { name: "member_principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_scoped_configurations",
+        columns: [
+          { name: "configuration_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" },
+          { name: "value_for_secondary", type: "variant" },
+          { name: "is_value_default", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "database_scoped_credentials",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "credential_id", type: "integer" },
+          { name: "credential_identity", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "target_type", type: "text" },
+          { name: "target_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "databases",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "database_id", type: "integer" },
+          { name: "source_database_id", type: "integer" },
+          { name: "owner_sid", type: "bytes" },
+          { name: "create_date", type: "timestamp" },
+          { name: "compatibility_level", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "user_access", type: "integer" },
+          { name: "user_access_desc", type: "text" },
+          { name: "is_read_only", type: "boolean" },
+          { name: "is_auto_close_on", type: "boolean" },
+          { name: "is_auto_shrink_on", type: "boolean" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_in_standby", type: "boolean" },
+          { name: "is_cleanly_shutdown", type: "boolean" },
+          { name: "is_supplemental_logging_enabled", type: "boolean" },
+          { name: "snapshot_isolation_state", type: "integer" },
+          { name: "snapshot_isolation_state_desc", type: "text" },
+          { name: "is_read_committed_snapshot_on", type: "boolean" },
+          { name: "recovery_model", type: "integer" },
+          { name: "recovery_model_desc", type: "text" },
+          { name: "page_verify_option", type: "integer" },
+          { name: "page_verify_option_desc", type: "text" },
+          { name: "is_auto_create_stats_on", type: "boolean" },
+          { name: "is_auto_create_stats_incremental_on", type: "boolean" },
+          { name: "is_auto_update_stats_on", type: "boolean" },
+          { name: "is_auto_update_stats_async_on", type: "boolean" },
+          { name: "is_ansi_null_default_on", type: "boolean" },
+          { name: "is_ansi_nulls_on", type: "boolean" },
+          { name: "is_ansi_padding_on", type: "boolean" },
+          { name: "is_ansi_warnings_on", type: "boolean" },
+          { name: "is_arithabort_on", type: "boolean" },
+          { name: "is_concat_null_yields_null_on", type: "boolean" },
+          { name: "is_numeric_roundabort_on", type: "boolean" },
+          { name: "is_quoted_identifier_on", type: "boolean" },
+          { name: "is_recursive_triggers_on", type: "boolean" },
+          { name: "is_cursor_close_on_commit_on", type: "boolean" },
+          { name: "is_local_cursor_default", type: "boolean" },
+          { name: "is_fulltext_enabled", type: "boolean" },
+          { name: "is_trustworthy_on", type: "boolean" },
+          { name: "is_db_chaining_on", type: "boolean" },
+          { name: "is_parameterization_forced", type: "boolean" },
+          { name: "is_master_key_encrypted_by_server", type: "boolean" },
+          { name: "is_query_store_on", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_distributor", type: "boolean" },
+          { name: "is_sync_with_backup", type: "boolean" },
+          { name: "service_broker_guid", type: "uuid" },
+          { name: "is_broker_enabled", type: "boolean" },
+          { name: "log_reuse_wait", type: "integer" },
+          { name: "log_reuse_wait_desc", type: "text" },
+          { name: "is_date_correlation_on", type: "boolean" },
+          { name: "is_cdc_enabled", type: "boolean" },
+          { name: "is_encrypted", type: "boolean" },
+          { name: "is_honor_broker_priority_on", type: "boolean" },
+          { name: "replica_id", type: "uuid" },
+          { name: "group_database_id", type: "uuid" },
+          { name: "resource_pool_id", type: "integer" },
+          { name: "default_language_lcid", type: "integer" },
+          { name: "default_language_name", type: "text" },
+          { name: "default_fulltext_language_lcid", type: "integer" },
+          { name: "default_fulltext_language_name", type: "text" },
+          { name: "is_nested_triggers_on", type: "boolean" },
+          { name: "is_transform_noise_words_on", type: "boolean" },
+          { name: "two_digit_year_cutoff", type: "integer" },
+          { name: "containment", type: "integer" },
+          { name: "containment_desc", type: "text" },
+          { name: "target_recovery_time_in_seconds", type: "integer" },
+          { name: "delayed_durability", type: "integer" },
+          { name: "delayed_durability_desc", type: "text" },
+          { name: "is_memory_optimized_elevate_to_snapshot_on", type: "boolean" },
+          { name: "is_federation_member", type: "boolean" },
+          { name: "is_remote_data_archive_enabled", type: "boolean" },
+          { name: "is_mixed_page_allocation_on", type: "boolean" },
+          { name: "is_temporal_history_retention_enabled", type: "boolean" },
+          { name: "catalog_collation_type", type: "integer" },
+          { name: "catalog_collation_type_desc", type: "text" },
+          { name: "physical_database_name", type: "text" },
+          { name: "is_result_set_caching_on", type: "boolean" },
+          { name: "is_accelerated_database_recovery_on", type: "boolean" },
+          { name: "is_tempdb_spill_to_remote_store", type: "boolean" },
+          { name: "is_stale_page_detection_on", type: "boolean" },
+          { name: "is_memory_optimized_enabled", type: "boolean" },
+          { name: "is_data_retention_enabled", type: "boolean" },
+          { name: "is_ledger_on", type: "boolean" },
+          { name: "is_change_feed_enabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "default_constraints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "parent_column_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "is_system_named", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "destination_data_spaces",
+        columns: [
+          { name: "partition_scheme_id", type: "integer" },
+          { name: "destination_id", type: "integer" },
+          { name: "data_space_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_audit_actions",
+        columns: [
+          { name: "action_id", type: "text" },
+          { name: "name", type: "text" },
+          { name: "class_desc", type: "text" },
+          { name: "covering_action_name", type: "text" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "covering_parent_action_name", type: "text" },
+          { name: "configuration_level", type: "text" },
+          { name: "containing_group_name", type: "text" },
+          { name: "action_in_log", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_audit_class_type_map",
+        columns: [
+          { name: "class_type", type: "text" },
+          { name: "class_type_desc", type: "text" },
+          { name: "securable_class_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_broker_activated_tasks",
+        columns: [
+          { name: "spid", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "queue_id", type: "integer" },
+          { name: "procedure_name", type: "text" },
+          { name: "execute_as", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_broker_connections",
+        columns: [
+          { name: "connection_id", type: "uuid" },
+          { name: "transport_stream_id", type: "uuid" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "connect_time", type: "timestamp" },
+          { name: "login_time", type: "timestamp" },
+          { name: "authentication_method", type: "text" },
+          { name: "principal_name", type: "text" },
+          { name: "remote_user_name", type: "text" },
+          { name: "last_activity_time", type: "timestamp" },
+          { name: "is_accept", type: "boolean" },
+          { name: "login_state", type: "integer" },
+          { name: "login_state_desc", type: "text" },
+          { name: "peer_certificate_id", type: "integer" },
+          { name: "encryption_algorithm", type: "integer" },
+          { name: "encryption_algorithm_desc", type: "text" },
+          { name: "receives_posted", type: "integer" },
+          { name: "is_receive_flow_controlled", type: "boolean" },
+          { name: "sends_posted", type: "integer" },
+          { name: "is_send_flow_controlled", type: "boolean" },
+          { name: "total_bytes_sent", type: "integer" },
+          { name: "total_bytes_received", type: "integer" },
+          { name: "total_fragments_sent", type: "integer" },
+          { name: "total_fragments_received", type: "integer" },
+          { name: "total_sends", type: "integer" },
+          { name: "total_receives", type: "integer" },
+          { name: "peer_arbitration_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_broker_forwarded_messages",
+        columns: [
+          { name: "conversation_id", type: "uuid" },
+          { name: "is_initiator", type: "boolean" },
+          { name: "to_service_name", type: "text" },
+          { name: "to_broker_instance", type: "text" },
+          { name: "from_service_name", type: "text" },
+          { name: "from_broker_instance", type: "text" },
+          { name: "adjacent_broker_address", type: "text" },
+          { name: "message_sequence_number", type: "integer" },
+          { name: "message_fragment_number", type: "integer" },
+          { name: "hops_remaining", type: "integer" },
+          { name: "time_to_live", type: "integer" },
+          { name: "time_consumed", type: "integer" },
+          { name: "message_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_broker_queue_monitors",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "queue_id", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "last_empty_rowset_time", type: "timestamp" },
+          { name: "last_activated_time", type: "timestamp" },
+          { name: "tasks_waiting", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cache_hit_stats",
+        columns: [
+          { name: "distribution_id", type: "integer" },
+          { name: "cache_hit", type: "integer" },
+          { name: "remote_hit", type: "integer" },
+          { name: "collection_start_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cache_size",
+        columns: [
+          { name: "distribution_id", type: "integer" },
+          { name: "cache_used", type: "integer" },
+          { name: "cache_available", type: "integer" },
+          { name: "cache_capacity", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cache_stats",
+        columns: [
+          { name: "distribution_id", type: "integer" },
+          { name: "cache_hit", type: "integer" },
+          { name: "remote_hit", type: "integer" },
+          { name: "collection_start_time", type: "timestamp" },
+          { name: "cache_used", type: "integer" },
+          { name: "cache_available", type: "integer" },
+          { name: "cache_capacity", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cdc_errors",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "phase_number", type: "integer" },
+          { name: "entry_time", type: "timestamp" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" },
+          { name: "error_message", type: "text" },
+          { name: "start_lsn", type: "text" },
+          { name: "begin_lsn", type: "text" },
+          { name: "sequence_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cdc_log_scan_sessions",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "duration", type: "integer" },
+          { name: "scan_phase", type: "text" },
+          { name: "error_count", type: "integer" },
+          { name: "start_lsn", type: "text" },
+          { name: "current_lsn", type: "text" },
+          { name: "end_lsn", type: "text" },
+          { name: "tran_count", type: "integer" },
+          { name: "last_commit_lsn", type: "text" },
+          { name: "last_commit_time", type: "timestamp" },
+          { name: "log_record_count", type: "integer" },
+          { name: "schema_change_count", type: "integer" },
+          { name: "command_count", type: "integer" },
+          { name: "first_begin_cdc_lsn", type: "text" },
+          { name: "last_commit_cdc_lsn", type: "text" },
+          { name: "last_commit_cdc_time", type: "timestamp" },
+          { name: "latency", type: "integer" },
+          { name: "empty_scan_count", type: "integer" },
+          { name: "failed_sessions_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_change_feed_errors",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "source_task", type: "integer" },
+          { name: "table_group_id", type: "uuid" },
+          { name: "table_id", type: "integer" },
+          { name: "capture_phase_number", type: "integer" },
+          { name: "entry_time", type: "timestamp" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" },
+          { name: "error_message", type: "text" },
+          { name: "batch_start_lsn", type: "text" },
+          { name: "batch_end_lsn", type: "text" },
+          { name: "tran_begin_lsn", type: "text" },
+          { name: "tran_commit_lsn", type: "text" },
+          { name: "sequence_value", type: "text" },
+          { name: "command_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_change_feed_log_scan_sessions",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "duration", type: "integer" },
+          { name: "batch_processing_phase", type: "text" },
+          { name: "error_count", type: "integer" },
+          { name: "batch_start_lsn", type: "text" },
+          { name: "currently_processed_lsn", type: "text" },
+          { name: "batch_end_lsn", type: "text" },
+          { name: "tran_count", type: "integer" },
+          { name: "currently_processed_commit_lsn", type: "text" },
+          { name: "currently_processed_commit_time", type: "timestamp" },
+          { name: "log_record_count", type: "integer" },
+          { name: "schema_change_count", type: "integer" },
+          { name: "command_count", type: "integer" },
+          { name: "latency", type: "integer" },
+          { name: "rows_left_to_publish", type: "integer" },
+          { name: "table_groups_to_commit", type: "integer" },
+          { name: "empty_scan_count", type: "integer" },
+          { name: "failed_sessions_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_clr_appdomains",
+        columns: [
+          { name: "appdomain_address", type: "bytes" },
+          { name: "appdomain_id", type: "integer" },
+          { name: "appdomain_name", type: "text" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "db_id", type: "integer" },
+          { name: "user_id", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "strong_refcount", type: "integer" },
+          { name: "weak_refcount", type: "integer" },
+          { name: "cost", type: "integer" },
+          { name: "value", type: "integer" },
+          { name: "compatibility_level", type: "integer" },
+          { name: "total_processor_time_ms", type: "integer" },
+          { name: "total_allocated_memory_kb", type: "integer" },
+          { name: "survived_memory_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_clr_loaded_assemblies",
+        columns: [
+          { name: "assembly_id", type: "integer" },
+          { name: "appdomain_address", type: "bytes" },
+          { name: "load_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_clr_properties",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_clr_tasks",
+        columns: [
+          { name: "task_address", type: "bytes" },
+          { name: "sos_task_address", type: "bytes" },
+          { name: "appdomain_address", type: "bytes" },
+          { name: "state", type: "text" },
+          { name: "abort_state", type: "text" },
+          { name: "type", type: "text" },
+          { name: "affinity_count", type: "integer" },
+          { name: "forced_yield_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cluster_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "description", type: "text" },
+          { name: "endpoint", type: "text" },
+          { name: "protocol_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_column_encryption_enclave",
+        columns: [
+          { name: "current_enclave_session_count", type: "integer" },
+          { name: "current_column_encryption_key_count", type: "integer" },
+          { name: "current_memory_size_kb", type: "integer" },
+          { name: "total_evicted_session_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_column_encryption_enclave_operation_stats",
+        columns: [
+          { name: "operation_type", type: "text" },
+          { name: "total_operation_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_column_encryption_enclave_properties",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_column_store_object_pool",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "row_group_id", type: "integer" },
+          { name: "object_type", type: "integer" },
+          { name: "object_type_desc", type: "text" },
+          { name: "access_count", type: "integer" },
+          { name: "memory_used_in_bytes", type: "integer" },
+          { name: "object_load_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cryptographic_provider_algorithms",
+        columns: [
+          { name: "algorithm_id", type: "integer" },
+          { name: "algorithm_tag", type: "text" },
+          { name: "key_type", type: "text" },
+          { name: "key_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cryptographic_provider_keys",
+        columns: [
+          { name: "key_id", type: "integer" },
+          { name: "key_name", type: "text" },
+          { name: "key_thumbprint", type: "bytes" },
+          { name: "algorithm_id", type: "integer" },
+          { name: "algorithm_tag", type: "text" },
+          { name: "key_type", type: "text" },
+          { name: "key_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cryptographic_provider_properties",
+        columns: [
+          { name: "provider_id", type: "integer" },
+          { name: "guid", type: "uuid" },
+          { name: "provider_version", type: "text" },
+          { name: "sqlcrypt_version", type: "text" },
+          { name: "friendly_name", type: "text" },
+          { name: "authentication_type", type: "text" },
+          { name: "symmetric_key_support", type: "integer" },
+          { name: "symmetric_key_persistance", type: "integer" },
+          { name: "symmetric_key_export", type: "integer" },
+          { name: "symmetric_key_import", type: "integer" },
+          { name: "asymmetric_key_support", type: "integer" },
+          { name: "asymmetric_key_persistance", type: "integer" },
+          { name: "asymmetric_key_export", type: "integer" },
+          { name: "asymmetric_key_import", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_cryptographic_provider_sessions",
+        columns: [
+          { name: "provider_id", type: "integer" },
+          { name: "session_handle", type: "bytes" },
+          { name: "identity", type: "text" },
+          { name: "spid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_backups",
+        columns: [
+          { name: "backup_file_id", type: "uuid" },
+          { name: "database_guid", type: "uuid" },
+          { name: "physical_database_name", type: "text" },
+          { name: "physical_server_name", type: "text" },
+          { name: "backup_start_date", type: "timestamp" },
+          { name: "backup_finish_date", type: "timestamp" },
+          { name: "backup_type", type: "text" },
+          { name: "in_retention", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_encryption_keys",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "encryption_state", type: "integer" },
+          { name: "create_date", type: "timestamp" },
+          { name: "regenerate_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "set_date", type: "timestamp" },
+          { name: "opened_date", type: "timestamp" },
+          { name: "key_algorithm", type: "text" },
+          { name: "key_length", type: "integer" },
+          { name: "encryptor_thumbprint", type: "bytes" },
+          { name: "encryptor_type", type: "text" },
+          { name: "percent_complete", type: "decimal" },
+          { name: "encryption_state_desc", type: "text" },
+          { name: "encryption_scan_state", type: "integer" },
+          { name: "encryption_scan_state_desc", type: "text" },
+          { name: "encryption_scan_modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_governance_sync_state",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "sync_scope", type: "integer" },
+          { name: "sync_scope_desc", type: "text" },
+          { name: "sync_state", type: "integer" },
+          { name: "sync_state_desc", type: "text" },
+          { name: "user_initiated_sync", type: "integer" },
+          { name: "sync_percent_complete", type: "integer" },
+          { name: "current_sync_token", type: "text" },
+          { name: "next_sync_token", type: "text" },
+          { name: "current_blob_references", type: "text" },
+          { name: "last_reference_fetch_success_time_utc", type: "timestamp" },
+          { name: "last_reference_fetch_attempt_time_utc", type: "timestamp" },
+          { name: "last_reference_fetch_error", type: "integer" },
+          { name: "last_blob_fetch_success_time_utc", type: "timestamp" },
+          { name: "last_blob_fetch_attempt_time_utc", type: "timestamp" },
+          { name: "last_blob_fetch_error", type: "integer" },
+          { name: "last_sync_success_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_success_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_attempt_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_error", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_actions",
+        columns: [
+          { name: "sql_action_id", type: "integer" },
+          { name: "action_namespace", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "action_provider_string", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_principal_assigned_actions",
+        columns: [
+          { name: "principal_sid", type: "bytes" },
+          { name: "principal_aad_object_id", type: "text" },
+          { name: "action_namespace", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "role_name", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "policy_guid", type: "text" },
+          { name: "role_assignment_scope", type: "text" },
+          { name: "role_assignment_type", type: "integer" },
+          { name: "role_assignment_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_principals",
+        columns: [
+          { name: "sid", type: "bytes" },
+          { name: "aad_object_id", type: "text" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "authentication_type", type: "integer" },
+          { name: "authentication_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_role_actions",
+        columns: [
+          { name: "role_guid", type: "text" },
+          { name: "sql_action_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_role_members",
+        columns: [
+          { name: "principal_aad_object_id", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "policy_guid", type: "text" },
+          { name: "assignment_scope", type: "text" },
+          { name: "assignment_type", type: "integer" },
+          { name: "assignment_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_database_external_policy_roles",
+        columns: [
+          { name: "role_name", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_column_store_row_group_operational_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "row_group_id", type: "integer" },
+          { name: "index_scan_count", type: "integer" },
+          { name: "scan_count", type: "integer" },
+          { name: "delete_buffer_scan_count", type: "integer" },
+          { name: "row_group_lock_count", type: "integer" },
+          { name: "row_group_lock_wait_count", type: "integer" },
+          { name: "row_group_lock_wait_in_ms", type: "integer" },
+          { name: "returned_row_count", type: "integer" },
+          { name: "returned_aggregate_count", type: "integer" },
+          { name: "returned_group_count", type: "integer" },
+          { name: "input_groupby_row_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_column_store_row_group_physical_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "row_group_id", type: "integer" },
+          { name: "delta_store_hobt_id", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "total_rows", type: "integer" },
+          { name: "deleted_rows", type: "integer" },
+          { name: "size_in_bytes", type: "integer" },
+          { name: "trim_reason", type: "integer" },
+          { name: "trim_reason_desc", type: "text" },
+          { name: "transition_to_compressed_state", type: "integer" },
+          { name: "transition_to_compressed_state_desc", type: "text" },
+          { name: "has_vertipaq_optimization", type: "boolean" },
+          { name: "generation", type: "integer" },
+          { name: "created_time", type: "timestamp" },
+          { name: "closed_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_data_pool_nodes",
+        columns: [
+          { name: "data_pool_id", type: "integer" },
+          { name: "data_pool_node_name", type: "text" },
+          { name: "address", type: "text" },
+          { name: "state", type: "text" },
+          { name: "health_status", type: "text" },
+          { name: "health_error_message", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_data_pools",
+        columns: [
+          { name: "data_pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "location", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_database_page_allocations",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "rowset_id", type: "integer" },
+          { name: "allocation_unit_id", type: "integer" },
+          { name: "allocation_unit_type", type: "integer" },
+          { name: "allocation_unit_type_desc", type: "text" },
+          { name: "data_clone_id", type: "integer" },
+          { name: "clone_state", type: "integer" },
+          { name: "clone_state_desc", type: "text" },
+          { name: "extent_file_id", type: "integer" },
+          { name: "extent_page_id", type: "integer" },
+          { name: "allocated_page_iam_file_id", type: "integer" },
+          { name: "allocated_page_iam_page_id", type: "integer" },
+          { name: "allocated_page_file_id", type: "integer" },
+          { name: "allocated_page_page_id", type: "integer" },
+          { name: "is_allocated", type: "integer" },
+          { name: "is_iam_page", type: "integer" },
+          { name: "is_mixed_page_allocation", type: "integer" },
+          { name: "page_free_space_percent", type: "integer" },
+          { name: "page_type", type: "integer" },
+          { name: "page_type_desc", type: "text" },
+          { name: "page_level", type: "integer" },
+          { name: "next_page_file_id", type: "integer" },
+          { name: "next_page_page_id", type: "integer" },
+          { name: "previous_page_file_id", type: "integer" },
+          { name: "previous_page_page_id", type: "integer" },
+          { name: "is_page_compressed", type: "integer" },
+          { name: "has_ghost_records", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_external_language_stats",
+        columns: [
+          { name: "external_language_id", type: "integer" },
+          { name: "is_installed", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_external_script_execution_stats",
+        columns: [
+          { name: "external_language_id", type: "integer" },
+          { name: "counter_name", type: "text" },
+          { name: "counter_value", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_file_space_usage",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "filegroup_id", type: "integer" },
+          { name: "total_page_count", type: "integer" },
+          { name: "allocated_extent_page_count", type: "integer" },
+          { name: "unallocated_extent_page_count", type: "integer" },
+          { name: "version_store_reserved_page_count", type: "integer" },
+          { name: "user_object_reserved_page_count", type: "integer" },
+          { name: "internal_object_reserved_page_count", type: "integer" },
+          { name: "mixed_extent_page_count", type: "integer" },
+          { name: "modified_extent_page_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_fts_index_physical_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "fulltext_index_page_count", type: "integer" },
+          { name: "keyphrase_index_page_count", type: "integer" },
+          { name: "similarity_index_page_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_incremental_stats_properties",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "stats_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "last_updated", type: "timestamp" },
+          { name: "rows", type: "integer" },
+          { name: "rows_sampled", type: "integer" },
+          { name: "steps", type: "integer" },
+          { name: "unfiltered_rows", type: "integer" },
+          { name: "modification_counter", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_index_operational_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "leaf_insert_count", type: "integer" },
+          { name: "leaf_delete_count", type: "integer" },
+          { name: "leaf_update_count", type: "integer" },
+          { name: "leaf_ghost_count", type: "integer" },
+          { name: "nonleaf_insert_count", type: "integer" },
+          { name: "nonleaf_delete_count", type: "integer" },
+          { name: "nonleaf_update_count", type: "integer" },
+          { name: "leaf_allocation_count", type: "integer" },
+          { name: "nonleaf_allocation_count", type: "integer" },
+          { name: "leaf_page_merge_count", type: "integer" },
+          { name: "nonleaf_page_merge_count", type: "integer" },
+          { name: "range_scan_count", type: "integer" },
+          { name: "singleton_lookup_count", type: "integer" },
+          { name: "forwarded_fetch_count", type: "integer" },
+          { name: "lob_fetch_in_pages", type: "integer" },
+          { name: "lob_fetch_in_bytes", type: "integer" },
+          { name: "lob_orphan_create_count", type: "integer" },
+          { name: "lob_orphan_insert_count", type: "integer" },
+          { name: "row_overflow_fetch_in_pages", type: "integer" },
+          { name: "row_overflow_fetch_in_bytes", type: "integer" },
+          { name: "column_value_push_off_row_count", type: "integer" },
+          { name: "column_value_pull_in_row_count", type: "integer" },
+          { name: "row_lock_count", type: "integer" },
+          { name: "row_lock_wait_count", type: "integer" },
+          { name: "row_lock_wait_in_ms", type: "integer" },
+          { name: "page_lock_count", type: "integer" },
+          { name: "page_lock_wait_count", type: "integer" },
+          { name: "page_lock_wait_in_ms", type: "integer" },
+          { name: "index_lock_promotion_attempt_count", type: "integer" },
+          { name: "index_lock_promotion_count", type: "integer" },
+          { name: "page_latch_wait_count", type: "integer" },
+          { name: "page_latch_wait_in_ms", type: "integer" },
+          { name: "page_io_latch_wait_count", type: "integer" },
+          { name: "page_io_latch_wait_in_ms", type: "integer" },
+          { name: "tree_page_latch_wait_count", type: "integer" },
+          { name: "tree_page_latch_wait_in_ms", type: "integer" },
+          { name: "tree_page_io_latch_wait_count", type: "integer" },
+          { name: "tree_page_io_latch_wait_in_ms", type: "integer" },
+          { name: "page_compression_attempt_count", type: "integer" },
+          { name: "page_compression_success_count", type: "integer" },
+          { name: "version_generated_inrow", type: "integer" },
+          { name: "version_generated_offrow", type: "integer" },
+          { name: "ghost_version_inrow", type: "integer" },
+          { name: "ghost_version_offrow", type: "integer" },
+          { name: "insert_over_ghost_version_inrow", type: "integer" },
+          { name: "insert_over_ghost_version_offrow", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_index_physical_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "index_type_desc", type: "text" },
+          { name: "alloc_unit_type_desc", type: "text" },
+          { name: "index_depth", type: "integer" },
+          { name: "index_level", type: "integer" },
+          { name: "avg_fragmentation_in_percent", type: "decimal" },
+          { name: "fragment_count", type: "integer" },
+          { name: "avg_fragment_size_in_pages", type: "decimal" },
+          { name: "page_count", type: "integer" },
+          { name: "avg_page_space_used_in_percent", type: "decimal" },
+          { name: "record_count", type: "integer" },
+          { name: "ghost_record_count", type: "integer" },
+          { name: "version_ghost_record_count", type: "integer" },
+          { name: "min_record_size_in_bytes", type: "integer" },
+          { name: "max_record_size_in_bytes", type: "integer" },
+          { name: "avg_record_size_in_bytes", type: "decimal" },
+          { name: "forwarded_record_count", type: "integer" },
+          { name: "compressed_page_count", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "columnstore_delete_buffer_state", type: "integer" },
+          { name: "columnstore_delete_buffer_state_desc", type: "text" },
+          { name: "version_record_count", type: "integer" },
+          { name: "inrow_version_record_count", type: "integer" },
+          { name: "inrow_diff_version_record_count", type: "integer" },
+          { name: "total_inrow_version_payload_size_in_bytes", type: "integer" },
+          { name: "offrow_regular_version_record_count", type: "integer" },
+          { name: "offrow_long_term_version_record_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_index_usage_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "user_seeks", type: "integer" },
+          { name: "user_scans", type: "integer" },
+          { name: "user_lookups", type: "integer" },
+          { name: "user_updates", type: "integer" },
+          { name: "last_user_seek", type: "timestamp" },
+          { name: "last_user_scan", type: "timestamp" },
+          { name: "last_user_lookup", type: "timestamp" },
+          { name: "last_user_update", type: "timestamp" },
+          { name: "system_seeks", type: "integer" },
+          { name: "system_scans", type: "integer" },
+          { name: "system_lookups", type: "integer" },
+          { name: "system_updates", type: "integer" },
+          { name: "last_system_seek", type: "timestamp" },
+          { name: "last_system_scan", type: "timestamp" },
+          { name: "last_system_lookup", type: "timestamp" },
+          { name: "last_system_update", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_log_info",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "vlf_begin_offset", type: "integer" },
+          { name: "vlf_size_mb", type: "decimal" },
+          { name: "vlf_sequence_number", type: "integer" },
+          { name: "vlf_active", type: "boolean" },
+          { name: "vlf_status", type: "integer" },
+          { name: "vlf_parity", type: "integer" },
+          { name: "vlf_first_lsn", type: "text" },
+          { name: "vlf_create_lsn", type: "text" },
+          { name: "vlf_encryptor_thumbprint", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_log_space_usage",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "total_log_size_in_bytes", type: "integer" },
+          { name: "used_log_space_in_bytes", type: "integer" },
+          { name: "used_log_space_in_percent", type: "decimal" },
+          { name: "log_space_in_bytes_since_last_backup", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_log_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_model", type: "text" },
+          { name: "log_min_lsn", type: "text" },
+          { name: "log_end_lsn", type: "text" },
+          { name: "current_vlf_sequence_number", type: "integer" },
+          { name: "current_vlf_size_mb", type: "decimal" },
+          { name: "total_vlf_count", type: "integer" },
+          { name: "total_log_size_mb", type: "decimal" },
+          { name: "active_vlf_count", type: "integer" },
+          { name: "active_log_size_mb", type: "decimal" },
+          { name: "log_truncation_holdup_reason", type: "text" },
+          { name: "log_backup_time", type: "timestamp" },
+          { name: "log_backup_lsn", type: "text" },
+          { name: "log_since_last_log_backup_mb", type: "decimal" },
+          { name: "log_checkpoint_lsn", type: "text" },
+          { name: "log_since_last_checkpoint_mb", type: "decimal" },
+          { name: "log_recovery_lsn", type: "text" },
+          { name: "log_recovery_size_mb", type: "decimal" },
+          { name: "recovery_vlf_count", type: "integer" },
+          { name: "log_state", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_mirroring_auto_page_repair",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" },
+          { name: "error_type", type: "integer" },
+          { name: "page_status", type: "integer" },
+          { name: "modification_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_mirroring_connections",
+        columns: [
+          { name: "connection_id", type: "uuid" },
+          { name: "transport_stream_id", type: "uuid" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "connect_time", type: "timestamp" },
+          { name: "login_time", type: "timestamp" },
+          { name: "authentication_method", type: "text" },
+          { name: "principal_name", type: "text" },
+          { name: "remote_user_name", type: "text" },
+          { name: "last_activity_time", type: "timestamp" },
+          { name: "is_accept", type: "boolean" },
+          { name: "login_state", type: "integer" },
+          { name: "login_state_desc", type: "text" },
+          { name: "peer_certificate_id", type: "integer" },
+          { name: "encryption_algorithm", type: "integer" },
+          { name: "encryption_algorithm_desc", type: "text" },
+          { name: "receives_posted", type: "integer" },
+          { name: "is_receive_flow_controlled", type: "boolean" },
+          { name: "sends_posted", type: "integer" },
+          { name: "is_send_flow_controlled", type: "boolean" },
+          { name: "total_bytes_sent", type: "integer" },
+          { name: "total_bytes_received", type: "integer" },
+          { name: "total_fragments_sent", type: "integer" },
+          { name: "total_fragments_received", type: "integer" },
+          { name: "total_sends", type: "integer" },
+          { name: "total_receives", type: "integer" },
+          { name: "peer_arbitration_id", type: "uuid" },
+          { name: "address", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_mirroring_past_actions",
+        columns: [
+          { name: "mirroring_guid", type: "uuid" },
+          { name: "state_machine_name", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "current_state", type: "text" },
+          { name: "action_sequence", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_missing_index_columns",
+        columns: [
+          { name: "column_id", type: "integer" },
+          { name: "column_name", type: "text" },
+          { name: "column_usage", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_missing_index_details",
+        columns: [
+          { name: "index_handle", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "equality_columns", type: "text" },
+          { name: "inequality_columns", type: "text" },
+          { name: "included_columns", type: "text" },
+          { name: "statement", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_missing_index_group_stats",
+        columns: [
+          { name: "group_handle", type: "integer" },
+          { name: "unique_compiles", type: "integer" },
+          { name: "user_seeks", type: "integer" },
+          { name: "user_scans", type: "integer" },
+          { name: "last_user_seek", type: "timestamp" },
+          { name: "last_user_scan", type: "timestamp" },
+          { name: "avg_total_user_cost", type: "decimal" },
+          { name: "avg_user_impact", type: "decimal" },
+          { name: "system_seeks", type: "integer" },
+          { name: "system_scans", type: "integer" },
+          { name: "last_system_seek", type: "timestamp" },
+          { name: "last_system_scan", type: "timestamp" },
+          { name: "avg_total_system_cost", type: "decimal" },
+          { name: "avg_system_impact", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_missing_index_group_stats_query",
+        columns: [
+          { name: "group_handle", type: "integer" },
+          { name: "query_hash", type: "bytes" },
+          { name: "query_plan_hash", type: "bytes" },
+          { name: "last_sql_handle", type: "bytes" },
+          { name: "last_statement_start_offset", type: "integer" },
+          { name: "last_statement_end_offset", type: "integer" },
+          { name: "last_statement_sql_handle", type: "bytes" },
+          { name: "user_seeks", type: "integer" },
+          { name: "user_scans", type: "integer" },
+          { name: "last_user_seek", type: "timestamp" },
+          { name: "last_user_scan", type: "timestamp" },
+          { name: "avg_total_user_cost", type: "decimal" },
+          { name: "avg_user_impact", type: "decimal" },
+          { name: "system_seeks", type: "integer" },
+          { name: "system_scans", type: "integer" },
+          { name: "last_system_seek", type: "timestamp" },
+          { name: "last_system_scan", type: "timestamp" },
+          { name: "avg_total_system_cost", type: "decimal" },
+          { name: "avg_system_impact", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_missing_index_groups",
+        columns: [
+          { name: "index_group_handle", type: "integer" },
+          { name: "index_handle", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_objects_disabled_on_compatibility_level_change",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "dependency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_page_info",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" },
+          { name: "page_header_version", type: "integer" },
+          { name: "page_type", type: "integer" },
+          { name: "page_type_desc", type: "text" },
+          { name: "page_type_flag_bits", type: "text" },
+          { name: "page_type_flag_bits_desc", type: "text" },
+          { name: "page_flag_bits", type: "text" },
+          { name: "page_flag_bits_desc", type: "text" },
+          { name: "page_lsn", type: "text" },
+          { name: "page_level", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "alloc_unit_id", type: "integer" },
+          { name: "is_encrypted", type: "boolean" },
+          { name: "has_checksum", type: "boolean" },
+          { name: "checksum", type: "integer" },
+          { name: "is_iam_page", type: "boolean" },
+          { name: "is_mixed_extent", type: "boolean" },
+          { name: "has_ghost_records", type: "boolean" },
+          { name: "has_version_records", type: "boolean" },
+          { name: "pfs_page_id", type: "integer" },
+          { name: "pfs_is_allocated", type: "boolean" },
+          { name: "pfs_alloc_percent", type: "integer" },
+          { name: "pfs_status", type: "text" },
+          { name: "pfs_status_desc", type: "text" },
+          { name: "gam_page_id", type: "integer" },
+          { name: "gam_status", type: "boolean" },
+          { name: "gam_status_desc", type: "text" },
+          { name: "sgam_page_id", type: "integer" },
+          { name: "sgam_status", type: "boolean" },
+          { name: "sgam_status_desc", type: "text" },
+          { name: "diff_map_page_id", type: "integer" },
+          { name: "diff_status", type: "boolean" },
+          { name: "diff_status_desc", type: "text" },
+          { name: "ml_map_page_id", type: "integer" },
+          { name: "ml_status", type: "boolean" },
+          { name: "ml_status_desc", type: "text" },
+          { name: "prev_page_file_id", type: "integer" },
+          { name: "prev_page_page_id", type: "integer" },
+          { name: "next_page_file_id", type: "integer" },
+          { name: "next_page_page_id", type: "integer" },
+          { name: "fixed_length", type: "integer" },
+          { name: "slot_count", type: "integer" },
+          { name: "ghost_rec_count", type: "integer" },
+          { name: "free_bytes", type: "integer" },
+          { name: "free_bytes_offset", type: "integer" },
+          { name: "reserved_bytes", type: "integer" },
+          { name: "reserved_bytes_by_xdes_id", type: "integer" },
+          { name: "xdes_id", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_partition_stats",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "in_row_data_page_count", type: "integer" },
+          { name: "in_row_used_page_count", type: "integer" },
+          { name: "in_row_reserved_page_count", type: "integer" },
+          { name: "lob_used_page_count", type: "integer" },
+          { name: "lob_reserved_page_count", type: "integer" },
+          { name: "row_overflow_used_page_count", type: "integer" },
+          { name: "row_overflow_reserved_page_count", type: "integer" },
+          { name: "used_page_count", type: "integer" },
+          { name: "reserved_page_count", type: "integer" },
+          { name: "row_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_persisted_sku_features",
+        columns: [
+          { name: "feature_name", type: "text" },
+          { name: "feature_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_rda_migration_status",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "migrated_rows", type: "integer" },
+          { name: "start_time_utc", type: "timestamp" },
+          { name: "end_time_utc", type: "timestamp" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_rda_schema_update_status",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "task_id", type: "integer" },
+          { name: "task_type", type: "integer" },
+          { name: "task_type_desc", type: "text" },
+          { name: "task_state", type: "integer" },
+          { name: "task_state_desc", type: "text" },
+          { name: "start_time_utc", type: "timestamp" },
+          { name: "end_time_utc", type: "timestamp" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_script_level",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "script_id", type: "integer" },
+          { name: "script_name", type: "text" },
+          { name: "version", type: "integer" },
+          { name: "script_level", type: "integer" },
+          { name: "downgrade_start_level", type: "integer" },
+          { name: "downgrade_target_level", type: "integer" },
+          { name: "upgrade_start_level", type: "integer" },
+          { name: "upgrade_target_level", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_session_space_usage",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "user_objects_alloc_page_count", type: "integer" },
+          { name: "user_objects_dealloc_page_count", type: "integer" },
+          { name: "internal_objects_alloc_page_count", type: "integer" },
+          { name: "internal_objects_dealloc_page_count", type: "integer" },
+          { name: "user_objects_deferred_dealloc_page_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_stats_histogram",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "stats_id", type: "integer" },
+          { name: "step_number", type: "integer" },
+          { name: "range_high_key", type: "variant" },
+          { name: "range_rows", type: "decimal" },
+          { name: "equal_rows", type: "decimal" },
+          { name: "distinct_range_rows", type: "integer" },
+          { name: "average_range_rows", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_stats_properties",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "stats_id", type: "integer" },
+          { name: "last_updated", type: "timestamp" },
+          { name: "rows", type: "integer" },
+          { name: "rows_sampled", type: "integer" },
+          { name: "steps", type: "integer" },
+          { name: "unfiltered_rows", type: "integer" },
+          { name: "modification_counter", type: "integer" },
+          { name: "persisted_sample_percent", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_stats_properties_internal",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "stats_id", type: "integer" },
+          { name: "last_updated", type: "timestamp" },
+          { name: "rows", type: "integer" },
+          { name: "rows_sampled", type: "integer" },
+          { name: "steps", type: "integer" },
+          { name: "unfiltered_rows", type: "integer" },
+          { name: "modification_counter", type: "integer" },
+          { name: "persisted_sample_percent", type: "decimal" },
+          { name: "node_id", type: "integer" },
+          { name: "first_child", type: "integer" },
+          { name: "next_sibling", type: "integer" },
+          { name: "left_boundary", type: "variant" },
+          { name: "right_boundary", type: "variant" },
+          { name: "partition_number", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_storage_pool_nodes",
+        columns: [
+          { name: "storage_pool_id", type: "integer" },
+          { name: "storage_pool_node_name", type: "text" },
+          { name: "address", type: "text" },
+          { name: "state", type: "text" },
+          { name: "health_status", type: "text" },
+          { name: "health_error_message", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_storage_pools",
+        columns: [
+          { name: "storage_pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "location", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_task_space_usage",
+        columns: [
+          { name: "task_address", type: "bytes" },
+          { name: "is_remote_task", type: "boolean" },
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "exec_context_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "user_objects_alloc_page_count", type: "integer" },
+          { name: "user_objects_dealloc_page_count", type: "integer" },
+          { name: "internal_objects_alloc_page_count", type: "integer" },
+          { name: "internal_objects_dealloc_page_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_tuning_recommendations",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "reason", type: "text" },
+          { name: "valid_since", type: "timestamp" },
+          { name: "last_refresh", type: "timestamp" },
+          { name: "state", type: "text" },
+          { name: "is_executable_action", type: "boolean" },
+          { name: "is_revertable_action", type: "boolean" },
+          { name: "execute_action_start_time", type: "timestamp" },
+          { name: "execute_action_duration", type: "time" },
+          { name: "execute_action_initiated_by", type: "text" },
+          { name: "execute_action_initiated_time", type: "timestamp" },
+          { name: "revert_action_start_time", type: "timestamp" },
+          { name: "revert_action_duration", type: "time" },
+          { name: "revert_action_initiated_by", type: "text" },
+          { name: "revert_action_initiated_time", type: "timestamp" },
+          { name: "score", type: "integer" },
+          { name: "details", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_uncontained_entities",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "statement_line_number", type: "integer" },
+          { name: "statement_offset_begin", type: "integer" },
+          { name: "statement_offset_end", type: "integer" },
+          { name: "statement_type", type: "text" },
+          { name: "feature_name", type: "text" },
+          { name: "feature_type_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_checkpoint_files",
+        columns: [
+          { name: "container_id", type: "integer" },
+          { name: "container_guid", type: "uuid" },
+          { name: "checkpoint_file_id", type: "uuid" },
+          { name: "relative_file_path", type: "text" },
+          { name: "file_type", type: "integer" },
+          { name: "file_type_desc", type: "text" },
+          { name: "internal_storage_slot", type: "integer" },
+          { name: "checkpoint_pair_file_id", type: "uuid" },
+          { name: "file_size_in_bytes", type: "integer" },
+          { name: "file_size_used_in_bytes", type: "integer" },
+          { name: "logical_row_count", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "lower_bound_tsn", type: "integer" },
+          { name: "upper_bound_tsn", type: "integer" },
+          { name: "begin_checkpoint_id", type: "integer" },
+          { name: "end_checkpoint_id", type: "integer" },
+          { name: "last_updated_checkpoint_id", type: "integer" },
+          { name: "encryption_status", type: "integer" },
+          { name: "encryption_status_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_checkpoint_internals",
+        columns: [
+          { name: "checkpoint_id", type: "integer" },
+          { name: "checkpoint_timestamp", type: "integer" },
+          { name: "last_segment_lsn", type: "decimal" },
+          { name: "recovery_lsn", type: "decimal" },
+          { name: "is_synchronized", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_checkpoint_stats",
+        columns: [
+          { name: "last_lsn_processed", type: "decimal" },
+          { name: "end_of_log_lsn", type: "decimal" },
+          { name: "bytes_to_end_of_log", type: "integer" },
+          { name: "log_consumption_rate", type: "integer" },
+          { name: "active_scan_time_in_ms", type: "integer" },
+          { name: "total_wait_time_in_ms", type: "integer" },
+          { name: "waits_for_io_count", type: "integer" },
+          { name: "io_wait_time_in_ms", type: "integer" },
+          { name: "waits_for_new_log_count", type: "integer" },
+          { name: "new_log_wait_time_in_ms", type: "integer" },
+          { name: "idle_attempts_count", type: "integer" },
+          { name: "tx_segments_dispatched_count", type: "integer" },
+          { name: "segment_bytes_dispatched", type: "integer" },
+          { name: "bytes_serialized", type: "integer" },
+          { name: "serializer_user_time_in_ms", type: "integer" },
+          { name: "serializer_kernel_time_in_ms", type: "integer" },
+          { name: "xtp_log_bytes_consumed", type: "integer" },
+          { name: "checkpoints_closed", type: "integer" },
+          { name: "last_closed_checkpoint_ts", type: "integer" },
+          { name: "hardened_recovery_lsn", type: "decimal" },
+          { name: "hardened_root_file_guid", type: "uuid" },
+          { name: "hardened_root_file_watermark", type: "integer" },
+          { name: "hardened_truncation_lsn", type: "decimal" },
+          { name: "log_bytes_since_last_close", type: "integer" },
+          { name: "time_since_last_close_in_ms", type: "integer" },
+          { name: "current_checkpoint_id", type: "integer" },
+          { name: "current_checkpoint_segment_count", type: "integer" },
+          { name: "recovery_lsn_candidate", type: "decimal" },
+          { name: "outstanding_checkpoint_count", type: "integer" },
+          { name: "closing_checkpoint_id", type: "integer" },
+          { name: "recovery_checkpoint_id", type: "integer" },
+          { name: "recovery_checkpoint_ts", type: "integer" },
+          { name: "bootstrap_recovery_lsn", type: "decimal" },
+          { name: "bootstrap_root_file_guid", type: "uuid" },
+          { name: "internal_error_code", type: "integer" },
+          { name: "tail_cache_page_count", type: "integer" },
+          { name: "tail_cache_max_page_count", type: "integer" },
+          { name: "tail_cache_min_needed_lsn", type: "decimal" },
+          { name: "merge_outstanding_merges", type: "integer" },
+          { name: "merge_stats_number_of_merges", type: "integer" },
+          { name: "merge_stats_log_blocks_merged", type: "integer" },
+          { name: "merge_stats_bytes_merged", type: "integer" },
+          { name: "merge_stats_user_time", type: "integer" },
+          { name: "merge_stats_kernel_time", type: "integer" },
+          { name: "bytes_of_large_data_serialized", type: "integer" },
+          { name: "closed_checkpoint_epoch_value", type: "integer" },
+          { name: "db_in_checkpoint_only_mode", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_gc_cycle_stats",
+        columns: [
+          { name: "cycle_id", type: "integer" },
+          { name: "ticks_at_cycle_start", type: "integer" },
+          { name: "ticks_at_cycle_end", type: "integer" },
+          { name: "node_id", type: "integer" },
+          { name: "base_generation", type: "integer" },
+          { name: "xacts_copied_to_local", type: "integer" },
+          { name: "xacts_in_gen_0", type: "integer" },
+          { name: "xacts_in_gen_1", type: "integer" },
+          { name: "xacts_in_gen_2", type: "integer" },
+          { name: "xacts_in_gen_3", type: "integer" },
+          { name: "xacts_in_gen_4", type: "integer" },
+          { name: "xacts_in_gen_5", type: "integer" },
+          { name: "xacts_in_gen_6", type: "integer" },
+          { name: "xacts_in_gen_7", type: "integer" },
+          { name: "xacts_in_gen_8", type: "integer" },
+          { name: "xacts_in_gen_9", type: "integer" },
+          { name: "xacts_in_gen_10", type: "integer" },
+          { name: "xacts_in_gen_11", type: "integer" },
+          { name: "xacts_in_gen_12", type: "integer" },
+          { name: "xacts_in_gen_13", type: "integer" },
+          { name: "xacts_in_gen_14", type: "integer" },
+          { name: "xacts_in_gen_15", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_hash_index_approx_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "bucket_count", type: "integer" },
+          { name: "scanned_bucket_count", type: "integer" },
+          { name: "approx_filled_count", type: "integer" },
+          { name: "approx_avg_chain_length", type: "integer" },
+          { name: "approx_max_chain_length", type: "integer" },
+          { name: "buckets_with_chain_length_greater_than_max_rows_to_scan_per_bucket", type: "integer" },
+          { name: "buckets_with_chain_length_between_1_10", type: "integer" },
+          { name: "buckets_with_chain_length_between_10_100", type: "integer" },
+          { name: "buckets_with_chain_length_between_100_1000", type: "integer" },
+          { name: "buckets_with_chain_length_between_1000_10000", type: "integer" },
+          { name: "buckets_with_chain_length_greater_than_10000", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_hash_index_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "total_bucket_count", type: "integer" },
+          { name: "empty_bucket_count", type: "integer" },
+          { name: "avg_chain_length", type: "integer" },
+          { name: "max_chain_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_index_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "scans_started", type: "integer" },
+          { name: "scans_retries", type: "integer" },
+          { name: "rows_returned", type: "integer" },
+          { name: "rows_touched", type: "integer" },
+          { name: "rows_expiring", type: "integer" },
+          { name: "rows_expired", type: "integer" },
+          { name: "rows_expired_removed", type: "integer" },
+          { name: "phantom_scans_started", type: "integer" },
+          { name: "phantom_scans_retries", type: "integer" },
+          { name: "phantom_rows_touched", type: "integer" },
+          { name: "phantom_expiring_rows_encountered", type: "integer" },
+          { name: "phantom_expired_removed_rows_encountered", type: "integer" },
+          { name: "phantom_expired_rows_removed", type: "integer" },
+          { name: "object_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_memory_consumers",
+        columns: [
+          { name: "memory_consumer_id", type: "integer" },
+          { name: "memory_consumer_type", type: "integer" },
+          { name: "memory_consumer_type_desc", type: "text" },
+          { name: "memory_consumer_desc", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "allocated_bytes", type: "integer" },
+          { name: "used_bytes", type: "integer" },
+          { name: "allocation_count", type: "integer" },
+          { name: "partition_count", type: "integer" },
+          { name: "sizeclass_count", type: "integer" },
+          { name: "min_sizeclass", type: "integer" },
+          { name: "max_sizeclass", type: "integer" },
+          { name: "memory_consumer_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_nonclustered_index_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "delta_pages", type: "integer" },
+          { name: "internal_pages", type: "integer" },
+          { name: "leaf_pages", type: "integer" },
+          { name: "outstanding_retired_nodes", type: "integer" },
+          { name: "page_update_count", type: "integer" },
+          { name: "page_update_retry_count", type: "integer" },
+          { name: "page_consolidation_count", type: "integer" },
+          { name: "page_consolidation_retry_count", type: "integer" },
+          { name: "page_split_count", type: "integer" },
+          { name: "page_split_retry_count", type: "integer" },
+          { name: "key_split_count", type: "integer" },
+          { name: "key_split_retry_count", type: "integer" },
+          { name: "page_merge_count", type: "integer" },
+          { name: "page_merge_retry_count", type: "integer" },
+          { name: "key_merge_count", type: "integer" },
+          { name: "key_merge_retry_count", type: "integer" },
+          { name: "uses_key_normalization", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_object_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "row_insert_attempts", type: "integer" },
+          { name: "row_update_attempts", type: "integer" },
+          { name: "row_delete_attempts", type: "integer" },
+          { name: "write_conflicts", type: "integer" },
+          { name: "unique_constraint_violations", type: "integer" },
+          { name: "object_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_table_memory_stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "memory_allocated_for_table_kb", type: "integer" },
+          { name: "memory_used_by_table_kb", type: "integer" },
+          { name: "memory_allocated_for_indexes_kb", type: "integer" },
+          { name: "memory_used_by_indexes_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_db_xtp_transactions",
+        columns: [
+          { name: "node_id", type: "integer" },
+          { name: "xtp_transaction_id", type: "integer" },
+          { name: "transaction_id", type: "integer" },
+          { name: "session_id", type: "integer" },
+          { name: "begin_tsn", type: "integer" },
+          { name: "end_tsn", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "result", type: "integer" },
+          { name: "result_desc", type: "text" },
+          { name: "xtp_parent_transaction_node_id", type: "integer" },
+          { name: "xtp_parent_transaction_id", type: "integer" },
+          { name: "last_error", type: "integer" },
+          { name: "is_speculative", type: "boolean" },
+          { name: "is_prepared", type: "boolean" },
+          { name: "is_delayed_durability", type: "boolean" },
+          { name: "memory_address", type: "bytes" },
+          { name: "database_address", type: "bytes" },
+          { name: "thread_id", type: "integer" },
+          { name: "read_set_row_count", type: "integer" },
+          { name: "write_set_row_count", type: "integer" },
+          { name: "scan_set_count", type: "integer" },
+          { name: "savepoint_garbage_count", type: "integer" },
+          { name: "log_bytes_required", type: "integer" },
+          { name: "count_of_allocations", type: "integer" },
+          { name: "allocated_bytes", type: "integer" },
+          { name: "reserved_bytes", type: "integer" },
+          { name: "commit_dependency_count", type: "integer" },
+          { name: "commit_dependency_total_attempt_count", type: "integer" },
+          { name: "scan_area", type: "integer" },
+          { name: "scan_area_desc", type: "text" },
+          { name: "scan_location", type: "integer" },
+          { name: "dependent_1_address", type: "bytes" },
+          { name: "dependent_2_address", type: "bytes" },
+          { name: "dependent_3_address", type: "bytes" },
+          { name: "dependent_4_address", type: "bytes" },
+          { name: "dependent_5_address", type: "bytes" },
+          { name: "dependent_6_address", type: "bytes" },
+          { name: "dependent_7_address", type: "bytes" },
+          { name: "dependent_8_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dist_requests",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "dist_statement_hash", type: "bytes" },
+          { name: "dist_statement_id", type: "uuid" },
+          { name: "dist_client_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_distributed_exchange_stats",
+        columns: [
+          { name: "request_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "dms_step_index", type: "integer" },
+          { name: "source_distribution_id", type: "integer" },
+          { name: "destination_distribution_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "status", type: "text" },
+          { name: "bytes_per_sec", type: "integer" },
+          { name: "bytes_processed", type: "integer" },
+          { name: "rows_processed", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "query_time", type: "integer" },
+          { name: "buffers_available", type: "integer" },
+          { name: "sql_spid", type: "integer" },
+          { name: "dms_cpid", type: "integer" },
+          { name: "error_id", type: "text" },
+          { name: "source_info", type: "text" },
+          { name: "destination_info", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_databases",
+        columns: [
+          { name: "logical_database_id", type: "uuid" },
+          { name: "logical_db_name", type: "text" },
+          { name: "database_type", type: "text" },
+          { name: "sync_point", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_locks",
+        columns: [
+          { name: "resource_entity_id", type: "integer" },
+          { name: "resource_type", type: "text" },
+          { name: "request_mode", type: "text" },
+          { name: "request_status", type: "text" },
+          { name: "resource_database_id", type: "integer" },
+          { name: "request_time", type: "timestamp" },
+          { name: "acquire_time", type: "timestamp" },
+          { name: "request_id", type: "uuid" },
+          { name: "session_id", type: "integer" },
+          { name: "pool_id", type: "integer" },
+          { name: "transaction_id", type: "integer" },
+          { name: "is_user_transaction", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_pit_databases",
+        columns: [
+          { name: "logical_database_id", type: "uuid" },
+          { name: "sql_db_id", type: "integer" },
+          { name: "pit_key", type: "text" },
+          { name: "pit_db_name", type: "text" },
+          { name: "database_type", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_quality_clustering",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "total_row_groups_analyzed", type: "integer" },
+          { name: "max_overlap", type: "integer" },
+          { name: "total_overlap", type: "integer" },
+          { name: "total_cell_count", type: "integer" },
+          { name: "quality", type: "decimal" },
+          { name: "unit_of_work", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_quality_delta",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "total_rows_analyzed", type: "integer" },
+          { name: "quality", type: "decimal" },
+          { name: "unit_of_work", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_quality_index",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "overall_quality", type: "decimal" },
+          { name: "clustering_quality", type: "decimal" },
+          { name: "delta_quality", type: "decimal" },
+          { name: "row_group_quality", type: "decimal" },
+          { name: "unit_of_work", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_quality_row_group",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_id", type: "integer" },
+          { name: "total_row_groups_analyzed", type: "integer" },
+          { name: "total_poor_row_groups_analyzed", type: "integer" },
+          { name: "average_rows", type: "decimal" },
+          { name: "quality", type: "decimal" },
+          { name: "unit_of_work", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_resource_manager_abort_cache",
+        columns: [
+          { name: "asn", type: "integer" },
+          { name: "bsn", type: "integer" },
+          { name: "nested_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_resource_manager_active_tran",
+        columns: [
+          { name: "read_version", type: "integer" },
+          { name: "write_version", type: "integer" },
+          { name: "nested_id", type: "integer" },
+          { name: "current_read_version", type: "integer" },
+          { name: "is_pit", type: "integer" },
+          { name: "txn_type", type: "integer" },
+          { name: "txn_tag", type: "integer" },
+          { name: "is_txn_owner", type: "integer" },
+          { name: "ddl_step", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_tran_manager_abort_cache",
+        columns: [
+          { name: "asn", type: "integer" },
+          { name: "bsn", type: "integer" },
+          { name: "nested_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_tran_manager_active_cache",
+        columns: [
+          { name: "bsn", type: "integer" },
+          { name: "tag", type: "integer" },
+          { name: "resource_manager_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_dw_tran_manager_commit_cache",
+        columns: [
+          { name: "bsn", type: "integer" },
+          { name: "csn", type: "integer" },
+          { name: "min_active_bsn", type: "integer" },
+          { name: "tag", type: "integer" },
+          { name: "state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_background_job_queue",
+        columns: [
+          { name: "time_queued", type: "timestamp" },
+          { name: "job_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "object_id1", type: "integer" },
+          { name: "object_id2", type: "integer" },
+          { name: "object_id3", type: "integer" },
+          { name: "object_id4", type: "integer" },
+          { name: "error_code", type: "integer" },
+          { name: "request_type", type: "integer" },
+          { name: "retry_count", type: "integer" },
+          { name: "in_progress", type: "integer" },
+          { name: "session_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_background_job_queue_stats",
+        columns: [
+          { name: "queue_max_len", type: "integer" },
+          { name: "enqueued_count", type: "integer" },
+          { name: "started_count", type: "integer" },
+          { name: "ended_count", type: "integer" },
+          { name: "failed_lock_count", type: "integer" },
+          { name: "failed_other_count", type: "integer" },
+          { name: "failed_giveup_count", type: "integer" },
+          { name: "enqueue_failed_full_count", type: "integer" },
+          { name: "enqueue_failed_duplicate_count", type: "integer" },
+          { name: "elapsed_avg_ms", type: "integer" },
+          { name: "elapsed_max_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_cached_plan_dependent_objects",
+        columns: [
+          { name: "usecounts", type: "integer" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "cacheobjtype", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_cached_plans",
+        columns: [
+          { name: "bucketid", type: "integer" },
+          { name: "refcounts", type: "integer" },
+          { name: "usecounts", type: "integer" },
+          { name: "size_in_bytes", type: "integer" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "cacheobjtype", type: "text" },
+          { name: "objtype", type: "text" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "pool_id", type: "integer" },
+          { name: "parent_plan_handle", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_compute_node_errors",
+        columns: [
+          { name: "error_id", type: "text" },
+          { name: "source", type: "text" },
+          { name: "type", type: "text" },
+          { name: "create_time", type: "timestamp" },
+          { name: "compute_node_id", type: "integer" },
+          { name: "execution_id", type: "text" },
+          { name: "spid", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "details", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_compute_node_status",
+        columns: [
+          { name: "compute_node_id", type: "integer" },
+          { name: "process_id", type: "integer" },
+          { name: "process_name", type: "text" },
+          { name: "allocated_memory", type: "integer" },
+          { name: "available_memory", type: "integer" },
+          { name: "process_cpu_usage", type: "integer" },
+          { name: "total_cpu_usage", type: "integer" },
+          { name: "thread_count", type: "integer" },
+          { name: "handle_count", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "is_available", type: "boolean" },
+          { name: "sent_time", type: "timestamp" },
+          { name: "received_time", type: "timestamp" },
+          { name: "error_id", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_compute_nodes",
+        columns: [
+          { name: "compute_node_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "address", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_compute_pools",
+        columns: [
+          { name: "compute_pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "location", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_connections",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "most_recent_session_id", type: "integer" },
+          { name: "connect_time", type: "timestamp" },
+          { name: "net_transport", type: "text" },
+          { name: "protocol_type", type: "text" },
+          { name: "protocol_version", type: "integer" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "encrypt_option", type: "text" },
+          { name: "auth_scheme", type: "text" },
+          { name: "node_affinity", type: "integer" },
+          { name: "num_reads", type: "integer" },
+          { name: "num_writes", type: "integer" },
+          { name: "last_read", type: "timestamp" },
+          { name: "last_write", type: "timestamp" },
+          { name: "net_packet_size", type: "integer" },
+          { name: "client_net_address", type: "text" },
+          { name: "client_tcp_port", type: "integer" },
+          { name: "local_net_address", type: "text" },
+          { name: "local_tcp_port", type: "integer" },
+          { name: "connection_id", type: "uuid" },
+          { name: "parent_connection_id", type: "uuid" },
+          { name: "most_recent_sql_handle", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_cursors",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "cursor_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "properties", type: "text" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "statement_start_offset", type: "integer" },
+          { name: "statement_end_offset", type: "integer" },
+          { name: "plan_generation_num", type: "integer" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "is_open", type: "boolean" },
+          { name: "is_async_population", type: "boolean" },
+          { name: "is_close_on_commit", type: "boolean" },
+          { name: "fetch_status", type: "integer" },
+          { name: "fetch_buffer_size", type: "integer" },
+          { name: "fetch_buffer_start", type: "integer" },
+          { name: "ansi_position", type: "integer" },
+          { name: "worker_time", type: "integer" },
+          { name: "reads", type: "integer" },
+          { name: "writes", type: "integer" },
+          { name: "dormant_duration", type: "integer" },
+          { name: "statement_sql_handle", type: "bytes" },
+          { name: "statement_context_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_describe_first_result_set",
+        columns: [
+          { name: "is_hidden", type: "boolean" },
+          { name: "column_ordinal", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "system_type_id", type: "integer" },
+          { name: "system_type_name", type: "text" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "user_type_id", type: "integer" },
+          { name: "user_type_database", type: "text" },
+          { name: "user_type_schema", type: "text" },
+          { name: "user_type_name", type: "text" },
+          { name: "assembly_qualified_type_name", type: "text" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_collection_database", type: "text" },
+          { name: "xml_collection_schema", type: "text" },
+          { name: "xml_collection_name", type: "text" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "is_case_sensitive", type: "boolean" },
+          { name: "is_fixed_length_clr_type", type: "boolean" },
+          { name: "source_server", type: "text" },
+          { name: "source_database", type: "text" },
+          { name: "source_schema", type: "text" },
+          { name: "source_table", type: "text" },
+          { name: "source_column", type: "text" },
+          { name: "is_identity_column", type: "boolean" },
+          { name: "is_part_of_unique_key", type: "boolean" },
+          { name: "is_updateable", type: "boolean" },
+          { name: "is_computed_column", type: "boolean" },
+          { name: "is_sparse_column_set", type: "boolean" },
+          { name: "ordinal_in_order_by_list", type: "integer" },
+          { name: "order_by_is_descending", type: "boolean" },
+          { name: "order_by_list_length", type: "integer" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" },
+          { name: "error_message", type: "text" },
+          { name: "error_type", type: "integer" },
+          { name: "error_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_describe_first_result_set_for_object",
+        columns: [
+          { name: "is_hidden", type: "boolean" },
+          { name: "column_ordinal", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "system_type_id", type: "integer" },
+          { name: "system_type_name", type: "text" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "user_type_id", type: "integer" },
+          { name: "user_type_database", type: "text" },
+          { name: "user_type_schema", type: "text" },
+          { name: "user_type_name", type: "text" },
+          { name: "assembly_qualified_type_name", type: "text" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_collection_database", type: "text" },
+          { name: "xml_collection_schema", type: "text" },
+          { name: "xml_collection_name", type: "text" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "is_case_sensitive", type: "boolean" },
+          { name: "is_fixed_length_clr_type", type: "boolean" },
+          { name: "source_server", type: "text" },
+          { name: "source_database", type: "text" },
+          { name: "source_schema", type: "text" },
+          { name: "source_table", type: "text" },
+          { name: "source_column", type: "text" },
+          { name: "is_identity_column", type: "boolean" },
+          { name: "is_part_of_unique_key", type: "boolean" },
+          { name: "is_updateable", type: "boolean" },
+          { name: "is_computed_column", type: "boolean" },
+          { name: "is_sparse_column_set", type: "boolean" },
+          { name: "ordinal_in_order_by_list", type: "integer" },
+          { name: "order_by_is_descending", type: "boolean" },
+          { name: "order_by_list_length", type: "integer" },
+          { name: "error_number", type: "integer" },
+          { name: "error_severity", type: "integer" },
+          { name: "error_state", type: "integer" },
+          { name: "error_message", type: "text" },
+          { name: "error_type", type: "integer" },
+          { name: "error_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_distributed_request_steps",
+        columns: [
+          { name: "execution_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "operation_type", type: "text" },
+          { name: "distribution_type", type: "text" },
+          { name: "location_type", type: "text" },
+          { name: "status", type: "text" },
+          { name: "error_id", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "row_count", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_distributed_requests",
+        columns: [
+          { name: "sql_handle", type: "bytes" },
+          { name: "execution_id", type: "text" },
+          { name: "status", type: "text" },
+          { name: "error_id", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_distributed_sql_requests",
+        columns: [
+          { name: "execution_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "compute_node_id", type: "integer" },
+          { name: "distribution_id", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "error_id", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "row_count", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_dms_services",
+        columns: [
+          { name: "dms_core_id", type: "integer" },
+          { name: "compute_node_id", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_dms_workers",
+        columns: [
+          { name: "execution_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "dms_step_index", type: "integer" },
+          { name: "compute_node_id", type: "integer" },
+          { name: "distribution_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "status", type: "text" },
+          { name: "bytes_per_sec", type: "integer" },
+          { name: "bytes_processed", type: "integer" },
+          { name: "rows_processed", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "query_time", type: "integer" },
+          { name: "buffers_available", type: "integer" },
+          { name: "dms_cpid", type: "integer" },
+          { name: "sql_spid", type: "integer" },
+          { name: "error_id", type: "text" },
+          { name: "source_info", type: "text" },
+          { name: "destination_info", type: "text" },
+          { name: "command", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_external_operations",
+        columns: [
+          { name: "execution_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "operation_type", type: "text" },
+          { name: "operation_name", type: "text" },
+          { name: "map_progress", type: "decimal" },
+          { name: "reduce_progress", type: "decimal" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_external_work",
+        columns: [
+          { name: "execution_id", type: "text" },
+          { name: "step_index", type: "integer" },
+          { name: "dms_step_index", type: "integer" },
+          { name: "work_id", type: "integer" },
+          { name: "compute_node_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "input_name", type: "text" },
+          { name: "read_location", type: "integer" },
+          { name: "read_command", type: "text" },
+          { name: "bytes_processed", type: "integer" },
+          { name: "length", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "compute_pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_function_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "cached_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "execution_count", type: "integer" },
+          { name: "total_worker_time", type: "integer" },
+          { name: "last_worker_time", type: "integer" },
+          { name: "min_worker_time", type: "integer" },
+          { name: "max_worker_time", type: "integer" },
+          { name: "total_physical_reads", type: "integer" },
+          { name: "last_physical_reads", type: "integer" },
+          { name: "min_physical_reads", type: "integer" },
+          { name: "max_physical_reads", type: "integer" },
+          { name: "total_logical_writes", type: "integer" },
+          { name: "last_logical_writes", type: "integer" },
+          { name: "min_logical_writes", type: "integer" },
+          { name: "max_logical_writes", type: "integer" },
+          { name: "total_logical_reads", type: "integer" },
+          { name: "last_logical_reads", type: "integer" },
+          { name: "min_logical_reads", type: "integer" },
+          { name: "max_logical_reads", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "last_elapsed_time", type: "integer" },
+          { name: "min_elapsed_time", type: "integer" },
+          { name: "max_elapsed_time", type: "integer" },
+          { name: "total_num_physical_reads", type: "integer" },
+          { name: "last_num_physical_reads", type: "integer" },
+          { name: "min_num_physical_reads", type: "integer" },
+          { name: "max_num_physical_reads", type: "integer" },
+          { name: "total_page_server_reads", type: "integer" },
+          { name: "last_page_server_reads", type: "integer" },
+          { name: "min_page_server_reads", type: "integer" },
+          { name: "max_page_server_reads", type: "integer" },
+          { name: "total_num_page_server_reads", type: "integer" },
+          { name: "last_num_page_server_reads", type: "integer" },
+          { name: "min_num_page_server_reads", type: "integer" },
+          { name: "max_num_page_server_reads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_input_buffer",
+        columns: [
+          { name: "event_type", type: "text" },
+          { name: "parameters", type: "integer" },
+          { name: "event_info", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_plan_attributes",
+        columns: [
+          { name: "attribute", type: "text" },
+          { name: "value", type: "variant" },
+          { name: "is_cache_key", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_procedure_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "cached_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "execution_count", type: "integer" },
+          { name: "total_worker_time", type: "integer" },
+          { name: "last_worker_time", type: "integer" },
+          { name: "min_worker_time", type: "integer" },
+          { name: "max_worker_time", type: "integer" },
+          { name: "total_physical_reads", type: "integer" },
+          { name: "last_physical_reads", type: "integer" },
+          { name: "min_physical_reads", type: "integer" },
+          { name: "max_physical_reads", type: "integer" },
+          { name: "total_logical_writes", type: "integer" },
+          { name: "last_logical_writes", type: "integer" },
+          { name: "min_logical_writes", type: "integer" },
+          { name: "max_logical_writes", type: "integer" },
+          { name: "total_logical_reads", type: "integer" },
+          { name: "last_logical_reads", type: "integer" },
+          { name: "min_logical_reads", type: "integer" },
+          { name: "max_logical_reads", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "last_elapsed_time", type: "integer" },
+          { name: "min_elapsed_time", type: "integer" },
+          { name: "max_elapsed_time", type: "integer" },
+          { name: "total_spills", type: "integer" },
+          { name: "last_spills", type: "integer" },
+          { name: "min_spills", type: "integer" },
+          { name: "max_spills", type: "integer" },
+          { name: "total_num_physical_reads", type: "integer" },
+          { name: "last_num_physical_reads", type: "integer" },
+          { name: "min_num_physical_reads", type: "integer" },
+          { name: "max_num_physical_reads", type: "integer" },
+          { name: "total_page_server_reads", type: "integer" },
+          { name: "last_page_server_reads", type: "integer" },
+          { name: "min_page_server_reads", type: "integer" },
+          { name: "max_page_server_reads", type: "integer" },
+          { name: "total_num_page_server_reads", type: "integer" },
+          { name: "last_num_page_server_reads", type: "integer" },
+          { name: "min_num_page_server_reads", type: "integer" },
+          { name: "max_num_page_server_reads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_memory_grants",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "scheduler_id", type: "integer" },
+          { name: "dop", type: "integer" },
+          { name: "request_time", type: "timestamp" },
+          { name: "grant_time", type: "timestamp" },
+          { name: "requested_memory_kb", type: "integer" },
+          { name: "granted_memory_kb", type: "integer" },
+          { name: "required_memory_kb", type: "integer" },
+          { name: "used_memory_kb", type: "integer" },
+          { name: "max_used_memory_kb", type: "integer" },
+          { name: "query_cost", type: "decimal" },
+          { name: "timeout_sec", type: "integer" },
+          { name: "resource_semaphore_id", type: "integer" },
+          { name: "queue_id", type: "integer" },
+          { name: "wait_order", type: "integer" },
+          { name: "is_next_candidate", type: "boolean" },
+          { name: "wait_time_ms", type: "integer" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "group_id", type: "integer" },
+          { name: "pool_id", type: "integer" },
+          { name: "is_small", type: "boolean" },
+          { name: "ideal_memory_kb", type: "integer" },
+          { name: "reserved_worker_count", type: "integer" },
+          { name: "used_worker_count", type: "integer" },
+          { name: "max_used_worker_count", type: "integer" },
+          { name: "reserved_node_bitmap", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_optimizer_info",
+        columns: [
+          { name: "counter", type: "text" },
+          { name: "occurrence", type: "integer" },
+          { name: "value", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_optimizer_memory_gateways",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "max_count", type: "integer" },
+          { name: "active_count", type: "integer" },
+          { name: "waiter_count", type: "integer" },
+          { name: "threshold_factor", type: "integer" },
+          { name: "threshold", type: "integer" },
+          { name: "is_active", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_parallel_workers",
+        columns: [
+          { name: "node_id", type: "integer" },
+          { name: "scheduler_count", type: "integer" },
+          { name: "max_worker_count", type: "integer" },
+          { name: "reserved_worker_count", type: "integer" },
+          { name: "free_worker_count", type: "integer" },
+          { name: "used_worker_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_plan",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "query_plan", type: "xml" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_plan_stats",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "query_plan", type: "xml" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_profiles",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "physical_operator_name", type: "text" },
+          { name: "node_id", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "task_address", type: "bytes" },
+          { name: "row_count", type: "integer" },
+          { name: "rewind_count", type: "integer" },
+          { name: "rebind_count", type: "integer" },
+          { name: "end_of_scan_count", type: "integer" },
+          { name: "estimate_row_count", type: "integer" },
+          { name: "first_active_time", type: "integer" },
+          { name: "last_active_time", type: "integer" },
+          { name: "open_time", type: "integer" },
+          { name: "first_row_time", type: "integer" },
+          { name: "last_row_time", type: "integer" },
+          { name: "close_time", type: "integer" },
+          { name: "elapsed_time_ms", type: "integer" },
+          { name: "cpu_time_ms", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "scan_count", type: "integer" },
+          { name: "logical_read_count", type: "integer" },
+          { name: "physical_read_count", type: "integer" },
+          { name: "read_ahead_count", type: "integer" },
+          { name: "write_page_count", type: "integer" },
+          { name: "lob_logical_read_count", type: "integer" },
+          { name: "lob_physical_read_count", type: "integer" },
+          { name: "lob_read_ahead_count", type: "integer" },
+          { name: "segment_read_count", type: "integer" },
+          { name: "segment_skip_count", type: "integer" },
+          { name: "actual_read_row_count", type: "integer" },
+          { name: "estimated_read_row_count", type: "integer" },
+          { name: "page_server_read_count", type: "integer" },
+          { name: "page_server_read_ahead_count", type: "integer" },
+          { name: "lob_page_server_read_count", type: "integer" },
+          { name: "lob_page_server_read_ahead_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_resource_semaphores",
+        columns: [
+          { name: "resource_semaphore_id", type: "integer" },
+          { name: "target_memory_kb", type: "integer" },
+          { name: "max_target_memory_kb", type: "integer" },
+          { name: "total_memory_kb", type: "integer" },
+          { name: "available_memory_kb", type: "integer" },
+          { name: "granted_memory_kb", type: "integer" },
+          { name: "used_memory_kb", type: "integer" },
+          { name: "grantee_count", type: "integer" },
+          { name: "waiter_count", type: "integer" },
+          { name: "timeout_error_count", type: "integer" },
+          { name: "forced_grant_count", type: "integer" },
+          { name: "pool_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_statistics_xml",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "query_plan", type: "xml" },
+          { name: "statement_start_offset", type: "integer" },
+          { name: "statement_end_offset", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_stats",
+        columns: [
+          { name: "sql_handle", type: "bytes" },
+          { name: "statement_start_offset", type: "integer" },
+          { name: "statement_end_offset", type: "integer" },
+          { name: "plan_generation_num", type: "integer" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "execution_count", type: "integer" },
+          { name: "total_worker_time", type: "integer" },
+          { name: "last_worker_time", type: "integer" },
+          { name: "min_worker_time", type: "integer" },
+          { name: "max_worker_time", type: "integer" },
+          { name: "total_physical_reads", type: "integer" },
+          { name: "last_physical_reads", type: "integer" },
+          { name: "min_physical_reads", type: "integer" },
+          { name: "max_physical_reads", type: "integer" },
+          { name: "total_logical_writes", type: "integer" },
+          { name: "last_logical_writes", type: "integer" },
+          { name: "min_logical_writes", type: "integer" },
+          { name: "max_logical_writes", type: "integer" },
+          { name: "total_logical_reads", type: "integer" },
+          { name: "last_logical_reads", type: "integer" },
+          { name: "min_logical_reads", type: "integer" },
+          { name: "max_logical_reads", type: "integer" },
+          { name: "total_clr_time", type: "integer" },
+          { name: "last_clr_time", type: "integer" },
+          { name: "min_clr_time", type: "integer" },
+          { name: "max_clr_time", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "last_elapsed_time", type: "integer" },
+          { name: "min_elapsed_time", type: "integer" },
+          { name: "max_elapsed_time", type: "integer" },
+          { name: "query_hash", type: "bytes" },
+          { name: "query_plan_hash", type: "bytes" },
+          { name: "total_rows", type: "integer" },
+          { name: "last_rows", type: "integer" },
+          { name: "min_rows", type: "integer" },
+          { name: "max_rows", type: "integer" },
+          { name: "statement_sql_handle", type: "bytes" },
+          { name: "statement_context_id", type: "integer" },
+          { name: "total_dop", type: "integer" },
+          { name: "last_dop", type: "integer" },
+          { name: "min_dop", type: "integer" },
+          { name: "max_dop", type: "integer" },
+          { name: "total_grant_kb", type: "integer" },
+          { name: "last_grant_kb", type: "integer" },
+          { name: "min_grant_kb", type: "integer" },
+          { name: "max_grant_kb", type: "integer" },
+          { name: "total_used_grant_kb", type: "integer" },
+          { name: "last_used_grant_kb", type: "integer" },
+          { name: "min_used_grant_kb", type: "integer" },
+          { name: "max_used_grant_kb", type: "integer" },
+          { name: "total_ideal_grant_kb", type: "integer" },
+          { name: "last_ideal_grant_kb", type: "integer" },
+          { name: "min_ideal_grant_kb", type: "integer" },
+          { name: "max_ideal_grant_kb", type: "integer" },
+          { name: "total_reserved_threads", type: "integer" },
+          { name: "last_reserved_threads", type: "integer" },
+          { name: "min_reserved_threads", type: "integer" },
+          { name: "max_reserved_threads", type: "integer" },
+          { name: "total_used_threads", type: "integer" },
+          { name: "last_used_threads", type: "integer" },
+          { name: "min_used_threads", type: "integer" },
+          { name: "max_used_threads", type: "integer" },
+          { name: "total_columnstore_segment_reads", type: "integer" },
+          { name: "last_columnstore_segment_reads", type: "integer" },
+          { name: "min_columnstore_segment_reads", type: "integer" },
+          { name: "max_columnstore_segment_reads", type: "integer" },
+          { name: "total_columnstore_segment_skips", type: "integer" },
+          { name: "last_columnstore_segment_skips", type: "integer" },
+          { name: "min_columnstore_segment_skips", type: "integer" },
+          { name: "max_columnstore_segment_skips", type: "integer" },
+          { name: "total_spills", type: "integer" },
+          { name: "last_spills", type: "integer" },
+          { name: "min_spills", type: "integer" },
+          { name: "max_spills", type: "integer" },
+          { name: "total_num_physical_reads", type: "integer" },
+          { name: "last_num_physical_reads", type: "integer" },
+          { name: "min_num_physical_reads", type: "integer" },
+          { name: "max_num_physical_reads", type: "integer" },
+          { name: "total_page_server_reads", type: "integer" },
+          { name: "last_page_server_reads", type: "integer" },
+          { name: "min_page_server_reads", type: "integer" },
+          { name: "max_page_server_reads", type: "integer" },
+          { name: "total_num_page_server_reads", type: "integer" },
+          { name: "last_num_page_server_reads", type: "integer" },
+          { name: "min_num_page_server_reads", type: "integer" },
+          { name: "max_num_page_server_reads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_query_transformation_stats",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "promise_total", type: "integer" },
+          { name: "promise_avg", type: "decimal" },
+          { name: "promised", type: "integer" },
+          { name: "built_substitute", type: "integer" },
+          { name: "succeeded", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_requests",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "status", type: "text" },
+          { name: "command", type: "text" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "statement_start_offset", type: "integer" },
+          { name: "statement_end_offset", type: "integer" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "database_id", type: "integer" },
+          { name: "user_id", type: "integer" },
+          { name: "connection_id", type: "uuid" },
+          { name: "blocking_session_id", type: "integer" },
+          { name: "wait_type", type: "text" },
+          { name: "wait_time", type: "integer" },
+          { name: "last_wait_type", type: "text" },
+          { name: "wait_resource", type: "text" },
+          { name: "open_transaction_count", type: "integer" },
+          { name: "open_resultset_count", type: "integer" },
+          { name: "transaction_id", type: "integer" },
+          { name: "context_info", type: "bytes" },
+          { name: "percent_complete", type: "decimal" },
+          { name: "estimated_completion_time", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "scheduler_id", type: "integer" },
+          { name: "task_address", type: "bytes" },
+          { name: "reads", type: "integer" },
+          { name: "writes", type: "integer" },
+          { name: "logical_reads", type: "integer" },
+          { name: "text_size", type: "integer" },
+          { name: "language", type: "text" },
+          { name: "date_format", type: "text" },
+          { name: "date_first", type: "integer" },
+          { name: "quoted_identifier", type: "boolean" },
+          { name: "arithabort", type: "boolean" },
+          { name: "ansi_null_dflt_on", type: "boolean" },
+          { name: "ansi_defaults", type: "boolean" },
+          { name: "ansi_warnings", type: "boolean" },
+          { name: "ansi_padding", type: "boolean" },
+          { name: "ansi_nulls", type: "boolean" },
+          { name: "concat_null_yields_null", type: "boolean" },
+          { name: "transaction_isolation_level", type: "integer" },
+          { name: "lock_timeout", type: "integer" },
+          { name: "deadlock_priority", type: "integer" },
+          { name: "row_count", type: "integer" },
+          { name: "prev_error", type: "integer" },
+          { name: "nest_level", type: "integer" },
+          { name: "granted_query_memory", type: "integer" },
+          { name: "executing_managed_code", type: "boolean" },
+          { name: "group_id", type: "integer" },
+          { name: "query_hash", type: "bytes" },
+          { name: "query_plan_hash", type: "bytes" },
+          { name: "statement_sql_handle", type: "bytes" },
+          { name: "statement_context_id", type: "integer" },
+          { name: "dop", type: "integer" },
+          { name: "parallel_worker_count", type: "integer" },
+          { name: "external_script_request_id", type: "uuid" },
+          { name: "is_resumable", type: "boolean" },
+          { name: "page_resource", type: "bytes" },
+          { name: "page_server_reads", type: "integer" },
+          { name: "dist_statement_id", type: "uuid" },
+          { name: "label", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_requests_history",
+        columns: [
+          { name: "status", type: "text" },
+          { name: "transaction_id", type: "integer" },
+          { name: "distributed_statement_id", type: "text" },
+          { name: "query_hash", type: "bytes" },
+          { name: "login_name", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "command", type: "text" },
+          { name: "query_text", type: "text" },
+          { name: "total_elapsed_time_ms", type: "integer" },
+          { name: "data_processed_mb", type: "integer" },
+          { name: "error", type: "text" },
+          { name: "error_code", type: "integer" },
+          { name: "rejected_rows_path", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_session_wait_stats",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "wait_type", type: "text" },
+          { name: "waiting_tasks_count", type: "integer" },
+          { name: "wait_time_ms", type: "integer" },
+          { name: "max_wait_time_ms", type: "integer" },
+          { name: "signal_wait_time_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_sessions",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "login_time", type: "timestamp" },
+          { name: "host_name", type: "text" },
+          { name: "program_name", type: "text" },
+          { name: "host_process_id", type: "integer" },
+          { name: "client_version", type: "integer" },
+          { name: "client_interface_name", type: "text" },
+          { name: "security_id", type: "bytes" },
+          { name: "login_name", type: "text" },
+          { name: "nt_domain", type: "text" },
+          { name: "nt_user_name", type: "text" },
+          { name: "status", type: "text" },
+          { name: "context_info", type: "bytes" },
+          { name: "cpu_time", type: "integer" },
+          { name: "memory_usage", type: "integer" },
+          { name: "total_scheduled_time", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "last_request_start_time", type: "timestamp" },
+          { name: "last_request_end_time", type: "timestamp" },
+          { name: "reads", type: "integer" },
+          { name: "writes", type: "integer" },
+          { name: "logical_reads", type: "integer" },
+          { name: "is_user_process", type: "boolean" },
+          { name: "text_size", type: "integer" },
+          { name: "language", type: "text" },
+          { name: "date_format", type: "text" },
+          { name: "date_first", type: "integer" },
+          { name: "quoted_identifier", type: "boolean" },
+          { name: "arithabort", type: "boolean" },
+          { name: "ansi_null_dflt_on", type: "boolean" },
+          { name: "ansi_defaults", type: "boolean" },
+          { name: "ansi_warnings", type: "boolean" },
+          { name: "ansi_padding", type: "boolean" },
+          { name: "ansi_nulls", type: "boolean" },
+          { name: "concat_null_yields_null", type: "boolean" },
+          { name: "transaction_isolation_level", type: "integer" },
+          { name: "lock_timeout", type: "integer" },
+          { name: "deadlock_priority", type: "integer" },
+          { name: "row_count", type: "integer" },
+          { name: "prev_error", type: "integer" },
+          { name: "original_security_id", type: "bytes" },
+          { name: "original_login_name", type: "text" },
+          { name: "last_successful_logon", type: "timestamp" },
+          { name: "last_unsuccessful_logon", type: "timestamp" },
+          { name: "unsuccessful_logons", type: "integer" },
+          { name: "group_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "authenticating_database_id", type: "integer" },
+          { name: "open_transaction_count", type: "integer" },
+          { name: "page_server_reads", type: "integer" },
+          { name: "contained_availability_group_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_sql_text",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "text", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_text_query_plan",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "query_plan", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_trigger_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "plan_handle", type: "bytes" },
+          { name: "cached_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "execution_count", type: "integer" },
+          { name: "total_worker_time", type: "integer" },
+          { name: "last_worker_time", type: "integer" },
+          { name: "min_worker_time", type: "integer" },
+          { name: "max_worker_time", type: "integer" },
+          { name: "total_physical_reads", type: "integer" },
+          { name: "last_physical_reads", type: "integer" },
+          { name: "min_physical_reads", type: "integer" },
+          { name: "max_physical_reads", type: "integer" },
+          { name: "total_logical_writes", type: "integer" },
+          { name: "last_logical_writes", type: "integer" },
+          { name: "min_logical_writes", type: "integer" },
+          { name: "max_logical_writes", type: "integer" },
+          { name: "total_logical_reads", type: "integer" },
+          { name: "last_logical_reads", type: "integer" },
+          { name: "min_logical_reads", type: "integer" },
+          { name: "max_logical_reads", type: "integer" },
+          { name: "total_elapsed_time", type: "integer" },
+          { name: "last_elapsed_time", type: "integer" },
+          { name: "min_elapsed_time", type: "integer" },
+          { name: "max_elapsed_time", type: "integer" },
+          { name: "total_spills", type: "integer" },
+          { name: "last_spills", type: "integer" },
+          { name: "min_spills", type: "integer" },
+          { name: "max_spills", type: "integer" },
+          { name: "total_num_physical_reads", type: "integer" },
+          { name: "last_num_physical_reads", type: "integer" },
+          { name: "min_num_physical_reads", type: "integer" },
+          { name: "max_num_physical_reads", type: "integer" },
+          { name: "total_page_server_reads", type: "integer" },
+          { name: "last_page_server_reads", type: "integer" },
+          { name: "min_page_server_reads", type: "integer" },
+          { name: "max_page_server_reads", type: "integer" },
+          { name: "total_num_page_server_reads", type: "integer" },
+          { name: "last_num_page_server_reads", type: "integer" },
+          { name: "min_num_page_server_reads", type: "integer" },
+          { name: "max_num_page_server_reads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_valid_use_hints",
+        columns: [
+          { name: "name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_exec_xml_handles",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "document_id", type: "integer" },
+          { name: "namespace_document_id", type: "integer" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "statement_start_offset", type: "integer" },
+          { name: "statement_end_offset", type: "integer" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "original_document_size_bytes", type: "integer" },
+          { name: "original_namespace_document_size_bytes", type: "integer" },
+          { name: "num_openxml_calls", type: "integer" },
+          { name: "dormant_duration_ms", type: "integer" },
+          { name: "row_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_authentication",
+        columns: [
+          { name: "use_identity", type: "boolean" },
+          { name: "credential_id", type: "integer" },
+          { name: "certificate_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_data_processed",
+        columns: [
+          { name: "type", type: "text" },
+          { name: "data_processed_mb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_governance_sync_state",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "sync_scope", type: "integer" },
+          { name: "sync_scope_desc", type: "text" },
+          { name: "sync_state", type: "integer" },
+          { name: "sync_state_desc", type: "text" },
+          { name: "user_initiated_sync", type: "integer" },
+          { name: "sync_percent_complete", type: "integer" },
+          { name: "current_sync_token", type: "text" },
+          { name: "next_sync_token", type: "text" },
+          { name: "current_blob_references", type: "text" },
+          { name: "last_reference_fetch_success_time_utc", type: "timestamp" },
+          { name: "last_reference_fetch_attempt_time_utc", type: "timestamp" },
+          { name: "last_reference_fetch_error", type: "integer" },
+          { name: "last_blob_fetch_success_time_utc", type: "timestamp" },
+          { name: "last_blob_fetch_attempt_time_utc", type: "timestamp" },
+          { name: "last_blob_fetch_error", type: "integer" },
+          { name: "last_sync_success_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_success_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_attempt_time_utc", type: "timestamp" },
+          { name: "last_synchronizing_error", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_policy_cache",
+        columns: [
+          { name: "policy_cache_state", type: "integer" },
+          { name: "policy_cache_state_desc", type: "text" },
+          { name: "last_policy_cache_update_time", type: "timestamp" },
+          { name: "last_pull_type", type: "integer" },
+          { name: "last_pull_type_desc", type: "text" },
+          { name: "number_of_cached_policies", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_provider_certificate_info",
+        columns: [
+          { name: "subject", type: "text" },
+          { name: "thumbprint", type: "text" },
+          { name: "expiry_date", type: "timestamp" },
+          { name: "is_readable", type: "boolean" },
+          { name: "is_missing", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_script_execution_stats",
+        columns: [
+          { name: "language", type: "text" },
+          { name: "counter_name", type: "text" },
+          { name: "counter_value", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_script_requests",
+        columns: [
+          { name: "external_script_request_id", type: "uuid" },
+          { name: "language", type: "text" },
+          { name: "degree_of_parallelism", type: "integer" },
+          { name: "external_user_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_external_script_resource_usage_stats",
+        columns: [
+          { name: "package_name", type: "text" },
+          { name: "memory_usage", type: "integer" },
+          { name: "cpu_usage", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_filestream_file_io_handles",
+        columns: [
+          { name: "handle_context_address", type: "bytes" },
+          { name: "creation_request_id", type: "integer" },
+          { name: "creation_irp_id", type: "integer" },
+          { name: "handle_id", type: "integer" },
+          { name: "creation_client_thread_id", type: "bytes" },
+          { name: "creation_client_process_id", type: "bytes" },
+          { name: "filestream_transaction_id", type: "bytes" },
+          { name: "access_type", type: "text" },
+          { name: "logical_path", type: "text" },
+          { name: "physical_path", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_filestream_file_io_requests",
+        columns: [
+          { name: "request_context_address", type: "bytes" },
+          { name: "current_spid", type: "integer" },
+          { name: "request_type", type: "text" },
+          { name: "request_state", type: "text" },
+          { name: "request_id", type: "integer" },
+          { name: "irp_id", type: "integer" },
+          { name: "handle_id", type: "integer" },
+          { name: "client_thread_id", type: "bytes" },
+          { name: "client_process_id", type: "bytes" },
+          { name: "handle_context_address", type: "bytes" },
+          { name: "filestream_transaction_id", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_filestream_non_transacted_handles",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "handle_id", type: "integer" },
+          { name: "file_object_type", type: "integer" },
+          { name: "file_object_type_desc", type: "text" },
+          { name: "correlation_process_id", type: "bytes" },
+          { name: "correlation_thread_id", type: "bytes" },
+          { name: "file_context", type: "bytes" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "current_workitem_type", type: "integer" },
+          { name: "current_workitem_type_desc", type: "text" },
+          { name: "fcb_id", type: "integer" },
+          { name: "item_id", type: "bytes" },
+          { name: "is_directory", type: "boolean" },
+          { name: "item_name", type: "text" },
+          { name: "opened_file_name", type: "text" },
+          { name: "database_directory_name", type: "text" },
+          { name: "table_directory_name", type: "text" },
+          { name: "remaining_file_name", type: "text" },
+          { name: "open_time", type: "timestamp" },
+          { name: "flags", type: "integer" },
+          { name: "login_id", type: "integer" },
+          { name: "login_name", type: "text" },
+          { name: "login_sid", type: "bytes" },
+          { name: "read_access", type: "boolean" },
+          { name: "write_access", type: "boolean" },
+          { name: "delete_access", type: "boolean" },
+          { name: "share_read", type: "boolean" },
+          { name: "share_write", type: "boolean" },
+          { name: "share_delete", type: "boolean" },
+          { name: "create_disposition", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_active_catalogs",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "catalog_id", type: "integer" },
+          { name: "memory_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "is_paused", type: "boolean" },
+          { name: "status", type: "integer" },
+          { name: "status_description", type: "text" },
+          { name: "previous_status", type: "integer" },
+          { name: "previous_status_description", type: "text" },
+          { name: "worker_count", type: "integer" },
+          { name: "active_fts_index_count", type: "integer" },
+          { name: "auto_population_count", type: "integer" },
+          { name: "manual_population_count", type: "integer" },
+          { name: "full_incremental_population_count", type: "integer" },
+          { name: "row_count_in_thousands", type: "integer" },
+          { name: "is_importing", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_fdhosts",
+        columns: [
+          { name: "fdhost_id", type: "integer" },
+          { name: "fdhost_name", type: "text" },
+          { name: "fdhost_process_id", type: "integer" },
+          { name: "fdhost_type", type: "text" },
+          { name: "max_thread", type: "integer" },
+          { name: "batch_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_index_keywords",
+        columns: [
+          { name: "keyword", type: "bytes" },
+          { name: "display_term", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "document_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_index_keywords_by_document",
+        columns: [
+          { name: "keyword", type: "bytes" },
+          { name: "display_term", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "document_id", type: "integer" },
+          { name: "occurrence_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_index_keywords_by_property",
+        columns: [
+          { name: "keyword", type: "bytes" },
+          { name: "display_term", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "document_id", type: "integer" },
+          { name: "property_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_index_keywords_position_by_document",
+        columns: [
+          { name: "keyword", type: "bytes" },
+          { name: "display_term", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "document_id", type: "integer" },
+          { name: "position", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_index_population",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "catalog_id", type: "integer" },
+          { name: "table_id", type: "integer" },
+          { name: "memory_address", type: "bytes" },
+          { name: "population_type", type: "integer" },
+          { name: "population_type_description", type: "text" },
+          { name: "is_clustered_index_scan", type: "boolean" },
+          { name: "range_count", type: "integer" },
+          { name: "completed_range_count", type: "integer" },
+          { name: "outstanding_batch_count", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "status_description", type: "text" },
+          { name: "completion_type", type: "integer" },
+          { name: "completion_type_description", type: "text" },
+          { name: "worker_count", type: "integer" },
+          { name: "queued_population_type", type: "integer" },
+          { name: "queued_population_type_description", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "incremental_timestamp", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_memory_buffers",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "memory_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "is_free", type: "boolean" },
+          { name: "row_count", type: "integer" },
+          { name: "bytes_used", type: "integer" },
+          { name: "percent_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_memory_pools",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "buffer_size", type: "integer" },
+          { name: "min_buffer_limit", type: "integer" },
+          { name: "max_buffer_limit", type: "integer" },
+          { name: "buffer_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_outstanding_batches",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "catalog_id", type: "integer" },
+          { name: "table_id", type: "integer" },
+          { name: "batch_id", type: "integer" },
+          { name: "memory_address", type: "bytes" },
+          { name: "crawl_memory_address", type: "bytes" },
+          { name: "memregion_memory_address", type: "bytes" },
+          { name: "hr_batch", type: "integer" },
+          { name: "is_retry_batch", type: "boolean" },
+          { name: "retry_hints", type: "integer" },
+          { name: "retry_hints_description", type: "text" },
+          { name: "doc_failed", type: "integer" },
+          { name: "batch_timestamp", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_parser",
+        columns: [
+          { name: "keyword", type: "bytes" },
+          { name: "group_id", type: "integer" },
+          { name: "phrase_id", type: "integer" },
+          { name: "occurrence", type: "integer" },
+          { name: "special_term", type: "text" },
+          { name: "display_term", type: "text" },
+          { name: "expansion_type", type: "integer" },
+          { name: "source_term", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_population_ranges",
+        columns: [
+          { name: "memory_address", type: "bytes" },
+          { name: "parent_memory_address", type: "bytes" },
+          { name: "is_retry", type: "boolean" },
+          { name: "session_id", type: "integer" },
+          { name: "processed_row_count", type: "integer" },
+          { name: "error_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_fts_semantic_similarity_population",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "catalog_id", type: "integer" },
+          { name: "table_id", type: "integer" },
+          { name: "document_count", type: "integer" },
+          { name: "document_processed_count", type: "integer" },
+          { name: "completion_type", type: "integer" },
+          { name: "completion_type_description", type: "text" },
+          { name: "worker_count", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "status_description", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "incremental_timestamp", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_ag_threads",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "name", type: "text" },
+          { name: "num_databases", type: "integer" },
+          { name: "num_capture_threads", type: "integer" },
+          { name: "num_redo_threads", type: "integer" },
+          { name: "num_parallel_redo_threads", type: "integer" },
+          { name: "num_hadr_threads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_auto_page_repair",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" },
+          { name: "error_type", type: "integer" },
+          { name: "page_status", type: "integer" },
+          { name: "modification_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_automatic_seeding",
+        columns: [
+          { name: "start_time", type: "timestamp" },
+          { name: "completion_time", type: "timestamp" },
+          { name: "ag_id", type: "uuid" },
+          { name: "ag_db_id", type: "uuid" },
+          { name: "ag_remote_replica_id", type: "uuid" },
+          { name: "operation_id", type: "uuid" },
+          { name: "is_source", type: "boolean" },
+          { name: "current_state", type: "text" },
+          { name: "performed_seeding", type: "boolean" },
+          { name: "failure_state", type: "integer" },
+          { name: "failure_state_desc", type: "text" },
+          { name: "error_code", type: "integer" },
+          { name: "number_of_attempts", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_availability_group_states",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "primary_replica", type: "text" },
+          { name: "primary_recovery_health", type: "integer" },
+          { name: "primary_recovery_health_desc", type: "text" },
+          { name: "secondary_recovery_health", type: "integer" },
+          { name: "secondary_recovery_health_desc", type: "text" },
+          { name: "synchronization_health", type: "integer" },
+          { name: "synchronization_health_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_availability_replica_cluster_nodes",
+        columns: [
+          { name: "group_name", type: "text" },
+          { name: "replica_server_name", type: "text" },
+          { name: "node_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_availability_replica_cluster_states",
+        columns: [
+          { name: "replica_id", type: "uuid" },
+          { name: "replica_server_name", type: "text" },
+          { name: "group_id", type: "uuid" },
+          { name: "join_state", type: "integer" },
+          { name: "join_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_availability_replica_states",
+        columns: [
+          { name: "replica_id", type: "uuid" },
+          { name: "group_id", type: "uuid" },
+          { name: "is_local", type: "boolean" },
+          { name: "role", type: "integer" },
+          { name: "role_desc", type: "text" },
+          { name: "operational_state", type: "integer" },
+          { name: "operational_state_desc", type: "text" },
+          { name: "connected_state", type: "integer" },
+          { name: "connected_state_desc", type: "text" },
+          { name: "recovery_health", type: "integer" },
+          { name: "recovery_health_desc", type: "text" },
+          { name: "synchronization_health", type: "integer" },
+          { name: "synchronization_health_desc", type: "text" },
+          { name: "last_connect_error_number", type: "integer" },
+          { name: "last_connect_error_description", type: "text" },
+          { name: "last_connect_error_timestamp", type: "timestamp" },
+          { name: "write_lease_remaining_ticks", type: "integer" },
+          { name: "current_configuration_commit_start_time_utc", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_cached_database_replica_states",
+        columns: [
+          { name: "ag_id", type: "uuid" },
+          { name: "ag_name", type: "text" },
+          { name: "replica_id", type: "uuid" },
+          { name: "replica_name", type: "text" },
+          { name: "ag_db_id", type: "uuid" },
+          { name: "ag_db_name", type: "text" },
+          { name: "is_local", type: "boolean" },
+          { name: "is_primary_replica", type: "boolean" },
+          { name: "synchronization_state", type: "integer" },
+          { name: "synchronization_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_cached_replica_states",
+        columns: [
+          { name: "ag_id", type: "uuid" },
+          { name: "ag_name", type: "text" },
+          { name: "replica_id", type: "uuid" },
+          { name: "replica_name", type: "text" },
+          { name: "is_local", type: "boolean" },
+          { name: "availability_mode", type: "integer" },
+          { name: "sequence_number", type: "integer" },
+          { name: "role", type: "integer" },
+          { name: "role_desc", type: "text" },
+          { name: "synchronization_health", type: "integer" },
+          { name: "synchronization_health_desc", type: "text" },
+          { name: "secondary_role_allow_connections", type: "integer" },
+          { name: "secondary_role_allow_connections_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_cluster",
+        columns: [
+          { name: "cluster_name", type: "text" },
+          { name: "quorum_type", type: "integer" },
+          { name: "quorum_type_desc", type: "text" },
+          { name: "quorum_state", type: "integer" },
+          { name: "quorum_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_cluster_members",
+        columns: [
+          { name: "member_name", type: "text" },
+          { name: "member_type", type: "integer" },
+          { name: "member_type_desc", type: "text" },
+          { name: "member_state", type: "integer" },
+          { name: "member_state_desc", type: "text" },
+          { name: "number_of_quorum_votes", type: "integer" },
+          { name: "number_of_current_votes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_cluster_networks",
+        columns: [
+          { name: "member_name", type: "text" },
+          { name: "network_subnet_ip", type: "text" },
+          { name: "network_subnet_ipv4_mask", type: "text" },
+          { name: "network_subnet_prefix_length", type: "integer" },
+          { name: "is_public", type: "boolean" },
+          { name: "is_ipv4", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_database_replica_cluster_states",
+        columns: [
+          { name: "replica_id", type: "uuid" },
+          { name: "group_database_id", type: "uuid" },
+          { name: "database_name", type: "text" },
+          { name: "is_failover_ready", type: "boolean" },
+          { name: "is_pending_secondary_suspend", type: "boolean" },
+          { name: "is_database_joined", type: "boolean" },
+          { name: "recovery_lsn", type: "decimal" },
+          { name: "truncation_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_database_replica_states",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "group_id", type: "uuid" },
+          { name: "replica_id", type: "uuid" },
+          { name: "group_database_id", type: "uuid" },
+          { name: "is_local", type: "boolean" },
+          { name: "is_primary_replica", type: "boolean" },
+          { name: "synchronization_state", type: "integer" },
+          { name: "synchronization_state_desc", type: "text" },
+          { name: "is_commit_participant", type: "boolean" },
+          { name: "synchronization_health", type: "integer" },
+          { name: "synchronization_health_desc", type: "text" },
+          { name: "database_state", type: "integer" },
+          { name: "database_state_desc", type: "text" },
+          { name: "is_suspended", type: "boolean" },
+          { name: "suspend_reason", type: "integer" },
+          { name: "suspend_reason_desc", type: "text" },
+          { name: "recovery_lsn", type: "decimal" },
+          { name: "truncation_lsn", type: "decimal" },
+          { name: "last_sent_lsn", type: "decimal" },
+          { name: "last_sent_time", type: "timestamp" },
+          { name: "last_received_lsn", type: "decimal" },
+          { name: "last_received_time", type: "timestamp" },
+          { name: "last_hardened_lsn", type: "decimal" },
+          { name: "last_hardened_time", type: "timestamp" },
+          { name: "last_redone_lsn", type: "decimal" },
+          { name: "last_redone_time", type: "timestamp" },
+          { name: "log_send_queue_size", type: "integer" },
+          { name: "log_send_rate", type: "integer" },
+          { name: "redo_queue_size", type: "integer" },
+          { name: "redo_rate", type: "integer" },
+          { name: "filestream_send_rate", type: "integer" },
+          { name: "end_of_log_lsn", type: "decimal" },
+          { name: "last_commit_lsn", type: "decimal" },
+          { name: "last_commit_time", type: "timestamp" },
+          { name: "low_water_mark_for_ghosts", type: "integer" },
+          { name: "secondary_lag_seconds", type: "integer" },
+          { name: "quorum_commit_lsn", type: "decimal" },
+          { name: "quorum_commit_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_db_threads",
+        columns: [
+          { name: "group_id", type: "uuid" },
+          { name: "ag_db_id", type: "uuid" },
+          { name: "name", type: "text" },
+          { name: "num_capture_threads", type: "integer" },
+          { name: "num_redo_threads", type: "integer" },
+          { name: "num_parallel_redo_threads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_instance_node_map",
+        columns: [
+          { name: "ag_resource_id", type: "text" },
+          { name: "instance_name", type: "text" },
+          { name: "node_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_name_id_map",
+        columns: [
+          { name: "ag_name", type: "text" },
+          { name: "ag_id", type: "uuid" },
+          { name: "ag_resource_id", type: "text" },
+          { name: "ag_group_id", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hadr_physical_seeding_stats",
+        columns: [
+          { name: "local_physical_seeding_id", type: "uuid" },
+          { name: "remote_physical_seeding_id", type: "uuid" },
+          { name: "local_database_id", type: "integer" },
+          { name: "local_database_name", type: "text" },
+          { name: "remote_machine_name", type: "text" },
+          { name: "role_desc", type: "text" },
+          { name: "internal_state_desc", type: "text" },
+          { name: "transfer_rate_bytes_per_second", type: "integer" },
+          { name: "transferred_size_bytes", type: "integer" },
+          { name: "database_size_bytes", type: "integer" },
+          { name: "start_time_utc", type: "timestamp" },
+          { name: "end_time_utc", type: "timestamp" },
+          { name: "estimate_time_complete_utc", type: "timestamp" },
+          { name: "total_disk_io_wait_time_ms", type: "integer" },
+          { name: "total_network_wait_time_ms", type: "integer" },
+          { name: "failure_code", type: "integer" },
+          { name: "failure_message", type: "text" },
+          { name: "failure_time_utc", type: "timestamp" },
+          { name: "is_compression_enabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hpc_device_stats",
+        columns: [
+          { name: "device_logical_id", type: "integer" },
+          { name: "device_type", type: "integer" },
+          { name: "device_provider", type: "integer" },
+          { name: "device_physical_id", type: "integer" },
+          { name: "version", type: "integer" },
+          { name: "compute_units", type: "integer" },
+          { name: "max_thread_proxies", type: "integer" },
+          { name: "clock_frequency", type: "integer" },
+          { name: "device_memory_bytes", type: "integer" },
+          { name: "rows_handled", type: "integer" },
+          { name: "cycles_used", type: "integer" },
+          { name: "device_to_host_bytes", type: "integer" },
+          { name: "host_to_device_bytes", type: "integer" },
+          { name: "device_ready", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_hpc_thread_proxy_stats",
+        columns: [
+          { name: "device_logical_id", type: "integer" },
+          { name: "device_type", type: "integer" },
+          { name: "device_provider", type: "integer" },
+          { name: "proxy_id", type: "integer" },
+          { name: "rows_handled", type: "integer" },
+          { name: "cycles_used", type: "integer" },
+          { name: "host_to_device_bytes", type: "integer" },
+          { name: "device_to_host_bytes", type: "integer" },
+          { name: "device_memory_bytes", type: "integer" },
+          { name: "session_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "active", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_io_backup_tapes",
+        columns: [
+          { name: "physical_device_name", type: "text" },
+          { name: "logical_device_name", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "status_desc", type: "text" },
+          { name: "mount_request_time", type: "timestamp" },
+          { name: "mount_expiration_time", type: "timestamp" },
+          { name: "database_name", type: "text" },
+          { name: "spid", type: "integer" },
+          { name: "command", type: "integer" },
+          { name: "command_desc", type: "text" },
+          { name: "media_family_id", type: "integer" },
+          { name: "media_set_name", type: "text" },
+          { name: "media_set_guid", type: "uuid" },
+          { name: "media_sequence_number", type: "integer" },
+          { name: "tape_operation", type: "integer" },
+          { name: "tape_operation_desc", type: "text" },
+          { name: "mount_request_type", type: "integer" },
+          { name: "mount_request_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_io_cluster_shared_drives",
+        columns: [
+          { name: "drivename", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_io_cluster_valid_path_names",
+        columns: [
+          { name: "path_name", type: "text" },
+          { name: "cluster_owner_node", type: "text" },
+          { name: "is_cluster_shared_volume", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_io_pending_io_requests",
+        columns: [
+          { name: "io_completion_request_address", type: "bytes" },
+          { name: "io_type", type: "text" },
+          { name: "io_pending_ms_ticks", type: "integer" },
+          { name: "io_pending", type: "integer" },
+          { name: "io_completion_routine_address", type: "bytes" },
+          { name: "io_user_data_address", type: "bytes" },
+          { name: "scheduler_address", type: "bytes" },
+          { name: "io_handle", type: "bytes" },
+          { name: "io_offset", type: "integer" },
+          { name: "io_handle_path", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_io_virtual_file_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "sample_ms", type: "integer" },
+          { name: "num_of_reads", type: "integer" },
+          { name: "num_of_bytes_read", type: "integer" },
+          { name: "io_stall_read_ms", type: "integer" },
+          { name: "io_stall_queued_read_ms", type: "integer" },
+          { name: "num_of_writes", type: "integer" },
+          { name: "num_of_bytes_written", type: "integer" },
+          { name: "io_stall_write_ms", type: "integer" },
+          { name: "io_stall_queued_write_ms", type: "integer" },
+          { name: "io_stall", type: "integer" },
+          { name: "size_on_disk_bytes", type: "integer" },
+          { name: "file_handle", type: "bytes" },
+          { name: "num_of_pushed_reads", type: "integer" },
+          { name: "num_of_pushed_bytes_returned", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logconsumer_cachebufferrefs",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "consumer_id", type: "integer" },
+          { name: "start_log_block_id", type: "integer" },
+          { name: "last_log_block_id", type: "integer" },
+          { name: "shared", type: "integer" },
+          { name: "ref_counter", type: "integer" },
+          { name: "cache_buffer", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logconsumer_privatecachebuffers",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "consumer_id", type: "integer" },
+          { name: "cache_buffer", type: "bytes" },
+          { name: "size", type: "integer" },
+          { name: "start_log_block_id", type: "integer" },
+          { name: "last_log_block_id", type: "integer" },
+          { name: "ref_counter", type: "integer" },
+          { name: "is_log_read_ahead", type: "integer" },
+          { name: "persistence_status", type: "integer" },
+          { name: "incomplete", type: "integer" },
+          { name: "future_interest", type: "integer" },
+          { name: "is_emergent_mem", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpool_consumers",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "consumer_id", type: "integer" },
+          { name: "consumer_name", type: "text" },
+          { name: "resource_pool_id", type: "integer" },
+          { name: "is_idle", type: "integer" },
+          { name: "wait_time_before_idle", type: "integer" },
+          { name: "progress_category", type: "integer" },
+          { name: "persistent_only", type: "integer" },
+          { name: "full_block_only", type: "integer" },
+          { name: "share_intention", type: "integer" },
+          { name: "scan_direction", type: "integer" },
+          { name: "read_ahead_target", type: "integer" },
+          { name: "stats_enabled", type: "integer" },
+          { name: "start_lsn", type: "decimal" },
+          { name: "current_lsn", type: "decimal" },
+          { name: "end_log_block_id", type: "integer" },
+          { name: "current_cache_buffer", type: "bytes" },
+          { name: "incomplete_cache_buffer", type: "bytes" },
+          { name: "reached_end", type: "integer" },
+          { name: "outstanding_read", type: "integer" },
+          { name: "read_ahead_done", type: "integer" },
+          { name: "next_read_ahead_lsn", type: "decimal" },
+          { name: "read_ahead_distance", type: "integer" },
+          { name: "private_pool_size", type: "integer" },
+          { name: "private_pool_pages", type: "integer" },
+          { name: "private_pool_last_access_point", type: "bytes" },
+          { name: "private_pool_last_ra_access_point", type: "bytes" },
+          { name: "private_pool_hits", type: "integer" },
+          { name: "private_pool_misses", type: "integer" },
+          { name: "private_pool_hits_ra", type: "integer" },
+          { name: "private_pool_misses_ra", type: "integer" },
+          { name: "private_pool_hit_search_length", type: "integer" },
+          { name: "private_pool_miss_search_length", type: "integer" },
+          { name: "private_pool_hits_search_length_ra", type: "integer" },
+          { name: "private_pool_miss_search_length_ra", type: "integer" },
+          { name: "reference_count", type: "integer" },
+          { name: "free_ref_slot_occupied", type: "integer" },
+          { name: "target_private_pool_size", type: "integer" },
+          { name: "truncate_point", type: "integer" },
+          { name: "mem_status", type: "integer" },
+          { name: "scan_status", type: "integer" },
+          { name: "consumed_block_count", type: "integer" },
+          { name: "cache_misses", type: "integer" },
+          { name: "sigma_blocks_ahead", type: "integer" },
+          { name: "blocks_from_lc", type: "integer" },
+          { name: "blocks_from_logpool", type: "integer" },
+          { name: "blocks_from_disk", type: "integer" },
+          { name: "log_consumer_deleting", type: "integer" },
+          { name: "log_consumer_ref_counter", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpool_hashentries",
+        columns: [
+          { name: "bucket_no", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "log_block_id", type: "integer" },
+          { name: "cache_buffer", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpool_sharedcachebuffers",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "log_block_id", type: "integer" },
+          { name: "cache_buffer", type: "bytes" },
+          { name: "size", type: "integer" },
+          { name: "ref_counter", type: "integer" },
+          { name: "future_interest", type: "integer" },
+          { name: "is_pushed", type: "integer" },
+          { name: "disk_read_consumer_id", type: "integer" },
+          { name: "is_log_read_ahead", type: "integer" },
+          { name: "is_tran_consumed", type: "integer" },
+          { name: "is_hadron_consumed", type: "integer" },
+          { name: "is_replay_consumed", type: "integer" },
+          { name: "is_repl_consumed", type: "integer" },
+          { name: "persistence_status", type: "integer" },
+          { name: "entry_scan_direction", type: "integer" },
+          { name: "weight", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpool_stats",
+        columns: [
+          { name: "hash_hit_total_search_length", type: "integer" },
+          { name: "hash_miss_total_search_length", type: "integer" },
+          { name: "hash_hits", type: "integer" },
+          { name: "hash_misses", type: "integer" },
+          { name: "hash_bucket_count", type: "integer" },
+          { name: "mem_status_stamp", type: "integer" },
+          { name: "mem_status", type: "integer" },
+          { name: "logpoolmgr_count", type: "integer" },
+          { name: "total_pages", type: "integer" },
+          { name: "private_pages", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpoolmgr_freepools",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "buffer_size", type: "integer" },
+          { name: "occurrences", type: "integer" },
+          { name: "frequent", type: "integer" },
+          { name: "warm_count", type: "integer" },
+          { name: "cold_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpoolmgr_respoolsize",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "resource_pool_id", type: "integer" },
+          { name: "size", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_logpoolmgr_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "recovery_unit_id", type: "integer" },
+          { name: "log_consumer_id_seed", type: "integer" },
+          { name: "log_consumer_count", type: "integer" },
+          { name: "new_log_interesting", type: "integer" },
+          { name: "log_consumption_deactivated", type: "integer" },
+          { name: "push_enabled", type: "integer" },
+          { name: "mem_status_stamp", type: "integer" },
+          { name: "total_requests", type: "integer" },
+          { name: "total_cache_misses", type: "integer" },
+          { name: "total_disk_reads", type: "integer" },
+          { name: "low_weight_cache_buffer_count", type: "integer" },
+          { name: "high_weight_cache_buffer_count", type: "integer" },
+          { name: "mem_status", type: "integer" },
+          { name: "shared_pool_size", type: "integer" },
+          { name: "frequency_check_ticks", type: "integer" },
+          { name: "warm_cold_check_ticks", type: "integer" },
+          { name: "truncate_point", type: "integer" },
+          { name: "active_log_size", type: "integer" },
+          { name: "logpoolmgr_deleting", type: "integer" },
+          { name: "logpoolmgr_ref_counter", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_buffer_descriptors",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" },
+          { name: "page_level", type: "integer" },
+          { name: "allocation_unit_id", type: "integer" },
+          { name: "page_type", type: "text" },
+          { name: "row_count", type: "integer" },
+          { name: "free_space_in_bytes", type: "integer" },
+          { name: "is_modified", type: "boolean" },
+          { name: "numa_node", type: "integer" },
+          { name: "read_microsec", type: "integer" },
+          { name: "is_in_bpool_extension", type: "boolean" },
+          { name: "error_code", type: "integer" },
+          { name: "op_history", type: "bytes" },
+          { name: "buffer_address", type: "bytes" },
+          { name: "latch_address", type: "bytes" },
+          { name: "latch_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_buffer_pool_extension_configuration",
+        columns: [
+          { name: "path", type: "text" },
+          { name: "file_id", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_description", type: "text" },
+          { name: "current_size_in_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_child_instances",
+        columns: [
+          { name: "owning_principal_name", type: "text" },
+          { name: "owning_principal_sid", type: "text" },
+          { name: "owning_principal_sid_binary", type: "bytes" },
+          { name: "instance_name", type: "text" },
+          { name: "instance_pipe_name", type: "text" },
+          { name: "os_process_id", type: "integer" },
+          { name: "os_process_creation_date", type: "timestamp" },
+          { name: "heart_beat", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_cluster_nodes",
+        columns: [
+          { name: "nodename", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "status_description", type: "text" },
+          { name: "is_current_owner", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_cluster_properties",
+        columns: [
+          { name: "verboselogging", type: "integer" },
+          { name: "sqldumperdumpflags", type: "integer" },
+          { name: "sqldumperdumppath", type: "text" },
+          { name: "sqldumperdumptimeout", type: "integer" },
+          { name: "failureconditionlevel", type: "integer" },
+          { name: "healthchecktimeout", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_dispatcher_pools",
+        columns: [
+          { name: "dispatcher_pool_address", type: "bytes" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "dispatcher_count", type: "integer" },
+          { name: "dispatcher_ideal_count", type: "integer" },
+          { name: "dispatcher_timeout_ms", type: "integer" },
+          { name: "dispatcher_waiting_count", type: "integer" },
+          { name: "queue_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_dispatchers",
+        columns: [
+          { name: "dispatcher_pool_address", type: "bytes" },
+          { name: "task_address", type: "bytes" },
+          { name: "state", type: "text" },
+          { name: "wait_duration", type: "integer" },
+          { name: "current_item_duration", type: "integer" },
+          { name: "items_processed", type: "integer" },
+          { name: "fade_end_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_enumerate_filesystem",
+        columns: [
+          { name: "full_filesystem_path", type: "text" },
+          { name: "parent_directory", type: "text" },
+          { name: "file_or_directory_name", type: "text" },
+          { name: "level", type: "integer" },
+          { name: "is_directory", type: "integer" },
+          { name: "is_read_only", type: "integer" },
+          { name: "is_system", type: "integer" },
+          { name: "is_hidden", type: "integer" },
+          { name: "has_integrity_stream", type: "integer" },
+          { name: "is_temporary", type: "integer" },
+          { name: "is_sparse", type: "integer" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "last_access_time", type: "timestamp" },
+          { name: "last_write_time", type: "timestamp" },
+          { name: "size_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_enumerate_fixed_drives",
+        columns: [
+          { name: "fixed_drive_path", type: "text" },
+          { name: "drive_type", type: "integer" },
+          { name: "drive_type_desc", type: "text" },
+          { name: "free_space_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_file_exists",
+        columns: [
+          { name: "file_exists", type: "integer" },
+          { name: "file_is_a_directory", type: "integer" },
+          { name: "parent_directory_exists", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_host_info",
+        columns: [
+          { name: "host_platform", type: "text" },
+          { name: "host_distribution", type: "text" },
+          { name: "host_release", type: "text" },
+          { name: "host_service_pack_level", type: "text" },
+          { name: "host_sku", type: "integer" },
+          { name: "os_language_version", type: "integer" },
+          { name: "host_architecture", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_hosts",
+        columns: [
+          { name: "host_address", type: "bytes" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "enqueued_tasks_count", type: "integer" },
+          { name: "active_tasks_count", type: "integer" },
+          { name: "completed_ios_count", type: "integer" },
+          { name: "completed_ios_in_bytes", type: "integer" },
+          { name: "active_ios_count", type: "integer" },
+          { name: "default_memory_clerk_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_job_object",
+        columns: [
+          { name: "cpu_rate", type: "integer" },
+          { name: "cpu_affinity_mask", type: "integer" },
+          { name: "cpu_affinity_group", type: "integer" },
+          { name: "memory_limit_mb", type: "integer" },
+          { name: "process_memory_limit_mb", type: "integer" },
+          { name: "workingset_limit_mb", type: "integer" },
+          { name: "non_sos_mem_gap_mb", type: "integer" },
+          { name: "low_mem_signal_threshold_mb", type: "integer" },
+          { name: "total_user_time", type: "integer" },
+          { name: "total_kernel_time", type: "integer" },
+          { name: "write_operation_count", type: "integer" },
+          { name: "read_operation_count", type: "integer" },
+          { name: "peak_process_memory_used_mb", type: "integer" },
+          { name: "peak_job_memory_used_mb", type: "integer" },
+          { name: "process_physical_affinity", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_latch_stats",
+        columns: [
+          { name: "latch_class", type: "text" },
+          { name: "waiting_requests_count", type: "integer" },
+          { name: "wait_time_ms", type: "integer" },
+          { name: "max_wait_time_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_linux_cpu_stats",
+        columns: [
+          { name: "uptime_secs", type: "decimal" },
+          { name: "loadavg_1min", type: "decimal" },
+          { name: "user_time_cs", type: "integer" },
+          { name: "nice_time_cs", type: "integer" },
+          { name: "system_time_cs", type: "integer" },
+          { name: "idle_time_cs", type: "integer" },
+          { name: "iowait_time_cs", type: "integer" },
+          { name: "irq_time_cs", type: "integer" },
+          { name: "softirq_time_cs", type: "integer" },
+          { name: "interrupt_cnt", type: "integer" },
+          { name: "csw_cnt", type: "integer" },
+          { name: "boot_time_secs", type: "integer" },
+          { name: "total_forks_cnt", type: "integer" },
+          { name: "proc_runable_cnt", type: "integer" },
+          { name: "proc_ioblocked_cnt", type: "integer" },
+          { name: "c3_time", type: "integer" },
+          { name: "c2_time", type: "integer" },
+          { name: "c1_time", type: "integer" },
+          { name: "c3_count", type: "integer" },
+          { name: "c2_count", type: "integer" },
+          { name: "c1_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_linux_disk_stats",
+        columns: [
+          { name: "dev_name", type: "text" },
+          { name: "major_num", type: "integer" },
+          { name: "minor_num", type: "integer" },
+          { name: "reads_completed", type: "integer" },
+          { name: "reads_merged", type: "integer" },
+          { name: "sectors_read", type: "integer" },
+          { name: "read_time_ms", type: "integer" },
+          { name: "writes_completed", type: "integer" },
+          { name: "writes_merged", type: "integer" },
+          { name: "sectors_written", type: "integer" },
+          { name: "write_time_ms", type: "integer" },
+          { name: "ios_in_progress", type: "integer" },
+          { name: "io_time_ms", type: "integer" },
+          { name: "weighted_io_time_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_linux_net_stats",
+        columns: [
+          { name: "interface", type: "text" },
+          { name: "recv_bytes", type: "integer" },
+          { name: "recv_packets", type: "integer" },
+          { name: "recv_errors", type: "integer" },
+          { name: "recv_drops", type: "integer" },
+          { name: "recv_fifo", type: "integer" },
+          { name: "recv_frame", type: "integer" },
+          { name: "recv_compressed", type: "integer" },
+          { name: "recv_multicast", type: "integer" },
+          { name: "tx_bytes", type: "integer" },
+          { name: "tx_packets", type: "integer" },
+          { name: "tx_errors", type: "integer" },
+          { name: "tx_drop", type: "integer" },
+          { name: "tx_fifo", type: "integer" },
+          { name: "tx_collisions", type: "integer" },
+          { name: "tx_carrier", type: "integer" },
+          { name: "tx_compressed", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_linux_vm_stats",
+        columns: [
+          { name: "vm_metric_name", type: "text" },
+          { name: "count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_loaded_modules",
+        columns: [
+          { name: "base_address", type: "bytes" },
+          { name: "file_version", type: "text" },
+          { name: "product_version", type: "text" },
+          { name: "debug", type: "boolean" },
+          { name: "patched", type: "boolean" },
+          { name: "prerelease", type: "boolean" },
+          { name: "private_build", type: "boolean" },
+          { name: "special_build", type: "boolean" },
+          { name: "language", type: "integer" },
+          { name: "company", type: "text" },
+          { name: "description", type: "text" },
+          { name: "name", type: "text" },
+          { name: "target", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_allocations",
+        columns: [
+          { name: "memory_allocation_address", type: "bytes" },
+          { name: "size_in_bytes", type: "integer" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "memory_node_id", type: "integer" },
+          { name: "allocator_stack_address", type: "bytes" },
+          { name: "source_file", type: "text" },
+          { name: "line_num", type: "integer" },
+          { name: "sequence_num", type: "integer" },
+          { name: "tag", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_broker_clerks",
+        columns: [
+          { name: "clerk_name", type: "text" },
+          { name: "total_kb", type: "integer" },
+          { name: "simulated_kb", type: "integer" },
+          { name: "simulation_benefit", type: "decimal" },
+          { name: "internal_benefit", type: "decimal" },
+          { name: "external_benefit", type: "decimal" },
+          { name: "value_of_memory", type: "decimal" },
+          { name: "periodic_freed_kb", type: "integer" },
+          { name: "internal_freed_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_brokers",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "memory_broker_type", type: "text" },
+          { name: "allocations_kb", type: "integer" },
+          { name: "allocations_kb_per_sec", type: "integer" },
+          { name: "predicted_allocations_kb", type: "integer" },
+          { name: "target_allocations_kb", type: "integer" },
+          { name: "future_allocations_kb", type: "integer" },
+          { name: "overall_limit_kb", type: "integer" },
+          { name: "last_notification", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_cache_clock_hands",
+        columns: [
+          { name: "cache_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "clock_hand", type: "text" },
+          { name: "clock_status", type: "text" },
+          { name: "rounds_count", type: "integer" },
+          { name: "removed_all_rounds_count", type: "integer" },
+          { name: "updated_last_round_count", type: "integer" },
+          { name: "removed_last_round_count", type: "integer" },
+          { name: "last_tick_time", type: "integer" },
+          { name: "round_start_time", type: "integer" },
+          { name: "last_round_start_time", type: "integer" },
+          { name: "entries_visited_all_rounds_count", type: "integer" },
+          { name: "inuse_all_rounds_count", type: "integer" },
+          { name: "pinned_all_rounds_count", type: "integer" },
+          { name: "do_not_remove_all_rounds_count", type: "integer" },
+          { name: "invisible_all_rounds_count", type: "integer" },
+          { name: "different_pool_all_rounds_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_cache_counters",
+        columns: [
+          { name: "cache_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "pages_kb", type: "integer" },
+          { name: "pages_in_use_kb", type: "integer" },
+          { name: "entries_count", type: "integer" },
+          { name: "entries_in_use_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_cache_entries",
+        columns: [
+          { name: "cache_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "entry_address", type: "bytes" },
+          { name: "entry_data_address", type: "bytes" },
+          { name: "in_use_count", type: "integer" },
+          { name: "is_dirty", type: "boolean" },
+          { name: "disk_ios_count", type: "integer" },
+          { name: "context_switches_count", type: "integer" },
+          { name: "original_cost", type: "integer" },
+          { name: "current_cost", type: "integer" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "pages_kb", type: "integer" },
+          { name: "entry_data", type: "text" },
+          { name: "pool_id", type: "integer" },
+          { name: "time_to_generate", type: "decimal" },
+          { name: "use_count", type: "integer" },
+          { name: "average_time_between_uses", type: "decimal" },
+          { name: "time_since_last_use", type: "decimal" },
+          { name: "probability_of_reuse", type: "decimal" },
+          { name: "value", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_cache_hash_tables",
+        columns: [
+          { name: "cache_address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "table_level", type: "integer" },
+          { name: "buckets_count", type: "integer" },
+          { name: "buckets_in_use_count", type: "integer" },
+          { name: "buckets_min_length", type: "integer" },
+          { name: "buckets_max_length", type: "integer" },
+          { name: "buckets_avg_length", type: "integer" },
+          { name: "buckets_max_length_ever", type: "integer" },
+          { name: "hits_count", type: "integer" },
+          { name: "misses_count", type: "integer" },
+          { name: "buckets_avg_scan_hit_length", type: "integer" },
+          { name: "buckets_avg_scan_miss_length", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_clerks",
+        columns: [
+          { name: "memory_clerk_address", type: "bytes" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "memory_node_id", type: "integer" },
+          { name: "pages_kb", type: "integer" },
+          { name: "virtual_memory_reserved_kb", type: "integer" },
+          { name: "virtual_memory_committed_kb", type: "integer" },
+          { name: "awe_allocated_kb", type: "integer" },
+          { name: "shared_memory_reserved_kb", type: "integer" },
+          { name: "shared_memory_committed_kb", type: "integer" },
+          { name: "page_size_in_bytes", type: "integer" },
+          { name: "page_allocator_address", type: "bytes" },
+          { name: "host_address", type: "bytes" },
+          { name: "parent_memory_broker_type", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_node_access_stats",
+        columns: [
+          { name: "local_node", type: "integer" },
+          { name: "remote_node", type: "integer" },
+          { name: "page_class", type: "text" },
+          { name: "read_count", type: "integer" },
+          { name: "write_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_nodes",
+        columns: [
+          { name: "memory_node_id", type: "integer" },
+          { name: "virtual_address_space_reserved_kb", type: "integer" },
+          { name: "virtual_address_space_committed_kb", type: "integer" },
+          { name: "locked_page_allocations_kb", type: "integer" },
+          { name: "pages_kb", type: "integer" },
+          { name: "shared_memory_reserved_kb", type: "integer" },
+          { name: "shared_memory_committed_kb", type: "integer" },
+          { name: "cpu_affinity_mask", type: "integer" },
+          { name: "online_scheduler_mask", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "foreign_committed_kb", type: "integer" },
+          { name: "target_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_objects",
+        columns: [
+          { name: "memory_object_address", type: "bytes" },
+          { name: "parent_address", type: "bytes" },
+          { name: "pages_in_bytes", type: "integer" },
+          { name: "creation_options", type: "integer" },
+          { name: "bytes_used", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "memory_node_id", type: "integer" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "page_size_in_bytes", type: "integer" },
+          { name: "max_pages_in_bytes", type: "integer" },
+          { name: "page_allocator_address", type: "bytes" },
+          { name: "creation_stack_address", type: "bytes" },
+          { name: "sequence_num", type: "integer" },
+          { name: "partition_type", type: "integer" },
+          { name: "partition_type_desc", type: "text" },
+          { name: "contention_factor", type: "decimal" },
+          { name: "waiting_tasks_count", type: "integer" },
+          { name: "exclusive_access_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_memory_pools",
+        columns: [
+          { name: "memory_pool_address", type: "bytes" },
+          { name: "pool_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "name", type: "text" },
+          { name: "max_free_entries_count", type: "integer" },
+          { name: "free_entries_count", type: "integer" },
+          { name: "removed_in_all_rounds_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_nodes",
+        columns: [
+          { name: "node_id", type: "integer" },
+          { name: "node_state_desc", type: "text" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "memory_clerk_address", type: "bytes" },
+          { name: "io_completion_worker_address", type: "bytes" },
+          { name: "memory_node_id", type: "integer" },
+          { name: "cpu_affinity_mask", type: "integer" },
+          { name: "online_scheduler_count", type: "integer" },
+          { name: "idle_scheduler_count", type: "integer" },
+          { name: "active_worker_count", type: "integer" },
+          { name: "avg_load_balance", type: "integer" },
+          { name: "timer_task_affinity_mask", type: "integer" },
+          { name: "permanent_task_affinity_mask", type: "integer" },
+          { name: "resource_monitor_state", type: "boolean" },
+          { name: "online_scheduler_mask", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "cpu_count", type: "integer" },
+          { name: "cached_tasks", type: "integer" },
+          { name: "cached_tasks_reused", type: "integer" },
+          { name: "cached_tasks_removed", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_out_of_memory_events",
+        columns: [
+          { name: "event_time", type: "timestamp" },
+          { name: "oom_cause", type: "integer" },
+          { name: "oom_cause_desc", type: "text" },
+          { name: "available_physical_memory_mb", type: "integer" },
+          { name: "initial_job_object_memory_limit_mb", type: "integer" },
+          { name: "current_job_object_memory_limit_mb", type: "integer" },
+          { name: "process_memory_usage_mb", type: "integer" },
+          { name: "non_sos_memory_usage_mb", type: "integer" },
+          { name: "committed_memory_target_mb", type: "integer" },
+          { name: "committed_memory_mb", type: "integer" },
+          { name: "allocation_potential_memory_mb", type: "integer" },
+          { name: "oom_factor", type: "integer" },
+          { name: "oom_factor_desc", type: "text" },
+          { name: "oom_resource_pools", type: "text" },
+          { name: "top_memory_clerks", type: "text" },
+          { name: "top_resource_pools", type: "text" },
+          { name: "possible_leaked_memory_clerks", type: "text" },
+          { name: "possible_non_sos_leaked_memory_mb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_performance_counters",
+        columns: [
+          { name: "object_name", type: "text" },
+          { name: "counter_name", type: "text" },
+          { name: "instance_name", type: "text" },
+          { name: "cntr_value", type: "integer" },
+          { name: "cntr_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_process_memory",
+        columns: [
+          { name: "physical_memory_in_use_kb", type: "integer" },
+          { name: "large_page_allocations_kb", type: "integer" },
+          { name: "locked_page_allocations_kb", type: "integer" },
+          { name: "total_virtual_address_space_kb", type: "integer" },
+          { name: "virtual_address_space_reserved_kb", type: "integer" },
+          { name: "virtual_address_space_committed_kb", type: "integer" },
+          { name: "virtual_address_space_available_kb", type: "integer" },
+          { name: "page_fault_count", type: "integer" },
+          { name: "memory_utilization_percentage", type: "integer" },
+          { name: "available_commit_limit_kb", type: "integer" },
+          { name: "process_physical_memory_low", type: "boolean" },
+          { name: "process_virtual_memory_low", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_ring_buffers",
+        columns: [
+          { name: "ring_buffer_address", type: "bytes" },
+          { name: "ring_buffer_type", type: "text" },
+          { name: "timestamp", type: "integer" },
+          { name: "record", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_schedulers",
+        columns: [
+          { name: "scheduler_address", type: "bytes" },
+          { name: "parent_node_id", type: "integer" },
+          { name: "scheduler_id", type: "integer" },
+          { name: "cpu_id", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "is_online", type: "boolean" },
+          { name: "is_idle", type: "boolean" },
+          { name: "preemptive_switches_count", type: "integer" },
+          { name: "context_switches_count", type: "integer" },
+          { name: "idle_switches_count", type: "integer" },
+          { name: "current_tasks_count", type: "integer" },
+          { name: "runnable_tasks_count", type: "integer" },
+          { name: "current_workers_count", type: "integer" },
+          { name: "active_workers_count", type: "integer" },
+          { name: "work_queue_count", type: "integer" },
+          { name: "pending_disk_io_count", type: "integer" },
+          { name: "queued_disk_io_count", type: "integer" },
+          { name: "load_factor", type: "integer" },
+          { name: "yield_count", type: "integer" },
+          { name: "last_timer_activity", type: "integer" },
+          { name: "failed_to_create_worker", type: "boolean" },
+          { name: "active_worker_address", type: "bytes" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "task_memory_object_address", type: "bytes" },
+          { name: "quantum_length_us", type: "integer" },
+          { name: "total_cpu_usage_ms", type: "integer" },
+          { name: "total_cpu_idle_capped_ms", type: "integer" },
+          { name: "total_scheduler_delay_ms", type: "integer" },
+          { name: "ideal_workers_limit", type: "integer" },
+          { name: "total_enqueued_tasks", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_server_diagnostics_log_configurations",
+        columns: [
+          { name: "is_enabled", type: "integer" },
+          { name: "path", type: "text" },
+          { name: "max_size", type: "integer" },
+          { name: "max_files", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_spinlock_stats",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "collisions", type: "integer" },
+          { name: "spins", type: "integer" },
+          { name: "spins_per_collision", type: "decimal" },
+          { name: "sleep_time", type: "integer" },
+          { name: "backoffs", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_stacks",
+        columns: [
+          { name: "stack_address", type: "bytes" },
+          { name: "frame_index", type: "integer" },
+          { name: "frame_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_sublatches",
+        columns: [
+          { name: "superlatch_address", type: "bytes" },
+          { name: "sublatch_address", type: "bytes" },
+          { name: "partition_id", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "latch_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_sys_info",
+        columns: [
+          { name: "cpu_ticks", type: "integer" },
+          { name: "ms_ticks", type: "integer" },
+          { name: "cpu_count", type: "integer" },
+          { name: "hyperthread_ratio", type: "integer" },
+          { name: "physical_memory_kb", type: "integer" },
+          { name: "virtual_memory_kb", type: "integer" },
+          { name: "committed_kb", type: "integer" },
+          { name: "committed_target_kb", type: "integer" },
+          { name: "visible_target_kb", type: "integer" },
+          { name: "stack_size_in_bytes", type: "integer" },
+          { name: "os_quantum", type: "integer" },
+          { name: "os_error_mode", type: "integer" },
+          { name: "os_priority_class", type: "integer" },
+          { name: "max_workers_count", type: "integer" },
+          { name: "scheduler_count", type: "integer" },
+          { name: "scheduler_total_count", type: "integer" },
+          { name: "deadlock_monitor_serial_number", type: "integer" },
+          { name: "sqlserver_start_time_ms_ticks", type: "integer" },
+          { name: "sqlserver_start_time", type: "timestamp" },
+          { name: "affinity_type", type: "integer" },
+          { name: "affinity_type_desc", type: "text" },
+          { name: "process_kernel_time_ms", type: "integer" },
+          { name: "process_user_time_ms", type: "integer" },
+          { name: "time_source", type: "integer" },
+          { name: "time_source_desc", type: "text" },
+          { name: "virtual_machine_type", type: "integer" },
+          { name: "virtual_machine_type_desc", type: "text" },
+          { name: "softnuma_configuration", type: "integer" },
+          { name: "softnuma_configuration_desc", type: "text" },
+          { name: "process_physical_affinity", type: "text" },
+          { name: "sql_memory_model", type: "integer" },
+          { name: "sql_memory_model_desc", type: "text" },
+          { name: "socket_count", type: "integer" },
+          { name: "cores_per_socket", type: "integer" },
+          { name: "numa_node_count", type: "integer" },
+          { name: "container_type", type: "integer" },
+          { name: "container_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_sys_memory",
+        columns: [
+          { name: "total_physical_memory_kb", type: "integer" },
+          { name: "available_physical_memory_kb", type: "integer" },
+          { name: "total_page_file_kb", type: "integer" },
+          { name: "available_page_file_kb", type: "integer" },
+          { name: "system_cache_kb", type: "integer" },
+          { name: "kernel_paged_pool_kb", type: "integer" },
+          { name: "kernel_nonpaged_pool_kb", type: "integer" },
+          { name: "system_high_memory_signal_state", type: "boolean" },
+          { name: "system_low_memory_signal_state", type: "boolean" },
+          { name: "system_memory_state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_tasks",
+        columns: [
+          { name: "task_address", type: "bytes" },
+          { name: "task_state", type: "text" },
+          { name: "context_switches_count", type: "integer" },
+          { name: "pending_io_count", type: "integer" },
+          { name: "pending_io_byte_count", type: "integer" },
+          { name: "pending_io_byte_average", type: "integer" },
+          { name: "scheduler_id", type: "integer" },
+          { name: "session_id", type: "integer" },
+          { name: "exec_context_id", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "worker_address", type: "bytes" },
+          { name: "host_address", type: "bytes" },
+          { name: "parent_task_address", type: "bytes" },
+          { name: "task_local_storage", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_threads",
+        columns: [
+          { name: "thread_address", type: "bytes" },
+          { name: "started_by_sqlservr", type: "boolean" },
+          { name: "os_thread_id", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "instruction_address", type: "bytes" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "kernel_time", type: "integer" },
+          { name: "usermode_time", type: "integer" },
+          { name: "stack_base_address", type: "bytes" },
+          { name: "stack_end_address", type: "bytes" },
+          { name: "stack_bytes_committed", type: "integer" },
+          { name: "stack_bytes_used", type: "integer" },
+          { name: "affinity", type: "integer" },
+          { name: "priority", type: "integer" },
+          { name: "locale", type: "integer" },
+          { name: "token", type: "bytes" },
+          { name: "is_impersonating", type: "integer" },
+          { name: "is_waiting_on_loader_lock", type: "integer" },
+          { name: "fiber_data", type: "bytes" },
+          { name: "thread_handle", type: "bytes" },
+          { name: "event_handle", type: "bytes" },
+          { name: "scheduler_address", type: "bytes" },
+          { name: "worker_address", type: "bytes" },
+          { name: "fiber_context_address", type: "bytes" },
+          { name: "self_address", type: "bytes" },
+          { name: "processor_group", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_virtual_address_dump",
+        columns: [
+          { name: "region_base_address", type: "bytes" },
+          { name: "region_allocation_base_address", type: "bytes" },
+          { name: "region_allocation_protection", type: "bytes" },
+          { name: "region_size_in_bytes", type: "integer" },
+          { name: "region_state", type: "bytes" },
+          { name: "region_current_protection", type: "bytes" },
+          { name: "region_type", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_volume_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "volume_mount_point", type: "text" },
+          { name: "volume_id", type: "text" },
+          { name: "logical_volume_name", type: "text" },
+          { name: "file_system_type", type: "text" },
+          { name: "total_bytes", type: "integer" },
+          { name: "available_bytes", type: "integer" },
+          { name: "supports_compression", type: "integer" },
+          { name: "supports_alternate_streams", type: "integer" },
+          { name: "supports_sparse_files", type: "integer" },
+          { name: "is_read_only", type: "integer" },
+          { name: "is_compressed", type: "integer" },
+          { name: "incurs_seek_penalty", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_wait_stats",
+        columns: [
+          { name: "wait_type", type: "text" },
+          { name: "waiting_tasks_count", type: "integer" },
+          { name: "wait_time_ms", type: "integer" },
+          { name: "max_wait_time_ms", type: "integer" },
+          { name: "signal_wait_time_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_waiting_tasks",
+        columns: [
+          { name: "waiting_task_address", type: "bytes" },
+          { name: "session_id", type: "integer" },
+          { name: "exec_context_id", type: "integer" },
+          { name: "wait_duration_ms", type: "integer" },
+          { name: "wait_type", type: "text" },
+          { name: "resource_address", type: "bytes" },
+          { name: "blocking_task_address", type: "bytes" },
+          { name: "blocking_session_id", type: "integer" },
+          { name: "blocking_exec_context_id", type: "integer" },
+          { name: "resource_description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_windows_info",
+        columns: [
+          { name: "windows_release", type: "text" },
+          { name: "windows_service_pack_level", type: "text" },
+          { name: "windows_sku", type: "integer" },
+          { name: "os_language_version", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_worker_local_storage",
+        columns: [
+          { name: "worker_address", type: "bytes" },
+          { name: "comp_exec_ctxt_address", type: "bytes" },
+          { name: "ec_address", type: "bytes" },
+          { name: "broker_address", type: "bytes" },
+          { name: "task_proxy_address", type: "bytes" },
+          { name: "msqlxact_address", type: "bytes" },
+          { name: "sql_prof_address", type: "bytes" },
+          { name: "stack_checker_address", type: "bytes" },
+          { name: "host_task_address", type: "bytes" },
+          { name: "sni_error_address", type: "bytes" },
+          { name: "queryscan_address", type: "bytes" },
+          { name: "diag_address", type: "bytes" },
+          { name: "query_driver_address", type: "bytes" },
+          { name: "federatedxact_address", type: "bytes" },
+          { name: "filestream_address", type: "bytes" },
+          { name: "qe_cc_address", type: "bytes" },
+          { name: "xtp_address", type: "bytes" },
+          { name: "gq_address", type: "bytes" },
+          { name: "extensibility_ctxt_address", type: "bytes" },
+          { name: "performance_counters_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_os_workers",
+        columns: [
+          { name: "worker_address", type: "bytes" },
+          { name: "status", type: "integer" },
+          { name: "is_preemptive", type: "boolean" },
+          { name: "is_fiber", type: "boolean" },
+          { name: "is_sick", type: "boolean" },
+          { name: "is_in_cc_exception", type: "boolean" },
+          { name: "is_fatal_exception", type: "boolean" },
+          { name: "is_inside_catch", type: "boolean" },
+          { name: "is_in_polling_io_completion_routine", type: "boolean" },
+          { name: "context_switch_count", type: "integer" },
+          { name: "pending_io_count", type: "integer" },
+          { name: "pending_io_byte_count", type: "integer" },
+          { name: "pending_io_byte_average", type: "integer" },
+          { name: "wait_started_ms_ticks", type: "integer" },
+          { name: "wait_resumed_ms_ticks", type: "integer" },
+          { name: "task_bound_ms_ticks", type: "integer" },
+          { name: "worker_created_ms_ticks", type: "integer" },
+          { name: "exception_num", type: "integer" },
+          { name: "exception_severity", type: "integer" },
+          { name: "exception_address", type: "bytes" },
+          { name: "affinity", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "start_quantum", type: "integer" },
+          { name: "end_quantum", type: "integer" },
+          { name: "last_wait_type", type: "text" },
+          { name: "return_code", type: "integer" },
+          { name: "quantum_used", type: "integer" },
+          { name: "max_quantum", type: "integer" },
+          { name: "boost_count", type: "integer" },
+          { name: "tasks_processed_count", type: "integer" },
+          { name: "fiber_address", type: "bytes" },
+          { name: "task_address", type: "bytes" },
+          { name: "memory_object_address", type: "bytes" },
+          { name: "thread_address", type: "bytes" },
+          { name: "signal_worker_address", type: "bytes" },
+          { name: "scheduler_address", type: "bytes" },
+          { name: "processor_group", type: "integer" },
+          { name: "worker_migration_count", type: "integer" },
+          { name: "spinlock_wait_time_ms", type: "integer" },
+          { name: "spinlock_max_wait_time_ms", type: "integer" },
+          { name: "spinlock_wait_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_pal_processes",
+        columns: [
+          { name: "process_id", type: "integer" },
+          { name: "process_name", type: "text" },
+          { name: "processor_time", type: "integer" },
+          { name: "user_time", type: "integer" },
+          { name: "privileged_time", type: "integer" },
+          { name: "virtual_bytes_peak", type: "integer" },
+          { name: "virtual_bytes", type: "integer" },
+          { name: "working_set_peak", type: "integer" },
+          { name: "working_set", type: "integer" },
+          { name: "page_file_bytes_peak", type: "integer" },
+          { name: "page_file_bytes", type: "integer" },
+          { name: "private_bytes", type: "integer" },
+          { name: "thread_count", type: "integer" },
+          { name: "elapsed_time", type: "integer" },
+          { name: "pool_paged_bytes", type: "integer" },
+          { name: "handle_count", type: "integer" },
+          { name: "io_read_operations", type: "integer" },
+          { name: "io_write_operations", type: "integer" },
+          { name: "io_read_bytes", type: "integer" },
+          { name: "io_write_bytes", type: "integer" },
+          { name: "working_set_private", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_pal_spinlock_stats",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "collisions", type: "integer" },
+          { name: "spins", type: "integer" },
+          { name: "spins_per_collision", type: "decimal" },
+          { name: "sleep_time", type: "integer" },
+          { name: "backoffs", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_pal_wait_stats",
+        columns: [
+          { name: "wait_type", type: "text" },
+          { name: "waiting_threads_count", type: "integer" },
+          { name: "wait_time_ms", type: "integer" },
+          { name: "max_wait_time_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_qn_subscriptions",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "object_id", type: "integer" },
+          { name: "created", type: "timestamp" },
+          { name: "timeout", type: "integer" },
+          { name: "status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_repl_articles",
+        columns: [
+          { name: "artcache_db_address", type: "bytes" },
+          { name: "artcache_table_address", type: "bytes" },
+          { name: "artcache_schema_address", type: "bytes" },
+          { name: "artcache_article_address", type: "bytes" },
+          { name: "artid", type: "integer" },
+          { name: "artfilter", type: "integer" },
+          { name: "artobjid", type: "integer" },
+          { name: "artpubid", type: "integer" },
+          { name: "artstatus", type: "integer" },
+          { name: "arttype", type: "integer" },
+          { name: "wszartdesttable", type: "text" },
+          { name: "wszartdesttableowner", type: "text" },
+          { name: "wszartinscmd", type: "text" },
+          { name: "cmdtypeins", type: "integer" },
+          { name: "wszartdelcmd", type: "text" },
+          { name: "cmdtypedel", type: "integer" },
+          { name: "wszartupdcmd", type: "text" },
+          { name: "cmdtypeupd", type: "integer" },
+          { name: "wszartpartialupdcmd", type: "text" },
+          { name: "cmdtypepartialupd", type: "integer" },
+          { name: "numcol", type: "integer" },
+          { name: "artcmdtype", type: "integer" },
+          { name: "artgeninscmd", type: "text" },
+          { name: "artgendelcmd", type: "text" },
+          { name: "artgenupdcmd", type: "text" },
+          { name: "artpartialupdcmd", type: "text" },
+          { name: "artupdtxtcmd", type: "text" },
+          { name: "artgenins2cmd", type: "text" },
+          { name: "artgendel2cmd", type: "text" },
+          { name: "finreconcile", type: "integer" },
+          { name: "fpuballowupdate", type: "integer" },
+          { name: "intpublicationoptions", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_repl_schemas",
+        columns: [
+          { name: "artcache_schema_address", type: "bytes" },
+          { name: "tabid", type: "integer" },
+          { name: "indexid", type: "integer" },
+          { name: "idsch", type: "integer" },
+          { name: "tabschema", type: "text" },
+          { name: "cctabschema", type: "integer" },
+          { name: "tabname", type: "text" },
+          { name: "cctabname", type: "integer" },
+          { name: "rowsetid_delete", type: "integer" },
+          { name: "rowsetid_insert", type: "integer" },
+          { name: "num_pk_cols", type: "integer" },
+          { name: "pcitee", type: "bytes" },
+          { name: "re_numtextcols", type: "integer" },
+          { name: "re_schema_lsn_begin", type: "text" },
+          { name: "re_schema_lsn_end", type: "text" },
+          { name: "re_numcols", type: "integer" },
+          { name: "re_colid", type: "integer" },
+          { name: "re_awcname", type: "text" },
+          { name: "re_ccname", type: "integer" },
+          { name: "re_colattr", type: "integer" },
+          { name: "re_maxlen", type: "integer" },
+          { name: "re_prec", type: "integer" },
+          { name: "re_scale", type: "integer" },
+          { name: "re_collatid", type: "integer" },
+          { name: "re_xvtype", type: "integer" },
+          { name: "re_offset", type: "integer" },
+          { name: "re_bitpos", type: "integer" },
+          { name: "re_fnullable", type: "integer" },
+          { name: "re_fansitrim", type: "integer" },
+          { name: "re_computed", type: "integer" },
+          { name: "se_rowsetid", type: "integer" },
+          { name: "se_schema_lsn_begin", type: "text" },
+          { name: "se_schema_lsn_end", type: "text" },
+          { name: "se_numcols", type: "integer" },
+          { name: "se_colid", type: "integer" },
+          { name: "se_maxlen", type: "integer" },
+          { name: "se_prec", type: "integer" },
+          { name: "se_scale", type: "integer" },
+          { name: "se_collatid", type: "integer" },
+          { name: "se_xvtype", type: "integer" },
+          { name: "se_offset", type: "integer" },
+          { name: "se_bitpos", type: "integer" },
+          { name: "se_fnullable", type: "integer" },
+          { name: "se_fansitrim", type: "integer" },
+          { name: "se_computed", type: "integer" },
+          { name: "se_nullbitinleafrows", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_repl_tranhash",
+        columns: [
+          { name: "buckets", type: "integer" },
+          { name: "hashed_trans", type: "integer" },
+          { name: "completed_trans", type: "integer" },
+          { name: "compensated_trans", type: "integer" },
+          { name: "first_begin_lsn", type: "text" },
+          { name: "last_commit_lsn", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_repl_traninfo",
+        columns: [
+          { name: "fp2p_pub_exists", type: "integer" },
+          { name: "db_ver", type: "integer" },
+          { name: "comp_range_address", type: "bytes" },
+          { name: "textinfo_address", type: "bytes" },
+          { name: "fsinfo_address", type: "bytes" },
+          { name: "begin_lsn", type: "text" },
+          { name: "commit_lsn", type: "text" },
+          { name: "dbid", type: "integer" },
+          { name: "rows", type: "integer" },
+          { name: "xdesid", type: "text" },
+          { name: "artcache_table_address", type: "bytes" },
+          { name: "server", type: "text" },
+          { name: "server_len_in_bytes", type: "integer" },
+          { name: "database", type: "text" },
+          { name: "db_len_in_bytes", type: "integer" },
+          { name: "originator", type: "text" },
+          { name: "originator_len_in_bytes", type: "integer" },
+          { name: "orig_db", type: "text" },
+          { name: "orig_db_len_in_bytes", type: "integer" },
+          { name: "cmds_in_tran", type: "integer" },
+          { name: "is_boundedupdate_singleton", type: "integer" },
+          { name: "begin_update_lsn", type: "text" },
+          { name: "delete_lsn", type: "text" },
+          { name: "last_end_lsn", type: "text" },
+          { name: "fcomplete", type: "integer" },
+          { name: "fcompensated", type: "integer" },
+          { name: "fprocessingtext", type: "integer" },
+          { name: "max_cmds_in_tran", type: "integer" },
+          { name: "begin_time", type: "timestamp" },
+          { name: "commit_time", type: "timestamp" },
+          { name: "session_id", type: "integer" },
+          { name: "session_phase", type: "text" },
+          { name: "is_known_cdc_tran", type: "integer" },
+          { name: "error_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_request_phases",
+        columns: [
+          { name: "dist_statement_id", type: "uuid" },
+          { name: "dist_request_id", type: "uuid" },
+          { name: "id", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "total_elapsed_time_ms", type: "integer" },
+          { name: "min_time_ms", type: "integer" },
+          { name: "max_time_ms", type: "integer" },
+          { name: "avg_time_ms", type: "integer" },
+          { name: "stdev_time_ms", type: "decimal" },
+          { name: "input_dop", type: "integer" },
+          { name: "output_dop", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "total_bytes_processed", type: "integer" },
+          { name: "operation_type", type: "text" },
+          { name: "task_retries", type: "integer" },
+          { name: "parent_ids", type: "text" },
+          { name: "min_rows", type: "integer" },
+          { name: "max_rows", type: "integer" },
+          { name: "avg_rows", type: "integer" },
+          { name: "stdev_rows", type: "decimal" },
+          { name: "total_rows", type: "integer" },
+          { name: "error_id", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_request_phases_exec_task_stats",
+        columns: [
+          { name: "dist_request_id", type: "uuid" },
+          { name: "id", type: "text" },
+          { name: "min_time_ms", type: "integer" },
+          { name: "max_time_ms", type: "integer" },
+          { name: "avg_time_ms", type: "integer" },
+          { name: "stdev_time_ms", type: "decimal" },
+          { name: "total_bytes_processed", type: "integer" },
+          { name: "min_rows", type: "integer" },
+          { name: "max_rows", type: "integer" },
+          { name: "avg_rows", type: "integer" },
+          { name: "stdev_rows", type: "decimal" },
+          { name: "total_rows", type: "integer" },
+          { name: "error_id", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_request_phases_task_group_stats",
+        columns: [
+          { name: "dist_request_id", type: "uuid" },
+          { name: "id", type: "text" },
+          { name: "dist_statement_id", type: "uuid" },
+          { name: "state_desc", type: "text" },
+          { name: "start_time", type: "integer" },
+          { name: "end_time", type: "integer" },
+          { name: "input_dop", type: "integer" },
+          { name: "output_dop", type: "integer" },
+          { name: "operation_type", type: "text" },
+          { name: "task_retries", type: "integer" },
+          { name: "parent_ids", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_configuration",
+        columns: [
+          { name: "classifier_function_id", type: "integer" },
+          { name: "is_reconfiguration_pending", type: "integer" },
+          { name: "max_outstanding_io_per_volume", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_external_resource_pool_affinity",
+        columns: [
+          { name: "external_pool_id", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "cpu_mask", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_external_resource_pools",
+        columns: [
+          { name: "external_pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "pool_version", type: "integer" },
+          { name: "max_cpu_percent", type: "integer" },
+          { name: "max_processes", type: "integer" },
+          { name: "max_memory_percent", type: "integer" },
+          { name: "statistics_start_time", type: "timestamp" },
+          { name: "peak_memory_kb", type: "integer" },
+          { name: "write_io_count", type: "integer" },
+          { name: "read_io_count", type: "integer" },
+          { name: "total_cpu_kernel_ms", type: "integer" },
+          { name: "total_cpu_user_ms", type: "integer" },
+          { name: "active_processes_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_resource_pool_affinity",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "scheduler_mask", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_resource_pool_volumes",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "volume_name", type: "text" },
+          { name: "read_io_queued_total", type: "integer" },
+          { name: "read_io_issued_total", type: "integer" },
+          { name: "read_io_completed_total", type: "integer" },
+          { name: "read_io_throttled_total", type: "integer" },
+          { name: "read_bytes_total", type: "integer" },
+          { name: "read_io_stall_total_ms", type: "integer" },
+          { name: "read_io_stall_queued_ms", type: "integer" },
+          { name: "write_io_queued_total", type: "integer" },
+          { name: "write_io_issued_total", type: "integer" },
+          { name: "write_io_completed_total", type: "integer" },
+          { name: "write_io_throttled_total", type: "integer" },
+          { name: "write_bytes_total", type: "integer" },
+          { name: "write_io_stall_total_ms", type: "integer" },
+          { name: "write_io_stall_queued_ms", type: "integer" },
+          { name: "io_issue_violations_total", type: "integer" },
+          { name: "io_issue_delay_total_ms", type: "integer" },
+          { name: "io_issue_ahead_total_ms", type: "integer" },
+          { name: "reserved_io_limited_by_volume_total", type: "integer" },
+          { name: "io_issue_delay_non_throttled_total_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_resource_pools",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "statistics_start_time", type: "timestamp" },
+          { name: "total_cpu_usage_ms", type: "integer" },
+          { name: "cache_memory_kb", type: "integer" },
+          { name: "compile_memory_kb", type: "integer" },
+          { name: "used_memgrant_kb", type: "integer" },
+          { name: "total_memgrant_count", type: "integer" },
+          { name: "total_memgrant_timeout_count", type: "integer" },
+          { name: "active_memgrant_count", type: "integer" },
+          { name: "active_memgrant_kb", type: "integer" },
+          { name: "memgrant_waiter_count", type: "integer" },
+          { name: "max_memory_kb", type: "integer" },
+          { name: "used_memory_kb", type: "integer" },
+          { name: "target_memory_kb", type: "integer" },
+          { name: "out_of_memory_count", type: "integer" },
+          { name: "min_cpu_percent", type: "integer" },
+          { name: "max_cpu_percent", type: "integer" },
+          { name: "min_memory_percent", type: "integer" },
+          { name: "max_memory_percent", type: "integer" },
+          { name: "cap_cpu_percent", type: "integer" },
+          { name: "min_iops_per_volume", type: "integer" },
+          { name: "max_iops_per_volume", type: "integer" },
+          { name: "read_io_queued_total", type: "integer" },
+          { name: "read_io_issued_total", type: "integer" },
+          { name: "read_io_completed_total", type: "integer" },
+          { name: "read_io_throttled_total", type: "integer" },
+          { name: "read_bytes_total", type: "integer" },
+          { name: "read_io_stall_total_ms", type: "integer" },
+          { name: "read_io_stall_queued_ms", type: "integer" },
+          { name: "write_io_queued_total", type: "integer" },
+          { name: "write_io_issued_total", type: "integer" },
+          { name: "write_io_completed_total", type: "integer" },
+          { name: "write_io_throttled_total", type: "integer" },
+          { name: "write_bytes_total", type: "integer" },
+          { name: "write_io_stall_total_ms", type: "integer" },
+          { name: "write_io_stall_queued_ms", type: "integer" },
+          { name: "io_issue_violations_total", type: "integer" },
+          { name: "io_issue_delay_total_ms", type: "integer" },
+          { name: "io_issue_ahead_total_ms", type: "integer" },
+          { name: "reserved_io_limited_by_volume_total", type: "integer" },
+          { name: "io_issue_delay_non_throttled_total_ms", type: "integer" },
+          { name: "total_cpu_delayed_ms", type: "integer" },
+          { name: "total_cpu_active_ms", type: "integer" },
+          { name: "total_cpu_violation_delay_ms", type: "integer" },
+          { name: "total_cpu_violation_sec", type: "integer" },
+          { name: "total_cpu_usage_preemptive_ms", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_resource_governor_workload_groups",
+        columns: [
+          { name: "group_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "pool_id", type: "integer" },
+          { name: "external_pool_id", type: "integer" },
+          { name: "statistics_start_time", type: "timestamp" },
+          { name: "total_request_count", type: "integer" },
+          { name: "total_queued_request_count", type: "integer" },
+          { name: "active_request_count", type: "integer" },
+          { name: "queued_request_count", type: "integer" },
+          { name: "total_cpu_limit_violation_count", type: "integer" },
+          { name: "total_cpu_usage_ms", type: "integer" },
+          { name: "max_request_cpu_time_ms", type: "integer" },
+          { name: "blocked_task_count", type: "integer" },
+          { name: "total_lock_wait_count", type: "integer" },
+          { name: "total_lock_wait_time_ms", type: "integer" },
+          { name: "total_query_optimization_count", type: "integer" },
+          { name: "total_suboptimal_plan_generation_count", type: "integer" },
+          { name: "total_reduced_memgrant_count", type: "integer" },
+          { name: "max_request_grant_memory_kb", type: "integer" },
+          { name: "active_parallel_thread_count", type: "integer" },
+          { name: "importance", type: "text" },
+          { name: "request_max_memory_grant_percent", type: "integer" },
+          { name: "request_max_cpu_time_sec", type: "integer" },
+          { name: "request_memory_grant_timeout_sec", type: "integer" },
+          { name: "group_max_requests", type: "integer" },
+          { name: "max_dop", type: "integer" },
+          { name: "effective_max_dop", type: "integer" },
+          { name: "total_cpu_usage_preemptive_ms", type: "integer" },
+          { name: "request_max_memory_grant_percent_numeric", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_accelerator_status",
+        columns: [
+          { name: "accelerator", type: "text" },
+          { name: "accelerator_desc", type: "text" },
+          { name: "config", type: "integer" },
+          { name: "config_in_use", type: "integer" },
+          { name: "mode", type: "integer" },
+          { name: "mode_desc", type: "text" },
+          { name: "mode_reason", type: "integer" },
+          { name: "mode_reason_desc", type: "text" },
+          { name: "accelerator_hardware_detected", type: "integer" },
+          { name: "accelerator_library_version", type: "text" },
+          { name: "accelerator_driver_version", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_audit_status",
+        columns: [
+          { name: "audit_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "status_desc", type: "text" },
+          { name: "status_time", type: "timestamp" },
+          { name: "event_session_address", type: "bytes" },
+          { name: "audit_file_path", type: "text" },
+          { name: "audit_file_size", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_actions",
+        columns: [
+          { name: "sql_action_id", type: "integer" },
+          { name: "action_namespace", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "action_provider_string", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_principal_assigned_actions",
+        columns: [
+          { name: "principal_sid", type: "bytes" },
+          { name: "principal_aad_object_id", type: "text" },
+          { name: "action_namespace", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "role_name", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "policy_guid", type: "text" },
+          { name: "role_assignment_scope", type: "text" },
+          { name: "role_assignment_type", type: "integer" },
+          { name: "role_assignment_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_principals",
+        columns: [
+          { name: "sid", type: "bytes" },
+          { name: "aad_object_id", type: "text" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "authentication_type", type: "integer" },
+          { name: "authentication_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_role_actions",
+        columns: [
+          { name: "role_guid", type: "text" },
+          { name: "sql_action_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_role_members",
+        columns: [
+          { name: "principal_aad_object_id", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "policy_guid", type: "text" },
+          { name: "assignment_scope", type: "text" },
+          { name: "assignment_type", type: "integer" },
+          { name: "assignment_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_external_policy_roles",
+        columns: [
+          { name: "role_name", type: "text" },
+          { name: "role_guid", type: "text" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_memory_dumps",
+        columns: [
+          { name: "filename", type: "text" },
+          { name: "creation_time", type: "timestamp" },
+          { name: "size_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_registry",
+        columns: [
+          { name: "registry_key", type: "text" },
+          { name: "value_name", type: "text" },
+          { name: "value_data", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_services",
+        columns: [
+          { name: "servicename", type: "text" },
+          { name: "startup_type", type: "integer" },
+          { name: "startup_type_desc", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "status_desc", type: "text" },
+          { name: "process_id", type: "integer" },
+          { name: "last_startup_time", type: "timestamp" },
+          { name: "service_account", type: "text" },
+          { name: "filename", type: "text" },
+          { name: "is_clustered", type: "text" },
+          { name: "cluster_nodename", type: "text" },
+          { name: "instant_file_initialization_enabled", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_server_suspend_status",
+        columns: [
+          { name: "db_id", type: "integer" },
+          { name: "db_name", type: "text" },
+          { name: "suspend_session_id", type: "integer" },
+          { name: "suspend_time_ms", type: "integer" },
+          { name: "is_diff_map_cleared", type: "boolean" },
+          { name: "is_write_io_frozen", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_sql_referenced_entities",
+        columns: [
+          { name: "referencing_minor_id", type: "integer" },
+          { name: "referenced_server_name", type: "text" },
+          { name: "referenced_database_name", type: "text" },
+          { name: "referenced_schema_name", type: "text" },
+          { name: "referenced_entity_name", type: "text" },
+          { name: "referenced_minor_name", type: "text" },
+          { name: "referenced_id", type: "integer" },
+          { name: "referenced_minor_id", type: "integer" },
+          { name: "referenced_class", type: "integer" },
+          { name: "referenced_class_desc", type: "text" },
+          { name: "is_caller_dependent", type: "boolean" },
+          { name: "is_ambiguous", type: "boolean" },
+          { name: "is_selected", type: "boolean" },
+          { name: "is_updated", type: "boolean" },
+          { name: "is_select_all", type: "boolean" },
+          { name: "is_all_columns_found", type: "boolean" },
+          { name: "is_insert_all", type: "boolean" },
+          { name: "is_incomplete", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_sql_referencing_entities",
+        columns: [
+          { name: "referencing_schema_name", type: "text" },
+          { name: "referencing_entity_name", type: "text" },
+          { name: "referencing_id", type: "integer" },
+          { name: "referencing_class", type: "integer" },
+          { name: "referencing_class_desc", type: "text" },
+          { name: "is_caller_dependent", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tcp_listener_states",
+        columns: [
+          { name: "listener_id", type: "integer" },
+          { name: "ip_address", type: "text" },
+          { name: "is_ipv4", type: "boolean" },
+          { name: "port", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "start_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_toad_tuning_zones",
+        columns: [
+          { name: "zone_type", type: "text" },
+          { name: "priority_score", type: "integer" },
+          { name: "entry_data", type: "text" },
+          { name: "actions_discovered", type: "integer" },
+          { name: "actions_scheduled", type: "integer" },
+          { name: "total_actions_scheduled", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_toad_work_item_handlers",
+        columns: [
+          { name: "task_address", type: "bytes" },
+          { name: "message_id", type: "integer" },
+          { name: "workitem_type", type: "text" },
+          { name: "producer_type", type: "text" },
+          { name: "producer_id", type: "integer" },
+          { name: "state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_toad_work_items",
+        columns: [
+          { name: "message_id", type: "integer" },
+          { name: "workitem_type", type: "text" },
+          { name: "workitem_version", type: "integer" },
+          { name: "producer_type", type: "text" },
+          { name: "producer_id", type: "integer" },
+          { name: "retry_count", type: "integer" },
+          { name: "body_size", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_aborted_transactions",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "begin_xact_lsn", type: "decimal" },
+          { name: "end_xact_lsn", type: "decimal" },
+          { name: "begin_time", type: "timestamp" },
+          { name: "nest_aborted", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_active_snapshot_database_transactions",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "transaction_sequence_num", type: "integer" },
+          { name: "commit_sequence_num", type: "integer" },
+          { name: "session_id", type: "integer" },
+          { name: "is_snapshot", type: "boolean" },
+          { name: "first_snapshot_sequence_num", type: "integer" },
+          { name: "max_version_chain_traversed", type: "integer" },
+          { name: "average_version_chain_traversed", type: "decimal" },
+          { name: "elapsed_time_seconds", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_active_transactions",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "transaction_begin_time", type: "timestamp" },
+          { name: "transaction_type", type: "integer" },
+          { name: "transaction_uow", type: "uuid" },
+          { name: "transaction_state", type: "integer" },
+          { name: "transaction_status", type: "integer" },
+          { name: "transaction_status2", type: "integer" },
+          { name: "dtc_state", type: "integer" },
+          { name: "dtc_status", type: "integer" },
+          { name: "dtc_isolation_level", type: "integer" },
+          { name: "filestream_transaction_id", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_commit_table",
+        columns: [
+          { name: "commit_ts", type: "integer" },
+          { name: "xdes_id", type: "integer" },
+          { name: "commit_lbn", type: "integer" },
+          { name: "commit_csn", type: "integer" },
+          { name: "commit_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_current_snapshot",
+        columns: [
+          { name: "transaction_sequence_num", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_current_transaction",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "transaction_sequence_num", type: "integer" },
+          { name: "transaction_is_snapshot", type: "boolean" },
+          { name: "first_snapshot_sequence_num", type: "integer" },
+          { name: "last_transaction_sequence_num", type: "integer" },
+          { name: "first_useful_sequence_num", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_database_transactions",
+        columns: [
+          { name: "transaction_id", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "database_transaction_begin_time", type: "timestamp" },
+          { name: "database_transaction_type", type: "integer" },
+          { name: "database_transaction_state", type: "integer" },
+          { name: "database_transaction_status", type: "integer" },
+          { name: "database_transaction_status2", type: "integer" },
+          { name: "database_transaction_log_record_count", type: "integer" },
+          { name: "database_transaction_replicate_record_count", type: "integer" },
+          { name: "database_transaction_log_bytes_used", type: "integer" },
+          { name: "database_transaction_log_bytes_reserved", type: "integer" },
+          { name: "database_transaction_log_bytes_used_system", type: "integer" },
+          { name: "database_transaction_log_bytes_reserved_system", type: "integer" },
+          { name: "database_transaction_begin_lsn", type: "decimal" },
+          { name: "database_transaction_last_lsn", type: "decimal" },
+          { name: "database_transaction_most_recent_savepoint_lsn", type: "decimal" },
+          { name: "database_transaction_commit_lsn", type: "decimal" },
+          { name: "database_transaction_last_rollback_lsn", type: "decimal" },
+          { name: "database_transaction_next_undo_lsn", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_distributed_transaction_stats",
+        columns: [
+          { name: "aborted", type: "integer" },
+          { name: "aborted_max", type: "integer" },
+          { name: "forced_abort", type: "integer" },
+          { name: "committed", type: "integer" },
+          { name: "committed_max", type: "integer" },
+          { name: "forced_commit", type: "integer" },
+          { name: "heuristic", type: "integer" },
+          { name: "heuristic_max", type: "integer" },
+          { name: "in_doubt", type: "integer" },
+          { name: "in_doubt_max", type: "integer" },
+          { name: "open", type: "integer" },
+          { name: "open_max", type: "integer" },
+          { name: "single_phase_in_doubt", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_global_recovery_transactions",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "transaction_uow", type: "uuid" },
+          { name: "transaction_manager_dbid", type: "integer" },
+          { name: "transaction_manager_rmid", type: "uuid" },
+          { name: "transaction_manager_server_name", type: "text" },
+          { name: "transaction_manager_database_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_global_transactions",
+        columns: [
+          { name: "transaction_id", type: "uuid" },
+          { name: "database_id", type: "integer" },
+          { name: "transaction_state", type: "integer" },
+          { name: "resource_manager_id", type: "uuid" },
+          { name: "resource_manager_server", type: "text" },
+          { name: "resource_manager_database", type: "text" },
+          { name: "resource_manager_dbid", type: "integer" },
+          { name: "resource_manager_state", type: "integer" },
+          { name: "resource_prepare_lsn", type: "text" },
+          { name: "resource_phase_1_time", type: "integer" },
+          { name: "resource_phase_2_time", type: "integer" },
+          { name: "transaction_phase_1_time", type: "integer" },
+          { name: "transaction_phase_2_time", type: "integer" },
+          { name: "transaction_total_time", type: "integer" },
+          { name: "transaction_diag_status", type: "integer" },
+          { name: "resource_manager_diag_status", type: "integer" },
+          { name: "max_csn", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_global_transactions_enlistments",
+        columns: [
+          { name: "transaction_id", type: "uuid" },
+          { name: "database_id", type: "integer" },
+          { name: "iso_level", type: "integer" },
+          { name: "can_commit", type: "integer" },
+          { name: "enlistment_state", type: "integer" },
+          { name: "resource_manager_id", type: "uuid" },
+          { name: "server_name", type: "text" },
+          { name: "database_name", type: "text" },
+          { name: "transaction_manager_server_name", type: "text" },
+          { name: "transaction_manager_database_name", type: "text" },
+          { name: "transaction_manager_database_id", type: "integer" },
+          { name: "transaction_manager_rmid", type: "uuid" },
+          { name: "prepare_lsn", type: "text" },
+          { name: "snapshot_timestamp", type: "integer" },
+          { name: "oldest_active_lsn", type: "text" },
+          { name: "prepare_elapsed_time", type: "integer" },
+          { name: "object_ref_count", type: "integer" },
+          { name: "transaction_timeout", type: "integer" },
+          { name: "diag_status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_global_transactions_log",
+        columns: [
+          { name: "transaction_id", type: "uuid" },
+          { name: "time_utc", type: "timestamp" },
+          { name: "dropped", type: "integer" },
+          { name: "resource_manager_id", type: "uuid" },
+          { name: "resource_manager_prepare_lsn", type: "text" },
+          { name: "resource_manager_ack_received", type: "integer" },
+          { name: "commit_timestamp", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_locks",
+        columns: [
+          { name: "resource_type", type: "text" },
+          { name: "resource_subtype", type: "text" },
+          { name: "resource_database_id", type: "integer" },
+          { name: "resource_description", type: "text" },
+          { name: "resource_associated_entity_id", type: "integer" },
+          { name: "resource_lock_partition", type: "integer" },
+          { name: "request_mode", type: "text" },
+          { name: "request_type", type: "text" },
+          { name: "request_status", type: "text" },
+          { name: "request_reference_count", type: "integer" },
+          { name: "request_lifetime", type: "integer" },
+          { name: "request_session_id", type: "integer" },
+          { name: "request_exec_context_id", type: "integer" },
+          { name: "request_request_id", type: "integer" },
+          { name: "request_owner_type", type: "text" },
+          { name: "request_owner_id", type: "integer" },
+          { name: "request_owner_guid", type: "uuid" },
+          { name: "request_owner_lockspace_id", type: "text" },
+          { name: "lock_owner_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_orphaned_distributed_transactions",
+        columns: [
+          { name: "transaction_uow", type: "text" },
+          { name: "description", type: "text" },
+          { name: "state", type: "text" },
+          { name: "isolation_level", type: "integer" },
+          { name: "parent", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_persistent_version_store",
+        columns: [
+          { name: "xdes_ts_push", type: "integer" },
+          { name: "xdes_ts_tran", type: "integer" },
+          { name: "subid_push", type: "integer" },
+          { name: "subid_tran", type: "integer" },
+          { name: "rowset_id", type: "integer" },
+          { name: "sec_version_rid", type: "bytes" },
+          { name: "min_len", type: "integer" },
+          { name: "seq_num", type: "integer" },
+          { name: "prev_row_in_chain", type: "bytes" },
+          { name: "row_version", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_persistent_version_store_stats",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "pvs_filegroup_id", type: "integer" },
+          { name: "persistent_version_store_size_kb", type: "integer" },
+          { name: "online_index_version_store_size_kb", type: "integer" },
+          { name: "current_aborted_transaction_count", type: "integer" },
+          { name: "oldest_active_transaction_id", type: "integer" },
+          { name: "oldest_aborted_transaction_id", type: "integer" },
+          { name: "min_transaction_timestamp", type: "integer" },
+          { name: "online_index_min_transaction_timestamp", type: "integer" },
+          { name: "secondary_low_water_mark", type: "integer" },
+          { name: "offrow_version_cleaner_start_time", type: "timestamp" },
+          { name: "offrow_version_cleaner_end_time", type: "timestamp" },
+          { name: "aborted_version_cleaner_start_time", type: "timestamp" },
+          { name: "aborted_version_cleaner_end_time", type: "timestamp" },
+          { name: "pvs_off_row_page_skipped_low_water_mark", type: "integer" },
+          { name: "pvs_off_row_page_skipped_transaction_not_cleaned", type: "integer" },
+          { name: "pvs_off_row_page_skipped_oldest_active_xdesid", type: "integer" },
+          { name: "pvs_off_row_page_skipped_min_useful_xts", type: "integer" },
+          { name: "pvs_off_row_page_skipped_oldest_snapshot", type: "integer" },
+          { name: "pvs_off_row_page_skipped_oldest_aborted_xdesid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_session_transactions",
+        columns: [
+          { name: "session_id", type: "integer" },
+          { name: "transaction_id", type: "integer" },
+          { name: "transaction_descriptor", type: "bytes" },
+          { name: "enlist_count", type: "integer" },
+          { name: "is_user_transaction", type: "boolean" },
+          { name: "is_local", type: "boolean" },
+          { name: "is_enlisted", type: "boolean" },
+          { name: "is_bound", type: "boolean" },
+          { name: "open_transaction_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_top_version_generators",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "rowset_id", type: "integer" },
+          { name: "aggregated_record_length_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_transactions_snapshot",
+        columns: [
+          { name: "transaction_sequence_num", type: "integer" },
+          { name: "snapshot_id", type: "integer" },
+          { name: "snapshot_sequence_num", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_version_store",
+        columns: [
+          { name: "transaction_sequence_num", type: "integer" },
+          { name: "version_sequence_num", type: "integer" },
+          { name: "database_id", type: "integer" },
+          { name: "rowset_id", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "min_length_in_bytes", type: "integer" },
+          { name: "record_length_first_part_in_bytes", type: "integer" },
+          { name: "record_image_first_part", type: "bytes" },
+          { name: "record_length_second_part_in_bytes", type: "integer" },
+          { name: "record_image_second_part", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_tran_version_store_space_usage",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "reserved_page_count", type: "integer" },
+          { name: "reserved_space_kb", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xcs_enumerate_blobdirectory",
+        columns: [
+          { name: "container_path", type: "text" },
+          { name: "relative_path", type: "text" },
+          { name: "part_key_name", type: "text" },
+          { name: "part_key_val", type: "text" },
+          { name: "last_modified_date", type: "timestamp" },
+          { name: "size_in_bytes", type: "integer" },
+          { name: "etag", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_map_values",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_package_guid", type: "uuid" },
+          { name: "map_key", type: "integer" },
+          { name: "map_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_object_columns",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "object_name", type: "text" },
+          { name: "object_package_guid", type: "uuid" },
+          { name: "type_name", type: "text" },
+          { name: "type_package_guid", type: "uuid" },
+          { name: "column_type", type: "text" },
+          { name: "column_value", type: "text" },
+          { name: "capabilities", type: "integer" },
+          { name: "capabilities_desc", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_objects",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "package_guid", type: "uuid" },
+          { name: "description", type: "text" },
+          { name: "capabilities", type: "integer" },
+          { name: "capabilities_desc", type: "text" },
+          { name: "type_name", type: "text" },
+          { name: "type_package_guid", type: "uuid" },
+          { name: "type_size", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_packages",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "guid", type: "uuid" },
+          { name: "description", type: "text" },
+          { name: "capabilities", type: "integer" },
+          { name: "capabilities_desc", type: "text" },
+          { name: "module_guid", type: "text" },
+          { name: "module_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_session_event_actions",
+        columns: [
+          { name: "event_session_address", type: "bytes" },
+          { name: "action_name", type: "text" },
+          { name: "action_package_guid", type: "uuid" },
+          { name: "event_name", type: "text" },
+          { name: "event_package_guid", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_session_events",
+        columns: [
+          { name: "event_session_address", type: "bytes" },
+          { name: "event_name", type: "text" },
+          { name: "event_package_guid", type: "uuid" },
+          { name: "event_predicate", type: "text" },
+          { name: "event_fire_count", type: "integer" },
+          { name: "event_fire_average_time", type: "integer" },
+          { name: "event_fire_min_time", type: "integer" },
+          { name: "event_fire_max_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_session_object_columns",
+        columns: [
+          { name: "event_session_address", type: "bytes" },
+          { name: "column_name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "column_value", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "object_package_guid", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_session_targets",
+        columns: [
+          { name: "event_session_address", type: "bytes" },
+          { name: "target_name", type: "text" },
+          { name: "target_package_guid", type: "uuid" },
+          { name: "execution_count", type: "integer" },
+          { name: "execution_duration_ms", type: "integer" },
+          { name: "target_data", type: "text" },
+          { name: "bytes_written", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xe_sessions",
+        columns: [
+          { name: "address", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "pending_buffers", type: "integer" },
+          { name: "total_regular_buffers", type: "integer" },
+          { name: "regular_buffer_size", type: "integer" },
+          { name: "total_large_buffers", type: "integer" },
+          { name: "large_buffer_size", type: "integer" },
+          { name: "total_buffer_size", type: "integer" },
+          { name: "buffer_policy_flags", type: "integer" },
+          { name: "buffer_policy_desc", type: "text" },
+          { name: "flags", type: "integer" },
+          { name: "flag_desc", type: "text" },
+          { name: "dropped_event_count", type: "integer" },
+          { name: "dropped_buffer_count", type: "integer" },
+          { name: "blocked_event_fire_time", type: "integer" },
+          { name: "create_time", type: "timestamp" },
+          { name: "largest_event_dropped_size", type: "integer" },
+          { name: "session_source", type: "text" },
+          { name: "buffer_processed_count", type: "integer" },
+          { name: "buffer_full_count", type: "integer" },
+          { name: "total_bytes_generated", type: "integer" },
+          { name: "total_target_memory", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_gc_queue_stats",
+        columns: [
+          { name: "queue_id", type: "integer" },
+          { name: "total_enqueues", type: "integer" },
+          { name: "total_dequeues", type: "integer" },
+          { name: "current_queue_depth", type: "integer" },
+          { name: "maximum_queue_depth", type: "integer" },
+          { name: "last_service_ticks", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_gc_stats",
+        columns: [
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_no_sweep_needed", type: "integer" },
+          { name: "rows_first_in_bucket", type: "integer" },
+          { name: "rows_first_in_bucket_removed", type: "integer" },
+          { name: "rows_marked_for_unlink", type: "integer" },
+          { name: "parallel_assist_count", type: "integer" },
+          { name: "idle_worker_count", type: "integer" },
+          { name: "sweep_scans_started", type: "integer" },
+          { name: "sweep_scan_retries", type: "integer" },
+          { name: "sweep_rows_touched", type: "integer" },
+          { name: "sweep_rows_expiring", type: "integer" },
+          { name: "sweep_rows_expired", type: "integer" },
+          { name: "sweep_rows_expired_removed", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_system_memory_consumers",
+        columns: [
+          { name: "memory_consumer_id", type: "integer" },
+          { name: "memory_consumer_type", type: "integer" },
+          { name: "memory_consumer_type_desc", type: "text" },
+          { name: "memory_consumer_desc", type: "text" },
+          { name: "lookaside_id", type: "integer" },
+          { name: "allocated_bytes", type: "integer" },
+          { name: "used_bytes", type: "integer" },
+          { name: "allocation_count", type: "integer" },
+          { name: "partition_count", type: "integer" },
+          { name: "sizeclass_count", type: "integer" },
+          { name: "min_sizeclass", type: "integer" },
+          { name: "max_sizeclass", type: "integer" },
+          { name: "memory_consumer_address", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_threads",
+        columns: [
+          { name: "thread_address", type: "bytes" },
+          { name: "thread_type", type: "integer" },
+          { name: "thread_type_desc", type: "text" },
+          { name: "retired_row_count", type: "integer" },
+          { name: "retired_transaction_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_transaction_recent_rows",
+        columns: [
+          { name: "node_id", type: "integer" },
+          { name: "xtp_transaction_id", type: "integer" },
+          { name: "row_address", type: "bytes" },
+          { name: "table_address", type: "bytes" },
+          { name: "before_begin", type: "integer" },
+          { name: "before_end", type: "integer" },
+          { name: "before_links", type: "integer" },
+          { name: "before_time", type: "integer" },
+          { name: "after_begin", type: "integer" },
+          { name: "after_end", type: "integer" },
+          { name: "after_links", type: "integer" },
+          { name: "after_time", type: "integer" },
+          { name: "outcome", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "dm_xtp_transaction_stats",
+        columns: [
+          { name: "total_count", type: "integer" },
+          { name: "read_only_count", type: "integer" },
+          { name: "total_aborts", type: "integer" },
+          { name: "system_aborts", type: "integer" },
+          { name: "validation_failures", type: "integer" },
+          { name: "dependencies_taken", type: "integer" },
+          { name: "dependencies_failed", type: "integer" },
+          { name: "savepoint_create", type: "integer" },
+          { name: "savepoint_rollbacks", type: "integer" },
+          { name: "savepoint_refreshes", type: "integer" },
+          { name: "log_bytes_written", type: "integer" },
+          { name: "log_io_count", type: "integer" },
+          { name: "phantom_scans_started", type: "integer" },
+          { name: "phantom_scans_retries", type: "integer" },
+          { name: "phantom_rows_touched", type: "integer" },
+          { name: "phantom_rows_expiring", type: "integer" },
+          { name: "phantom_rows_expired", type: "integer" },
+          { name: "phantom_rows_expired_removed", type: "integer" },
+          { name: "scans_started", type: "integer" },
+          { name: "scans_retried", type: "integer" },
+          { name: "rows_returned", type: "integer" },
+          { name: "rows_touched", type: "integer" },
+          { name: "rows_expiring", type: "integer" },
+          { name: "rows_expired", type: "integer" },
+          { name: "rows_expired_removed", type: "integer" },
+          { name: "row_insert_attempts", type: "integer" },
+          { name: "row_update_attempts", type: "integer" },
+          { name: "row_delete_attempts", type: "integer" },
+          { name: "write_conflicts", type: "integer" },
+          { name: "unique_constraint_violations", type: "integer" },
+          { name: "drop_table_memory_attempts", type: "integer" },
+          { name: "drop_table_memory_failures", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "edge_constraint_clauses",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "clause_number", type: "integer" },
+          { name: "from_object_id", type: "integer" },
+          { name: "to_object_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "edge_constraints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_not_trusted", type: "boolean" },
+          { name: "is_system_named", type: "boolean" },
+          { name: "delete_referential_action", type: "integer" },
+          { name: "delete_referential_action_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "endpoint_webmethods",
+        columns: [
+          { name: "endpoint_id", type: "integer" },
+          { name: "namespace", type: "text" },
+          { name: "method_alias", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "result_schema", type: "integer" },
+          { name: "result_schema_desc", type: "text" },
+          { name: "result_format", type: "integer" },
+          { name: "result_format_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "event_notification_event_types",
+        columns: [
+          { name: "type", type: "integer" },
+          { name: "type_name", type: "text" },
+          { name: "parent_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "event_notifications",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "parent_class", type: "integer" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "parent_id", type: "integer" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "service_name", type: "text" },
+          { name: "broker_instance", type: "text" },
+          { name: "creator_sid", type: "bytes" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "events",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_trigger_event", type: "boolean" },
+          { name: "event_group_type", type: "integer" },
+          { name: "event_group_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "extended_procedures",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "dll_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "extended_properties",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_data_sources",
+        columns: [
+          { name: "data_source_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "location", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "resource_manager_location", type: "text" },
+          { name: "credential_id", type: "integer" },
+          { name: "database_name", type: "text" },
+          { name: "shard_map_name", type: "text" },
+          { name: "connection_options", type: "text" },
+          { name: "pushdown", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_file_formats",
+        columns: [
+          { name: "file_format_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "format_type", type: "text" },
+          { name: "field_terminator", type: "text" },
+          { name: "string_delimiter", type: "text" },
+          { name: "date_format", type: "text" },
+          { name: "use_type_default", type: "boolean" },
+          { name: "serde_method", type: "text" },
+          { name: "row_terminator", type: "text" },
+          { name: "encoding", type: "text" },
+          { name: "data_compression", type: "text" },
+          { name: "first_row", type: "integer" },
+          { name: "parser_version", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_classification_attributes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "object_attributes", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_classifications",
+        columns: [
+          { name: "classification", type: "text" },
+          { name: "classification_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_classifications_mapping",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "classification_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_sensitivity_classifications",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "label", type: "text" },
+          { name: "label_id", type: "text" },
+          { name: "information_type", type: "text" },
+          { name: "information_type_id", type: "text" },
+          { name: "rank", type: "integer" },
+          { name: "rank_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_sensitivity_labels",
+        columns: [
+          { name: "label", type: "text" },
+          { name: "label_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_governance_sensitivity_labels_mapping",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "label_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_job_streams",
+        columns: [
+          { name: "job_id", type: "integer" },
+          { name: "stream_id", type: "integer" },
+          { name: "is_input", type: "boolean" },
+          { name: "is_output", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_language_files",
+        columns: [
+          { name: "external_language_id", type: "integer" },
+          { name: "content", type: "bytes" },
+          { name: "file_name", type: "text" },
+          { name: "platform", type: "integer" },
+          { name: "platform_desc", type: "text" },
+          { name: "parameters", type: "text" },
+          { name: "environment_variables", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_languages",
+        columns: [
+          { name: "external_language_id", type: "integer" },
+          { name: "language", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_libraries",
+        columns: [
+          { name: "external_library_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "language", type: "text" },
+          { name: "scope", type: "integer" },
+          { name: "scope_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_libraries_installed",
+        columns: [
+          { name: "db_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "language_id", type: "integer" },
+          { name: "external_library_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "mdversion", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_library_files",
+        columns: [
+          { name: "external_library_id", type: "integer" },
+          { name: "content", type: "bytes" },
+          { name: "platform", type: "integer" },
+          { name: "platform_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_library_setup_errors",
+        columns: [
+          { name: "db_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "external_library_id", type: "integer" },
+          { name: "error_code", type: "integer" },
+          { name: "error_timestamp", type: "timestamp" },
+          { name: "error_message", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_stream_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_streaming_jobs",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "statement", type: "text" },
+          { name: "status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_streams",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "max_column_id_used", type: "integer" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "data_source_id", type: "integer" },
+          { name: "file_format_id", type: "integer" },
+          { name: "location", type: "text" },
+          { name: "input_options", type: "text" },
+          { name: "output_options", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_table_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "partition_column_ordinal", type: "integer" },
+          { name: "hash_column_ordinal", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_table_partitioning_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "ordinal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "external_tables",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "max_column_id_used", type: "integer" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "data_source_id", type: "integer" },
+          { name: "file_format_id", type: "integer" },
+          { name: "location", type: "text" },
+          { name: "reject_type", type: "text" },
+          { name: "reject_value", type: "decimal" },
+          { name: "reject_sample_value", type: "decimal" },
+          { name: "distribution_type", type: "integer" },
+          { name: "distribution_desc", type: "text" },
+          { name: "sharding_col_id", type: "integer" },
+          { name: "remote_schema_name", type: "text" },
+          { name: "remote_object_name", type: "text" },
+          { name: "rejected_row_location", type: "text" },
+          { name: "table_options", type: "text" },
+          { name: "partition_type", type: "integer" },
+          { name: "partition_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "filegroups",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "data_space_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "is_default", type: "boolean" },
+          { name: "is_system", type: "boolean" },
+          { name: "filegroup_guid", type: "uuid" },
+          { name: "log_filegroup_id", type: "integer" },
+          { name: "is_read_only", type: "boolean" },
+          { name: "is_autogrow_all_files", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "filetable_system_defined_objects",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "filetables",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "is_enabled", type: "boolean" },
+          { name: "directory_name", type: "text" },
+          { name: "filename_collation_id", type: "integer" },
+          { name: "filename_collation_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_builtin_permissions",
+        columns: [
+          { name: "class_desc", type: "text" },
+          { name: "permission_name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "covering_permission_name", type: "text" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "parent_covering_permission_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_check_object_signatures",
+        columns: [
+          { name: "type", type: "text" },
+          { name: "entity_id", type: "integer" },
+          { name: "is_signed", type: "integer" },
+          { name: "is_signature_valid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_column_store_row_groups",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "row_group_id", type: "integer" },
+          { name: "delta_store_hobt_id", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_description", type: "text" },
+          { name: "total_rows", type: "integer" },
+          { name: "deleted_rows", type: "integer" },
+          { name: "size_in_bytes", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_db_backup_file_snapshots",
+        columns: [
+          { name: "file_id", type: "integer" },
+          { name: "snapshot_time", type: "text" },
+          { name: "snapshot_url", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_dblog",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_dblog_xtp",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" },
+          { name: "operation_desc", type: "text" },
+          { name: "tx_end_timestamp", type: "integer" },
+          { name: "total_size", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "newrow_identity", type: "integer" },
+          { name: "newrow_data", type: "bytes" },
+          { name: "newrow_datasize", type: "integer" },
+          { name: "oldrow_begin_timestamp", type: "integer" },
+          { name: "oldrow_identity", type: "integer" },
+          { name: "oldrow_key_data", type: "bytes" },
+          { name: "oldrow_key_datasize", type: "integer" },
+          { name: "xtp_description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_dbslog",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_dump_dblog",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_dump_dblog_xtp",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" },
+          { name: "operation_desc", type: "text" },
+          { name: "tx_end_timestamp", type: "integer" },
+          { name: "total_size", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "newrow_identity", type: "integer" },
+          { name: "newrow_data", type: "bytes" },
+          { name: "newrow_datasize", type: "integer" },
+          { name: "oldrow_begin_timestamp", type: "integer" },
+          { name: "oldrow_identity", type: "integer" },
+          { name: "oldrow_key_data", type: "bytes" },
+          { name: "oldrow_key_datasize", type: "integer" },
+          { name: "xtp_description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_EnumCurrentPrincipals",
+        columns: [
+          { name: "db_name", type: "text" },
+          { name: "current_principal", type: "text" },
+          { name: "mirroring_role", type: "integer" },
+          { name: "mirroring_state", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_external_policy_actions_assigned_to_principal",
+        columns: [
+          { name: "entity_name", type: "text" },
+          { name: "subentity_name", type: "text" },
+          { name: "action_namespace", type: "text" },
+          { name: "action_type", type: "text" },
+          { name: "assignment_type", type: "text" },
+          { name: "policy_guid", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_filelog",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_full_dblog",
+        columns: [
+          { name: "current lsn", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "context", type: "text" },
+          { name: "transaction id", type: "text" },
+          { name: "logblockgeneration", type: "integer" },
+          { name: "tag bits", type: "bytes" },
+          { name: "log record fixed length", type: "integer" },
+          { name: "log record length", type: "integer" },
+          { name: "previous lsn", type: "text" },
+          { name: "flag bits", type: "bytes" },
+          { name: "log reserve", type: "integer" },
+          { name: "allocunitid", type: "integer" },
+          { name: "allocunitname", type: "text" },
+          { name: "page id", type: "text" },
+          { name: "slot id", type: "integer" },
+          { name: "previous page lsn", type: "text" },
+          { name: "partitionid", type: "integer" },
+          { name: "rowflags", type: "integer" },
+          { name: "num elements", type: "integer" },
+          { name: "offset in row", type: "integer" },
+          { name: "modify size", type: "integer" },
+          { name: "checkpoint begin", type: "text" },
+          { name: "chkpt begin db version", type: "integer" },
+          { name: "max xdesid", type: "text" },
+          { name: "num transactions", type: "integer" },
+          { name: "checkpoint end", type: "text" },
+          { name: "chkpt end db version", type: "integer" },
+          { name: "minimum lsn", type: "text" },
+          { name: "dirty pages", type: "integer" },
+          { name: "oldest replicated begin lsn", type: "text" },
+          { name: "next replicated end lsn", type: "text" },
+          { name: "last distributed backup end lsn", type: "text" },
+          { name: "last distributed end lsn", type: "text" },
+          { name: "repl min hold lsn", type: "text" },
+          { name: "server uid", type: "integer" },
+          { name: "spid", type: "integer" },
+          { name: "beginlog status", type: "bytes" },
+          { name: "xact type", type: "integer" },
+          { name: "begin time", type: "text" },
+          { name: "transaction name", type: "text" },
+          { name: "transaction sid", type: "bytes" },
+          { name: "parent transaction id", type: "text" },
+          { name: "oldest active transaction id", type: "text" },
+          { name: "xact id", type: "integer" },
+          { name: "xact node id", type: "integer" },
+          { name: "xact node local id", type: "integer" },
+          { name: "end age", type: "integer" },
+          { name: "end time", type: "text" },
+          { name: "transaction begin", type: "text" },
+          { name: "replicated records", type: "integer" },
+          { name: "oldest active lsn", type: "text" },
+          { name: "server name", type: "text" },
+          { name: "database name", type: "text" },
+          { name: "mark name", type: "text" },
+          { name: "master xdesid", type: "text" },
+          { name: "master dbid", type: "integer" },
+          { name: "preplog begin lsn", type: "text" },
+          { name: "prepare time", type: "text" },
+          { name: "virtual clock", type: "integer" },
+          { name: "previous savepoint", type: "text" },
+          { name: "savepoint name", type: "text" },
+          { name: "rowbits first bit", type: "integer" },
+          { name: "rowbits bit count", type: "integer" },
+          { name: "rowbits bit value", type: "bytes" },
+          { name: "number of locks", type: "integer" },
+          { name: "lock information", type: "text" },
+          { name: "lsn before writes", type: "text" },
+          { name: "pages written", type: "integer" },
+          { name: "command type", type: "integer" },
+          { name: "publication id", type: "integer" },
+          { name: "article id", type: "integer" },
+          { name: "partial status", type: "integer" },
+          { name: "command", type: "text" },
+          { name: "byte offset", type: "integer" },
+          { name: "new value", type: "bytes" },
+          { name: "old value", type: "bytes" },
+          { name: "new split page", type: "text" },
+          { name: "rows deleted", type: "integer" },
+          { name: "bytes freed", type: "integer" },
+          { name: "ci table id", type: "integer" },
+          { name: "ci index id", type: "integer" },
+          { name: "newallocunitid", type: "integer" },
+          { name: "filegroup id", type: "integer" },
+          { name: "meta status", type: "bytes" },
+          { name: "file status", type: "bytes" },
+          { name: "file id", type: "integer" },
+          { name: "physical name", type: "text" },
+          { name: "logical name", type: "text" },
+          { name: "format lsn", type: "text" },
+          { name: "rowsetid", type: "integer" },
+          { name: "textptr", type: "bytes" },
+          { name: "column offset", type: "integer" },
+          { name: "flags", type: "integer" },
+          { name: "text size", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "old size", type: "integer" },
+          { name: "new size", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "bulk allocated extent count", type: "integer" },
+          { name: "bulk rowsetid", type: "integer" },
+          { name: "bulk allocunitid", type: "integer" },
+          { name: "bulk allocation first iam page id", type: "text" },
+          { name: "bulk allocated extent ids", type: "text" },
+          { name: "vlfs added", type: "text" },
+          { name: "invalidatecache id", type: "integer" },
+          { name: "invalidatecache keys", type: "text" },
+          { name: "copyverioninfo source page id", type: "text" },
+          { name: "copyverioninfo source page lsn", type: "text" },
+          { name: "copyverioninfo source slot id", type: "integer" },
+          { name: "copyverioninfo source slot count", type: "integer" },
+          { name: "rowlog contents 0", type: "bytes" },
+          { name: "rowlog contents 1", type: "bytes" },
+          { name: "rowlog contents 2", type: "bytes" },
+          { name: "rowlog contents 3", type: "bytes" },
+          { name: "rowlog contents 4", type: "bytes" },
+          { name: "rowlog contents 5", type: "bytes" },
+          { name: "compression log type", type: "integer" },
+          { name: "compression info", type: "bytes" },
+          { name: "pageformat pagetype", type: "integer" },
+          { name: "pageformat pageflags", type: "integer" },
+          { name: "pageformat pagelevel", type: "integer" },
+          { name: "pageformat pagestat", type: "integer" },
+          { name: "pageformat formatoption", type: "integer" },
+          { name: "log record", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_get_audit_file",
+        columns: [
+          { name: "event_time", type: "timestamp" },
+          { name: "sequence_number", type: "integer" },
+          { name: "action_id", type: "text" },
+          { name: "succeeded", type: "boolean" },
+          { name: "permission_bitmask", type: "bytes" },
+          { name: "is_column_permission", type: "boolean" },
+          { name: "session_id", type: "integer" },
+          { name: "server_principal_id", type: "integer" },
+          { name: "database_principal_id", type: "integer" },
+          { name: "target_server_principal_id", type: "integer" },
+          { name: "target_database_principal_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "class_type", type: "text" },
+          { name: "session_server_principal_name", type: "text" },
+          { name: "server_principal_name", type: "text" },
+          { name: "server_principal_sid", type: "bytes" },
+          { name: "database_principal_name", type: "text" },
+          { name: "target_server_principal_name", type: "text" },
+          { name: "target_server_principal_sid", type: "bytes" },
+          { name: "target_database_principal_name", type: "text" },
+          { name: "server_instance_name", type: "text" },
+          { name: "database_name", type: "text" },
+          { name: "schema_name", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "statement", type: "text" },
+          { name: "additional_information", type: "text" },
+          { name: "file_name", type: "text" },
+          { name: "audit_file_offset", type: "integer" },
+          { name: "user_defined_event_id", type: "integer" },
+          { name: "user_defined_information", type: "text" },
+          { name: "audit_schema_version", type: "integer" },
+          { name: "sequence_group_id", type: "bytes" },
+          { name: "transaction_id", type: "integer" },
+          { name: "client_ip", type: "text" },
+          { name: "application_name", type: "text" },
+          { name: "duration_milliseconds", type: "integer" },
+          { name: "response_rows", type: "integer" },
+          { name: "affected_rows", type: "integer" },
+          { name: "connection_id", type: "uuid" },
+          { name: "data_sensitivity_information", type: "text" },
+          { name: "host_name", type: "text" },
+          { name: "session_context", type: "text" },
+          { name: "client_tls_version", type: "integer" },
+          { name: "client_tls_version_name", type: "text" },
+          { name: "database_transaction_id", type: "integer" },
+          { name: "ledger_start_sequence_number", type: "integer" },
+          { name: "external_policy_permissions_checked", type: "text" },
+          { name: "obo_middle_tier_app_id", type: "text" },
+          { name: "is_local_secondary_replica", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_get_sql",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "text", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_hadr_distributed_ag_database_replica",
+        columns: [
+          { name: "group_database_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_hadr_distributed_ag_replica",
+        columns: [
+          { name: "group_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_helpcollations",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_helpdatatypemap",
+        columns: [
+          { name: "mapping_id", type: "integer" },
+          { name: "source_dbms", type: "text" },
+          { name: "source_version", type: "text" },
+          { name: "source_type", type: "text" },
+          { name: "source_length_min", type: "integer" },
+          { name: "source_length_max", type: "integer" },
+          { name: "source_precision_min", type: "integer" },
+          { name: "source_precision_max", type: "integer" },
+          { name: "source_scale_min", type: "integer" },
+          { name: "source_scale_max", type: "integer" },
+          { name: "source_nullable", type: "boolean" },
+          { name: "source_createparams", type: "integer" },
+          { name: "destination_dbms", type: "text" },
+          { name: "destination_version", type: "text" },
+          { name: "destination_type", type: "text" },
+          { name: "destination_length", type: "integer" },
+          { name: "destination_precision", type: "integer" },
+          { name: "destination_scale", type: "integer" },
+          { name: "destination_nullable", type: "boolean" },
+          { name: "destination_createparams", type: "integer" },
+          { name: "dataloss", type: "boolean" },
+          { name: "is_default", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_ledger_retrieve_digests_from_url",
+        columns: [
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_listextendedproperty",
+        columns: [
+          { name: "objtype", type: "text" },
+          { name: "objname", type: "text" },
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_MSxe_read_event_stream",
+        columns: [
+          { name: "type", type: "integer" },
+          { name: "data", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_my_permissions",
+        columns: [
+          { name: "entity_name", type: "text" },
+          { name: "subentity_name", type: "text" },
+          { name: "permission_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_PageResCracker",
+        columns: [
+          { name: "db_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_PhysLocCracker",
+        columns: [
+          { name: "file_id", type: "integer" },
+          { name: "page_id", type: "integer" },
+          { name: "slot_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_replgetcolidfrombitmap",
+        columns: [
+          { name: "colid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_RowDumpCracker",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "colname", type: "text" },
+          { name: "isinrow", type: "boolean" },
+          { name: "issparse", type: "boolean" },
+          { name: "isrecordprefixcompressed", type: "boolean" },
+          { name: "issymbol", type: "boolean" },
+          { name: "prefixbytes", type: "integer" },
+          { name: "inrowlength", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_servershareddrives",
+        columns: [
+          { name: "drivename", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_sqlagent_job_history",
+        columns: [
+          { name: "instance_id", type: "integer" },
+          { name: "job_id", type: "uuid" },
+          { name: "step_id", type: "integer" },
+          { name: "sql_message_id", type: "integer" },
+          { name: "sql_severity", type: "integer" },
+          { name: "message", type: "text" },
+          { name: "run_status", type: "integer" },
+          { name: "run_date", type: "integer" },
+          { name: "run_time", type: "integer" },
+          { name: "run_duration", type: "integer" },
+          { name: "operator_id_emailed", type: "integer" },
+          { name: "operator_id_paged", type: "integer" },
+          { name: "retries_attempted", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_sqlagent_jobs",
+        columns: [
+          { name: "job_id", type: "uuid" },
+          { name: "name", type: "text" },
+          { name: "enabled", type: "boolean" },
+          { name: "description", type: "text" },
+          { name: "start_step_id", type: "integer" },
+          { name: "notify_level_eventlog", type: "boolean" },
+          { name: "delete_level", type: "integer" },
+          { name: "date_created", type: "timestamp" },
+          { name: "date_modified", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_sqlagent_jobsteps",
+        columns: [
+          { name: "job_id", type: "uuid" },
+          { name: "step_id", type: "integer" },
+          { name: "step_name", type: "text" },
+          { name: "subsystem", type: "text" },
+          { name: "command", type: "text" },
+          { name: "flags", type: "integer" },
+          { name: "additional_parameters", type: "text" },
+          { name: "cmdexec_success_code", type: "integer" },
+          { name: "on_success_action", type: "integer" },
+          { name: "on_success_step_id", type: "integer" },
+          { name: "on_fail_action", type: "integer" },
+          { name: "on_fail_step_id", type: "integer" },
+          { name: "server", type: "text" },
+          { name: "database_name", type: "text" },
+          { name: "database_user_name", type: "text" },
+          { name: "retry_attempts", type: "integer" },
+          { name: "retry_interval", type: "integer" },
+          { name: "os_run_priority", type: "integer" },
+          { name: "output_file_name", type: "text" },
+          { name: "last_run_outcome", type: "integer" },
+          { name: "last_run_duration", type: "integer" },
+          { name: "last_run_retries", type: "integer" },
+          { name: "last_run_date", type: "integer" },
+          { name: "last_run_time", type: "integer" },
+          { name: "step_uid", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_sqlagent_jobsteps_logs",
+        columns: [
+          { name: "log_id", type: "integer" },
+          { name: "log_text", type: "text" },
+          { name: "date_created", type: "timestamp" },
+          { name: "step_uid", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_sqlagent_subsystems",
+        columns: [
+          { name: "subsystem_id", type: "integer" },
+          { name: "subsystem", type: "text" },
+          { name: "description_id", type: "integer" },
+          { name: "subsystem_dll", type: "text" },
+          { name: "agent_exe", type: "text" },
+          { name: "start_entry_point", type: "text" },
+          { name: "event_entry_point", type: "text" },
+          { name: "stop_entry_point", type: "text" },
+          { name: "max_worker_threads", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_stmt_sql_handle_from_sql_stmt",
+        columns: [
+          { name: "statement_sql_handle", type: "bytes" },
+          { name: "query_sql_text", type: "text" },
+          { name: "query_parameterization_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_trace_geteventinfo",
+        columns: [
+          { name: "eventid", type: "integer" },
+          { name: "columnid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_trace_getfilterinfo",
+        columns: [
+          { name: "columnid", type: "integer" },
+          { name: "logical_operator", type: "integer" },
+          { name: "comparison_operator", type: "integer" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_trace_getinfo",
+        columns: [
+          { name: "traceid", type: "integer" },
+          { name: "property", type: "integer" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_trace_gettable",
+        columns: [
+          { name: "textdata", type: "text" },
+          { name: "binarydata", type: "bytes" },
+          { name: "databaseid", type: "integer" },
+          { name: "transactionid", type: "integer" },
+          { name: "linenumber", type: "integer" },
+          { name: "ntusername", type: "text" },
+          { name: "ntdomainname", type: "text" },
+          { name: "hostname", type: "text" },
+          { name: "clientprocessid", type: "integer" },
+          { name: "applicationname", type: "text" },
+          { name: "loginname", type: "text" },
+          { name: "spid", type: "integer" },
+          { name: "duration", type: "integer" },
+          { name: "starttime", type: "timestamp" },
+          { name: "endtime", type: "timestamp" },
+          { name: "reads", type: "integer" },
+          { name: "writes", type: "integer" },
+          { name: "cpu", type: "integer" },
+          { name: "permissions", type: "integer" },
+          { name: "severity", type: "integer" },
+          { name: "eventsubclass", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "success", type: "integer" },
+          { name: "indexid", type: "integer" },
+          { name: "integerdata", type: "integer" },
+          { name: "servername", type: "text" },
+          { name: "eventclass", type: "integer" },
+          { name: "objecttype", type: "integer" },
+          { name: "nestlevel", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "error", type: "integer" },
+          { name: "mode", type: "integer" },
+          { name: "handle", type: "integer" },
+          { name: "objectname", type: "text" },
+          { name: "databasename", type: "text" },
+          { name: "filename", type: "text" },
+          { name: "ownername", type: "text" },
+          { name: "rolename", type: "text" },
+          { name: "targetusername", type: "text" },
+          { name: "dbusername", type: "text" },
+          { name: "loginsid", type: "bytes" },
+          { name: "targetloginname", type: "text" },
+          { name: "targetloginsid", type: "bytes" },
+          { name: "columnpermissions", type: "integer" },
+          { name: "linkedservername", type: "text" },
+          { name: "providername", type: "text" },
+          { name: "methodname", type: "text" },
+          { name: "rowcounts", type: "integer" },
+          { name: "requestid", type: "integer" },
+          { name: "xactsequence", type: "integer" },
+          { name: "eventsequence", type: "integer" },
+          { name: "bigintdata1", type: "integer" },
+          { name: "bigintdata2", type: "integer" },
+          { name: "guid", type: "uuid" },
+          { name: "integerdata2", type: "integer" },
+          { name: "objectid2", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "ownerid", type: "integer" },
+          { name: "parentname", type: "text" },
+          { name: "issystem", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "sourcedatabaseid", type: "integer" },
+          { name: "sqlhandle", type: "bytes" },
+          { name: "sessionloginname", type: "text" },
+          { name: "planhandle", type: "bytes" },
+          { name: "groupid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_translate_permissions",
+        columns: [
+          { name: "permission_name", type: "text" },
+          { name: "type", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_validate_plan_guide",
+        columns: [
+          { name: "msgnum", type: "integer" },
+          { name: "severity", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "message", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_virtualfilestats",
+        columns: [
+          { name: "dbid", type: "integer" },
+          { name: "fileid", type: "integer" },
+          { name: "timestamp", type: "integer" },
+          { name: "numberreads", type: "integer" },
+          { name: "bytesread", type: "integer" },
+          { name: "iostallreadms", type: "integer" },
+          { name: "numberwrites", type: "integer" },
+          { name: "byteswritten", type: "integer" },
+          { name: "iostallwritems", type: "integer" },
+          { name: "iostallms", type: "integer" },
+          { name: "bytesondisk", type: "integer" },
+          { name: "filehandle", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_virtualservernodes",
+        columns: [
+          { name: "nodename", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "status_description", type: "text" },
+          { name: "is_current_owner", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_xcs_get_file_rowcount",
+        columns: [
+          { name: "row_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fn_xe_file_target_read_file",
+        columns: [
+          { name: "module_guid", type: "uuid" },
+          { name: "package_guid", type: "uuid" },
+          { name: "object_name", type: "text" },
+          { name: "event_data", type: "text" },
+          { name: "file_name", type: "text" },
+          { name: "file_offset", type: "integer" },
+          { name: "timestamp_utc", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "foreign_key_columns",
+        columns: [
+          { name: "constraint_object_id", type: "integer" },
+          { name: "constraint_column_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "parent_column_id", type: "integer" },
+          { name: "referenced_object_id", type: "integer" },
+          { name: "referenced_column_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "foreign_keys",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "referenced_object_id", type: "integer" },
+          { name: "key_index_id", type: "integer" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_not_for_replication", type: "boolean" },
+          { name: "is_not_trusted", type: "boolean" },
+          { name: "delete_referential_action", type: "integer" },
+          { name: "delete_referential_action_desc", type: "text" },
+          { name: "update_referential_action", type: "integer" },
+          { name: "update_referential_action_desc", type: "text" },
+          { name: "is_system_named", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_catalogs",
+        columns: [
+          { name: "fulltext_catalog_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "path", type: "text" },
+          { name: "is_default", type: "boolean" },
+          { name: "is_accent_sensitivity_on", type: "boolean" },
+          { name: "data_space_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "is_importing", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_document_types",
+        columns: [
+          { name: "document_type", type: "text" },
+          { name: "class_id", type: "uuid" },
+          { name: "path", type: "text" },
+          { name: "version", type: "text" },
+          { name: "manufacturer", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_index_catalog_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "fulltext_catalog_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_index_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "type_column_id", type: "integer" },
+          { name: "language_id", type: "integer" },
+          { name: "statistical_semantics", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_index_fragments",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "fragment_id", type: "integer" },
+          { name: "fragment_object_id", type: "integer" },
+          { name: "timestamp", type: "bytes" },
+          { name: "status", type: "integer" },
+          { name: "data_size", type: "integer" },
+          { name: "row_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_indexes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "unique_index_id", type: "integer" },
+          { name: "fulltext_catalog_id", type: "integer" },
+          { name: "is_enabled", type: "boolean" },
+          { name: "change_tracking_state", type: "text" },
+          { name: "change_tracking_state_desc", type: "text" },
+          { name: "has_crawl_completed", type: "boolean" },
+          { name: "crawl_type", type: "text" },
+          { name: "crawl_type_desc", type: "text" },
+          { name: "crawl_start_date", type: "timestamp" },
+          { name: "crawl_end_date", type: "timestamp" },
+          { name: "incremental_timestamp", type: "bytes" },
+          { name: "stoplist_id", type: "integer" },
+          { name: "property_list_id", type: "integer" },
+          { name: "data_space_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_languages",
+        columns: [
+          { name: "lcid", type: "integer" },
+          { name: "name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_semantic_language_statistics_database",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "register_date", type: "timestamp" },
+          { name: "registered_by", type: "integer" },
+          { name: "version", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_semantic_languages",
+        columns: [
+          { name: "lcid", type: "integer" },
+          { name: "name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_stoplists",
+        columns: [
+          { name: "stoplist_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_stopwords",
+        columns: [
+          { name: "stoplist_id", type: "integer" },
+          { name: "stopword", type: "text" },
+          { name: "language", type: "text" },
+          { name: "language_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "fulltext_system_stopwords",
+        columns: [
+          { name: "stopword", type: "text" },
+          { name: "language_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "function_order_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "order_column_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "is_descending", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "hash_indexes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "index_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_unique", type: "boolean" },
+          { name: "data_space_id", type: "integer" },
+          { name: "ignore_dup_key", type: "boolean" },
+          { name: "is_primary_key", type: "boolean" },
+          { name: "is_unique_constraint", type: "boolean" },
+          { name: "fill_factor", type: "integer" },
+          { name: "is_padded", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_hypothetical", type: "boolean" },
+          { name: "is_ignored_in_optimization", type: "boolean" },
+          { name: "allow_row_locks", type: "boolean" },
+          { name: "allow_page_locks", type: "boolean" },
+          { name: "has_filter", type: "boolean" },
+          { name: "filter_definition", type: "text" },
+          { name: "bucket_count", type: "integer" },
+          { name: "auto_created", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "http_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "site", type: "text" },
+          { name: "url_path", type: "text" },
+          { name: "is_clear_port_enabled", type: "boolean" },
+          { name: "clear_port", type: "integer" },
+          { name: "is_ssl_port_enabled", type: "boolean" },
+          { name: "ssl_port", type: "integer" },
+          { name: "is_anonymous_enabled", type: "boolean" },
+          { name: "is_basic_auth_enabled", type: "boolean" },
+          { name: "is_digest_auth_enabled", type: "boolean" },
+          { name: "is_kerberos_auth_enabled", type: "boolean" },
+          { name: "is_ntlm_auth_enabled", type: "boolean" },
+          { name: "is_integrated_auth_enabled", type: "boolean" },
+          { name: "authorization_realm", type: "text" },
+          { name: "default_logon_domain", type: "text" },
+          { name: "is_compression_enabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "identity_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "seed_value", type: "variant" },
+          { name: "increment_value", type: "variant" },
+          { name: "last_value", type: "variant" },
+          { name: "is_not_for_replication", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "index_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "index_column_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "key_ordinal", type: "integer" },
+          { name: "partition_ordinal", type: "integer" },
+          { name: "is_descending_key", type: "boolean" },
+          { name: "is_included_column", type: "boolean" },
+          { name: "column_store_order_ordinal", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "index_resumable_operations",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "sql_text", type: "text" },
+          { name: "last_max_dop_used", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "start_time", type: "timestamp" },
+          { name: "last_pause_time", type: "timestamp" },
+          { name: "total_execution_time", type: "integer" },
+          { name: "percent_complete", type: "decimal" },
+          { name: "page_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "indexes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "index_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_unique", type: "boolean" },
+          { name: "data_space_id", type: "integer" },
+          { name: "ignore_dup_key", type: "boolean" },
+          { name: "is_primary_key", type: "boolean" },
+          { name: "is_unique_constraint", type: "boolean" },
+          { name: "fill_factor", type: "integer" },
+          { name: "is_padded", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_hypothetical", type: "boolean" },
+          { name: "is_ignored_in_optimization", type: "boolean" },
+          { name: "allow_row_locks", type: "boolean" },
+          { name: "allow_page_locks", type: "boolean" },
+          { name: "has_filter", type: "boolean" },
+          { name: "filter_definition", type: "text" },
+          { name: "compression_delay", type: "integer" },
+          { name: "suppress_dup_key_messages", type: "boolean" },
+          { name: "auto_created", type: "boolean" },
+          { name: "optimize_for_sequential_key", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "internal_partitions",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "internal_object_type", type: "integer" },
+          { name: "internal_object_type_desc", type: "text" },
+          { name: "row_group_id", type: "integer" },
+          { name: "rows", type: "integer" },
+          { name: "data_compression", type: "integer" },
+          { name: "data_compression_desc", type: "text" },
+          { name: "xml_compression", type: "boolean" },
+          { name: "xml_compression_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "internal_tables",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "internal_type", type: "integer" },
+          { name: "internal_type_desc", type: "text" },
+          { name: "parent_id", type: "integer" },
+          { name: "parent_minor_id", type: "integer" },
+          { name: "lob_data_space_id", type: "integer" },
+          { name: "filestream_data_space_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "key_constraints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "unique_index_id", type: "integer" },
+          { name: "is_system_named", type: "boolean" },
+          { name: "is_enforced", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "key_encryptions",
+        columns: [
+          { name: "key_id", type: "integer" },
+          { name: "thumbprint", type: "bytes" },
+          { name: "crypt_type", type: "text" },
+          { name: "crypt_type_desc", type: "text" },
+          { name: "crypt_property", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "ledger_column_history",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "column_name", type: "text" },
+          { name: "operation_type", type: "integer" },
+          { name: "operation_type_desc", type: "text" },
+          { name: "transaction_id", type: "integer" },
+          { name: "sequence_number", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "ledger_table_history",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "schema_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "ledger_view_schema_name", type: "text" },
+          { name: "ledger_view_name", type: "text" },
+          { name: "operation_type", type: "integer" },
+          { name: "operation_type_desc", type: "text" },
+          { name: "transaction_id", type: "integer" },
+          { name: "sequence_number", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "linked_logins",
+        columns: [
+          { name: "server_id", type: "integer" },
+          { name: "local_principal_id", type: "integer" },
+          { name: "uses_self_credential", type: "boolean" },
+          { name: "remote_name", type: "text" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "login_token",
+        columns: [
+          { name: "principal_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "usage", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "masked_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_persisted", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "masking_function", type: "text" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "master_files",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "file_id", type: "integer" },
+          { name: "file_guid", type: "uuid" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "data_space_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "physical_name", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "max_size", type: "integer" },
+          { name: "growth", type: "integer" },
+          { name: "is_media_read_only", type: "boolean" },
+          { name: "is_read_only", type: "boolean" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_percent_growth", type: "boolean" },
+          { name: "is_name_reserved", type: "boolean" },
+          { name: "is_persistent_log_buffer", type: "boolean" },
+          { name: "create_lsn", type: "decimal" },
+          { name: "drop_lsn", type: "decimal" },
+          { name: "read_only_lsn", type: "decimal" },
+          { name: "read_write_lsn", type: "decimal" },
+          { name: "differential_base_lsn", type: "decimal" },
+          { name: "differential_base_guid", type: "uuid" },
+          { name: "differential_base_time", type: "timestamp" },
+          { name: "redo_start_lsn", type: "decimal" },
+          { name: "redo_start_fork_guid", type: "uuid" },
+          { name: "redo_target_lsn", type: "decimal" },
+          { name: "redo_target_fork_guid", type: "uuid" },
+          { name: "backup_lsn", type: "decimal" },
+          { name: "credential_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "master_key_passwords",
+        columns: [
+          { name: "credential_id", type: "integer" },
+          { name: "family_guid", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_optimized_tables_internal_attributes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "xtp_object_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "minor_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "message_type_xml_schema_collection_usages",
+        columns: [
+          { name: "message_type_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "messages",
+        columns: [
+          { name: "message_id", type: "integer" },
+          { name: "language_id", type: "integer" },
+          { name: "severity", type: "integer" },
+          { name: "is_event_logged", type: "boolean" },
+          { name: "text", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "module_assembly_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "assembly_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "numbered_procedure_parameters",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "procedure_number", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "parameter_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "is_output", type: "boolean" },
+          { name: "is_cursor_ref", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "numbered_procedures",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "procedure_number", type: "integer" },
+          { name: "definition", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "objects",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "openkeys",
+        columns: [
+          { name: "database_id", type: "integer" },
+          { name: "database_name", type: "text" },
+          { name: "key_id", type: "integer" },
+          { name: "key_name", type: "text" },
+          { name: "key_guid", type: "uuid" },
+          { name: "opened_date", type: "timestamp" },
+          { name: "status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "parameter_type_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "parameter_id", type: "integer" },
+          { name: "user_type_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "parameter_xml_schema_collection_usages",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "parameter_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "parameters",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "parameter_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "is_output", type: "boolean" },
+          { name: "is_cursor_ref", type: "boolean" },
+          { name: "has_default_value", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "default_value", type: "variant" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "is_readonly", type: "boolean" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "partition_functions",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "function_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "fanout", type: "integer" },
+          { name: "boundary_value_on_right", type: "boolean" },
+          { name: "is_system", type: "boolean" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "partition_parameters",
+        columns: [
+          { name: "function_id", type: "integer" },
+          { name: "parameter_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "user_type_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "partition_range_values",
+        columns: [
+          { name: "function_id", type: "integer" },
+          { name: "boundary_id", type: "integer" },
+          { name: "parameter_id", type: "integer" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "partition_schemes",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "data_space_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "is_default", type: "boolean" },
+          { name: "is_system", type: "boolean" },
+          { name: "function_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "partitions",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "hobt_id", type: "integer" },
+          { name: "rows", type: "integer" },
+          { name: "filestream_filegroup_id", type: "integer" },
+          { name: "data_compression", type: "integer" },
+          { name: "data_compression_desc", type: "text" },
+          { name: "xml_compression", type: "boolean" },
+          { name: "xml_compression_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "periods",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "period_type", type: "integer" },
+          { name: "period_type_desc", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "start_column_id", type: "integer" },
+          { name: "end_column_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "plan_guides",
+        columns: [
+          { name: "plan_guide_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "query_text", type: "text" },
+          { name: "scope_type", type: "integer" },
+          { name: "scope_type_desc", type: "text" },
+          { name: "scope_object_id", type: "integer" },
+          { name: "scope_batch", type: "text" },
+          { name: "parameters", type: "text" },
+          { name: "hints", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "procedures",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_auto_executed", type: "boolean" },
+          { name: "is_execution_replicated", type: "boolean" },
+          { name: "is_repl_serializable_only", type: "boolean" },
+          { name: "skips_repl_constraints", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_context_settings",
+        columns: [
+          { name: "context_settings_id", type: "integer" },
+          { name: "set_options", type: "bytes" },
+          { name: "language_id", type: "integer" },
+          { name: "date_format", type: "integer" },
+          { name: "date_first", type: "integer" },
+          { name: "status", type: "bytes" },
+          { name: "required_cursor_options", type: "integer" },
+          { name: "acceptable_cursor_options", type: "integer" },
+          { name: "merge_action_type", type: "integer" },
+          { name: "default_schema_id", type: "integer" },
+          { name: "is_replication_specific", type: "boolean" },
+          { name: "is_contained", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_plan",
+        columns: [
+          { name: "plan_id", type: "integer" },
+          { name: "query_id", type: "integer" },
+          { name: "plan_group_id", type: "integer" },
+          { name: "engine_version", type: "text" },
+          { name: "compatibility_level", type: "integer" },
+          { name: "query_plan_hash", type: "bytes" },
+          { name: "query_plan", type: "text" },
+          { name: "is_online_index_plan", type: "boolean" },
+          { name: "is_trivial_plan", type: "boolean" },
+          { name: "is_parallel_plan", type: "boolean" },
+          { name: "is_forced_plan", type: "boolean" },
+          { name: "is_natively_compiled", type: "boolean" },
+          { name: "force_failure_count", type: "integer" },
+          { name: "last_force_failure_reason", type: "integer" },
+          { name: "last_force_failure_reason_desc", type: "text" },
+          { name: "count_compiles", type: "integer" },
+          { name: "initial_compile_start_time", type: "timestamp" },
+          { name: "last_compile_start_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "avg_compile_duration", type: "decimal" },
+          { name: "last_compile_duration", type: "integer" },
+          { name: "plan_forcing_type", type: "integer" },
+          { name: "plan_forcing_type_desc", type: "text" },
+          { name: "has_compile_replay_script", type: "boolean" },
+          { name: "is_optimized_plan_forcing_disabled", type: "boolean" },
+          { name: "plan_type", type: "integer" },
+          { name: "plan_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_plan_feedback",
+        columns: [
+          { name: "plan_feedback_id", type: "integer" },
+          { name: "plan_id", type: "integer" },
+          { name: "feature_id", type: "integer" },
+          { name: "feature_desc", type: "text" },
+          { name: "feedback_data", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "create_time", type: "timestamp" },
+          { name: "last_updated_time", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_plan_forcing_locations",
+        columns: [
+          { name: "plan_forcing_location_id", type: "integer" },
+          { name: "query_id", type: "integer" },
+          { name: "plan_id", type: "integer" },
+          { name: "replica_group_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_query",
+        columns: [
+          { name: "query_id", type: "integer" },
+          { name: "query_text_id", type: "integer" },
+          { name: "context_settings_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "batch_sql_handle", type: "bytes" },
+          { name: "query_hash", type: "bytes" },
+          { name: "is_internal_query", type: "boolean" },
+          { name: "query_parameterization_type", type: "integer" },
+          { name: "query_parameterization_type_desc", type: "text" },
+          { name: "initial_compile_start_time", type: "timestamp" },
+          { name: "last_compile_start_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "last_compile_batch_sql_handle", type: "bytes" },
+          { name: "last_compile_batch_offset_start", type: "integer" },
+          { name: "last_compile_batch_offset_end", type: "integer" },
+          { name: "count_compiles", type: "integer" },
+          { name: "avg_compile_duration", type: "decimal" },
+          { name: "last_compile_duration", type: "integer" },
+          { name: "avg_bind_duration", type: "decimal" },
+          { name: "last_bind_duration", type: "integer" },
+          { name: "avg_bind_cpu_time", type: "decimal" },
+          { name: "last_bind_cpu_time", type: "integer" },
+          { name: "avg_optimize_duration", type: "decimal" },
+          { name: "last_optimize_duration", type: "integer" },
+          { name: "avg_optimize_cpu_time", type: "decimal" },
+          { name: "last_optimize_cpu_time", type: "integer" },
+          { name: "avg_compile_memory_kb", type: "decimal" },
+          { name: "last_compile_memory_kb", type: "integer" },
+          { name: "max_compile_memory_kb", type: "integer" },
+          { name: "is_clouddb_internal_query", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_query_hints",
+        columns: [
+          { name: "query_hint_id", type: "integer" },
+          { name: "query_id", type: "integer" },
+          { name: "replica_group_id", type: "integer" },
+          { name: "query_hint_text", type: "text" },
+          { name: "last_query_hint_failure_reason", type: "integer" },
+          { name: "last_query_hint_failure_reason_desc", type: "text" },
+          { name: "query_hint_failure_count", type: "integer" },
+          { name: "source", type: "integer" },
+          { name: "source_desc", type: "text" },
+          { name: "comment", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_query_text",
+        columns: [
+          { name: "query_text_id", type: "integer" },
+          { name: "query_sql_text", type: "text" },
+          { name: "statement_sql_handle", type: "bytes" },
+          { name: "is_part_of_encrypted_module", type: "boolean" },
+          { name: "has_restricted_text", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_query_variant",
+        columns: [
+          { name: "query_variant_query_id", type: "integer" },
+          { name: "parent_query_id", type: "integer" },
+          { name: "dispatcher_plan_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_replicas",
+        columns: [
+          { name: "replica_group_id", type: "integer" },
+          { name: "role_type", type: "integer" },
+          { name: "replica_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_runtime_stats",
+        columns: [
+          { name: "runtime_stats_id", type: "integer" },
+          { name: "plan_id", type: "integer" },
+          { name: "runtime_stats_interval_id", type: "integer" },
+          { name: "execution_type", type: "integer" },
+          { name: "execution_type_desc", type: "text" },
+          { name: "first_execution_time", type: "timestamp" },
+          { name: "last_execution_time", type: "timestamp" },
+          { name: "count_executions", type: "integer" },
+          { name: "avg_duration", type: "decimal" },
+          { name: "last_duration", type: "integer" },
+          { name: "min_duration", type: "integer" },
+          { name: "max_duration", type: "integer" },
+          { name: "stdev_duration", type: "decimal" },
+          { name: "avg_cpu_time", type: "decimal" },
+          { name: "last_cpu_time", type: "integer" },
+          { name: "min_cpu_time", type: "integer" },
+          { name: "max_cpu_time", type: "integer" },
+          { name: "stdev_cpu_time", type: "decimal" },
+          { name: "avg_logical_io_reads", type: "decimal" },
+          { name: "last_logical_io_reads", type: "integer" },
+          { name: "min_logical_io_reads", type: "integer" },
+          { name: "max_logical_io_reads", type: "integer" },
+          { name: "stdev_logical_io_reads", type: "decimal" },
+          { name: "avg_logical_io_writes", type: "decimal" },
+          { name: "last_logical_io_writes", type: "integer" },
+          { name: "min_logical_io_writes", type: "integer" },
+          { name: "max_logical_io_writes", type: "integer" },
+          { name: "stdev_logical_io_writes", type: "decimal" },
+          { name: "avg_physical_io_reads", type: "decimal" },
+          { name: "last_physical_io_reads", type: "integer" },
+          { name: "min_physical_io_reads", type: "integer" },
+          { name: "max_physical_io_reads", type: "integer" },
+          { name: "stdev_physical_io_reads", type: "decimal" },
+          { name: "avg_clr_time", type: "decimal" },
+          { name: "last_clr_time", type: "integer" },
+          { name: "min_clr_time", type: "integer" },
+          { name: "max_clr_time", type: "integer" },
+          { name: "stdev_clr_time", type: "decimal" },
+          { name: "avg_dop", type: "decimal" },
+          { name: "last_dop", type: "integer" },
+          { name: "min_dop", type: "integer" },
+          { name: "max_dop", type: "integer" },
+          { name: "stdev_dop", type: "decimal" },
+          { name: "avg_query_max_used_memory", type: "decimal" },
+          { name: "last_query_max_used_memory", type: "integer" },
+          { name: "min_query_max_used_memory", type: "integer" },
+          { name: "max_query_max_used_memory", type: "integer" },
+          { name: "stdev_query_max_used_memory", type: "decimal" },
+          { name: "avg_rowcount", type: "decimal" },
+          { name: "last_rowcount", type: "integer" },
+          { name: "min_rowcount", type: "integer" },
+          { name: "max_rowcount", type: "integer" },
+          { name: "stdev_rowcount", type: "decimal" },
+          { name: "avg_num_physical_io_reads", type: "decimal" },
+          { name: "last_num_physical_io_reads", type: "integer" },
+          { name: "min_num_physical_io_reads", type: "integer" },
+          { name: "max_num_physical_io_reads", type: "integer" },
+          { name: "stdev_num_physical_io_reads", type: "decimal" },
+          { name: "avg_log_bytes_used", type: "decimal" },
+          { name: "last_log_bytes_used", type: "integer" },
+          { name: "min_log_bytes_used", type: "integer" },
+          { name: "max_log_bytes_used", type: "integer" },
+          { name: "stdev_log_bytes_used", type: "decimal" },
+          { name: "avg_tempdb_space_used", type: "decimal" },
+          { name: "last_tempdb_space_used", type: "integer" },
+          { name: "min_tempdb_space_used", type: "integer" },
+          { name: "max_tempdb_space_used", type: "integer" },
+          { name: "stdev_tempdb_space_used", type: "decimal" },
+          { name: "avg_page_server_io_reads", type: "decimal" },
+          { name: "last_page_server_io_reads", type: "integer" },
+          { name: "min_page_server_io_reads", type: "integer" },
+          { name: "max_page_server_io_reads", type: "integer" },
+          { name: "stdev_page_server_io_reads", type: "decimal" },
+          { name: "replica_group_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_runtime_stats_interval",
+        columns: [
+          { name: "runtime_stats_interval_id", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "end_time", type: "timestamp" },
+          { name: "comment", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "query_store_wait_stats",
+        columns: [
+          { name: "wait_stats_id", type: "integer" },
+          { name: "plan_id", type: "integer" },
+          { name: "runtime_stats_interval_id", type: "integer" },
+          { name: "wait_category", type: "integer" },
+          { name: "wait_category_desc", type: "text" },
+          { name: "execution_type", type: "integer" },
+          { name: "execution_type_desc", type: "text" },
+          { name: "total_query_wait_time_ms", type: "integer" },
+          { name: "avg_query_wait_time_ms", type: "decimal" },
+          { name: "last_query_wait_time_ms", type: "integer" },
+          { name: "min_query_wait_time_ms", type: "integer" },
+          { name: "max_query_wait_time_ms", type: "integer" },
+          { name: "stdev_query_wait_time_ms", type: "decimal" },
+          { name: "replica_group_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "registered_search_properties",
+        columns: [
+          { name: "property_list_id", type: "integer" },
+          { name: "property_id", type: "integer" },
+          { name: "property_name", type: "text" },
+          { name: "property_set_guid", type: "uuid" },
+          { name: "property_int_id", type: "integer" },
+          { name: "property_description", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "registered_search_property_lists",
+        columns: [
+          { name: "property_list_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "remote_data_archive_databases",
+        columns: [
+          { name: "remote_database_id", type: "integer" },
+          { name: "remote_database_name", type: "text" },
+          { name: "data_source_id", type: "integer" },
+          { name: "federated_service_account", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "remote_data_archive_tables",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "remote_database_id", type: "integer" },
+          { name: "remote_table_name", type: "text" },
+          { name: "filter_predicate", type: "text" },
+          { name: "migration_direction", type: "integer" },
+          { name: "migration_direction_desc", type: "text" },
+          { name: "is_migration_paused", type: "boolean" },
+          { name: "is_reconciled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "remote_logins",
+        columns: [
+          { name: "server_id", type: "integer" },
+          { name: "remote_name", type: "text" },
+          { name: "local_principal_id", type: "integer" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "remote_service_bindings",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "remote_service_binding_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "remote_service_name", type: "text" },
+          { name: "service_contract_id", type: "integer" },
+          { name: "remote_principal_id", type: "integer" },
+          { name: "is_anonymous_on", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_configuration",
+        columns: [
+          { name: "classifier_function_id", type: "integer" },
+          { name: "is_enabled", type: "boolean" },
+          { name: "max_outstanding_io_per_volume", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_external_resource_pool_affinity",
+        columns: [
+          { name: "external_pool_id", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "cpu_mask", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_external_resource_pools",
+        columns: [
+          { name: "external_pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "max_cpu_percent", type: "integer" },
+          { name: "max_memory_percent", type: "integer" },
+          { name: "max_processes", type: "integer" },
+          { name: "version", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_resource_pool_affinity",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "processor_group", type: "integer" },
+          { name: "scheduler_mask", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_resource_pools",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "min_cpu_percent", type: "integer" },
+          { name: "max_cpu_percent", type: "integer" },
+          { name: "min_memory_percent", type: "integer" },
+          { name: "max_memory_percent", type: "integer" },
+          { name: "cap_cpu_percent", type: "integer" },
+          { name: "min_iops_per_volume", type: "integer" },
+          { name: "max_iops_per_volume", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "resource_governor_workload_groups",
+        columns: [
+          { name: "group_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "importance", type: "text" },
+          { name: "request_max_memory_grant_percent", type: "integer" },
+          { name: "request_max_cpu_time_sec", type: "integer" },
+          { name: "request_memory_grant_timeout_sec", type: "integer" },
+          { name: "max_dop", type: "integer" },
+          { name: "group_max_requests", type: "integer" },
+          { name: "pool_id", type: "integer" },
+          { name: "external_pool_id", type: "integer" },
+          { name: "request_max_memory_grant_percent_numeric", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "routes",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "route_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "remote_service_name", type: "text" },
+          { name: "broker_instance", type: "text" },
+          { name: "lifetime", type: "timestamp" },
+          { name: "address", type: "text" },
+          { name: "mirror_address", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schemas",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "schema_id", type: "integer" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "securable_classes",
+        columns: [
+          { name: "class_desc", type: "text" },
+          { name: "class", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "security_policies",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_enabled", type: "boolean" },
+          { name: "is_not_for_replication", type: "boolean" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_schema_bound", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "security_predicates",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "security_predicate_id", type: "integer" },
+          { name: "target_object_id", type: "integer" },
+          { name: "predicate_definition", type: "text" },
+          { name: "predicate_type", type: "integer" },
+          { name: "predicate_type_desc", type: "text" },
+          { name: "operation", type: "integer" },
+          { name: "operation_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "selective_xml_index_namespaces",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "is_default_uri", type: "boolean" },
+          { name: "uri", type: "text" },
+          { name: "prefix", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "selective_xml_index_paths",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "path_id", type: "integer" },
+          { name: "path", type: "text" },
+          { name: "name", type: "text" },
+          { name: "path_type", type: "integer" },
+          { name: "path_type_desc", type: "text" },
+          { name: "xml_component_id", type: "integer" },
+          { name: "xquery_type_description", type: "text" },
+          { name: "is_xquery_type_inferred", type: "boolean" },
+          { name: "xquery_max_length", type: "integer" },
+          { name: "is_xquery_max_length_inferred", type: "boolean" },
+          { name: "is_node", type: "boolean" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_singleton", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sensitivity_classifications",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "label", type: "text" },
+          { name: "label_id", type: "text" },
+          { name: "information_type", type: "text" },
+          { name: "information_type_id", type: "text" },
+          { name: "rank", type: "integer" },
+          { name: "rank_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sequences",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "start_value", type: "variant" },
+          { name: "increment", type: "variant" },
+          { name: "minimum_value", type: "variant" },
+          { name: "maximum_value", type: "variant" },
+          { name: "is_cycling", type: "boolean" },
+          { name: "is_cached", type: "boolean" },
+          { name: "cache_size", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "current_value", type: "variant" },
+          { name: "is_exhausted", type: "boolean" },
+          { name: "last_used_value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_assembly_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "assembly_id", type: "integer" },
+          { name: "assembly_class", type: "text" },
+          { name: "assembly_method", type: "text" },
+          { name: "execute_as_principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_audit_specification_details",
+        columns: [
+          { name: "server_specification_id", type: "integer" },
+          { name: "audit_action_id", type: "text" },
+          { name: "audit_action_name", type: "text" },
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "audited_principal_id", type: "integer" },
+          { name: "audited_result", type: "text" },
+          { name: "is_group", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_audit_specifications",
+        columns: [
+          { name: "server_specification_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "audit_guid", type: "uuid" },
+          { name: "is_state_enabled", type: "boolean" },
+          { name: "is_session_context_enabled", type: "boolean" },
+          { name: "session_context_keys", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_audits",
+        columns: [
+          { name: "audit_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "audit_guid", type: "uuid" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "principal_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "on_failure", type: "integer" },
+          { name: "on_failure_desc", type: "text" },
+          { name: "is_state_enabled", type: "boolean" },
+          { name: "queue_delay", type: "integer" },
+          { name: "predicate", type: "text" },
+          { name: "is_operator_audit", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_notifications",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "parent_class", type: "integer" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "parent_id", type: "integer" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "service_name", type: "text" },
+          { name: "broker_instance", type: "text" },
+          { name: "creator_sid", type: "bytes" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_session_actions",
+        columns: [
+          { name: "event_session_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "package", type: "text" },
+          { name: "module", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_session_events",
+        columns: [
+          { name: "event_session_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "package", type: "text" },
+          { name: "module", type: "text" },
+          { name: "predicate", type: "text" },
+          { name: "predicate_xml", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_session_fields",
+        columns: [
+          { name: "event_session_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_session_targets",
+        columns: [
+          { name: "event_session_id", type: "integer" },
+          { name: "target_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "package", type: "text" },
+          { name: "module", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_event_sessions",
+        columns: [
+          { name: "event_session_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "event_retention_mode", type: "text" },
+          { name: "event_retention_mode_desc", type: "text" },
+          { name: "max_dispatch_latency", type: "integer" },
+          { name: "max_memory", type: "integer" },
+          { name: "max_event_size", type: "integer" },
+          { name: "memory_partition_mode", type: "text" },
+          { name: "memory_partition_mode_desc", type: "text" },
+          { name: "track_causality", type: "boolean" },
+          { name: "startup_state", type: "boolean" },
+          { name: "has_long_running_target", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_events",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_trigger_event", type: "boolean" },
+          { name: "event_group_type", type: "integer" },
+          { name: "event_group_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_file_audits",
+        columns: [
+          { name: "audit_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "audit_guid", type: "uuid" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "principal_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "on_failure", type: "integer" },
+          { name: "on_failure_desc", type: "text" },
+          { name: "is_state_enabled", type: "boolean" },
+          { name: "queue_delay", type: "integer" },
+          { name: "predicate", type: "text" },
+          { name: "max_file_size", type: "integer" },
+          { name: "max_rollover_files", type: "integer" },
+          { name: "max_files", type: "integer" },
+          { name: "reserve_disk_space", type: "boolean" },
+          { name: "log_file_path", type: "text" },
+          { name: "log_file_name", type: "text" },
+          { name: "retention_days", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_memory_optimized_hybrid_buffer_pool_configuration",
+        columns: [
+          { name: "is_configured", type: "variant" },
+          { name: "is_enabled", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_permissions",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "major_id", type: "integer" },
+          { name: "minor_id", type: "integer" },
+          { name: "grantee_principal_id", type: "integer" },
+          { name: "grantor_principal_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "permission_name", type: "text" },
+          { name: "state", type: "text" },
+          { name: "state_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_principal_credentials",
+        columns: [
+          { name: "principal_id", type: "integer" },
+          { name: "credential_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_principals",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "default_database_name", type: "text" },
+          { name: "default_language_name", type: "text" },
+          { name: "credential_id", type: "integer" },
+          { name: "owning_principal_id", type: "integer" },
+          { name: "is_fixed_role", type: "boolean" },
+          { name: "tenant_id", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_role_members",
+        columns: [
+          { name: "role_principal_id", type: "integer" },
+          { name: "member_principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_sql_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "uses_quoted_identifier", type: "boolean" },
+          { name: "execute_as_principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_trigger_events",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_trigger_event", type: "boolean" },
+          { name: "is_first", type: "boolean" },
+          { name: "is_last", type: "boolean" },
+          { name: "event_group_type", type: "integer" },
+          { name: "event_group_type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "server_triggers",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "parent_class", type: "integer" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "parent_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_disabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "servers",
+        columns: [
+          { name: "server_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "product", type: "text" },
+          { name: "provider", type: "text" },
+          { name: "data_source", type: "text" },
+          { name: "location", type: "text" },
+          { name: "provider_string", type: "text" },
+          { name: "catalog", type: "text" },
+          { name: "connect_timeout", type: "integer" },
+          { name: "query_timeout", type: "integer" },
+          { name: "is_linked", type: "boolean" },
+          { name: "is_remote_login_enabled", type: "boolean" },
+          { name: "is_rpc_out_enabled", type: "boolean" },
+          { name: "is_data_access_enabled", type: "boolean" },
+          { name: "is_collation_compatible", type: "boolean" },
+          { name: "uses_remote_collation", type: "boolean" },
+          { name: "collation_name", type: "text" },
+          { name: "lazy_schema_validation", type: "boolean" },
+          { name: "is_system", type: "boolean" },
+          { name: "is_publisher", type: "boolean" },
+          { name: "is_subscriber", type: "boolean" },
+          { name: "is_distributor", type: "boolean" },
+          { name: "is_nonsql_subscriber", type: "boolean" },
+          { name: "is_remote_proc_transaction_promotion_enabled", type: "boolean" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_rda_server", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_broker_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "is_message_forwarding_enabled", type: "boolean" },
+          { name: "message_forwarding_size", type: "integer" },
+          { name: "connection_auth", type: "integer" },
+          { name: "connection_auth_desc", type: "text" },
+          { name: "certificate_id", type: "integer" },
+          { name: "encryption_algorithm", type: "integer" },
+          { name: "encryption_algorithm_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_contract_message_usages",
+        columns: [
+          { name: "service_contract_id", type: "integer" },
+          { name: "message_type_id", type: "integer" },
+          { name: "is_sent_by_initiator", type: "boolean" },
+          { name: "is_sent_by_target", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_contract_usages",
+        columns: [
+          { name: "service_id", type: "integer" },
+          { name: "service_contract_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_contracts",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "service_contract_id", type: "integer" },
+          { name: "principal_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_message_types",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "message_type_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "validation", type: "text" },
+          { name: "validation_desc", type: "text" },
+          { name: "xml_collection_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_queue_usages",
+        columns: [
+          { name: "service_id", type: "integer" },
+          { name: "service_queue_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "service_queues",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "max_readers", type: "integer" },
+          { name: "activation_procedure", type: "text" },
+          { name: "execute_as_principal_id", type: "integer" },
+          { name: "is_activation_enabled", type: "boolean" },
+          { name: "is_receive_enabled", type: "boolean" },
+          { name: "is_enqueue_enabled", type: "boolean" },
+          { name: "is_retention_enabled", type: "boolean" },
+          { name: "is_poison_message_handling_enabled", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "services",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "service_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "service_queue_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "soap_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "is_sql_language_enabled", type: "boolean" },
+          { name: "wsdl_generator_procedure", type: "text" },
+          { name: "default_database", type: "text" },
+          { name: "default_namespace", type: "text" },
+          { name: "default_result_schema", type: "integer" },
+          { name: "default_result_schema_desc", type: "text" },
+          { name: "is_xml_charset_enforced", type: "boolean" },
+          { name: "is_session_enabled", type: "boolean" },
+          { name: "session_timeout", type: "integer" },
+          { name: "login_type", type: "text" },
+          { name: "header_limit", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "spatial_index_tessellations",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "tessellation_scheme", type: "text" },
+          { name: "bounding_box_xmin", type: "decimal" },
+          { name: "bounding_box_ymin", type: "decimal" },
+          { name: "bounding_box_xmax", type: "decimal" },
+          { name: "bounding_box_ymax", type: "decimal" },
+          { name: "level_1_grid", type: "integer" },
+          { name: "level_1_grid_desc", type: "text" },
+          { name: "level_2_grid", type: "integer" },
+          { name: "level_2_grid_desc", type: "text" },
+          { name: "level_3_grid", type: "integer" },
+          { name: "level_3_grid_desc", type: "text" },
+          { name: "level_4_grid", type: "integer" },
+          { name: "level_4_grid_desc", type: "text" },
+          { name: "cells_per_object", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "spatial_indexes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "index_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_unique", type: "boolean" },
+          { name: "data_space_id", type: "integer" },
+          { name: "ignore_dup_key", type: "boolean" },
+          { name: "is_primary_key", type: "boolean" },
+          { name: "is_unique_constraint", type: "boolean" },
+          { name: "fill_factor", type: "integer" },
+          { name: "is_padded", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_hypothetical", type: "boolean" },
+          { name: "is_ignored_in_optimization", type: "boolean" },
+          { name: "allow_row_locks", type: "boolean" },
+          { name: "allow_page_locks", type: "boolean" },
+          { name: "spatial_index_type", type: "integer" },
+          { name: "spatial_index_type_desc", type: "text" },
+          { name: "tessellation_scheme", type: "text" },
+          { name: "has_filter", type: "boolean" },
+          { name: "filter_definition", type: "text" },
+          { name: "auto_created", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "spatial_reference_systems",
+        columns: [
+          { name: "spatial_reference_id", type: "integer" },
+          { name: "authority_name", type: "text" },
+          { name: "authorized_spatial_reference_id", type: "integer" },
+          { name: "well_known_text", type: "text" },
+          { name: "unit_of_measure", type: "text" },
+          { name: "unit_conversion_factor", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sql_dependencies",
+        columns: [
+          { name: "class", type: "integer" },
+          { name: "class_desc", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "column_id", type: "integer" },
+          { name: "referenced_major_id", type: "integer" },
+          { name: "referenced_minor_id", type: "integer" },
+          { name: "is_selected", type: "boolean" },
+          { name: "is_updated", type: "boolean" },
+          { name: "is_select_all", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sql_expression_dependencies",
+        columns: [
+          { name: "referencing_id", type: "integer" },
+          { name: "referencing_minor_id", type: "integer" },
+          { name: "referencing_class", type: "integer" },
+          { name: "referencing_class_desc", type: "text" },
+          { name: "is_schema_bound_reference", type: "boolean" },
+          { name: "referenced_class", type: "integer" },
+          { name: "referenced_class_desc", type: "text" },
+          { name: "referenced_server_name", type: "text" },
+          { name: "referenced_database_name", type: "text" },
+          { name: "referenced_schema_name", type: "text" },
+          { name: "referenced_entity_name", type: "text" },
+          { name: "referenced_id", type: "integer" },
+          { name: "referenced_minor_id", type: "integer" },
+          { name: "is_caller_dependent", type: "boolean" },
+          { name: "is_ambiguous", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sql_logins",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "default_database_name", type: "text" },
+          { name: "default_language_name", type: "text" },
+          { name: "credential_id", type: "integer" },
+          { name: "is_policy_checked", type: "boolean" },
+          { name: "is_expiration_checked", type: "boolean" },
+          { name: "password_hash", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sql_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "uses_quoted_identifier", type: "boolean" },
+          { name: "is_schema_bound", type: "boolean" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_recompiled", type: "boolean" },
+          { name: "null_on_null_input", type: "boolean" },
+          { name: "execute_as_principal_id", type: "integer" },
+          { name: "uses_native_compilation", type: "boolean" },
+          { name: "inline_type", type: "boolean" },
+          { name: "is_inlineable", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "stats",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "stats_id", type: "integer" },
+          { name: "auto_created", type: "boolean" },
+          { name: "user_created", type: "boolean" },
+          { name: "no_recompute", type: "boolean" },
+          { name: "has_filter", type: "boolean" },
+          { name: "filter_definition", type: "text" },
+          { name: "is_temporary", type: "boolean" },
+          { name: "is_incremental", type: "boolean" },
+          { name: "has_persisted_sample", type: "boolean" },
+          { name: "stats_generation_method", type: "integer" },
+          { name: "stats_generation_method_desc", type: "text" },
+          { name: "auto_drop", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "stats_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "stats_id", type: "integer" },
+          { name: "stats_column_id", type: "integer" },
+          { name: "column_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "symmetric_keys",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "principal_id", type: "integer" },
+          { name: "symmetric_key_id", type: "integer" },
+          { name: "key_length", type: "integer" },
+          { name: "key_algorithm", type: "text" },
+          { name: "algorithm_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "key_guid", type: "uuid" },
+          { name: "key_thumbprint", type: "variant" },
+          { name: "provider_type", type: "text" },
+          { name: "cryptographic_provider_guid", type: "uuid" },
+          { name: "cryptographic_provider_algid", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "synonyms",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "base_object_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysaltfiles",
+        columns: [
+          { name: "fileid", type: "integer" },
+          { name: "groupid", type: "integer" },
+          { name: "size", type: "integer" },
+          { name: "maxsize", type: "integer" },
+          { name: "growth", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "perf", type: "integer" },
+          { name: "dbid", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "filename", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscacheobjects",
+        columns: [
+          { name: "bucketid", type: "integer" },
+          { name: "cacheobjtype", type: "text" },
+          { name: "objtype", type: "text" },
+          { name: "objid", type: "integer" },
+          { name: "dbid", type: "integer" },
+          { name: "dbidexec", type: "integer" },
+          { name: "uid", type: "integer" },
+          { name: "refcounts", type: "integer" },
+          { name: "usecounts", type: "integer" },
+          { name: "pagesused", type: "integer" },
+          { name: "setopts", type: "integer" },
+          { name: "langid", type: "integer" },
+          { name: "dateformat", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "lasttime", type: "integer" },
+          { name: "maxexectime", type: "integer" },
+          { name: "avgexectime", type: "integer" },
+          { name: "lastreads", type: "integer" },
+          { name: "lastwrites", type: "integer" },
+          { name: "sqlbytes", type: "integer" },
+          { name: "sql", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscharsets",
+        columns: [
+          { name: "type", type: "integer" },
+          { name: "id", type: "integer" },
+          { name: "csid", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "description", type: "text" },
+          { name: "binarydefinition", type: "bytes" },
+          { name: "definition", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscolumns",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "id", type: "integer" },
+          { name: "xtype", type: "integer" },
+          { name: "typestat", type: "integer" },
+          { name: "xusertype", type: "integer" },
+          { name: "length", type: "integer" },
+          { name: "xprec", type: "integer" },
+          { name: "xscale", type: "integer" },
+          { name: "colid", type: "integer" },
+          { name: "xoffset", type: "integer" },
+          { name: "bitpos", type: "integer" },
+          { name: "reserved", type: "integer" },
+          { name: "colstat", type: "integer" },
+          { name: "cdefault", type: "integer" },
+          { name: "domain", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "colorder", type: "integer" },
+          { name: "autoval", type: "bytes" },
+          { name: "offset", type: "integer" },
+          { name: "collationid", type: "integer" },
+          { name: "language", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "usertype", type: "integer" },
+          { name: "printfmt", type: "text" },
+          { name: "prec", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "iscomputed", type: "integer" },
+          { name: "isoutparam", type: "integer" },
+          { name: "isnullable", type: "integer" },
+          { name: "collation", type: "text" },
+          { name: "tdscollation", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscomments",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "colid", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "ctext", type: "bytes" },
+          { name: "texttype", type: "integer" },
+          { name: "language", type: "integer" },
+          { name: "encrypted", type: "boolean" },
+          { name: "compressed", type: "boolean" },
+          { name: "text", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysconfigures",
+        columns: [
+          { name: "value", type: "integer" },
+          { name: "config", type: "integer" },
+          { name: "comment", type: "text" },
+          { name: "status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysconstraints",
+        columns: [
+          { name: "constid", type: "integer" },
+          { name: "id", type: "integer" },
+          { name: "colid", type: "integer" },
+          { name: "spare1", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "actions", type: "integer" },
+          { name: "error", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscscontainers",
+        columns: [
+          { name: "blob_container_id", type: "integer" },
+          { name: "blob_container_url", type: "text" },
+          { name: "blob_container_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscurconfigs",
+        columns: [
+          { name: "value", type: "integer" },
+          { name: "config", type: "integer" },
+          { name: "comment", type: "text" },
+          { name: "status", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscursorcolumns",
+        columns: [
+          { name: "cursor_handle", type: "integer" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "column_characteristics_flags", type: "integer" },
+          { name: "column_size", type: "integer" },
+          { name: "data_type_sql", type: "integer" },
+          { name: "column_precision", type: "integer" },
+          { name: "column_scale", type: "integer" },
+          { name: "order_position", type: "integer" },
+          { name: "order_direction", type: "text" },
+          { name: "hidden_column", type: "integer" },
+          { name: "columnid", type: "integer" },
+          { name: "objectid", type: "integer" },
+          { name: "dbid", type: "integer" },
+          { name: "dbname", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscursorrefs",
+        columns: [
+          { name: "reference_name", type: "text" },
+          { name: "cursor_scope", type: "integer" },
+          { name: "cursor_handl", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscursors",
+        columns: [
+          { name: "cursor_handle", type: "integer" },
+          { name: "cursor_name", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "model", type: "integer" },
+          { name: "concurrency", type: "integer" },
+          { name: "scrollable", type: "integer" },
+          { name: "open_status", type: "integer" },
+          { name: "cursor_rows", type: "decimal" },
+          { name: "fetch_status", type: "integer" },
+          { name: "column_count", type: "integer" },
+          { name: "row_count", type: "decimal" },
+          { name: "last_operation", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syscursortables",
+        columns: [
+          { name: "cursor_handle", type: "integer" },
+          { name: "table_owner", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "optimizer_hint", type: "integer" },
+          { name: "lock_type", type: "integer" },
+          { name: "server_name", type: "text" },
+          { name: "objectid", type: "integer" },
+          { name: "dbid", type: "integer" },
+          { name: "dbname", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysdatabases",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "dbid", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "mode", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "status2", type: "integer" },
+          { name: "crdate", type: "timestamp" },
+          { name: "reserved", type: "timestamp" },
+          { name: "category", type: "integer" },
+          { name: "cmptlevel", type: "integer" },
+          { name: "filename", type: "text" },
+          { name: "version", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysdepends",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "depid", type: "integer" },
+          { name: "number", type: "integer" },
+          { name: "depnumber", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "deptype", type: "integer" },
+          { name: "depdbid", type: "integer" },
+          { name: "depsiteid", type: "integer" },
+          { name: "selall", type: "boolean" },
+          { name: "resultobj", type: "boolean" },
+          { name: "readobj", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysdevices",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "low", type: "integer" },
+          { name: "high", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "cntrltype", type: "integer" },
+          { name: "phyname", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysfilegroups",
+        columns: [
+          { name: "groupid", type: "integer" },
+          { name: "allocpolicy", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "groupname", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysfiles",
+        columns: [
+          { name: "fileid", type: "integer" },
+          { name: "groupid", type: "integer" },
+          { name: "size", type: "integer" },
+          { name: "maxsize", type: "integer" },
+          { name: "growth", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "perf", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "filename", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysforeignkeys",
+        columns: [
+          { name: "constid", type: "integer" },
+          { name: "fkeyid", type: "integer" },
+          { name: "rkeyid", type: "integer" },
+          { name: "fkey", type: "integer" },
+          { name: "rkey", type: "integer" },
+          { name: "keyno", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysfulltextcatalogs",
+        columns: [
+          { name: "ftcatid", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "path", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysindexes",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "first", type: "bytes" },
+          { name: "indid", type: "integer" },
+          { name: "root", type: "bytes" },
+          { name: "minlen", type: "integer" },
+          { name: "keycnt", type: "integer" },
+          { name: "groupid", type: "integer" },
+          { name: "dpages", type: "integer" },
+          { name: "reserved", type: "integer" },
+          { name: "used", type: "integer" },
+          { name: "rowcnt", type: "integer" },
+          { name: "rowmodctr", type: "integer" },
+          { name: "reserved3", type: "integer" },
+          { name: "reserved4", type: "integer" },
+          { name: "xmaxlen", type: "integer" },
+          { name: "maxirow", type: "integer" },
+          { name: "origfillfactor", type: "integer" },
+          { name: "statversion", type: "integer" },
+          { name: "reserved2", type: "integer" },
+          { name: "firstiam", type: "bytes" },
+          { name: "impid", type: "integer" },
+          { name: "lockflags", type: "integer" },
+          { name: "pgmodctr", type: "integer" },
+          { name: "keys", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "statblob", type: "bytes" },
+          { name: "maxlen", type: "integer" },
+          { name: "rows", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysindexkeys",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "indid", type: "integer" },
+          { name: "colid", type: "integer" },
+          { name: "keyno", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syslanguages",
+        columns: [
+          { name: "langid", type: "integer" },
+          { name: "dateformat", type: "text" },
+          { name: "datefirst", type: "integer" },
+          { name: "upgrade", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "alias", type: "text" },
+          { name: "months", type: "text" },
+          { name: "shortmonths", type: "text" },
+          { name: "days", type: "text" },
+          { name: "lcid", type: "integer" },
+          { name: "msglangid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syslockinfo",
+        columns: [
+          { name: "rsc_text", type: "text" },
+          { name: "rsc_bin", type: "bytes" },
+          { name: "rsc_valblk", type: "bytes" },
+          { name: "rsc_dbid", type: "integer" },
+          { name: "rsc_indid", type: "integer" },
+          { name: "rsc_objid", type: "integer" },
+          { name: "rsc_type", type: "integer" },
+          { name: "rsc_flag", type: "integer" },
+          { name: "req_mode", type: "integer" },
+          { name: "req_status", type: "integer" },
+          { name: "req_refcnt", type: "integer" },
+          { name: "req_cryrefcnt", type: "integer" },
+          { name: "req_lifetime", type: "integer" },
+          { name: "req_spid", type: "integer" },
+          { name: "req_ecid", type: "integer" },
+          { name: "req_ownertype", type: "integer" },
+          { name: "req_transactionid", type: "integer" },
+          { name: "req_transactionuow", type: "uuid" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syslogins",
+        columns: [
+          { name: "sid", type: "bytes" },
+          { name: "status", type: "integer" },
+          { name: "createdate", type: "timestamp" },
+          { name: "updatedate", type: "timestamp" },
+          { name: "accdate", type: "timestamp" },
+          { name: "totcpu", type: "integer" },
+          { name: "totio", type: "integer" },
+          { name: "spacelimit", type: "integer" },
+          { name: "timelimit", type: "integer" },
+          { name: "resultlimit", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "dbname", type: "text" },
+          { name: "password", type: "text" },
+          { name: "language", type: "text" },
+          { name: "denylogin", type: "integer" },
+          { name: "hasaccess", type: "integer" },
+          { name: "isntname", type: "integer" },
+          { name: "isntgroup", type: "integer" },
+          { name: "isntuser", type: "integer" },
+          { name: "sysadmin", type: "integer" },
+          { name: "securityadmin", type: "integer" },
+          { name: "serveradmin", type: "integer" },
+          { name: "setupadmin", type: "integer" },
+          { name: "processadmin", type: "integer" },
+          { name: "diskadmin", type: "integer" },
+          { name: "dbcreator", type: "integer" },
+          { name: "bulkadmin", type: "integer" },
+          { name: "##ms_serverstatereader##", type: "integer" },
+          { name: "##ms_serverstatemanager##", type: "integer" },
+          { name: "##ms_definitionreader##", type: "integer" },
+          { name: "##ms_databaseconnector##", type: "integer" },
+          { name: "##ms_databasemanager##", type: "integer" },
+          { name: "##ms_loginmanager##", type: "integer" },
+          { name: "##ms_securitydefinitionreader##", type: "integer" },
+          { name: "##ms_permissiondefinitionreader##", type: "integer" },
+          { name: "##ms_serversecuritystatereader##", type: "integer" },
+          { name: "##ms_serverpermissionstatereader##", type: "integer" },
+          { name: "loginname", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysmembers",
+        columns: [
+          { name: "memberuid", type: "integer" },
+          { name: "groupuid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysmessages",
+        columns: [
+          { name: "error", type: "integer" },
+          { name: "severity", type: "integer" },
+          { name: "dlevel", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "msglangid", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysobjects",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "id", type: "integer" },
+          { name: "xtype", type: "text" },
+          { name: "uid", type: "integer" },
+          { name: "info", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "base_schema_ver", type: "integer" },
+          { name: "replinfo", type: "integer" },
+          { name: "parent_obj", type: "integer" },
+          { name: "crdate", type: "timestamp" },
+          { name: "ftcatid", type: "integer" },
+          { name: "schema_ver", type: "integer" },
+          { name: "stats_schema_ver", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "userstat", type: "integer" },
+          { name: "sysstat", type: "integer" },
+          { name: "indexdel", type: "integer" },
+          { name: "refdate", type: "timestamp" },
+          { name: "version", type: "integer" },
+          { name: "deltrig", type: "integer" },
+          { name: "instrig", type: "integer" },
+          { name: "updtrig", type: "integer" },
+          { name: "seltrig", type: "integer" },
+          { name: "category", type: "integer" },
+          { name: "cache", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysoledbusers",
+        columns: [
+          { name: "rmtsrvid", type: "integer" },
+          { name: "rmtloginame", type: "text" },
+          { name: "rmtpassword", type: "text" },
+          { name: "loginsid", type: "bytes" },
+          { name: "status", type: "integer" },
+          { name: "changedate", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysopentapes",
+        columns: [
+          { name: "opentape", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysperfinfo",
+        columns: [
+          { name: "object_name", type: "text" },
+          { name: "counter_name", type: "text" },
+          { name: "instance_name", type: "text" },
+          { name: "cntr_value", type: "integer" },
+          { name: "cntr_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "syspermissions",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "grantee", type: "integer" },
+          { name: "grantor", type: "integer" },
+          { name: "actadd", type: "integer" },
+          { name: "actmod", type: "integer" },
+          { name: "seladd", type: "bytes" },
+          { name: "selmod", type: "bytes" },
+          { name: "updadd", type: "bytes" },
+          { name: "updmod", type: "bytes" },
+          { name: "refadd", type: "bytes" },
+          { name: "refmod", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysprocesses",
+        columns: [
+          { name: "spid", type: "integer" },
+          { name: "kpid", type: "integer" },
+          { name: "blocked", type: "integer" },
+          { name: "waittype", type: "bytes" },
+          { name: "waittime", type: "integer" },
+          { name: "lastwaittype", type: "text" },
+          { name: "waitresource", type: "text" },
+          { name: "dbid", type: "integer" },
+          { name: "uid", type: "integer" },
+          { name: "cpu", type: "integer" },
+          { name: "physical_io", type: "integer" },
+          { name: "memusage", type: "integer" },
+          { name: "login_time", type: "timestamp" },
+          { name: "last_batch", type: "timestamp" },
+          { name: "ecid", type: "integer" },
+          { name: "open_tran", type: "integer" },
+          { name: "status", type: "text" },
+          { name: "sid", type: "bytes" },
+          { name: "hostname", type: "text" },
+          { name: "program_name", type: "text" },
+          { name: "hostprocess", type: "text" },
+          { name: "cmd", type: "text" },
+          { name: "nt_domain", type: "text" },
+          { name: "nt_username", type: "text" },
+          { name: "net_address", type: "text" },
+          { name: "net_library", type: "text" },
+          { name: "loginame", type: "text" },
+          { name: "context_info", type: "bytes" },
+          { name: "sql_handle", type: "bytes" },
+          { name: "stmt_start", type: "integer" },
+          { name: "stmt_end", type: "integer" },
+          { name: "request_id", type: "integer" },
+          { name: "page_resource", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysprotects",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "uid", type: "integer" },
+          { name: "action", type: "integer" },
+          { name: "protecttype", type: "integer" },
+          { name: "columns", type: "bytes" },
+          { name: "grantor", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysreferences",
+        columns: [
+          { name: "constid", type: "integer" },
+          { name: "fkeyid", type: "integer" },
+          { name: "rkeyid", type: "integer" },
+          { name: "rkeyindid", type: "integer" },
+          { name: "keycnt", type: "integer" },
+          { name: "forkeys", type: "bytes" },
+          { name: "refkeys", type: "bytes" },
+          { name: "fkeydbid", type: "integer" },
+          { name: "rkeydbid", type: "integer" },
+          { name: "fkey1", type: "integer" },
+          { name: "fkey2", type: "integer" },
+          { name: "fkey3", type: "integer" },
+          { name: "fkey4", type: "integer" },
+          { name: "fkey5", type: "integer" },
+          { name: "fkey6", type: "integer" },
+          { name: "fkey7", type: "integer" },
+          { name: "fkey8", type: "integer" },
+          { name: "fkey9", type: "integer" },
+          { name: "fkey10", type: "integer" },
+          { name: "fkey11", type: "integer" },
+          { name: "fkey12", type: "integer" },
+          { name: "fkey13", type: "integer" },
+          { name: "fkey14", type: "integer" },
+          { name: "fkey15", type: "integer" },
+          { name: "fkey16", type: "integer" },
+          { name: "rkey1", type: "integer" },
+          { name: "rkey2", type: "integer" },
+          { name: "rkey3", type: "integer" },
+          { name: "rkey4", type: "integer" },
+          { name: "rkey5", type: "integer" },
+          { name: "rkey6", type: "integer" },
+          { name: "rkey7", type: "integer" },
+          { name: "rkey8", type: "integer" },
+          { name: "rkey9", type: "integer" },
+          { name: "rkey10", type: "integer" },
+          { name: "rkey11", type: "integer" },
+          { name: "rkey12", type: "integer" },
+          { name: "rkey13", type: "integer" },
+          { name: "rkey14", type: "integer" },
+          { name: "rkey15", type: "integer" },
+          { name: "rkey16", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysremotelogins",
+        columns: [
+          { name: "remoteserverid", type: "integer" },
+          { name: "remoteusername", type: "text" },
+          { name: "status", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "changedate", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysservers",
+        columns: [
+          { name: "srvid", type: "integer" },
+          { name: "srvstatus", type: "integer" },
+          { name: "srvname", type: "text" },
+          { name: "srvproduct", type: "text" },
+          { name: "providername", type: "text" },
+          { name: "datasource", type: "text" },
+          { name: "location", type: "text" },
+          { name: "providerstring", type: "text" },
+          { name: "schemadate", type: "timestamp" },
+          { name: "topologyx", type: "integer" },
+          { name: "topologyy", type: "integer" },
+          { name: "catalog", type: "text" },
+          { name: "srvcollation", type: "text" },
+          { name: "connecttimeout", type: "integer" },
+          { name: "querytimeout", type: "integer" },
+          { name: "srvnetname", type: "text" },
+          { name: "isremote", type: "boolean" },
+          { name: "rpc", type: "boolean" },
+          { name: "pub", type: "boolean" },
+          { name: "sub", type: "boolean" },
+          { name: "dist", type: "boolean" },
+          { name: "dpub", type: "boolean" },
+          { name: "rpcout", type: "boolean" },
+          { name: "dataaccess", type: "boolean" },
+          { name: "collationcompatible", type: "boolean" },
+          { name: "system", type: "boolean" },
+          { name: "useremotecollation", type: "boolean" },
+          { name: "lazyschemavalidation", type: "boolean" },
+          { name: "collation", type: "text" },
+          { name: "nonsqlsub", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_columns",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "column_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_ansi_padded", type: "boolean" },
+          { name: "is_rowguidcol", type: "boolean" },
+          { name: "is_identity", type: "boolean" },
+          { name: "is_computed", type: "boolean" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_non_sql_subscribed", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_dts_replicated", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "is_column_set", type: "boolean" },
+          { name: "generated_always_type", type: "integer" },
+          { name: "generated_always_type_desc", type: "text" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" },
+          { name: "is_hidden", type: "boolean" },
+          { name: "is_masked", type: "boolean" },
+          { name: "graph_type", type: "integer" },
+          { name: "graph_type_desc", type: "text" },
+          { name: "is_data_deletion_filter_column", type: "boolean" },
+          { name: "ledger_view_column_type", type: "integer" },
+          { name: "ledger_view_column_type_desc", type: "text" },
+          { name: "is_dropped_ledger_column", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_components_surface_area_configuration",
+        columns: [
+          { name: "component_name", type: "text" },
+          { name: "database_name", type: "text" },
+          { name: "schema_name", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_internals_allocation_units",
+        columns: [
+          { name: "allocation_unit_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "container_id", type: "integer" },
+          { name: "filegroup_id", type: "integer" },
+          { name: "total_pages", type: "integer" },
+          { name: "used_pages", type: "integer" },
+          { name: "data_pages", type: "integer" },
+          { name: "first_page", type: "bytes" },
+          { name: "root_page", type: "bytes" },
+          { name: "first_iam_page", type: "bytes" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_internals_partition_columns",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "partition_column_id", type: "integer" },
+          { name: "modified_count", type: "integer" },
+          { name: "max_inrow_length", type: "integer" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_logged_for_replication", type: "boolean" },
+          { name: "is_dropped", type: "boolean" },
+          { name: "system_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_filestream", type: "boolean" },
+          { name: "key_ordinal", type: "integer" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_descending_key", type: "boolean" },
+          { name: "is_uniqueifier", type: "boolean" },
+          { name: "leaf_offset", type: "integer" },
+          { name: "internal_offset", type: "integer" },
+          { name: "leaf_bit_position", type: "integer" },
+          { name: "internal_bit_position", type: "integer" },
+          { name: "leaf_null_bit", type: "integer" },
+          { name: "internal_null_bit", type: "integer" },
+          { name: "is_anti_matter", type: "boolean" },
+          { name: "partition_column_guid", type: "uuid" },
+          { name: "is_sparse", type: "boolean" },
+          { name: "has_default", type: "boolean" },
+          { name: "default_value", type: "variant" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_internals_partitions",
+        columns: [
+          { name: "partition_id", type: "integer" },
+          { name: "object_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "partition_number", type: "integer" },
+          { name: "rows", type: "integer" },
+          { name: "filestream_filegroup_id", type: "integer" },
+          { name: "is_orphaned", type: "boolean" },
+          { name: "dropped_lob_column_state", type: "integer" },
+          { name: "is_unique", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "is_logged_for_replication", type: "boolean" },
+          { name: "is_sereplicated", type: "boolean" },
+          { name: "max_null_bit_used", type: "integer" },
+          { name: "max_leaf_length", type: "integer" },
+          { name: "min_leaf_length", type: "integer" },
+          { name: "max_internal_length", type: "integer" },
+          { name: "min_internal_length", type: "integer" },
+          { name: "allows_nullable_keys", type: "boolean" },
+          { name: "allow_row_locks", type: "boolean" },
+          { name: "allow_page_locks", type: "boolean" },
+          { name: "is_data_row_format", type: "boolean" },
+          { name: "is_not_versioned", type: "boolean" },
+          { name: "filestream_guid", type: "uuid" },
+          { name: "ownertype", type: "integer" },
+          { name: "is_columnstore", type: "boolean" },
+          { name: "optimize_for_sequential_key", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_objects",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_parameters",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "parameter_id", type: "integer" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "is_output", type: "boolean" },
+          { name: "is_cursor_ref", type: "boolean" },
+          { name: "has_default_value", type: "boolean" },
+          { name: "is_xml_document", type: "boolean" },
+          { name: "default_value", type: "variant" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "is_readonly", type: "boolean" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "encryption_type", type: "integer" },
+          { name: "encryption_type_desc", type: "text" },
+          { name: "encryption_algorithm_name", type: "text" },
+          { name: "column_encryption_key_id", type: "integer" },
+          { name: "column_encryption_key_database_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_sql_modules",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "uses_quoted_identifier", type: "boolean" },
+          { name: "is_schema_bound", type: "boolean" },
+          { name: "uses_database_collation", type: "boolean" },
+          { name: "is_recompiled", type: "boolean" },
+          { name: "null_on_null_input", type: "boolean" },
+          { name: "execute_as_principal_id", type: "integer" },
+          { name: "uses_native_compilation", type: "boolean" },
+          { name: "inline_type", type: "boolean" },
+          { name: "is_inlineable", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "system_views",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "has_replication_filter", type: "boolean" },
+          { name: "has_opaque_metadata", type: "boolean" },
+          { name: "has_unchecked_assembly_data", type: "boolean" },
+          { name: "with_check_option", type: "boolean" },
+          { name: "is_date_correlation_view", type: "boolean" },
+          { name: "is_tracked_by_cdc", type: "boolean" },
+          { name: "has_snapshot", type: "boolean" },
+          { name: "ledger_view_type", type: "integer" },
+          { name: "ledger_view_type_desc", type: "text" },
+          { name: "is_dropped_ledger_view", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "systypes",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "xtype", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "xusertype", type: "integer" },
+          { name: "length", type: "integer" },
+          { name: "xprec", type: "integer" },
+          { name: "xscale", type: "integer" },
+          { name: "tdefault", type: "integer" },
+          { name: "domain", type: "integer" },
+          { name: "uid", type: "integer" },
+          { name: "reserved", type: "integer" },
+          { name: "collationid", type: "integer" },
+          { name: "usertype", type: "integer" },
+          { name: "variable", type: "boolean" },
+          { name: "allownulls", type: "boolean" },
+          { name: "type", type: "integer" },
+          { name: "printfmt", type: "text" },
+          { name: "prec", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sysusers",
+        columns: [
+          { name: "uid", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "sid", type: "bytes" },
+          { name: "roles", type: "bytes" },
+          { name: "createdate", type: "timestamp" },
+          { name: "updatedate", type: "timestamp" },
+          { name: "altuid", type: "integer" },
+          { name: "password", type: "bytes" },
+          { name: "gid", type: "integer" },
+          { name: "environ", type: "text" },
+          { name: "hasdbaccess", type: "integer" },
+          { name: "islogin", type: "integer" },
+          { name: "isntname", type: "integer" },
+          { name: "isntgroup", type: "integer" },
+          { name: "isntuser", type: "integer" },
+          { name: "issqluser", type: "integer" },
+          { name: "isaliased", type: "integer" },
+          { name: "issqlrole", type: "integer" },
+          { name: "isapprole", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "table_types",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_user_defined", type: "boolean" },
+          { name: "is_assembly_type", type: "boolean" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "is_table_type", type: "boolean" },
+          { name: "type_table_object_id", type: "integer" },
+          { name: "is_memory_optimized", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "tables",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "lob_data_space_id", type: "integer" },
+          { name: "filestream_data_space_id", type: "integer" },
+          { name: "max_column_id_used", type: "integer" },
+          { name: "lock_on_bulk_load", type: "boolean" },
+          { name: "uses_ansi_nulls", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "has_replication_filter", type: "boolean" },
+          { name: "is_merge_published", type: "boolean" },
+          { name: "is_sync_tran_subscribed", type: "boolean" },
+          { name: "has_unchecked_assembly_data", type: "boolean" },
+          { name: "text_in_row_limit", type: "integer" },
+          { name: "large_value_types_out_of_row", type: "boolean" },
+          { name: "is_tracked_by_cdc", type: "boolean" },
+          { name: "lock_escalation", type: "integer" },
+          { name: "lock_escalation_desc", type: "text" },
+          { name: "is_filetable", type: "boolean" },
+          { name: "is_memory_optimized", type: "boolean" },
+          { name: "durability", type: "integer" },
+          { name: "durability_desc", type: "text" },
+          { name: "temporal_type", type: "integer" },
+          { name: "temporal_type_desc", type: "text" },
+          { name: "history_table_id", type: "integer" },
+          { name: "is_remote_data_archive_enabled", type: "boolean" },
+          { name: "is_external", type: "boolean" },
+          { name: "history_retention_period", type: "integer" },
+          { name: "history_retention_period_unit", type: "integer" },
+          { name: "history_retention_period_unit_desc", type: "text" },
+          { name: "is_node", type: "boolean" },
+          { name: "is_edge", type: "boolean" },
+          { name: "data_retention_period", type: "integer" },
+          { name: "data_retention_period_unit", type: "integer" },
+          { name: "data_retention_period_unit_desc", type: "text" },
+          { name: "ledger_type", type: "integer" },
+          { name: "ledger_type_desc", type: "text" },
+          { name: "ledger_view_id", type: "integer" },
+          { name: "is_dropped_ledger_table", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "tcp_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "port", type: "integer" },
+          { name: "is_dynamic_port", type: "boolean" },
+          { name: "ip_address", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "time_zone_info",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "current_utc_offset", type: "text" },
+          { name: "is_currently_dst", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trace_categories",
+        columns: [
+          { name: "category_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trace_columns",
+        columns: [
+          { name: "trace_column_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "type_name", type: "text" },
+          { name: "max_size", type: "integer" },
+          { name: "is_filterable", type: "boolean" },
+          { name: "is_repeatable", type: "boolean" },
+          { name: "is_repeated_base", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trace_event_bindings",
+        columns: [
+          { name: "trace_event_id", type: "integer" },
+          { name: "trace_column_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trace_events",
+        columns: [
+          { name: "trace_event_id", type: "integer" },
+          { name: "category_id", type: "integer" },
+          { name: "name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trace_subclass_values",
+        columns: [
+          { name: "trace_event_id", type: "integer" },
+          { name: "trace_column_id", type: "integer" },
+          { name: "subclass_name", type: "text" },
+          { name: "subclass_value", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "traces",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "status", type: "integer" },
+          { name: "path", type: "text" },
+          { name: "max_size", type: "integer" },
+          { name: "stop_time", type: "timestamp" },
+          { name: "max_files", type: "integer" },
+          { name: "is_rowset", type: "boolean" },
+          { name: "is_rollover", type: "boolean" },
+          { name: "is_shutdown", type: "boolean" },
+          { name: "is_default", type: "boolean" },
+          { name: "buffer_count", type: "integer" },
+          { name: "buffer_size", type: "integer" },
+          { name: "file_position", type: "integer" },
+          { name: "reader_spid", type: "integer" },
+          { name: "start_time", type: "timestamp" },
+          { name: "last_event_time", type: "timestamp" },
+          { name: "event_count", type: "integer" },
+          { name: "dropped_event_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "transmission_queue",
+        columns: [
+          { name: "conversation_handle", type: "uuid" },
+          { name: "to_service_name", type: "text" },
+          { name: "to_broker_instance", type: "text" },
+          { name: "from_service_name", type: "text" },
+          { name: "service_contract_name", type: "text" },
+          { name: "enqueue_time", type: "timestamp" },
+          { name: "message_sequence_number", type: "integer" },
+          { name: "message_type_name", type: "text" },
+          { name: "is_conversation_error", type: "boolean" },
+          { name: "is_end_of_dialog", type: "boolean" },
+          { name: "message_body", type: "bytes" },
+          { name: "transmission_status", type: "text" },
+          { name: "priority", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trigger_event_types",
+        columns: [
+          { name: "type", type: "integer" },
+          { name: "type_name", type: "text" },
+          { name: "parent_type", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trigger_events",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_first", type: "boolean" },
+          { name: "is_last", type: "boolean" },
+          { name: "event_group_type", type: "integer" },
+          { name: "event_group_type_desc", type: "text" },
+          { name: "is_trigger_event", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "triggers",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "parent_class", type: "integer" },
+          { name: "parent_class_desc", type: "text" },
+          { name: "parent_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_not_for_replication", type: "boolean" },
+          { name: "is_instead_of_trigger", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "trusted_assemblies",
+        columns: [
+          { name: "hash", type: "bytes" },
+          { name: "description", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "created_by", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "type_assembly_usages",
+        columns: [
+          { name: "user_type_id", type: "integer" },
+          { name: "assembly_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "types",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "system_type_id", type: "integer" },
+          { name: "user_type_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "max_length", type: "integer" },
+          { name: "precision", type: "integer" },
+          { name: "scale", type: "integer" },
+          { name: "collation_name", type: "text" },
+          { name: "is_nullable", type: "boolean" },
+          { name: "is_user_defined", type: "boolean" },
+          { name: "is_assembly_type", type: "boolean" },
+          { name: "default_object_id", type: "integer" },
+          { name: "rule_object_id", type: "integer" },
+          { name: "is_table_type", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_token",
+        columns: [
+          { name: "principal_id", type: "integer" },
+          { name: "sid", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "usage", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "via_endpoints",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "endpoint_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "protocol", type: "integer" },
+          { name: "protocol_desc", type: "text" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "state", type: "integer" },
+          { name: "state_desc", type: "text" },
+          { name: "is_admin_endpoint", type: "boolean" },
+          { name: "discriminator", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "views",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "parent_object_id", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "type_desc", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" },
+          { name: "is_ms_shipped", type: "boolean" },
+          { name: "is_published", type: "boolean" },
+          { name: "is_schema_published", type: "boolean" },
+          { name: "is_replicated", type: "boolean" },
+          { name: "has_replication_filter", type: "boolean" },
+          { name: "has_opaque_metadata", type: "boolean" },
+          { name: "has_unchecked_assembly_data", type: "boolean" },
+          { name: "with_check_option", type: "boolean" },
+          { name: "is_date_correlation_view", type: "boolean" },
+          { name: "is_tracked_by_cdc", type: "boolean" },
+          { name: "has_snapshot", type: "boolean" },
+          { name: "ledger_view_type", type: "integer" },
+          { name: "ledger_view_type_desc", type: "text" },
+          { name: "is_dropped_ledger_view", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_indexes",
+        columns: [
+          { name: "object_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "index_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "type_desc", type: "text" },
+          { name: "is_unique", type: "boolean" },
+          { name: "data_space_id", type: "integer" },
+          { name: "ignore_dup_key", type: "boolean" },
+          { name: "is_primary_key", type: "boolean" },
+          { name: "is_unique_constraint", type: "boolean" },
+          { name: "fill_factor", type: "integer" },
+          { name: "is_padded", type: "boolean" },
+          { name: "is_disabled", type: "boolean" },
+          { name: "is_hypothetical", type: "boolean" },
+          { name: "is_ignored_in_optimization", type: "boolean" },
+          { name: "allow_row_locks", type: "boolean" },
+          { name: "allow_page_locks", type: "boolean" },
+          { name: "using_xml_index_id", type: "integer" },
+          { name: "secondary_type", type: "text" },
+          { name: "secondary_type_desc", type: "text" },
+          { name: "has_filter", type: "boolean" },
+          { name: "filter_definition", type: "text" },
+          { name: "xml_index_type", type: "integer" },
+          { name: "xml_index_type_description", type: "text" },
+          { name: "path_id", type: "integer" },
+          { name: "auto_created", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_attributes",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" },
+          { name: "is_default_fixed", type: "boolean" },
+          { name: "must_be_qualified", type: "boolean" },
+          { name: "default_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_collections",
+        columns: [
+          { name: "xml_collection_id", type: "integer" },
+          { name: "schema_id", type: "integer" },
+          { name: "principal_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "create_date", type: "timestamp" },
+          { name: "modify_date", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_component_placements",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "placement_id", type: "integer" },
+          { name: "placed_xml_component_id", type: "integer" },
+          { name: "is_default_fixed", type: "boolean" },
+          { name: "min_occurences", type: "integer" },
+          { name: "max_occurences", type: "integer" },
+          { name: "default_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_components",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_elements",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" },
+          { name: "is_default_fixed", type: "boolean" },
+          { name: "is_abstract", type: "boolean" },
+          { name: "is_nillable", type: "boolean" },
+          { name: "must_be_qualified", type: "boolean" },
+          { name: "is_extension_blocked", type: "boolean" },
+          { name: "is_restriction_blocked", type: "boolean" },
+          { name: "is_substitution_blocked", type: "boolean" },
+          { name: "is_final_extension", type: "boolean" },
+          { name: "is_final_restriction", type: "boolean" },
+          { name: "default_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_facets",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "facet_id", type: "integer" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "is_fixed", type: "boolean" },
+          { name: "value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_model_groups",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" },
+          { name: "compositor", type: "text" },
+          { name: "compositor_desc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_namespaces",
+        columns: [
+          { name: "xml_collection_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "xml_namespace_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_types",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" },
+          { name: "is_abstract", type: "boolean" },
+          { name: "allows_mixed_content", type: "boolean" },
+          { name: "is_extension_blocked", type: "boolean" },
+          { name: "is_restriction_blocked", type: "boolean" },
+          { name: "is_final_extension", type: "boolean" },
+          { name: "is_final_restriction", type: "boolean" },
+          { name: "is_final_list_member", type: "boolean" },
+          { name: "is_final_union_member", type: "boolean" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_wildcard_namespaces",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "namespace", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "xml_schema_wildcards",
+        columns: [
+          { name: "xml_component_id", type: "integer" },
+          { name: "xml_collection_id", type: "integer" },
+          { name: "xml_namespace_id", type: "integer" },
+          { name: "is_qualified", type: "boolean" },
+          { name: "name", type: "text" },
+          { name: "symbol_space", type: "text" },
+          { name: "symbol_space_desc", type: "text" },
+          { name: "kind", type: "text" },
+          { name: "kind_desc", type: "text" },
+          { name: "derivation", type: "text" },
+          { name: "derivation_desc", type: "text" },
+          { name: "base_xml_component_id", type: "integer" },
+          { name: "scoping_xml_component_id", type: "integer" },
+          { name: "process_content", type: "text" },
+          { name: "process_content_desc", type: "text" },
+          { name: "disallow_namespaces", type: "boolean" }
+        ]
+      }
     ],
     describeFunctionColumns: [
       { name: 'Name', type: 'text' },

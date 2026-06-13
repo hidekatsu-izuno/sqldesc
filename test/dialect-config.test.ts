@@ -78,8 +78,7 @@ describe('dialect configuration registry', () => {
       assert.strictEqual(config.scalarFunctionTypes.gen_random_uuid, 'uuid');
       assert.strictEqual(config.scalarFunctionTypes.st_distance, 'decimal');
       assert.ok(config.scalarFunctionTypePatterns);
-      assert.ok(Object.keys(config.tableFunctions).length > 0);
-      assert.deepStrictEqual(config.tableFunctions.json_each?.[0], { name: 'key', type: 'text' });
+      assert.ok(config.tableFunctions);
       assert.ok(config.aggregate.countType);
       assert.ok(config.commonTypes.text);
       assert.ok(config.cast.adjustment);
@@ -94,10 +93,9 @@ describe('dialect configuration registry', () => {
       assert.ok(config.parserFallbacks.createView);
       assert.ok(config.literalTypes.string);
       assert.ok(config.dynamicTableFunctions.generateSeriesColumn);
-      assert.ok(config.dynamicTableFunctions.enabledHandlers.includes('embeddedSql'));
+      assert.ok(config.dynamicTableFunctions.enabledHandlers);
       assert.ok(config.serializedSelect);
-      assert.ok(config.metadata.builtinSchemaTables.length > 0);
-      assert.strictEqual(config.metadata.builtinSchemaTables[0]?.schema, 'information_schema');
+      assert.ok(config.metadata.builtinSchemaTables);
       assert.ok(config.metadata.describeFunctionColumns.length > 0);
       assert.ok(config.metadata.explainColumns.length > 0);
       assert.ok(config.metadata.showTableListingColumns?.length);
@@ -139,8 +137,12 @@ describe('dialect configuration registry', () => {
 
   it('keeps fixed table function schemas in dialect configs', async () => {
     const postgres = dialectConfigs.find((config) => config.name === 'postgresql');
+    const generic = dialectConfigs.find((config) => config.name === 'generic');
+    const sqlite = dialectConfigs.find((config) => config.name === 'sqlite');
     assert.strictEqual(postgres?.tableFunctions.pg_get_keywords?.[0]?.name, 'word');
     assert.strictEqual(postgres?.tableFunctions.current_setting?.[0]?.name, '$alias');
+    assert.deepStrictEqual(sqlite?.tableFunctions.json_each?.[0], { name: 'key', type: 'text' });
+    assert.deepStrictEqual(generic?.tableFunctions, {});
 
     const result = await describeQuery({
       dialect: 'postgres',
@@ -170,6 +172,24 @@ describe('dialect configuration registry', () => {
     assert.strictEqual(tsql?.serializedSelect.forJson, 'json');
     assert.strictEqual(tsql?.jdbcEscape.executeCall, true);
     assert.strictEqual(tsql?.jdbcEscape.currentDateExpression, 'CAST(current_timestamp AS date)');
+  });
+
+  it('keeps builtin metadata schemas scoped to matching dialects', () => {
+    const generic = dialectConfigs.find((config) => config.name === 'generic');
+    const postgres = dialectConfigs.find((config) => config.name === 'postgresql');
+    const oracle = dialectConfigs.find((config) => config.name === 'oracle');
+    const sqlite = dialectConfigs.find((config) => config.name === 'sqlite');
+    const names = (name: string) => dialectConfigs.find((config) => config.name === name)?.metadata.builtinSchemaTables.map((table) => `${table.schema ? `${table.schema}.` : ''}${table.name}`) ?? [];
+    assert.deepStrictEqual(generic?.metadata.builtinSchemaTables, []);
+    assert.ok(names('postgresql').includes('pg_catalog.pg_tables'));
+    assert.ok(!names('postgresql').includes('account_usage.query_history'));
+    assert.ok(names('oracle').includes('all_users'));
+    assert.ok(!names('oracle').includes('information_schema.jobs'));
+    assert.ok(names('sqlite').includes('sqlite_master'));
+    assert.ok(!names('sqlite').includes('pg_catalog.pg_tables'));
+    assert.ok(postgres);
+    assert.ok(oracle);
+    assert.ok(sqlite);
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

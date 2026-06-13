@@ -2559,7 +2559,7 @@ describe('describeQuery', () => {
       ['column_name', 'text', 'information_schema.columns.column_name'],
       ['ordinal_position', 'integer', 'information_schema.columns.ordinal_position'],
       ['column_default', 'text', 'information_schema.columns.column_default'],
-      ['is_nullable', 'boolean', 'information_schema.columns.is_nullable'],
+      ['is_nullable', 'text', 'information_schema.columns.is_nullable'],
       ['data_type', 'text', 'information_schema.columns.data_type'],
     ]);
     assert.deepStrictEqual(columnsResult.warnings, []);
@@ -2607,7 +2607,7 @@ describe('describeQuery', () => {
     });
     assert.deepStrictEqual(oracleUsersResult.columns.map((column) => [column.name, column.type, column.source]), [
       ['username', 'varchar2(255)', 'all_users.username'],
-      ['user_id', 'number(10)', 'all_users.user_id'],
+      ['user_id', 'number', 'all_users.user_id'],
     ]);
 
     const redshiftTablesResult = await describeQuery({
@@ -2677,7 +2677,7 @@ describe('describeQuery', () => {
       dialect: 'oracle',
     });
     assert.deepStrictEqual(oracleVSessionResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['sid', 'number(10)', 'v$session.sid'],
+      ['sid', 'number', 'v$session.sid'],
       ['username', 'varchar2(255)', 'v$session.username'],
     ]);
 

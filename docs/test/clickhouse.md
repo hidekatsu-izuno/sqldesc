@@ -208,3 +208,57 @@ verify: true
 | Database | VARCHAR(255) | cast |
 
 ---
+
+## system.tables
+
+Docker image `clickhouse/clickhouse-server:latest` の `system.columns` から取得した metadata schema を検証する。
+
+### When
+
+```yaml
+dialect: clickhouse
+```
+
+```sql
+SELECT name, engine FROM system.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | VARCHAR(255) | system.tables.name |
+| engine | VARCHAR(255) | system.tables.engine |
+
+---
+
+## system.columns
+
+### When
+
+```yaml
+dialect: clickhouse
+```
+
+```sql
+SELECT name, type FROM system.columns
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | VARCHAR(255) | system.columns.name |
+| type | VARCHAR(255) | system.columns.type |
+
+---

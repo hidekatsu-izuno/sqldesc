@@ -3752,8 +3752,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| table_name | varchar(255) | information_schema.tables.table_name |
-| table_type | varchar(255) | information_schema.tables.table_type |
+| table_name | varchar(255) | information_schema.TABLES.table_name |
+| table_type | varchar(255) | information_schema.TABLES.table_type |
 
 ---
 ## information_schema.columns
@@ -3783,8 +3783,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| column_name | varchar(255) | information_schema.columns.column_name |
-| data_type | varchar(255) | information_schema.columns.data_type |
+| column_name | varchar(255) | information_schema.COLUMNS.column_name |
+| data_type | varchar(255) | information_schema.COLUMNS.data_type |
 
 ---
 ## performance_schema.global_variables
@@ -3814,8 +3814,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| variable_name | varchar(255) | performance_schema.global_variables.VARIABLE_NAME |
-| variable_value | varchar(255) | performance_schema.global_variables.VARIABLE_VALUE |
+| variable_name | varchar(255) | performance_schema.global_variables.variable_name |
+| variable_value | varchar(255) | performance_schema.global_variables.variable_value |
 
 ---
 ## information_schema.processlist
@@ -3845,8 +3845,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| user | varchar(255) | information_schema.processlist.USER |
-| host | varchar(255) | information_schema.processlist.HOST |
+| user | varchar(255) | information_schema.PROCESSLIST.user |
+| host | varchar(255) | information_schema.PROCESSLIST.host |
 
 ---
 ## events_statements_summary_by_digest
@@ -3876,7 +3876,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| digest_text | varchar(255) | performance_schema.events_statements_summary_by_digest.DIGEST_TEXT |
+| digest_text | varchar(255) | performance_schema.events_statements_summary_by_digest.digest_text |
 
 ---
 # SHOW
@@ -4814,6 +4814,73 @@ verify: true
 ```
 
 - `Error`: `Parse error`
+
+---
+# Docker 実測メタデータ
+
+`mysql:8.4` の `information_schema.columns` から取得した metadata schema を検証する。
+
+---
+
+## information_schema.tables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT table_name FROM information_schema.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| table_name | varchar(255) | information_schema.TABLES.table_name |
+
+---
+
+## performance_schema.global_variables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT variable_name FROM performance_schema.global_variables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| variable_name | varchar(255) | performance_schema.global_variables.variable_name |
 
 ---
 # 既知の限界

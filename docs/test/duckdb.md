@@ -4308,3 +4308,70 @@ verify: true
 | カタログ TVF | `duckdb_tables()` 等 | 列は推論されるが型は `polyglot` になりやすい |
 | DML | `INSERT` / `UPDATE` / `DELETE`（RETURNING なし） | 結果列なし |
 | メタデータ依存 | 未登録テーブル参照 | `unknown` + warnings |
+# Docker 実測メタデータ
+
+`duckdb/duckdb:latest` の `duckdb_columns()` から取得した metadata schema を検証する。
+
+---
+
+## information_schema.tables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT table_name FROM information_schema.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| table_name | varchar | information_schema.tables.table_name |
+
+---
+
+## information_schema.columns
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: duckdb
+```
+
+```sql
+SELECT column_name FROM information_schema.columns
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| column_name | varchar | information_schema.columns.column_name |
+
+---

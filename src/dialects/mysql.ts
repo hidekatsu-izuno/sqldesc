@@ -256,78 +256,7 @@ export const dialectConfig = {
     year: 'integer',
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions: {
-    "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
-    "current_setting": [{ name: "$alias", type: "text" }],
-    "duckdb_columns": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "table_name", type: "text" }, { name: "column_name", type: "text" }, { name: "column_index", type: "integer" }, { name: "data_type", type: "text" }, { name: "is_nullable", type: "boolean" }],
-    "duckdb_constraints": [{ name: "database_name", type: "text" }, { name: "database_oid", type: "integer" }, { name: "schema_name", type: "text" }, { name: "schema_oid", type: "integer" }, { name: "table_name", type: "text" }, { name: "table_oid", type: "integer" }, { name: "constraint_index", type: "integer" }, { name: "constraint_type", type: "text" }, { name: "constraint_text", type: "text" }, { name: "expression", type: "text" }, { name: "constraint_column_indexes", type: "array<integer>" }, { name: "constraint_column_names", type: "array<text>" }],
-    "duckdb_databases": [{ name: "database_name", type: "text" }, { name: "database_oid", type: "integer" }, { name: "path", type: "text" }, { name: "internal", type: "boolean" }],
-    "duckdb_extensions": [{ name: "extension_name", type: "text" }, { name: "loaded", type: "boolean" }, { name: "installed", type: "boolean" }, { name: "install_path", type: "text" }, { name: "description", type: "text" }, { name: "aliases", type: "array<text>" }],
-    "duckdb_functions": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "function_name", type: "text" }, { name: "function_type", type: "text" }, { name: "return_type", type: "text" }],
-    "duckdb_indexes": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "index_name", type: "text" }, { name: "table_name", type: "text" }, { name: "is_unique", type: "boolean" }, { name: "sql", type: "text" }],
-    "duckdb_keywords": [{ name: "keyword_name", type: "text" }, { name: "keyword_category", type: "text" }],
-    "duckdb_memory": [{ name: "tag", type: "text" }, { name: "memory_usage_bytes", type: "integer" }, { name: "temporary_storage_bytes", type: "integer" }],
-    "duckdb_schemas": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "internal", type: "boolean" }],
-    "duckdb_sequences": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "sequence_name", type: "text" }, { name: "start_value", type: "integer" }, { name: "min_value", type: "integer" }, { name: "max_value", type: "integer" }, { name: "increment_by", type: "integer" }, { name: "cycle", type: "boolean" }],
-    "duckdb_settings": [{ name: "name", type: "text" }, { name: "value", type: "text" }, { name: "description", type: "text" }, { name: "input_type", type: "text" }, { name: "scope", type: "text" }, { name: "aliases", type: "array<text>" }],
-    "duckdb_tables": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "table_name", type: "text" }, { name: "table_type", type: "text" }, { name: "temporary", type: "boolean" }],
-    "duckdb_types": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "type_name", type: "text" }, { name: "type_size", type: "integer" }, { name: "logical_type", type: "text" }, { name: "labels", type: "array<text>" }],
-    "duckdb_views": [{ name: "database_name", type: "text" }, { name: "schema_name", type: "text" }, { name: "view_name", type: "text" }, { name: "temporary", type: "boolean" }, { name: "sql", type: "text" }],
-    "flatten": [{ name: "seq", type: "integer" }, { name: "key", type: "text" }, { name: "path", type: "text" }, { name: "index", type: "integer" }, { name: "value", type: "variant" }, { name: "this", type: "variant" }],
-    "generator": [],
-    "generate_date_array": [{ name: "$alias", type: "date" }],
-    "generate_subscripts": [{ name: "$alias", type: "integer" }],
-    "generate_timestamp_array": [{ name: "$alias", type: "timestamp" }],
-    "glob": [{ name: "file", type: "text" }],
-    "infer_schema": [{ name: "expression", type: "text" }, { name: "column_name", type: "text" }, { name: "type", type: "text" }, { name: "nullable", type: "boolean" }, { name: "filenames", type: "array<text>" }, { name: "order_id", type: "integer" }],
-    "json_array_elements": [{ name: "$alias", type: "json" }],
-    "json_array_elements_text": [{ name: "$alias", type: "text" }],
-    "json_each": [{ name: "key", type: "text" }, { name: "value", type: "json" }, { name: "type", type: "text" }, { name: "atom", type: "json" }, { name: "id", type: "integer" }, { name: "parent", type: "integer" }, { name: "fullkey", type: "text" }, { name: "path", type: "text" }],
-    "json_each_text": [{ name: "key", type: "text" }, { name: "value", type: "text" }],
-    "json_object_keys": [{ name: "$alias", type: "text" }],
-    "json_tree": [{ name: "key", type: "text" }, { name: "value", type: "json" }, { name: "type", type: "text" }, { name: "atom", type: "json" }, { name: "id", type: "integer" }, { name: "parent", type: "integer" }, { name: "fullkey", type: "text" }, { name: "path", type: "text" }],
-    "jsonb_array_elements": [{ name: "$alias", type: "json" }],
-    "jsonb_array_elements_text": [{ name: "$alias", type: "text" }],
-    "jsonb_each": [{ name: "key", type: "text" }, { name: "value", type: "json" }],
-    "jsonb_each_text": [{ name: "key", type: "text" }, { name: "value", type: "text" }],
-    "jsonb_object_keys": [{ name: "$alias", type: "text" }],
-    "opendatasource": [{ name: "$alias", type: "unknown" }],
-    "openquery": [{ name: "$alias", type: "unknown" }],
-    "openrowset": [{ name: "$alias", type: "unknown" }],
-    "parquet_file_metadata": [{ name: "file_name", type: "text" }, { name: "created_by", type: "text" }, { name: "num_rows", type: "integer" }, { name: "num_row_groups", type: "integer" }, { name: "format_version", type: "text" }, { name: "encryption_algorithm", type: "text" }, { name: "footer_signing_key_metadata", type: "text" }],
-    "parquet_kv_metadata": [{ name: "file_name", type: "text" }, { name: "key", type: "text" }, { name: "value", type: "bytes" }],
-    "parquet_metadata": [{ name: "file_name", type: "text" }, { name: "row_group_id", type: "integer" }, { name: "row_group_num_rows", type: "integer" }, { name: "row_group_num_columns", type: "integer" }, { name: "row_group_bytes", type: "integer" }, { name: "column_id", type: "integer" }, { name: "file_offset", type: "integer" }, { name: "num_values", type: "integer" }, { name: "path_in_schema", type: "text" }, { name: "type", type: "text" }, { name: "stats_min", type: "text" }, { name: "stats_max", type: "text" }, { name: "stats_null_count", type: "integer" }, { name: "total_compressed_size", type: "integer" }, { name: "total_uncompressed_size", type: "integer" }],
-    "parquet_schema": [{ name: "file_name", type: "text" }, { name: "name", type: "text" }, { name: "type", type: "text" }, { name: "type_length", type: "text" }, { name: "repetition_type", type: "text" }, { name: "num_children", type: "integer" }, { name: "converted_type", type: "text" }, { name: "scale", type: "integer" }, { name: "precision", type: "integer" }, { name: "field_id", type: "integer" }, { name: "logical_type", type: "text" }],
-    "pg_available_extension_versions": [{ name: "name", type: "text" }, { name: "version", type: "text" }, { name: "installed", type: "boolean" }, { name: "superuser", type: "boolean" }, { name: "trusted", type: "boolean" }, { name: "relocatable", type: "boolean" }, { name: "schema", type: "text" }, { name: "requires", type: "array<text>" }, { name: "comment", type: "text" }],
-    "pg_get_keywords": [{ name: "word", type: "text" }, { name: "catcode", type: "text" }, { name: "catdesc", type: "text" }, { name: "baredesc", type: "text" }],
-    "pg_get_object_address": [{ name: "classid", type: "oid" }, { name: "objid", type: "oid" }, { name: "objsubid", type: "integer" }],
-    "pg_logical_slot_get_changes": [{ name: "lsn", type: "pg_lsn" }, { name: "xid", type: "xid" }, { name: "data", type: "text" }],
-    "pg_logical_slot_peek_changes": [{ name: "lsn", type: "pg_lsn" }, { name: "xid", type: "xid" }, { name: "data", type: "text" }],
-    "pg_ls_archive_statusdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_dir": [{ name: "$alias", type: "text" }],
-    "pg_ls_logdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_tmpdir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_ls_waldir": [{ name: "name", type: "text" }, { name: "size", type: "bigint" }, { name: "modification", type: "timestamp" }],
-    "pg_options_to_table": [{ name: "option_name", type: "text" }, { name: "option_value", type: "text" }],
-    "pg_read_binary_file": [{ name: "$alias", type: "bytes" }],
-    "pg_read_file": [{ name: "$alias", type: "text" }],
-    "pg_stat_file": [{ name: "size", type: "bigint" }, { name: "access", type: "timestamp" }, { name: "modification", type: "timestamp" }, { name: "change", type: "timestamp" }, { name: "creation", type: "timestamp" }, { name: "isdir", type: "boolean" }],
-    "pg_stat_get_activity": [{ name: "datid", type: "oid" }, { name: "pid", type: "integer" }, { name: "usesysid", type: "oid" }, { name: "application_name", type: "text" }, { name: "state", type: "text" }, { name: "query", type: "text" }, { name: "query_start", type: "timestamp" }, { name: "backend_start", type: "timestamp" }, { name: "xact_start", type: "timestamp" }, { name: "waiting", type: "boolean" }],
-    "pg_stat_get_snapshot_timestamp": [{ name: "$alias", type: "timestamp" }],
-    "pg_timezone_abbrevs": [{ name: "abbrev", type: "text" }, { name: "utc_offset", type: "interval" }, { name: "is_dst", type: "boolean" }],
-    "pg_timezone_names": [{ name: "name", type: "text" }, { name: "abbrev", type: "text" }, { name: "utc_offset", type: "interval" }, { name: "is_dst", type: "boolean" }],
-    "pragma_table_info": [{ name: "cid", type: "integer" }, { name: "name", type: "text" }, { name: "type", type: "text" }, { name: "notnull", type: "integer" }, { name: "dflt_value", type: "text" }, { name: "pk", type: "integer" }],
-    "read_blob": [{ name: "filename", type: "text" }, { name: "content", type: "blob" }],
-    "read_json_objects": [{ name: "json", type: "json" }],
-    "read_ndjson_objects": [{ name: "json", type: "json" }],
-    "read_text": [{ name: "filename", type: "text" }, { name: "content", type: "text" }],
-    "regexp_matches": [{ name: "$alias", type: "array<text>" }],
-    "regexp_split_to_array": [{ name: "$alias", type: "array<text>" }],
-    "regexp_split_to_table": [{ name: "$alias", type: "text" }],
-    "split_to_table": [{ name: "seq", type: "integer" }, { name: "index", type: "integer" }, { name: "value", type: "text" }],
-    "string_split": [{ name: "value", type: "text" }],
-    "ts_debug": [{ name: "alias", type: "text" }, { name: "description", type: "text" }, { name: "token", type: "text" }, { name: "dictionaries", type: "text[]" }, { name: "dictionary", type: "text" }, { name: "lexemes", type: "text[]" }],
-  },
+  tableFunctions:   {},
   aggregate: {
     "countType": "bigint",
     "avgDefault": "decimal(14,4)",
@@ -396,15 +325,7 @@ export const dialectConfig = {
   dynamicTableFunctions: {
     generateSeriesColumn: '$alias',
     rangeColumn: '$alias',
-    enabledHandlers: [
-      'oracleDbmsXplan',
-      'oracleCollection',
-      'sqliteFts5Vocab',
-      'sqlitePragma',
-      'clickhouseRemote',
-      'externalConnection',
-      'embeddedSql',
-    ],
+    enabledHandlers: [],
   },
   serializedSelect: {},
   outputTypeOverrides: {
@@ -516,5583 +437,5543 @@ export const dialectConfig = {
   },
   metadata: {
     builtinSchemaTables: [
-        {
-            "schema": "information_schema",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "self_referencing_column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "reference_generation",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "user_defined_type_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_insertable_into",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_typed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "commit_action",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "retention_time",
-                    "type": "text"
-                },
-                {
-                    "name": "is_transient",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_temporary",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "character_maximum_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "character_octet_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision_radix",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "datetime_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "interval_type",
-                    "type": "text"
-                },
-                {
-                    "name": "interval_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "domain_name",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "udt_name",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "scope_name",
-                    "type": "text"
-                },
-                {
-                    "name": "maximum_cardinality",
-                    "type": "integer"
-                },
-                {
-                    "name": "dtd_identifier",
-                    "type": "text"
-                },
-                {
-                    "name": "is_self_referencing",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_identity",
-                    "type": "boolean"
-                },
-                {
-                    "name": "identity_generation",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_start",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_increment",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_maximum",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_minimum",
-                    "type": "text"
-                },
-                {
-                    "name": "identity_cycle",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_generated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generation_expression",
-                    "type": "text"
-                },
-                {
-                    "name": "is_updatable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "schemata",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "sql_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.schemata",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "default_character_set_name",
-                    "type": "text"
-                },
-                {
-                    "name": "sql_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "ddl",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.routines",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.datasets",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "location",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "views",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "view_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "check_option",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_updatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_insertable_into",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_updatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_deletable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_trigger_insertable_into",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "routines",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "external_name",
-                    "type": "text"
-                },
-                {
-                    "name": "external_language",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "functions",
-            "columns": [
-                {
-                    "name": "function_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "function_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "function_name",
-                    "type": "text"
-                },
-                {
-                    "name": "function_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "argument_signature",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "function_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "table_constraints",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "initially_deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "enforced",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "key_column_usage",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "position_in_unique_constraint",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "referential_constraints",
-            "columns": [
-                {
-                    "name": "constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "unique_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "match_option",
-                    "type": "text"
-                },
-                {
-                    "name": "update_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "triggers",
-            "columns": [
-                {
-                    "name": "trigger_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "trigger_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "trigger_name",
-                    "type": "text"
-                },
-                {
-                    "name": "event_manipulation",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "event_object_table",
-                    "type": "text"
-                },
-                {
-                    "name": "action_order",
-                    "type": "integer"
-                },
-                {
-                    "name": "action_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "action_statement",
-                    "type": "text"
-                },
-                {
-                    "name": "action_orientation",
-                    "type": "text"
-                },
-                {
-                    "name": "action_timing",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "parameters",
-            "columns": [
-                {
-                    "name": "specific_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "specific_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "parameter_mode",
-                    "type": "text"
-                },
-                {
-                    "name": "is_result",
-                    "type": "text"
-                },
-                {
-                    "name": "as_locator",
-                    "type": "text"
-                },
-                {
-                    "name": "parameter_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "character_maximum_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "numeric_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "routine_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "routine_name",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "statistics",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "non_unique",
-                    "type": "boolean"
-                },
-                {
-                    "name": "index_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "seq_in_index",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "collation",
-                    "type": "text"
-                },
-                {
-                    "name": "cardinality",
-                    "type": "integer"
-                },
-                {
-                    "name": "sub_part",
-                    "type": "integer"
-                },
-                {
-                    "name": "packed",
-                    "type": "text"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                },
-                {
-                    "name": "index_type",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                },
-                {
-                    "name": "index_comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "table_privileges",
-            "columns": [
-                {
-                    "name": "grantor",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "privilege_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_grantable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "with_hierarchy",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "column_privileges",
-            "columns": [
-                {
-                    "name": "grantor",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "privilege_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_grantable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "query_history",
-            "columns": [
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "query_text",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "query_type",
-                    "type": "text"
-                },
-                {
-                    "name": "session_id",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "role_name",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_name",
-                    "type": "text"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_produced",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_scanned",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_written",
-                    "type": "integer"
-                },
-                {
-                    "name": "execution_status",
-                    "type": "text"
-                },
-                {
-                    "name": "error_code",
-                    "type": "text"
-                },
-                {
-                    "name": "error_message",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "warehouses",
-            "columns": [
-                {
-                    "name": "warehouse_name",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_type",
-                    "type": "text"
-                },
-                {
-                    "name": "warehouse_size",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "min_cluster_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "auto_suspend",
-                    "type": "integer"
-                },
-                {
-                    "name": "auto_resume",
-                    "type": "boolean"
-                },
-                {
-                    "name": "resource_monitor",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_master",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_schema",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_temp_master",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "sqlite_temp_schema",
-            "columns": [
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "tbl_name",
-                    "type": "text"
-                },
-                {
-                    "name": "rootpage",
-                    "type": "integer"
-                },
-                {
-                    "name": "sql",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.views",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "view_definition",
-                    "type": "text"
-                },
-                {
-                    "name": "check_option",
-                    "type": "boolean"
-                },
-                {
-                    "name": "use_standard_sql",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.jobs",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "user_email",
-                    "type": "text"
-                },
-                {
-                    "name": "job_id",
-                    "type": "text"
-                },
-                {
-                    "name": "job_type",
-                    "type": "text"
-                },
-                {
-                    "name": "statement_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "total_bytes_processed",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_slot_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "error_result",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.jobs_by_user",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "user_email",
-                    "type": "text"
-                },
-                {
-                    "name": "job_id",
-                    "type": "text"
-                },
-                {
-                    "name": "job_type",
-                    "type": "text"
-                },
-                {
-                    "name": "statement_type",
-                    "type": "text"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "total_bytes_processed",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_slot_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "error_result",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "information_schema.reservations",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "text"
-                },
-                {
-                    "name": "project_number",
-                    "type": "text"
-                },
-                {
-                    "name": "reservation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ignore_idle_slots",
-                    "type": "text"
-                },
-                {
-                    "name": "slot_capacity",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "update_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_tables",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "tableowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "hasindexes",
-                    "type": "boolean"
-                },
-                {
-                    "name": "hasrules",
-                    "type": "boolean"
-                },
-                {
-                    "name": "hastriggers",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_roles",
-            "columns": [
-                {
-                    "name": "rolname",
-                    "type": "text"
-                },
-                {
-                    "name": "rolsuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolinherit",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreaterole",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcanlogin",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolreplication",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolconnlimit",
-                    "type": "integer"
-                },
-                {
-                    "name": "rolpassword",
-                    "type": "text"
-                },
-                {
-                    "name": "rolvaliduntil",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "rolconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "oid",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "setting",
-                    "type": "text"
-                },
-                {
-                    "name": "unit",
-                    "type": "text"
-                },
-                {
-                    "name": "category",
-                    "type": "text"
-                },
-                {
-                    "name": "short_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "extra_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "context",
-                    "type": "text"
-                },
-                {
-                    "name": "vartype",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                },
-                {
-                    "name": "min_val",
-                    "type": "text"
-                },
-                {
-                    "name": "max_val",
-                    "type": "text"
-                },
-                {
-                    "name": "enumvals",
-                    "type": "text"
-                },
-                {
-                    "name": "boot_val",
-                    "type": "text"
-                },
-                {
-                    "name": "reset_val",
-                    "type": "text"
-                },
-                {
-                    "name": "pending_restart",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_stat_database",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "numbackends",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_commit",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_rollback",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_hit",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_returned",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_fetched",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_inserted",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_updated",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_deleted",
-                    "type": "integer"
-                },
-                {
-                    "name": "stats_reset",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_user",
-            "columns": [
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usecreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usesuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "userepl",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usebypassrls",
-                    "type": "boolean"
-                },
-                {
-                    "name": "valuntil",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "useconfig",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_indexes",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "indexname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "indexdef",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_locks",
-            "columns": [
-                {
-                    "name": "locktype",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "integer"
-                },
-                {
-                    "name": "relation",
-                    "type": "integer"
-                },
-                {
-                    "name": "page",
-                    "type": "integer"
-                },
-                {
-                    "name": "tuple",
-                    "type": "integer"
-                },
-                {
-                    "name": "virtualxid",
-                    "type": "text"
-                },
-                {
-                    "name": "transactionid",
-                    "type": "text"
-                },
-                {
-                    "name": "classid",
-                    "type": "integer"
-                },
-                {
-                    "name": "objid",
-                    "type": "integer"
-                },
-                {
-                    "name": "objsubid",
-                    "type": "integer"
-                },
-                {
-                    "name": "virtualtransaction",
-                    "type": "text"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "mode",
-                    "type": "text"
-                },
-                {
-                    "name": "granted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "fastpath",
-                    "type": "boolean"
-                },
-                {
-                    "name": "waitstart",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_class",
-            "columns": [
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "relnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relkind",
-                    "type": "text"
-                },
-                {
-                    "name": "relowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "relam",
-                    "type": "integer"
-                },
-                {
-                    "name": "relfilenode",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltablespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relpages",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltuples",
-                    "type": "integer"
-                },
-                {
-                    "name": "relhasindex",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relisshared",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relpersistence",
-                    "type": "text"
-                },
-                {
-                    "name": "relrowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_class",
-            "columns": [
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "relnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relkind",
-                    "type": "text"
-                },
-                {
-                    "name": "relowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "relam",
-                    "type": "integer"
-                },
-                {
-                    "name": "relfilenode",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltablespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "relpages",
-                    "type": "integer"
-                },
-                {
-                    "name": "reltuples",
-                    "type": "integer"
-                },
-                {
-                    "name": "relhasindex",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relisshared",
-                    "type": "boolean"
-                },
-                {
-                    "name": "relpersistence",
-                    "type": "text"
-                },
-                {
-                    "name": "relrowsecurity",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_namespace",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspname",
-                    "type": "text"
-                },
-                {
-                    "name": "nspowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspacl",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_namespace",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspname",
-                    "type": "text"
-                },
-                {
-                    "name": "nspowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "nspacl",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_available_extensions",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "default_version",
-                    "type": "text"
-                },
-                {
-                    "name": "installed_version",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_extension",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "extname",
-                    "type": "text"
-                },
-                {
-                    "name": "extowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "extnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "extrelocatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "extversion",
-                    "type": "text"
-                },
-                {
-                    "name": "extconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "extcondition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_extension",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "extname",
-                    "type": "text"
-                },
-                {
-                    "name": "extowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "extnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "extrelocatable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "extversion",
-                    "type": "text"
-                },
-                {
-                    "name": "extconfig",
-                    "type": "text"
-                },
-                {
-                    "name": "extcondition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_type",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "typname",
-                    "type": "text"
-                },
-                {
-                    "name": "typnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "typowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "typlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "typbyval",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typtype",
-                    "type": "text"
-                },
-                {
-                    "name": "typcategory",
-                    "type": "text"
-                },
-                {
-                    "name": "typispreferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typbasetype",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_type",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "typname",
-                    "type": "text"
-                },
-                {
-                    "name": "typnamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "typowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "typlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "typbyval",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typtype",
-                    "type": "text"
-                },
-                {
-                    "name": "typcategory",
-                    "type": "text"
-                },
-                {
-                    "name": "typispreferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "typbasetype",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_proc",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "proname",
-                    "type": "text"
-                },
-                {
-                    "name": "pronamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "proowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "prolang",
-                    "type": "text"
-                },
-                {
-                    "name": "procost",
-                    "type": "decimal"
-                },
-                {
-                    "name": "prorows",
-                    "type": "decimal"
-                },
-                {
-                    "name": "provariadic",
-                    "type": "text"
-                },
-                {
-                    "name": "prokind",
-                    "type": "text"
-                },
-                {
-                    "name": "prosecdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proleakproof",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proisstrict",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proretset",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_proc",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "proname",
-                    "type": "text"
-                },
-                {
-                    "name": "pronamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "proowner",
-                    "type": "integer"
-                },
-                {
-                    "name": "prolang",
-                    "type": "text"
-                },
-                {
-                    "name": "procost",
-                    "type": "decimal"
-                },
-                {
-                    "name": "prorows",
-                    "type": "decimal"
-                },
-                {
-                    "name": "provariadic",
-                    "type": "text"
-                },
-                {
-                    "name": "prokind",
-                    "type": "text"
-                },
-                {
-                    "name": "prosecdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proleakproof",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proisstrict",
-                    "type": "boolean"
-                },
-                {
-                    "name": "proretset",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_constraint",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conname",
-                    "type": "text"
-                },
-                {
-                    "name": "connamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "contype",
-                    "type": "text"
-                },
-                {
-                    "name": "condeferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "condeferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "convalidated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "conrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "confrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conkey",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_constraint",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conname",
-                    "type": "text"
-                },
-                {
-                    "name": "connamespace",
-                    "type": "integer"
-                },
-                {
-                    "name": "contype",
-                    "type": "text"
-                },
-                {
-                    "name": "condeferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "condeferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "convalidated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "conrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "confrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "conkey",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_attribute",
-            "columns": [
-                {
-                    "name": "attrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attname",
-                    "type": "text"
-                },
-                {
-                    "name": "atttypid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnum",
-                    "type": "integer"
-                },
-                {
-                    "name": "attndims",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "atthasdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attisdropped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attislocal",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_attribute",
-            "columns": [
-                {
-                    "name": "attrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attname",
-                    "type": "text"
-                },
-                {
-                    "name": "atttypid",
-                    "type": "integer"
-                },
-                {
-                    "name": "attlen",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnum",
-                    "type": "integer"
-                },
-                {
-                    "name": "attndims",
-                    "type": "integer"
-                },
-                {
-                    "name": "attnotnull",
-                    "type": "boolean"
-                },
-                {
-                    "name": "atthasdef",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attisdropped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "attislocal",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_stat_user_indexes",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "indexrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "indexrelname",
-                    "type": "text"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_user_indexes",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "indexrelid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "indexrelname",
-                    "type": "text"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "setting",
-                    "type": "text"
-                },
-                {
-                    "name": "unit",
-                    "type": "text"
-                },
-                {
-                    "name": "category",
-                    "type": "text"
-                },
-                {
-                    "name": "short_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "extra_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "context",
-                    "type": "text"
-                },
-                {
-                    "name": "vartype",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                },
-                {
-                    "name": "pending_restart",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_activity",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "leader_pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "application_name",
-                    "type": "text"
-                },
-                {
-                    "name": "client_addr",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "query_start",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_user_tables",
-            "columns": [
-                {
-                    "name": "relid",
-                    "type": "integer"
-                },
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "relname",
-                    "type": "text"
-                },
-                {
-                    "name": "seq_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "seq_tup_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_scan",
-                    "type": "integer"
-                },
-                {
-                    "name": "idx_tup_fetch",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_ins",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_upd",
-                    "type": "integer"
-                },
-                {
-                    "name": "n_tup_del",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_stat_database",
-            "columns": [
-                {
-                    "name": "datid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "numbackends",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_commit",
-                    "type": "integer"
-                },
-                {
-                    "name": "xact_rollback",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_read",
-                    "type": "integer"
-                },
-                {
-                    "name": "blks_hit",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_returned",
-                    "type": "integer"
-                },
-                {
-                    "name": "tup_fetched",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_roles",
-            "columns": [
-                {
-                    "name": "rolname",
-                    "type": "text"
-                },
-                {
-                    "name": "rolsuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolinherit",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreaterole",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolcanlogin",
-                    "type": "boolean"
-                },
-                {
-                    "name": "rolconnlimit",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "pg_user",
-            "columns": [
-                {
-                    "name": "usename",
-                    "type": "text"
-                },
-                {
-                    "name": "usesysid",
-                    "type": "integer"
-                },
-                {
-                    "name": "usecreatedb",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usesuper",
-                    "type": "boolean"
-                },
-                {
-                    "name": "userepl",
-                    "type": "boolean"
-                },
-                {
-                    "name": "usebypassrls",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_database",
-            "columns": [
-                {
-                    "name": "oid",
-                    "type": "integer"
-                },
-                {
-                    "name": "datname",
-                    "type": "text"
-                },
-                {
-                    "name": "datdba",
-                    "type": "integer"
-                },
-                {
-                    "name": "encoding",
-                    "type": "text"
-                },
-                {
-                    "name": "datcollate",
-                    "type": "text"
-                },
-                {
-                    "name": "datctype",
-                    "type": "text"
-                },
-                {
-                    "name": "datistemplate",
-                    "type": "boolean"
-                },
-                {
-                    "name": "datallowconn",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "pg_indexes",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "indexname",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "indexdef",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_views",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "pg_matviews",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "ispopulated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_views",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewname",
-                    "type": "text"
-                },
-                {
-                    "name": "viewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "pg_matviews",
-            "columns": [
-                {
-                    "name": "schemaname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewname",
-                    "type": "text"
-                },
-                {
-                    "name": "matviewowner",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace",
-                    "type": "text"
-                },
-                {
-                    "name": "ispopulated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "definition",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "processlist",
-            "columns": [
-                {
-                    "name": "ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "USER",
-                    "type": "text"
-                },
-                {
-                    "name": "HOST",
-                    "type": "text"
-                },
-                {
-                    "name": "DB",
-                    "type": "text"
-                },
-                {
-                    "name": "COMMAND",
-                    "type": "text"
-                },
-                {
-                    "name": "TIME",
-                    "type": "integer"
-                },
-                {
-                    "name": "STATE",
-                    "type": "text"
-                },
-                {
-                    "name": "INFO",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "mysql",
-            "name": "user",
-            "columns": [
-                {
-                    "name": "Host",
-                    "type": "text"
-                },
-                {
-                    "name": "User",
-                    "type": "text"
-                },
-                {
-                    "name": "Select_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Insert_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Update_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Delete_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Create_priv",
-                    "type": "text"
-                },
-                {
-                    "name": "Drop_priv",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "threads",
-            "columns": [
-                {
-                    "name": "THREAD_ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "TYPE",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_ID",
-                    "type": "integer"
-                },
-                {
-                    "name": "PROCESSLIST_USER",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_HOST",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_DB",
-                    "type": "text"
-                },
-                {
-                    "name": "PROCESSLIST_COMMAND",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "global_variables",
-            "columns": [
-                {
-                    "name": "VARIABLE_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "VARIABLE_VALUE",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "global_status",
-            "columns": [
-                {
-                    "name": "VARIABLE_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "VARIABLE_VALUE",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "performance_schema",
-            "name": "events_statements_summary_by_digest",
-            "columns": [
-                {
-                    "name": "SCHEMA_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "DIGEST",
-                    "type": "text"
-                },
-                {
-                    "name": "DIGEST_TEXT",
-                    "type": "text"
-                },
-                {
-                    "name": "COUNT_STAR",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "MIN_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "AVG_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "MAX_TIMER_WAIT",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_AFFECTED",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_SENT",
-                    "type": "integer"
-                },
-                {
-                    "name": "SUM_ROWS_EXAMINED",
-                    "type": "integer"
-                },
-                {
-                    "name": "FIRST_SEEN",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "LAST_SEEN",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "information_schema",
-            "name": "events",
-            "columns": [
-                {
-                    "name": "EVENT_CATALOG",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_SCHEMA",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_NAME",
-                    "type": "text"
-                },
-                {
-                    "name": "DEFINER",
-                    "type": "text"
-                },
-                {
-                    "name": "TIME_ZONE",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_BODY",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_DEFINITION",
-                    "type": "text"
-                },
-                {
-                    "name": "EVENT_TYPE",
-                    "type": "text"
-                },
-                {
-                    "name": "STATUS",
-                    "type": "text"
-                },
-                {
-                    "name": "CREATED",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "LAST_ALTERED",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "schema_table_statistics",
-            "columns": [
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "total_latency",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_fetched",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_inserted",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_updated",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows_deleted",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "is_ms_shipped",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_filetable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_memory_optimized",
-                    "type": "boolean"
-                },
-                {
-                    "name": "max_column_id_used",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "system_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_identity",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_computed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_rowguidcol",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "objects",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "parent_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "is_ms_shipped",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "schemas",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "principal_id",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "source_database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "owner_sid",
-                    "type": "text"
-                },
-                {
-                    "name": "create_date",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "compatibility_level",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "user_access_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "is_read_only",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_auto_close_on",
-                    "type": "boolean"
-                },
-                {
-                    "name": "state_desc",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "types",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "system_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_type_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "principal_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "max_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "collation_name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_user_defined",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_assembly_type",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_table_type",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_sessions",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "login_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "host_name",
-                    "type": "text"
-                },
-                {
-                    "name": "program_name",
-                    "type": "text"
-                },
-                {
-                    "name": "login_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "cpu_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "memory_usage",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_scheduled_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "logical_reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_request_start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_request_end_time",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_requests",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "request_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "command",
-                    "type": "text"
-                },
-                {
-                    "name": "database_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocking_session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "wait_type",
-                    "type": "text"
-                },
-                {
-                    "name": "wait_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "cpu_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "logical_reads",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "indexes",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "index_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "type_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "is_unique",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_primary_key",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_unique_constraint",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_disabled",
-                    "type": "boolean"
-                },
-                {
-                    "name": "modify_date",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "foreign_keys",
-            "columns": [
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "parent_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "referenced_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_disabled",
-                    "type": "boolean"
-                },
-                {
-                    "name": "is_not_trusted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "delete_referential_action_desc",
-                    "type": "text"
-                },
-                {
-                    "name": "update_referential_action_desc",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "dm_exec_connections",
-            "columns": [
-                {
-                    "name": "session_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "connect_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "net_transport",
-                    "type": "text"
-                },
-                {
-                    "name": "protocol_type",
-                    "type": "text"
-                },
-                {
-                    "name": "auth_scheme",
-                    "type": "text"
-                },
-                {
-                    "name": "num_reads",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_writes",
-                    "type": "integer"
-                },
-                {
-                    "name": "client_net_address",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "engine",
-                    "type": "text"
-                },
-                {
-                    "name": "is_temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "total_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "total_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "metadata_path",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "default_kind",
-                    "type": "text"
-                },
-                {
-                    "name": "default_expression",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "functions",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "is_aggregate",
-                    "type": "boolean"
-                },
-                {
-                    "name": "case_insensitive",
-                    "type": "text"
-                },
-                {
-                    "name": "alias_to",
-                    "type": "text"
-                },
-                {
-                    "name": "create_query",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "origin",
-                    "type": "text"
-                },
-                {
-                    "name": "description",
-                    "type": "text"
-                },
-                {
-                    "name": "syntax",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "engine",
-                    "type": "text"
-                },
-                {
-                    "name": "data_path",
-                    "type": "text"
-                },
-                {
-                    "name": "metadata_path",
-                    "type": "text"
-                },
-                {
-                    "name": "uuid",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "parts",
-            "columns": [
-                {
-                    "name": "partition",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "active",
-                    "type": "boolean"
-                },
-                {
-                    "name": "marks",
-                    "type": "integer"
-                },
-                {
-                    "name": "rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes_on_disk",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "processes",
-            "columns": [
-                {
-                    "name": "is_initial_query",
-                    "type": "boolean"
-                },
-                {
-                    "name": "user",
-                    "type": "text"
-                },
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "address",
-                    "type": "text"
-                },
-                {
-                    "name": "elapsed",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "merges",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "elapsed",
-                    "type": "integer"
-                },
-                {
-                    "name": "progress",
-                    "type": "decimal"
-                },
-                {
-                    "name": "num_parts",
-                    "type": "integer"
-                },
-                {
-                    "name": "result_part_name",
-                    "type": "text"
-                },
-                {
-                    "name": "partition_id",
-                    "type": "text"
-                },
-                {
-                    "name": "is_mutation",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "mutations",
-            "columns": [
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "table",
-                    "type": "text"
-                },
-                {
-                    "name": "mutation_id",
-                    "type": "text"
-                },
-                {
-                    "name": "command",
-                    "type": "text"
-                },
-                {
-                    "name": "create_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "parts_to_do",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_done",
-                    "type": "boolean"
-                },
-                {
-                    "name": "latest_failed_part",
-                    "type": "text"
-                },
-                {
-                    "name": "latest_fail_reason",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "settings",
-            "columns": [
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "value",
-                    "type": "text"
-                },
-                {
-                    "name": "changed",
-                    "type": "boolean"
-                },
-                {
-                    "name": "description",
-                    "type": "text"
-                },
-                {
-                    "name": "min",
-                    "type": "text"
-                },
-                {
-                    "name": "max",
-                    "type": "text"
-                },
-                {
-                    "name": "readonly",
-                    "type": "boolean"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "system",
-            "name": "query_log",
-            "columns": [
-                {
-                    "name": "hostname",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "event_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "query_duration_ms",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "read_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "written_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "written_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "user",
-                    "type": "text"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "svv",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "svv_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "pg_catalog",
-            "name": "svv_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablename",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "svv_columns",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "svv_redshift_tables",
-            "columns": [
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "remarks",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "stv_recents",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "query",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "db_name",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "stv_sessions",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "process",
-                    "type": "integer"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "db_name",
-                    "type": "text"
-                },
-                {
-                    "name": "timeout_sec",
-                    "type": "integer"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "stl_query",
-            "columns": [
-                {
-                    "name": "userid",
-                    "type": "integer"
-                },
-                {
-                    "name": "query",
-                    "type": "integer"
-                },
-                {
-                    "name": "pid",
-                    "type": "integer"
-                },
-                {
-                    "name": "xid",
-                    "type": "integer"
-                },
-                {
-                    "name": "database",
-                    "type": "text"
-                },
-                {
-                    "name": "starttime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "endtime",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "aborted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "label",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "all",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_tab_columns",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_precision",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_default",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "user_tables",
-            "columns": [
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "empty_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "avg_space",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "all_users",
-            "columns": [
-                {
-                    "name": "username",
-                    "type": "text"
-                },
-                {
-                    "name": "user_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "common",
-                    "type": "text"
-                },
-                {
-                    "name": "oracle_maintained",
-                    "type": "text"
-                },
-                {
-                    "name": "inherited",
-                    "type": "text"
-                },
-                {
-                    "name": "default_collation",
-                    "type": "text"
-                },
-                {
-                    "name": "implicit",
-                    "type": "text"
-                },
-                {
-                    "name": "all_shard",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "all_objects",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "object_name",
-                    "type": "text"
-                },
-                {
-                    "name": "subobject_name",
-                    "type": "text"
-                },
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "data_object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "object_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_ddl_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generated",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "all_views",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "view_name",
-                    "type": "text"
-                },
-                {
-                    "name": "text",
-                    "type": "text"
-                },
-                {
-                    "name": "text_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "type_text",
-                    "type": "text"
-                },
-                {
-                    "name": "type_text_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "oid_text",
-                    "type": "text"
-                },
-                {
-                    "name": "oid_text_length",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "all_constraints",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "search_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "r_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "r_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "validated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "last_change",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_constraints",
-            "columns": [
-                {
-                    "name": "constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "constraint_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "search_condition",
-                    "type": "text"
-                },
-                {
-                    "name": "r_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "r_constraint_name",
-                    "type": "text"
-                },
-                {
-                    "name": "delete_rule",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "deferrable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "deferred",
-                    "type": "boolean"
-                },
-                {
-                    "name": "validated",
-                    "type": "boolean"
-                },
-                {
-                    "name": "last_change",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_objects",
-            "columns": [
-                {
-                    "name": "object_name",
-                    "type": "text"
-                },
-                {
-                    "name": "subobject_name",
-                    "type": "text"
-                },
-                {
-                    "name": "object_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "object_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_ddl_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "temporary",
-                    "type": "boolean"
-                },
-                {
-                    "name": "generated",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "name": "user_tab_columns",
-            "columns": [
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "data_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "nullable",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "user_indexes",
-            "columns": [
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "index_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "uniqueness",
-                    "type": "text"
-                },
-                {
-                    "name": "compression",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "blevel",
-                    "type": "integer"
-                },
-                {
-                    "name": "leaf_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "distinct_keys",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "user_ind_columns",
-            "columns": [
-                {
-                    "name": "index_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_length",
-                    "type": "integer"
-                },
-                {
-                    "name": "descend",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "dba_tables",
-            "columns": [
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "tablespace_name",
-                    "type": "text"
-                },
-                {
-                    "name": "cluster_name",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "empty_blocks",
-                    "type": "integer"
-                },
-                {
-                    "name": "last_analyzed",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "name": "dual",
-            "columns": [
-                {
-                    "name": "dummy",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "v$session",
-            "columns": [
-                {
-                    "name": "sid",
-                    "type": "integer"
-                },
-                {
-                    "name": "serial#",
-                    "type": "integer"
-                },
-                {
-                    "name": "username",
-                    "type": "text"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "machine",
-                    "type": "text"
-                },
-                {
-                    "name": "program",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "exa_all_tables",
-            "columns": [
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_type",
-                    "type": "text"
-                },
-                {
-                    "name": "table_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_commit",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "has_distribution_key",
-                    "type": "boolean"
-                },
-                {
-                    "name": "delete_percentage",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "exa_all_columns",
-            "columns": [
-                {
-                    "name": "column_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "column_table",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "column_is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "column_type",
-                    "type": "text"
-                },
-                {
-                    "name": "column_maxsize",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_num_prec",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_num_scale",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "name": "__TABLES__",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "table_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_modified_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "size_bytes",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "name": "__TABLES_SUMMARY__",
-            "columns": [
-                {
-                    "name": "project_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "dataset_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "table_id",
-                    "type": "integer"
-                },
-                {
-                    "name": "creation_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_modified_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "size_bytes",
-                    "type": "integer"
-                },
-                {
-                    "name": "type",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "query_history",
-            "columns": [
-                {
-                    "name": "query_id",
-                    "type": "text"
-                },
-                {
-                    "name": "query_text",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "user_name",
-                    "type": "text"
-                },
-                {
-                    "name": "start_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "total_elapsed_time",
-                    "type": "integer"
-                },
-                {
-                    "name": "execution_status",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "users",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "login_name",
-                    "type": "text"
-                },
-                {
-                    "name": "display_name",
-                    "type": "text"
-                },
-                {
-                    "name": "email",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "roles",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "owner",
-                    "type": "text"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "warehouses",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "size",
-                    "type": "text"
-                },
-                {
-                    "name": "auto_resume",
-                    "type": "boolean"
-                },
-                {
-                    "name": "auto_suspend",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "tables",
-            "columns": [
-                {
-                    "name": "id",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "row_count",
-                    "type": "integer"
-                },
-                {
-                    "name": "bytes",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "databases",
-            "columns": [
-                {
-                    "name": "database_id",
-                    "type": "text"
-                },
-                {
-                    "name": "database_name",
-                    "type": "text"
-                },
-                {
-                    "name": "database_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "schemata",
-            "columns": [
-                {
-                    "name": "catalog_id",
-                    "type": "text"
-                },
-                {
-                    "name": "catalog_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_id",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_name",
-                    "type": "text"
-                },
-                {
-                    "name": "schema_owner",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                },
-                {
-                    "name": "comment",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "columns",
-            "columns": [
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "table_name",
-                    "type": "text"
-                },
-                {
-                    "name": "column_name",
-                    "type": "text"
-                },
-                {
-                    "name": "ordinal_position",
-                    "type": "integer"
-                },
-                {
-                    "name": "column_default",
-                    "type": "text"
-                },
-                {
-                    "name": "is_nullable",
-                    "type": "boolean"
-                },
-                {
-                    "name": "data_type",
-                    "type": "text"
-                },
-                {
-                    "name": "created",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "last_altered",
-                    "type": "timestamp"
-                }
-            ]
-        },
-        {
-            "schema": "account_usage",
-            "name": "grants_to_roles",
-            "columns": [
-                {
-                    "name": "created_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "modified_on",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "privilege",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_on",
-                    "type": "text"
-                },
-                {
-                    "name": "name",
-                    "type": "text"
-                },
-                {
-                    "name": "table_catalog",
-                    "type": "text"
-                },
-                {
-                    "name": "table_schema",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_to",
-                    "type": "text"
-                },
-                {
-                    "name": "grantee_name",
-                    "type": "text"
-                },
-                {
-                    "name": "grant_option",
-                    "type": "text"
-                },
-                {
-                    "name": "granted_by",
-                    "type": "text"
-                },
-                {
-                    "name": "deleted",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "segments",
-            "columns": [
-                {
-                    "name": "segment_id",
-                    "type": "text"
-                },
-                {
-                    "name": "datasource",
-                    "type": "text"
-                },
-                {
-                    "name": "start",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "end",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "size",
-                    "type": "integer"
-                },
-                {
-                    "name": "num_rows",
-                    "type": "integer"
-                },
-                {
-                    "name": "is_published",
-                    "type": "boolean"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "servers",
-            "columns": [
-                {
-                    "name": "server",
-                    "type": "text"
-                },
-                {
-                    "name": "host",
-                    "type": "text"
-                },
-                {
-                    "name": "plaintext_port",
-                    "type": "integer"
-                },
-                {
-                    "name": "tls_port",
-                    "type": "integer"
-                },
-                {
-                    "name": "curr_size",
-                    "type": "text"
-                },
-                {
-                    "name": "max_size",
-                    "type": "integer"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "tasks",
-            "columns": [
-                {
-                    "name": "task_id",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "datasource",
-                    "type": "text"
-                },
-                {
-                    "name": "created_time",
-                    "type": "timestamp"
-                },
-                {
-                    "name": "status",
-                    "type": "text"
-                },
-                {
-                    "name": "location",
-                    "type": "text"
-                }
-            ]
-        },
-        {
-            "schema": "sys",
-            "name": "supervisors",
-            "columns": [
-                {
-                    "name": "supervisor_id",
-                    "type": "text"
-                },
-                {
-                    "name": "state",
-                    "type": "text"
-                },
-                {
-                    "name": "detailed_state",
-                    "type": "text"
-                },
-                {
-                    "name": "healthy",
-                    "type": "text"
-                },
-                {
-                    "name": "type",
-                    "type": "text"
-                },
-                {
-                    "name": "source",
-                    "type": "text"
-                }
-            ]
-        }
+      {
+        schema: "information_schema",
+        name: "ADMINISTRABLE_ROLE_AUTHORIZATIONS",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "grantee_host", type: "text" },
+          { name: "role_name", type: "text" },
+          { name: "role_host", type: "text" },
+          { name: "is_grantable", type: "text" },
+          { name: "is_default", type: "text" },
+          { name: "is_mandatory", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "APPLICABLE_ROLES",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "grantee_host", type: "text" },
+          { name: "role_name", type: "text" },
+          { name: "role_host", type: "text" },
+          { name: "is_grantable", type: "text" },
+          { name: "is_default", type: "text" },
+          { name: "is_mandatory", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "CHARACTER_SETS",
+        columns: [
+          { name: "character_set_name", type: "text" },
+          { name: "default_collate_name", type: "text" },
+          { name: "description", type: "text" },
+          { name: "maxlen", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "CHECK_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "check_clause", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLLATION_CHARACTER_SET_APPLICABILITY",
+        columns: [
+          { name: "collation_name", type: "text" },
+          { name: "character_set_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLLATIONS",
+        columns: [
+          { name: "collation_name", type: "text" },
+          { name: "character_set_name", type: "text" },
+          { name: "id", type: "integer" },
+          { name: "is_default", type: "text" },
+          { name: "is_compiled", type: "text" },
+          { name: "sortlen", type: "integer" },
+          { name: "pad_attribute", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLUMN_PRIVILEGES",
+        columns: [
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLUMN_STATISTICS",
+        columns: [
+          { name: "schema_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "histogram", type: "json" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLUMNS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "column_default", type: "text" },
+          { name: "is_nullable", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "character_set_name", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "column_type", type: "text" },
+          { name: "column_key", type: "text" },
+          { name: "extra", type: "text" },
+          { name: "privileges", type: "text" },
+          { name: "column_comment", type: "text" },
+          { name: "generation_expression", type: "text" },
+          { name: "srs_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "COLUMNS_EXTENSIONS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "engine_attribute", type: "json" },
+          { name: "secondary_engine_attribute", type: "json" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ENABLED_ROLES",
+        columns: [
+          { name: "role_name", type: "text" },
+          { name: "role_host", type: "text" },
+          { name: "is_default", type: "text" },
+          { name: "is_mandatory", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ENGINES",
+        columns: [
+          { name: "engine", type: "text" },
+          { name: "support", type: "text" },
+          { name: "comment", type: "text" },
+          { name: "transactions", type: "text" },
+          { name: "xa", type: "text" },
+          { name: "savepoints", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "EVENTS",
+        columns: [
+          { name: "event_catalog", type: "text" },
+          { name: "event_schema", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "definer", type: "text" },
+          { name: "time_zone", type: "text" },
+          { name: "event_body", type: "text" },
+          { name: "event_definition", type: "text" },
+          { name: "event_type", type: "text" },
+          { name: "execute_at", type: "timestamp" },
+          { name: "interval_value", type: "text" },
+          { name: "interval_field", type: "text" },
+          { name: "sql_mode", type: "variant" },
+          { name: "starts", type: "timestamp" },
+          { name: "ends", type: "timestamp" },
+          { name: "status", type: "text" },
+          { name: "on_completion", type: "text" },
+          { name: "created", type: "timestamp" },
+          { name: "last_altered", type: "timestamp" },
+          { name: "last_executed", type: "timestamp" },
+          { name: "event_comment", type: "text" },
+          { name: "originator", type: "integer" },
+          { name: "character_set_client", type: "text" },
+          { name: "collation_connection", type: "text" },
+          { name: "database_collation", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "FILES",
+        columns: [
+          { name: "file_id", type: "integer" },
+          { name: "file_name", type: "text" },
+          { name: "file_type", type: "text" },
+          { name: "tablespace_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "bytes" },
+          { name: "table_name", type: "bytes" },
+          { name: "logfile_group_name", type: "text" },
+          { name: "logfile_group_number", type: "integer" },
+          { name: "engine", type: "text" },
+          { name: "fulltext_keys", type: "bytes" },
+          { name: "deleted_rows", type: "bytes" },
+          { name: "update_count", type: "bytes" },
+          { name: "free_extents", type: "integer" },
+          { name: "total_extents", type: "integer" },
+          { name: "extent_size", type: "integer" },
+          { name: "initial_size", type: "integer" },
+          { name: "maximum_size", type: "integer" },
+          { name: "autoextend_size", type: "integer" },
+          { name: "creation_time", type: "bytes" },
+          { name: "last_update_time", type: "bytes" },
+          { name: "last_access_time", type: "bytes" },
+          { name: "recover_time", type: "bytes" },
+          { name: "transaction_counter", type: "bytes" },
+          { name: "version", type: "integer" },
+          { name: "row_format", type: "text" },
+          { name: "table_rows", type: "bytes" },
+          { name: "avg_row_length", type: "bytes" },
+          { name: "data_length", type: "bytes" },
+          { name: "max_data_length", type: "bytes" },
+          { name: "index_length", type: "bytes" },
+          { name: "data_free", type: "integer" },
+          { name: "create_time", type: "bytes" },
+          { name: "update_time", type: "bytes" },
+          { name: "check_time", type: "bytes" },
+          { name: "checksum", type: "bytes" },
+          { name: "status", type: "text" },
+          { name: "extra", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_BUFFER_PAGE",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "block_id", type: "integer" },
+          { name: "space", type: "integer" },
+          { name: "page_number", type: "integer" },
+          { name: "page_type", type: "text" },
+          { name: "flush_type", type: "integer" },
+          { name: "fix_count", type: "integer" },
+          { name: "is_hashed", type: "text" },
+          { name: "newest_modification", type: "integer" },
+          { name: "oldest_modification", type: "integer" },
+          { name: "access_time", type: "integer" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "number_records", type: "integer" },
+          { name: "data_size", type: "integer" },
+          { name: "compressed_size", type: "integer" },
+          { name: "page_state", type: "text" },
+          { name: "io_fix", type: "text" },
+          { name: "is_old", type: "text" },
+          { name: "free_page_clock", type: "integer" },
+          { name: "is_stale", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_BUFFER_PAGE_LRU",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "lru_position", type: "integer" },
+          { name: "space", type: "integer" },
+          { name: "page_number", type: "integer" },
+          { name: "page_type", type: "text" },
+          { name: "flush_type", type: "integer" },
+          { name: "fix_count", type: "integer" },
+          { name: "is_hashed", type: "text" },
+          { name: "newest_modification", type: "integer" },
+          { name: "oldest_modification", type: "integer" },
+          { name: "access_time", type: "integer" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "number_records", type: "integer" },
+          { name: "data_size", type: "integer" },
+          { name: "compressed_size", type: "integer" },
+          { name: "compressed", type: "text" },
+          { name: "io_fix", type: "text" },
+          { name: "is_old", type: "text" },
+          { name: "free_page_clock", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_BUFFER_POOL_STATS",
+        columns: [
+          { name: "pool_id", type: "integer" },
+          { name: "pool_size", type: "integer" },
+          { name: "free_buffers", type: "integer" },
+          { name: "database_pages", type: "integer" },
+          { name: "old_database_pages", type: "integer" },
+          { name: "modified_database_pages", type: "integer" },
+          { name: "pending_decompress", type: "integer" },
+          { name: "pending_reads", type: "integer" },
+          { name: "pending_flush_lru", type: "integer" },
+          { name: "pending_flush_list", type: "integer" },
+          { name: "pages_made_young", type: "integer" },
+          { name: "pages_not_made_young", type: "integer" },
+          { name: "pages_made_young_rate", type: "decimal" },
+          { name: "pages_made_not_young_rate", type: "decimal" },
+          { name: "number_pages_read", type: "integer" },
+          { name: "number_pages_created", type: "integer" },
+          { name: "number_pages_written", type: "integer" },
+          { name: "pages_read_rate", type: "decimal" },
+          { name: "pages_create_rate", type: "decimal" },
+          { name: "pages_written_rate", type: "decimal" },
+          { name: "number_pages_get", type: "integer" },
+          { name: "hit_rate", type: "integer" },
+          { name: "young_make_per_thousand_gets", type: "integer" },
+          { name: "not_young_make_per_thousand_gets", type: "integer" },
+          { name: "number_pages_read_ahead", type: "integer" },
+          { name: "number_read_ahead_evicted", type: "integer" },
+          { name: "read_ahead_rate", type: "decimal" },
+          { name: "read_ahead_evicted_rate", type: "decimal" },
+          { name: "lru_io_total", type: "integer" },
+          { name: "lru_io_current", type: "integer" },
+          { name: "uncompress_total", type: "integer" },
+          { name: "uncompress_current", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CACHED_INDEXES",
+        columns: [
+          { name: "space_id", type: "integer" },
+          { name: "index_id", type: "integer" },
+          { name: "n_cached_pages", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMP",
+        columns: [
+          { name: "page_size", type: "integer" },
+          { name: "compress_ops", type: "integer" },
+          { name: "compress_ops_ok", type: "integer" },
+          { name: "compress_time", type: "integer" },
+          { name: "uncompress_ops", type: "integer" },
+          { name: "uncompress_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMP_PER_INDEX",
+        columns: [
+          { name: "database_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "compress_ops", type: "integer" },
+          { name: "compress_ops_ok", type: "integer" },
+          { name: "compress_time", type: "integer" },
+          { name: "uncompress_ops", type: "integer" },
+          { name: "uncompress_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMP_PER_INDEX_RESET",
+        columns: [
+          { name: "database_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "compress_ops", type: "integer" },
+          { name: "compress_ops_ok", type: "integer" },
+          { name: "compress_time", type: "integer" },
+          { name: "uncompress_ops", type: "integer" },
+          { name: "uncompress_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMP_RESET",
+        columns: [
+          { name: "page_size", type: "integer" },
+          { name: "compress_ops", type: "integer" },
+          { name: "compress_ops_ok", type: "integer" },
+          { name: "compress_time", type: "integer" },
+          { name: "uncompress_ops", type: "integer" },
+          { name: "uncompress_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMPMEM",
+        columns: [
+          { name: "page_size", type: "integer" },
+          { name: "buffer_pool_instance", type: "integer" },
+          { name: "pages_used", type: "integer" },
+          { name: "pages_free", type: "integer" },
+          { name: "relocation_ops", type: "integer" },
+          { name: "relocation_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_CMPMEM_RESET",
+        columns: [
+          { name: "page_size", type: "integer" },
+          { name: "buffer_pool_instance", type: "integer" },
+          { name: "pages_used", type: "integer" },
+          { name: "pages_free", type: "integer" },
+          { name: "relocation_ops", type: "integer" },
+          { name: "relocation_time", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_COLUMNS",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "pos", type: "integer" },
+          { name: "mtype", type: "integer" },
+          { name: "prtype", type: "integer" },
+          { name: "len", type: "integer" },
+          { name: "has_default", type: "integer" },
+          { name: "default_value", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_DATAFILES",
+        columns: [
+          { name: "space", type: "bytes" },
+          { name: "path", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FIELDS",
+        columns: [
+          { name: "index_id", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "pos", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FOREIGN",
+        columns: [
+          { name: "id", type: "text" },
+          { name: "for_name", type: "text" },
+          { name: "ref_name", type: "text" },
+          { name: "n_cols", type: "integer" },
+          { name: "type", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FOREIGN_COLS",
+        columns: [
+          { name: "id", type: "text" },
+          { name: "for_col_name", type: "text" },
+          { name: "ref_col_name", type: "text" },
+          { name: "pos", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_BEING_DELETED",
+        columns: [
+          { name: "doc_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_CONFIG",
+        columns: [
+          { name: "key", type: "text" },
+          { name: "value", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_DEFAULT_STOPWORD",
+        columns: [
+          { name: "value", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_DELETED",
+        columns: [
+          { name: "doc_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_INDEX_CACHE",
+        columns: [
+          { name: "word", type: "text" },
+          { name: "first_doc_id", type: "integer" },
+          { name: "last_doc_id", type: "integer" },
+          { name: "doc_count", type: "integer" },
+          { name: "doc_id", type: "integer" },
+          { name: "position", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_FT_INDEX_TABLE",
+        columns: [
+          { name: "word", type: "text" },
+          { name: "first_doc_id", type: "integer" },
+          { name: "last_doc_id", type: "integer" },
+          { name: "doc_count", type: "integer" },
+          { name: "doc_id", type: "integer" },
+          { name: "position", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_INDEXES",
+        columns: [
+          { name: "index_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "table_id", type: "integer" },
+          { name: "type", type: "integer" },
+          { name: "n_fields", type: "integer" },
+          { name: "page_no", type: "integer" },
+          { name: "space", type: "integer" },
+          { name: "merge_threshold", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_METRICS",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "subsystem", type: "text" },
+          { name: "count", type: "integer" },
+          { name: "max_count", type: "integer" },
+          { name: "min_count", type: "integer" },
+          { name: "avg_count", type: "decimal" },
+          { name: "count_reset", type: "integer" },
+          { name: "max_count_reset", type: "integer" },
+          { name: "min_count_reset", type: "integer" },
+          { name: "avg_count_reset", type: "decimal" },
+          { name: "time_enabled", type: "timestamp" },
+          { name: "time_disabled", type: "timestamp" },
+          { name: "time_elapsed", type: "integer" },
+          { name: "time_reset", type: "timestamp" },
+          { name: "status", type: "text" },
+          { name: "type", type: "text" },
+          { name: "comment", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_SESSION_TEMP_TABLESPACES",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "space", type: "integer" },
+          { name: "path", type: "text" },
+          { name: "size", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "purpose", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TABLES",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "flag", type: "integer" },
+          { name: "n_cols", type: "integer" },
+          { name: "space", type: "integer" },
+          { name: "row_format", type: "text" },
+          { name: "zip_page_size", type: "integer" },
+          { name: "space_type", type: "text" },
+          { name: "instant_cols", type: "integer" },
+          { name: "total_row_versions", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TABLESPACES",
+        columns: [
+          { name: "space", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "flag", type: "integer" },
+          { name: "row_format", type: "text" },
+          { name: "page_size", type: "integer" },
+          { name: "zip_page_size", type: "integer" },
+          { name: "space_type", type: "text" },
+          { name: "fs_block_size", type: "integer" },
+          { name: "file_size", type: "integer" },
+          { name: "allocated_size", type: "integer" },
+          { name: "autoextend_size", type: "integer" },
+          { name: "server_version", type: "text" },
+          { name: "space_version", type: "integer" },
+          { name: "encryption", type: "text" },
+          { name: "state", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TABLESPACES_BRIEF",
+        columns: [
+          { name: "space", type: "bytes" },
+          { name: "name", type: "text" },
+          { name: "path", type: "text" },
+          { name: "flag", type: "bytes" },
+          { name: "space_type", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TABLESTATS",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "stats_initialized", type: "text" },
+          { name: "num_rows", type: "integer" },
+          { name: "clust_index_size", type: "integer" },
+          { name: "other_index_size", type: "integer" },
+          { name: "modified_counter", type: "integer" },
+          { name: "autoinc", type: "integer" },
+          { name: "ref_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TEMP_TABLE_INFO",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "n_cols", type: "integer" },
+          { name: "space", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_TRX",
+        columns: [
+          { name: "trx_id", type: "integer" },
+          { name: "trx_state", type: "text" },
+          { name: "trx_started", type: "timestamp" },
+          { name: "trx_requested_lock_id", type: "text" },
+          { name: "trx_wait_started", type: "timestamp" },
+          { name: "trx_weight", type: "integer" },
+          { name: "trx_mysql_thread_id", type: "integer" },
+          { name: "trx_query", type: "text" },
+          { name: "trx_operation_state", type: "text" },
+          { name: "trx_tables_in_use", type: "integer" },
+          { name: "trx_tables_locked", type: "integer" },
+          { name: "trx_lock_structs", type: "integer" },
+          { name: "trx_lock_memory_bytes", type: "integer" },
+          { name: "trx_rows_locked", type: "integer" },
+          { name: "trx_rows_modified", type: "integer" },
+          { name: "trx_concurrency_tickets", type: "integer" },
+          { name: "trx_isolation_level", type: "text" },
+          { name: "trx_unique_checks", type: "integer" },
+          { name: "trx_foreign_key_checks", type: "integer" },
+          { name: "trx_last_foreign_key_error", type: "text" },
+          { name: "trx_adaptive_hash_latched", type: "integer" },
+          { name: "trx_adaptive_hash_timeout", type: "integer" },
+          { name: "trx_is_read_only", type: "integer" },
+          { name: "trx_autocommit_non_locking", type: "integer" },
+          { name: "trx_schedule_weight", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "INNODB_VIRTUAL",
+        columns: [
+          { name: "table_id", type: "integer" },
+          { name: "pos", type: "integer" },
+          { name: "base_pos", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "KEY_COLUMN_USAGE",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "position_in_unique_constraint", type: "integer" },
+          { name: "referenced_table_schema", type: "text" },
+          { name: "referenced_table_name", type: "text" },
+          { name: "referenced_column_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "KEYWORDS",
+        columns: [
+          { name: "word", type: "text" },
+          { name: "reserved", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "OPTIMIZER_TRACE",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "trace", type: "text" },
+          { name: "missing_bytes_beyond_max_mem_size", type: "integer" },
+          { name: "insufficient_privileges", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "PARAMETERS",
+        columns: [
+          { name: "specific_catalog", type: "text" },
+          { name: "specific_schema", type: "text" },
+          { name: "specific_name", type: "text" },
+          { name: "ordinal_position", type: "integer" },
+          { name: "parameter_mode", type: "text" },
+          { name: "parameter_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "character_set_name", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "dtd_identifier", type: "text" },
+          { name: "routine_type", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "PARTITIONS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "partition_name", type: "text" },
+          { name: "subpartition_name", type: "text" },
+          { name: "partition_ordinal_position", type: "integer" },
+          { name: "subpartition_ordinal_position", type: "integer" },
+          { name: "partition_method", type: "text" },
+          { name: "subpartition_method", type: "text" },
+          { name: "partition_expression", type: "text" },
+          { name: "subpartition_expression", type: "text" },
+          { name: "partition_description", type: "text" },
+          { name: "table_rows", type: "integer" },
+          { name: "avg_row_length", type: "integer" },
+          { name: "data_length", type: "integer" },
+          { name: "max_data_length", type: "integer" },
+          { name: "index_length", type: "integer" },
+          { name: "data_free", type: "integer" },
+          { name: "create_time", type: "timestamp" },
+          { name: "update_time", type: "timestamp" },
+          { name: "check_time", type: "timestamp" },
+          { name: "checksum", type: "integer" },
+          { name: "partition_comment", type: "text" },
+          { name: "nodegroup", type: "text" },
+          { name: "tablespace_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "PLUGINS",
+        columns: [
+          { name: "plugin_name", type: "text" },
+          { name: "plugin_version", type: "text" },
+          { name: "plugin_status", type: "text" },
+          { name: "plugin_type", type: "text" },
+          { name: "plugin_type_version", type: "text" },
+          { name: "plugin_library", type: "text" },
+          { name: "plugin_library_version", type: "text" },
+          { name: "plugin_author", type: "text" },
+          { name: "plugin_description", type: "text" },
+          { name: "plugin_license", type: "text" },
+          { name: "load_option", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "PROCESSLIST",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "info", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "PROFILING",
+        columns: [
+          { name: "query_id", type: "integer" },
+          { name: "seq", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "duration", type: "decimal" },
+          { name: "cpu_user", type: "decimal" },
+          { name: "cpu_system", type: "decimal" },
+          { name: "context_voluntary", type: "integer" },
+          { name: "context_involuntary", type: "integer" },
+          { name: "block_ops_in", type: "integer" },
+          { name: "block_ops_out", type: "integer" },
+          { name: "messages_sent", type: "integer" },
+          { name: "messages_received", type: "integer" },
+          { name: "page_faults_major", type: "integer" },
+          { name: "page_faults_minor", type: "integer" },
+          { name: "swaps", type: "integer" },
+          { name: "source_function", type: "text" },
+          { name: "source_file", type: "text" },
+          { name: "source_line", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "REFERENTIAL_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "unique_constraint_catalog", type: "text" },
+          { name: "unique_constraint_schema", type: "text" },
+          { name: "unique_constraint_name", type: "text" },
+          { name: "match_option", type: "text" },
+          { name: "update_rule", type: "text" },
+          { name: "delete_rule", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "referenced_table_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "RESOURCE_GROUPS",
+        columns: [
+          { name: "resource_group_name", type: "text" },
+          { name: "resource_group_type", type: "text" },
+          { name: "resource_group_enabled", type: "integer" },
+          { name: "vcpu_ids", type: "bytes" },
+          { name: "thread_priority", type: "integer" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ROLE_COLUMN_GRANTS",
+        columns: [
+          { name: "grantor", type: "text" },
+          { name: "grantor_host", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "grantee_host", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "privilege_type", type: "variant" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ROLE_ROUTINE_GRANTS",
+        columns: [
+          { name: "grantor", type: "text" },
+          { name: "grantor_host", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "grantee_host", type: "text" },
+          { name: "specific_catalog", type: "text" },
+          { name: "specific_schema", type: "text" },
+          { name: "specific_name", type: "text" },
+          { name: "routine_catalog", type: "text" },
+          { name: "routine_schema", type: "text" },
+          { name: "routine_name", type: "text" },
+          { name: "privilege_type", type: "variant" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ROLE_TABLE_GRANTS",
+        columns: [
+          { name: "grantor", type: "text" },
+          { name: "grantor_host", type: "text" },
+          { name: "grantee", type: "text" },
+          { name: "grantee_host", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "privilege_type", type: "variant" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ROUTINES",
+        columns: [
+          { name: "specific_name", type: "text" },
+          { name: "routine_catalog", type: "text" },
+          { name: "routine_schema", type: "text" },
+          { name: "routine_name", type: "text" },
+          { name: "routine_type", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "character_maximum_length", type: "integer" },
+          { name: "character_octet_length", type: "integer" },
+          { name: "numeric_precision", type: "integer" },
+          { name: "numeric_scale", type: "integer" },
+          { name: "datetime_precision", type: "integer" },
+          { name: "character_set_name", type: "text" },
+          { name: "collation_name", type: "text" },
+          { name: "dtd_identifier", type: "text" },
+          { name: "routine_body", type: "text" },
+          { name: "routine_definition", type: "text" },
+          { name: "external_name", type: "bytes" },
+          { name: "external_language", type: "text" },
+          { name: "parameter_style", type: "text" },
+          { name: "is_deterministic", type: "text" },
+          { name: "sql_data_access", type: "text" },
+          { name: "sql_path", type: "bytes" },
+          { name: "security_type", type: "text" },
+          { name: "created", type: "timestamp" },
+          { name: "last_altered", type: "timestamp" },
+          { name: "sql_mode", type: "variant" },
+          { name: "routine_comment", type: "text" },
+          { name: "definer", type: "text" },
+          { name: "character_set_client", type: "text" },
+          { name: "collation_connection", type: "text" },
+          { name: "database_collation", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "SCHEMA_PRIVILEGES",
+        columns: [
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "SCHEMATA",
+        columns: [
+          { name: "catalog_name", type: "text" },
+          { name: "schema_name", type: "text" },
+          { name: "default_character_set_name", type: "text" },
+          { name: "default_collation_name", type: "text" },
+          { name: "sql_path", type: "bytes" },
+          { name: "default_encryption", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "SCHEMATA_EXTENSIONS",
+        columns: [
+          { name: "catalog_name", type: "text" },
+          { name: "schema_name", type: "text" },
+          { name: "options", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ST_GEOMETRY_COLUMNS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "srs_name", type: "text" },
+          { name: "srs_id", type: "integer" },
+          { name: "geometry_type_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ST_SPATIAL_REFERENCE_SYSTEMS",
+        columns: [
+          { name: "srs_name", type: "text" },
+          { name: "srs_id", type: "integer" },
+          { name: "organization", type: "text" },
+          { name: "organization_coordsys_id", type: "integer" },
+          { name: "definition", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "ST_UNITS_OF_MEASURE",
+        columns: [
+          { name: "unit_name", type: "text" },
+          { name: "unit_type", type: "text" },
+          { name: "conversion_factor", type: "decimal" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "STATISTICS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "non_unique", type: "integer" },
+          { name: "index_schema", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "seq_in_index", type: "integer" },
+          { name: "column_name", type: "text" },
+          { name: "collation", type: "text" },
+          { name: "cardinality", type: "integer" },
+          { name: "sub_part", type: "integer" },
+          { name: "packed", type: "bytes" },
+          { name: "nullable", type: "text" },
+          { name: "index_type", type: "text" },
+          { name: "comment", type: "text" },
+          { name: "index_comment", type: "text" },
+          { name: "is_visible", type: "text" },
+          { name: "expression", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLE_CONSTRAINTS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "constraint_type", type: "text" },
+          { name: "enforced", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLE_CONSTRAINTS_EXTENSIONS",
+        columns: [
+          { name: "constraint_catalog", type: "text" },
+          { name: "constraint_schema", type: "text" },
+          { name: "constraint_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "engine_attribute", type: "json" },
+          { name: "secondary_engine_attribute", type: "json" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLE_PRIVILEGES",
+        columns: [
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLES",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "table_type", type: "text" },
+          { name: "engine", type: "text" },
+          { name: "version", type: "integer" },
+          { name: "row_format", type: "text" },
+          { name: "table_rows", type: "integer" },
+          { name: "avg_row_length", type: "integer" },
+          { name: "data_length", type: "integer" },
+          { name: "max_data_length", type: "integer" },
+          { name: "index_length", type: "integer" },
+          { name: "data_free", type: "integer" },
+          { name: "auto_increment", type: "integer" },
+          { name: "create_time", type: "timestamp" },
+          { name: "update_time", type: "timestamp" },
+          { name: "check_time", type: "timestamp" },
+          { name: "table_collation", type: "text" },
+          { name: "checksum", type: "integer" },
+          { name: "create_options", type: "text" },
+          { name: "table_comment", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLES_EXTENSIONS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "engine_attribute", type: "json" },
+          { name: "secondary_engine_attribute", type: "json" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TABLESPACES_EXTENSIONS",
+        columns: [
+          { name: "tablespace_name", type: "text" },
+          { name: "engine_attribute", type: "json" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "TRIGGERS",
+        columns: [
+          { name: "trigger_catalog", type: "text" },
+          { name: "trigger_schema", type: "text" },
+          { name: "trigger_name", type: "text" },
+          { name: "event_manipulation", type: "text" },
+          { name: "event_object_catalog", type: "text" },
+          { name: "event_object_schema", type: "text" },
+          { name: "event_object_table", type: "text" },
+          { name: "action_order", type: "integer" },
+          { name: "action_condition", type: "bytes" },
+          { name: "action_statement", type: "text" },
+          { name: "action_orientation", type: "text" },
+          { name: "action_timing", type: "text" },
+          { name: "action_reference_old_table", type: "bytes" },
+          { name: "action_reference_new_table", type: "bytes" },
+          { name: "action_reference_old_row", type: "text" },
+          { name: "action_reference_new_row", type: "text" },
+          { name: "created", type: "timestamp" },
+          { name: "sql_mode", type: "variant" },
+          { name: "definer", type: "text" },
+          { name: "character_set_client", type: "text" },
+          { name: "collation_connection", type: "text" },
+          { name: "database_collation", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "USER_ATTRIBUTES",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "attribute", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "USER_PRIVILEGES",
+        columns: [
+          { name: "grantee", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "privilege_type", type: "text" },
+          { name: "is_grantable", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "VIEW_ROUTINE_USAGE",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "specific_catalog", type: "text" },
+          { name: "specific_schema", type: "text" },
+          { name: "specific_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "VIEW_TABLE_USAGE",
+        columns: [
+          { name: "view_catalog", type: "text" },
+          { name: "view_schema", type: "text" },
+          { name: "view_name", type: "text" },
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "VIEWS",
+        columns: [
+          { name: "table_catalog", type: "text" },
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "view_definition", type: "text" },
+          { name: "check_option", type: "text" },
+          { name: "is_updatable", type: "text" },
+          { name: "definer", type: "text" },
+          { name: "security_type", type: "text" },
+          { name: "character_set_client", type: "text" },
+          { name: "collation_connection", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "columns_priv",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "user", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "timestamp", type: "timestamp" },
+          { name: "column_priv", type: "variant" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "component",
+        columns: [
+          { name: "component_id", type: "integer" },
+          { name: "component_group_id", type: "integer" },
+          { name: "component_urn", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "db",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "user", type: "text" },
+          { name: "select_priv", type: "text" },
+          { name: "insert_priv", type: "text" },
+          { name: "update_priv", type: "text" },
+          { name: "delete_priv", type: "text" },
+          { name: "create_priv", type: "text" },
+          { name: "drop_priv", type: "text" },
+          { name: "grant_priv", type: "text" },
+          { name: "references_priv", type: "text" },
+          { name: "index_priv", type: "text" },
+          { name: "alter_priv", type: "text" },
+          { name: "create_tmp_table_priv", type: "text" },
+          { name: "lock_tables_priv", type: "text" },
+          { name: "create_view_priv", type: "text" },
+          { name: "show_view_priv", type: "text" },
+          { name: "create_routine_priv", type: "text" },
+          { name: "alter_routine_priv", type: "text" },
+          { name: "execute_priv", type: "text" },
+          { name: "event_priv", type: "text" },
+          { name: "trigger_priv", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "default_roles",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "user", type: "text" },
+          { name: "default_role_host", type: "text" },
+          { name: "default_role_user", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "engine_cost",
+        columns: [
+          { name: "engine_name", type: "text" },
+          { name: "device_type", type: "integer" },
+          { name: "cost_name", type: "text" },
+          { name: "cost_value", type: "decimal" },
+          { name: "last_update", type: "timestamp" },
+          { name: "comment", type: "text" },
+          { name: "default_value", type: "decimal" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "func",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "ret", type: "integer" },
+          { name: "dl", type: "text" },
+          { name: "type", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "general_log",
+        columns: [
+          { name: "event_time", type: "timestamp" },
+          { name: "user_host", type: "text" },
+          { name: "thread_id", type: "integer" },
+          { name: "server_id", type: "integer" },
+          { name: "command_type", type: "text" },
+          { name: "argument", type: "bytes" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "global_grants",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "priv", type: "text" },
+          { name: "with_grant_option", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "gtid_executed",
+        columns: [
+          { name: "source_uuid", type: "text" },
+          { name: "interval_start", type: "integer" },
+          { name: "interval_end", type: "integer" },
+          { name: "gtid_tag", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "help_category",
+        columns: [
+          { name: "help_category_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "parent_category_id", type: "integer" },
+          { name: "url", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "help_keyword",
+        columns: [
+          { name: "help_keyword_id", type: "integer" },
+          { name: "name", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "help_relation",
+        columns: [
+          { name: "help_topic_id", type: "integer" },
+          { name: "help_keyword_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "help_topic",
+        columns: [
+          { name: "help_topic_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "help_category_id", type: "integer" },
+          { name: "description", type: "text" },
+          { name: "example", type: "text" },
+          { name: "url", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "innodb_index_stats",
+        columns: [
+          { name: "database_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "last_update", type: "timestamp" },
+          { name: "stat_name", type: "text" },
+          { name: "stat_value", type: "integer" },
+          { name: "sample_size", type: "integer" },
+          { name: "stat_description", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "innodb_table_stats",
+        columns: [
+          { name: "database_name", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "last_update", type: "timestamp" },
+          { name: "n_rows", type: "integer" },
+          { name: "clustered_index_size", type: "integer" },
+          { name: "sum_of_other_index_sizes", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "ndb_binlog_index",
+        columns: [
+          { name: "position", type: "integer" },
+          { name: "file", type: "text" },
+          { name: "epoch", type: "integer" },
+          { name: "inserts", type: "integer" },
+          { name: "updates", type: "integer" },
+          { name: "deletes", type: "integer" },
+          { name: "schemaops", type: "integer" },
+          { name: "orig_server_id", type: "integer" },
+          { name: "orig_epoch", type: "integer" },
+          { name: "gci", type: "integer" },
+          { name: "next_position", type: "integer" },
+          { name: "next_file", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "password_history",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "user", type: "text" },
+          { name: "password_timestamp", type: "timestamp" },
+          { name: "password", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "plugin",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "dl", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "procs_priv",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "user", type: "text" },
+          { name: "routine_name", type: "text" },
+          { name: "routine_type", type: "text" },
+          { name: "grantor", type: "text" },
+          { name: "proc_priv", type: "variant" },
+          { name: "timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "proxies_priv",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "user", type: "text" },
+          { name: "proxied_host", type: "text" },
+          { name: "proxied_user", type: "text" },
+          { name: "with_grant", type: "integer" },
+          { name: "grantor", type: "text" },
+          { name: "timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "replication_asynchronous_connection_failover",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "host", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "network_namespace", type: "text" },
+          { name: "weight", type: "integer" },
+          { name: "managed_name", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "replication_asynchronous_connection_failover_managed",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "managed_name", type: "text" },
+          { name: "managed_type", type: "text" },
+          { name: "configuration", type: "json" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "replication_group_configuration_version",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "version", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "replication_group_member_actions",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "event", type: "text" },
+          { name: "enabled", type: "integer" },
+          { name: "type", type: "text" },
+          { name: "priority", type: "integer" },
+          { name: "error_handling", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "role_edges",
+        columns: [
+          { name: "from_host", type: "text" },
+          { name: "from_user", type: "text" },
+          { name: "to_host", type: "text" },
+          { name: "to_user", type: "text" },
+          { name: "with_admin_option", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "server_cost",
+        columns: [
+          { name: "cost_name", type: "text" },
+          { name: "cost_value", type: "decimal" },
+          { name: "last_update", type: "timestamp" },
+          { name: "comment", type: "text" },
+          { name: "default_value", type: "decimal" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "servers",
+        columns: [
+          { name: "server_name", type: "text" },
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "username", type: "text" },
+          { name: "password", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "socket", type: "text" },
+          { name: "wrapper", type: "text" },
+          { name: "owner", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "slave_master_info",
+        columns: [
+          { name: "number_of_lines", type: "integer" },
+          { name: "master_log_name", type: "text" },
+          { name: "master_log_pos", type: "integer" },
+          { name: "host", type: "text" },
+          { name: "user_name", type: "text" },
+          { name: "user_password", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "connect_retry", type: "integer" },
+          { name: "enabled_ssl", type: "integer" },
+          { name: "ssl_ca", type: "text" },
+          { name: "ssl_capath", type: "text" },
+          { name: "ssl_cert", type: "text" },
+          { name: "ssl_cipher", type: "text" },
+          { name: "ssl_key", type: "text" },
+          { name: "ssl_verify_server_cert", type: "integer" },
+          { name: "heartbeat", type: "decimal" },
+          { name: "bind", type: "text" },
+          { name: "ignored_server_ids", type: "text" },
+          { name: "uuid", type: "text" },
+          { name: "retry_count", type: "integer" },
+          { name: "ssl_crl", type: "text" },
+          { name: "ssl_crlpath", type: "text" },
+          { name: "enabled_auto_position", type: "integer" },
+          { name: "channel_name", type: "text" },
+          { name: "tls_version", type: "text" },
+          { name: "public_key_path", type: "text" },
+          { name: "get_public_key", type: "integer" },
+          { name: "network_namespace", type: "text" },
+          { name: "master_compression_algorithm", type: "text" },
+          { name: "master_zstd_compression_level", type: "integer" },
+          { name: "tls_ciphersuites", type: "text" },
+          { name: "source_connection_auto_failover", type: "integer" },
+          { name: "gtid_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "slave_relay_log_info",
+        columns: [
+          { name: "number_of_lines", type: "integer" },
+          { name: "relay_log_name", type: "text" },
+          { name: "relay_log_pos", type: "integer" },
+          { name: "master_log_name", type: "text" },
+          { name: "master_log_pos", type: "integer" },
+          { name: "sql_delay", type: "integer" },
+          { name: "number_of_workers", type: "integer" },
+          { name: "id", type: "integer" },
+          { name: "channel_name", type: "text" },
+          { name: "privilege_checks_username", type: "text" },
+          { name: "privilege_checks_hostname", type: "text" },
+          { name: "require_row_format", type: "integer" },
+          { name: "require_table_primary_key_check", type: "text" },
+          { name: "assign_gtids_to_anonymous_transactions_type", type: "text" },
+          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "slave_worker_info",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "relay_log_name", type: "text" },
+          { name: "relay_log_pos", type: "integer" },
+          { name: "master_log_name", type: "text" },
+          { name: "master_log_pos", type: "integer" },
+          { name: "checkpoint_relay_log_name", type: "text" },
+          { name: "checkpoint_relay_log_pos", type: "integer" },
+          { name: "checkpoint_master_log_name", type: "text" },
+          { name: "checkpoint_master_log_pos", type: "integer" },
+          { name: "checkpoint_seqno", type: "integer" },
+          { name: "checkpoint_group_size", type: "integer" },
+          { name: "checkpoint_group_bitmap", type: "bytes" },
+          { name: "channel_name", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "slow_log",
+        columns: [
+          { name: "start_time", type: "timestamp" },
+          { name: "user_host", type: "text" },
+          { name: "query_time", type: "time" },
+          { name: "lock_time", type: "time" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "db", type: "text" },
+          { name: "last_insert_id", type: "integer" },
+          { name: "insert_id", type: "integer" },
+          { name: "server_id", type: "integer" },
+          { name: "sql_text", type: "bytes" },
+          { name: "thread_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "tables_priv",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "user", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "grantor", type: "text" },
+          { name: "timestamp", type: "timestamp" },
+          { name: "table_priv", type: "variant" },
+          { name: "column_priv", type: "variant" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "time_zone",
+        columns: [
+          { name: "time_zone_id", type: "integer" },
+          { name: "use_leap_seconds", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "time_zone_leap_second",
+        columns: [
+          { name: "transition_time", type: "integer" },
+          { name: "correction", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "time_zone_name",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "time_zone_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "time_zone_transition",
+        columns: [
+          { name: "time_zone_id", type: "integer" },
+          { name: "transition_time", type: "integer" },
+          { name: "transition_type_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "time_zone_transition_type",
+        columns: [
+          { name: "time_zone_id", type: "integer" },
+          { name: "transition_type_id", type: "integer" },
+          { name: "offset", type: "integer" },
+          { name: "is_dst", type: "integer" },
+          { name: "abbreviation", type: "text" }
+        ]
+      },
+      {
+        schema: "mysql",
+        name: "user",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "user", type: "text" },
+          { name: "select_priv", type: "text" },
+          { name: "insert_priv", type: "text" },
+          { name: "update_priv", type: "text" },
+          { name: "delete_priv", type: "text" },
+          { name: "create_priv", type: "text" },
+          { name: "drop_priv", type: "text" },
+          { name: "reload_priv", type: "text" },
+          { name: "shutdown_priv", type: "text" },
+          { name: "process_priv", type: "text" },
+          { name: "file_priv", type: "text" },
+          { name: "grant_priv", type: "text" },
+          { name: "references_priv", type: "text" },
+          { name: "index_priv", type: "text" },
+          { name: "alter_priv", type: "text" },
+          { name: "show_db_priv", type: "text" },
+          { name: "super_priv", type: "text" },
+          { name: "create_tmp_table_priv", type: "text" },
+          { name: "lock_tables_priv", type: "text" },
+          { name: "execute_priv", type: "text" },
+          { name: "repl_slave_priv", type: "text" },
+          { name: "repl_client_priv", type: "text" },
+          { name: "create_view_priv", type: "text" },
+          { name: "show_view_priv", type: "text" },
+          { name: "create_routine_priv", type: "text" },
+          { name: "alter_routine_priv", type: "text" },
+          { name: "create_user_priv", type: "text" },
+          { name: "event_priv", type: "text" },
+          { name: "trigger_priv", type: "text" },
+          { name: "create_tablespace_priv", type: "text" },
+          { name: "ssl_type", type: "text" },
+          { name: "ssl_cipher", type: "bytes" },
+          { name: "x509_issuer", type: "bytes" },
+          { name: "x509_subject", type: "bytes" },
+          { name: "max_questions", type: "integer" },
+          { name: "max_updates", type: "integer" },
+          { name: "max_connections", type: "integer" },
+          { name: "max_user_connections", type: "integer" },
+          { name: "plugin", type: "text" },
+          { name: "authentication_string", type: "text" },
+          { name: "password_expired", type: "text" },
+          { name: "password_last_changed", type: "timestamp" },
+          { name: "password_lifetime", type: "integer" },
+          { name: "account_locked", type: "text" },
+          { name: "create_role_priv", type: "text" },
+          { name: "drop_role_priv", type: "text" },
+          { name: "password_reuse_history", type: "integer" },
+          { name: "password_reuse_time", type: "integer" },
+          { name: "password_require_current", type: "text" },
+          { name: "user_attributes", type: "json" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "accounts",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "current_connections", type: "integer" },
+          { name: "total_connections", type: "integer" },
+          { name: "max_session_controlled_memory", type: "integer" },
+          { name: "max_session_total_memory", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "binary_log_transaction_compression_stats",
+        columns: [
+          { name: "log_type", type: "text" },
+          { name: "compression_type", type: "text" },
+          { name: "transaction_counter", type: "integer" },
+          { name: "compressed_bytes_counter", type: "integer" },
+          { name: "uncompressed_bytes_counter", type: "integer" },
+          { name: "compression_percentage", type: "integer" },
+          { name: "first_transaction_id", type: "text" },
+          { name: "first_transaction_compressed_bytes", type: "integer" },
+          { name: "first_transaction_uncompressed_bytes", type: "integer" },
+          { name: "first_transaction_timestamp", type: "timestamp" },
+          { name: "last_transaction_id", type: "text" },
+          { name: "last_transaction_compressed_bytes", type: "integer" },
+          { name: "last_transaction_uncompressed_bytes", type: "integer" },
+          { name: "last_transaction_timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "cond_instances",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_instance_begin", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "data_lock_waits",
+        columns: [
+          { name: "engine", type: "text" },
+          { name: "requesting_engine_lock_id", type: "text" },
+          { name: "requesting_engine_transaction_id", type: "integer" },
+          { name: "requesting_thread_id", type: "integer" },
+          { name: "requesting_event_id", type: "integer" },
+          { name: "requesting_object_instance_begin", type: "integer" },
+          { name: "blocking_engine_lock_id", type: "text" },
+          { name: "blocking_engine_transaction_id", type: "integer" },
+          { name: "blocking_thread_id", type: "integer" },
+          { name: "blocking_event_id", type: "integer" },
+          { name: "blocking_object_instance_begin", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "data_locks",
+        columns: [
+          { name: "engine", type: "text" },
+          { name: "engine_lock_id", type: "text" },
+          { name: "engine_transaction_id", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "partition_name", type: "text" },
+          { name: "subpartition_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "lock_type", type: "text" },
+          { name: "lock_mode", type: "text" },
+          { name: "lock_status", type: "text" },
+          { name: "lock_data", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "error_log",
+        columns: [
+          { name: "logged", type: "timestamp" },
+          { name: "thread_id", type: "integer" },
+          { name: "prio", type: "text" },
+          { name: "error_code", type: "text" },
+          { name: "subsystem", type: "text" },
+          { name: "data", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_errors_summary_by_account_by_error",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "error_number", type: "integer" },
+          { name: "error_name", type: "text" },
+          { name: "sql_state", type: "text" },
+          { name: "sum_error_raised", type: "integer" },
+          { name: "sum_error_handled", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_errors_summary_by_host_by_error",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "error_number", type: "integer" },
+          { name: "error_name", type: "text" },
+          { name: "sql_state", type: "text" },
+          { name: "sum_error_raised", type: "integer" },
+          { name: "sum_error_handled", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_errors_summary_by_thread_by_error",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "error_number", type: "integer" },
+          { name: "error_name", type: "text" },
+          { name: "sql_state", type: "text" },
+          { name: "sum_error_raised", type: "integer" },
+          { name: "sum_error_handled", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_errors_summary_by_user_by_error",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "error_number", type: "integer" },
+          { name: "error_name", type: "text" },
+          { name: "sql_state", type: "text" },
+          { name: "sum_error_raised", type: "integer" },
+          { name: "sum_error_handled", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_errors_summary_global_by_error",
+        columns: [
+          { name: "error_number", type: "integer" },
+          { name: "error_name", type: "text" },
+          { name: "sql_state", type: "text" },
+          { name: "sum_error_raised", type: "integer" },
+          { name: "sum_error_handled", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_current",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "work_completed", type: "integer" },
+          { name: "work_estimated", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_history",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "work_completed", type: "integer" },
+          { name: "work_estimated", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_history_long",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "work_completed", type: "integer" },
+          { name: "work_estimated", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_summary_by_account_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_summary_by_host_by_event_name",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_summary_by_thread_by_event_name",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_summary_by_user_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_stages_summary_global_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_current",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "lock_time", type: "integer" },
+          { name: "sql_text", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "digest_text", type: "text" },
+          { name: "current_schema", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "mysql_errno", type: "integer" },
+          { name: "returned_sqlstate", type: "text" },
+          { name: "message_text", type: "text" },
+          { name: "errors", type: "integer" },
+          { name: "warnings", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "created_tmp_disk_tables", type: "integer" },
+          { name: "created_tmp_tables", type: "integer" },
+          { name: "select_full_join", type: "integer" },
+          { name: "select_full_range_join", type: "integer" },
+          { name: "select_range", type: "integer" },
+          { name: "select_range_check", type: "integer" },
+          { name: "select_scan", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "sort_range", type: "integer" },
+          { name: "sort_rows", type: "integer" },
+          { name: "sort_scan", type: "integer" },
+          { name: "no_index_used", type: "integer" },
+          { name: "no_good_index_used", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "nesting_event_level", type: "integer" },
+          { name: "statement_id", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "execution_engine", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_histogram_by_digest",
+        columns: [
+          { name: "schema_name", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "bucket_number", type: "integer" },
+          { name: "bucket_timer_low", type: "integer" },
+          { name: "bucket_timer_high", type: "integer" },
+          { name: "count_bucket", type: "integer" },
+          { name: "count_bucket_and_lower", type: "integer" },
+          { name: "bucket_quantile", type: "decimal" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_histogram_global",
+        columns: [
+          { name: "bucket_number", type: "integer" },
+          { name: "bucket_timer_low", type: "integer" },
+          { name: "bucket_timer_high", type: "integer" },
+          { name: "count_bucket", type: "integer" },
+          { name: "count_bucket_and_lower", type: "integer" },
+          { name: "bucket_quantile", type: "decimal" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_history",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "lock_time", type: "integer" },
+          { name: "sql_text", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "digest_text", type: "text" },
+          { name: "current_schema", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "mysql_errno", type: "integer" },
+          { name: "returned_sqlstate", type: "text" },
+          { name: "message_text", type: "text" },
+          { name: "errors", type: "integer" },
+          { name: "warnings", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "created_tmp_disk_tables", type: "integer" },
+          { name: "created_tmp_tables", type: "integer" },
+          { name: "select_full_join", type: "integer" },
+          { name: "select_full_range_join", type: "integer" },
+          { name: "select_range", type: "integer" },
+          { name: "select_range_check", type: "integer" },
+          { name: "select_scan", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "sort_range", type: "integer" },
+          { name: "sort_rows", type: "integer" },
+          { name: "sort_scan", type: "integer" },
+          { name: "no_index_used", type: "integer" },
+          { name: "no_good_index_used", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "nesting_event_level", type: "integer" },
+          { name: "statement_id", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "execution_engine", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_history_long",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "lock_time", type: "integer" },
+          { name: "sql_text", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "digest_text", type: "text" },
+          { name: "current_schema", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "mysql_errno", type: "integer" },
+          { name: "returned_sqlstate", type: "text" },
+          { name: "message_text", type: "text" },
+          { name: "errors", type: "integer" },
+          { name: "warnings", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "created_tmp_disk_tables", type: "integer" },
+          { name: "created_tmp_tables", type: "integer" },
+          { name: "select_full_join", type: "integer" },
+          { name: "select_full_range_join", type: "integer" },
+          { name: "select_range", type: "integer" },
+          { name: "select_range_check", type: "integer" },
+          { name: "select_scan", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "sort_range", type: "integer" },
+          { name: "sort_rows", type: "integer" },
+          { name: "sort_scan", type: "integer" },
+          { name: "no_index_used", type: "integer" },
+          { name: "no_good_index_used", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "nesting_event_level", type: "integer" },
+          { name: "statement_id", type: "integer" },
+          { name: "cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "execution_engine", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_account_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_digest",
+        columns: [
+          { name: "schema_name", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "digest_text", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "quantile_95", type: "integer" },
+          { name: "quantile_99", type: "integer" },
+          { name: "quantile_999", type: "integer" },
+          { name: "query_sample_text", type: "text" },
+          { name: "query_sample_seen", type: "timestamp" },
+          { name: "query_sample_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_host_by_event_name",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_program",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_statements", type: "integer" },
+          { name: "sum_statements_wait", type: "integer" },
+          { name: "min_statements_wait", type: "integer" },
+          { name: "avg_statements_wait", type: "integer" },
+          { name: "max_statements_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_thread_by_event_name",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_by_user_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_statements_summary_global_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_current",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "state", type: "text" },
+          { name: "trx_id", type: "integer" },
+          { name: "gtid", type: "text" },
+          { name: "xid_format_id", type: "integer" },
+          { name: "xid_gtrid", type: "text" },
+          { name: "xid_bqual", type: "text" },
+          { name: "xa_state", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "access_mode", type: "text" },
+          { name: "isolation_level", type: "text" },
+          { name: "autocommit", type: "text" },
+          { name: "number_of_savepoints", type: "integer" },
+          { name: "number_of_rollback_to_savepoint", type: "integer" },
+          { name: "number_of_release_savepoint", type: "integer" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_history",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "state", type: "text" },
+          { name: "trx_id", type: "integer" },
+          { name: "gtid", type: "text" },
+          { name: "xid_format_id", type: "integer" },
+          { name: "xid_gtrid", type: "text" },
+          { name: "xid_bqual", type: "text" },
+          { name: "xa_state", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "access_mode", type: "text" },
+          { name: "isolation_level", type: "text" },
+          { name: "autocommit", type: "text" },
+          { name: "number_of_savepoints", type: "integer" },
+          { name: "number_of_rollback_to_savepoint", type: "integer" },
+          { name: "number_of_release_savepoint", type: "integer" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_history_long",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "state", type: "text" },
+          { name: "trx_id", type: "integer" },
+          { name: "gtid", type: "text" },
+          { name: "xid_format_id", type: "integer" },
+          { name: "xid_gtrid", type: "text" },
+          { name: "xid_bqual", type: "text" },
+          { name: "xa_state", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "access_mode", type: "text" },
+          { name: "isolation_level", type: "text" },
+          { name: "autocommit", type: "text" },
+          { name: "number_of_savepoints", type: "integer" },
+          { name: "number_of_rollback_to_savepoint", type: "integer" },
+          { name: "number_of_release_savepoint", type: "integer" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_summary_by_account_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read_write", type: "integer" },
+          { name: "sum_timer_read_write", type: "integer" },
+          { name: "min_timer_read_write", type: "integer" },
+          { name: "avg_timer_read_write", type: "integer" },
+          { name: "max_timer_read_write", type: "integer" },
+          { name: "count_read_only", type: "integer" },
+          { name: "sum_timer_read_only", type: "integer" },
+          { name: "min_timer_read_only", type: "integer" },
+          { name: "avg_timer_read_only", type: "integer" },
+          { name: "max_timer_read_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_summary_by_host_by_event_name",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read_write", type: "integer" },
+          { name: "sum_timer_read_write", type: "integer" },
+          { name: "min_timer_read_write", type: "integer" },
+          { name: "avg_timer_read_write", type: "integer" },
+          { name: "max_timer_read_write", type: "integer" },
+          { name: "count_read_only", type: "integer" },
+          { name: "sum_timer_read_only", type: "integer" },
+          { name: "min_timer_read_only", type: "integer" },
+          { name: "avg_timer_read_only", type: "integer" },
+          { name: "max_timer_read_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_summary_by_thread_by_event_name",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read_write", type: "integer" },
+          { name: "sum_timer_read_write", type: "integer" },
+          { name: "min_timer_read_write", type: "integer" },
+          { name: "avg_timer_read_write", type: "integer" },
+          { name: "max_timer_read_write", type: "integer" },
+          { name: "count_read_only", type: "integer" },
+          { name: "sum_timer_read_only", type: "integer" },
+          { name: "min_timer_read_only", type: "integer" },
+          { name: "avg_timer_read_only", type: "integer" },
+          { name: "max_timer_read_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_summary_by_user_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read_write", type: "integer" },
+          { name: "sum_timer_read_write", type: "integer" },
+          { name: "min_timer_read_write", type: "integer" },
+          { name: "avg_timer_read_write", type: "integer" },
+          { name: "max_timer_read_write", type: "integer" },
+          { name: "count_read_only", type: "integer" },
+          { name: "sum_timer_read_only", type: "integer" },
+          { name: "min_timer_read_only", type: "integer" },
+          { name: "avg_timer_read_only", type: "integer" },
+          { name: "max_timer_read_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_transactions_summary_global_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read_write", type: "integer" },
+          { name: "sum_timer_read_write", type: "integer" },
+          { name: "min_timer_read_write", type: "integer" },
+          { name: "avg_timer_read_write", type: "integer" },
+          { name: "max_timer_read_write", type: "integer" },
+          { name: "count_read_only", type: "integer" },
+          { name: "sum_timer_read_only", type: "integer" },
+          { name: "min_timer_read_only", type: "integer" },
+          { name: "avg_timer_read_only", type: "integer" },
+          { name: "max_timer_read_only", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_current",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "spins", type: "integer" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "number_of_bytes", type: "integer" },
+          { name: "flags", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_history",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "spins", type: "integer" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "number_of_bytes", type: "integer" },
+          { name: "flags", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_history_long",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_id", type: "integer" },
+          { name: "end_event_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "source", type: "text" },
+          { name: "timer_start", type: "integer" },
+          { name: "timer_end", type: "integer" },
+          { name: "timer_wait", type: "integer" },
+          { name: "spins", type: "integer" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "nesting_event_id", type: "integer" },
+          { name: "nesting_event_type", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "number_of_bytes", type: "integer" },
+          { name: "flags", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_by_account_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_by_host_by_event_name",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_by_instance",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_by_thread_by_event_name",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_by_user_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "events_waits_summary_global_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "file_instances",
+        columns: [
+          { name: "file_name", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "open_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "file_summary_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "sum_number_of_bytes_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "sum_number_of_bytes_write", type: "integer" },
+          { name: "count_misc", type: "integer" },
+          { name: "sum_timer_misc", type: "integer" },
+          { name: "min_timer_misc", type: "integer" },
+          { name: "avg_timer_misc", type: "integer" },
+          { name: "max_timer_misc", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "file_summary_by_instance",
+        columns: [
+          { name: "file_name", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "sum_number_of_bytes_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "sum_number_of_bytes_write", type: "integer" },
+          { name: "count_misc", type: "integer" },
+          { name: "sum_timer_misc", type: "integer" },
+          { name: "min_timer_misc", type: "integer" },
+          { name: "avg_timer_misc", type: "integer" },
+          { name: "max_timer_misc", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "global_status",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "global_variables",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "host_cache",
+        columns: [
+          { name: "ip", type: "text" },
+          { name: "host", type: "text" },
+          { name: "host_validated", type: "text" },
+          { name: "sum_connect_errors", type: "integer" },
+          { name: "count_host_blocked_errors", type: "integer" },
+          { name: "count_nameinfo_transient_errors", type: "integer" },
+          { name: "count_nameinfo_permanent_errors", type: "integer" },
+          { name: "count_format_errors", type: "integer" },
+          { name: "count_addrinfo_transient_errors", type: "integer" },
+          { name: "count_addrinfo_permanent_errors", type: "integer" },
+          { name: "count_fcrdns_errors", type: "integer" },
+          { name: "count_host_acl_errors", type: "integer" },
+          { name: "count_no_auth_plugin_errors", type: "integer" },
+          { name: "count_auth_plugin_errors", type: "integer" },
+          { name: "count_handshake_errors", type: "integer" },
+          { name: "count_proxy_user_errors", type: "integer" },
+          { name: "count_proxy_user_acl_errors", type: "integer" },
+          { name: "count_authentication_errors", type: "integer" },
+          { name: "count_ssl_errors", type: "integer" },
+          { name: "count_max_user_connections_errors", type: "integer" },
+          { name: "count_max_user_connections_per_hour_errors", type: "integer" },
+          { name: "count_default_database_errors", type: "integer" },
+          { name: "count_init_connect_errors", type: "integer" },
+          { name: "count_local_errors", type: "integer" },
+          { name: "count_unknown_errors", type: "integer" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "first_error_seen", type: "timestamp" },
+          { name: "last_error_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "hosts",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "current_connections", type: "integer" },
+          { name: "total_connections", type: "integer" },
+          { name: "max_session_controlled_memory", type: "integer" },
+          { name: "max_session_total_memory", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "innodb_redo_log_files",
+        columns: [
+          { name: "file_id", type: "integer" },
+          { name: "file_name", type: "text" },
+          { name: "start_lsn", type: "integer" },
+          { name: "end_lsn", type: "integer" },
+          { name: "size_in_bytes", type: "integer" },
+          { name: "is_full", type: "integer" },
+          { name: "consumer_level", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "keyring_component_status",
+        columns: [
+          { name: "status_key", type: "text" },
+          { name: "status_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "keyring_keys",
+        columns: [
+          { name: "key_id", type: "text" },
+          { name: "key_owner", type: "text" },
+          { name: "backend_key_id", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "log_status",
+        columns: [
+          { name: "server_uuid", type: "text" },
+          { name: "local", type: "json" },
+          { name: "replication", type: "json" },
+          { name: "storage_engines", type: "json" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "memory_summary_by_account_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_alloc", type: "integer" },
+          { name: "count_free", type: "integer" },
+          { name: "sum_number_of_bytes_alloc", type: "integer" },
+          { name: "sum_number_of_bytes_free", type: "integer" },
+          { name: "low_count_used", type: "integer" },
+          { name: "current_count_used", type: "integer" },
+          { name: "high_count_used", type: "integer" },
+          { name: "low_number_of_bytes_used", type: "integer" },
+          { name: "current_number_of_bytes_used", type: "integer" },
+          { name: "high_number_of_bytes_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "memory_summary_by_host_by_event_name",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_alloc", type: "integer" },
+          { name: "count_free", type: "integer" },
+          { name: "sum_number_of_bytes_alloc", type: "integer" },
+          { name: "sum_number_of_bytes_free", type: "integer" },
+          { name: "low_count_used", type: "integer" },
+          { name: "current_count_used", type: "integer" },
+          { name: "high_count_used", type: "integer" },
+          { name: "low_number_of_bytes_used", type: "integer" },
+          { name: "current_number_of_bytes_used", type: "integer" },
+          { name: "high_number_of_bytes_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "memory_summary_by_thread_by_event_name",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "event_name", type: "text" },
+          { name: "count_alloc", type: "integer" },
+          { name: "count_free", type: "integer" },
+          { name: "sum_number_of_bytes_alloc", type: "integer" },
+          { name: "sum_number_of_bytes_free", type: "integer" },
+          { name: "low_count_used", type: "integer" },
+          { name: "current_count_used", type: "integer" },
+          { name: "high_count_used", type: "integer" },
+          { name: "low_number_of_bytes_used", type: "integer" },
+          { name: "current_number_of_bytes_used", type: "integer" },
+          { name: "high_number_of_bytes_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "memory_summary_by_user_by_event_name",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "count_alloc", type: "integer" },
+          { name: "count_free", type: "integer" },
+          { name: "sum_number_of_bytes_alloc", type: "integer" },
+          { name: "sum_number_of_bytes_free", type: "integer" },
+          { name: "low_count_used", type: "integer" },
+          { name: "current_count_used", type: "integer" },
+          { name: "high_count_used", type: "integer" },
+          { name: "low_number_of_bytes_used", type: "integer" },
+          { name: "current_number_of_bytes_used", type: "integer" },
+          { name: "high_number_of_bytes_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "memory_summary_global_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_alloc", type: "integer" },
+          { name: "count_free", type: "integer" },
+          { name: "sum_number_of_bytes_alloc", type: "integer" },
+          { name: "sum_number_of_bytes_free", type: "integer" },
+          { name: "low_count_used", type: "integer" },
+          { name: "current_count_used", type: "integer" },
+          { name: "high_count_used", type: "integer" },
+          { name: "low_number_of_bytes_used", type: "integer" },
+          { name: "current_number_of_bytes_used", type: "integer" },
+          { name: "high_number_of_bytes_used", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "metadata_locks",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "lock_type", type: "text" },
+          { name: "lock_duration", type: "text" },
+          { name: "lock_status", type: "text" },
+          { name: "source", type: "text" },
+          { name: "owner_thread_id", type: "integer" },
+          { name: "owner_event_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "mutex_instances",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "locked_by_thread_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "objects_summary_global_by_type",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "performance_timers",
+        columns: [
+          { name: "timer_name", type: "text" },
+          { name: "timer_frequency", type: "integer" },
+          { name: "timer_resolution", type: "integer" },
+          { name: "timer_overhead", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "persisted_variables",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "prepared_statements_instances",
+        columns: [
+          { name: "object_instance_begin", type: "integer" },
+          { name: "statement_id", type: "integer" },
+          { name: "statement_name", type: "text" },
+          { name: "sql_text", type: "text" },
+          { name: "owner_thread_id", type: "integer" },
+          { name: "owner_event_id", type: "integer" },
+          { name: "owner_object_type", type: "text" },
+          { name: "owner_object_schema", type: "text" },
+          { name: "owner_object_name", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "timer_prepare", type: "integer" },
+          { name: "count_reprepare", type: "integer" },
+          { name: "count_execute", type: "integer" },
+          { name: "sum_timer_execute", type: "integer" },
+          { name: "min_timer_execute", type: "integer" },
+          { name: "avg_timer_execute", type: "integer" },
+          { name: "max_timer_execute", type: "integer" },
+          { name: "sum_lock_time", type: "integer" },
+          { name: "sum_errors", type: "integer" },
+          { name: "sum_warnings", type: "integer" },
+          { name: "sum_rows_affected", type: "integer" },
+          { name: "sum_rows_sent", type: "integer" },
+          { name: "sum_rows_examined", type: "integer" },
+          { name: "sum_created_tmp_disk_tables", type: "integer" },
+          { name: "sum_created_tmp_tables", type: "integer" },
+          { name: "sum_select_full_join", type: "integer" },
+          { name: "sum_select_full_range_join", type: "integer" },
+          { name: "sum_select_range", type: "integer" },
+          { name: "sum_select_range_check", type: "integer" },
+          { name: "sum_select_scan", type: "integer" },
+          { name: "sum_sort_merge_passes", type: "integer" },
+          { name: "sum_sort_range", type: "integer" },
+          { name: "sum_sort_rows", type: "integer" },
+          { name: "sum_sort_scan", type: "integer" },
+          { name: "sum_no_index_used", type: "integer" },
+          { name: "sum_no_good_index_used", type: "integer" },
+          { name: "sum_cpu_time", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "count_secondary", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "processlist",
+        columns: [
+          { name: "id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "state", type: "text" },
+          { name: "info", type: "text" },
+          { name: "execution_engine", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_configuration",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "desired_delay", type: "integer" },
+          { name: "privilege_checks_user", type: "text" },
+          { name: "require_row_format", type: "text" },
+          { name: "require_table_primary_key_check", type: "text" },
+          { name: "assign_gtids_to_anonymous_transactions_type", type: "text" },
+          { name: "assign_gtids_to_anonymous_transactions_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_filters",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "filter_name", type: "text" },
+          { name: "filter_rule", type: "text" },
+          { name: "configured_by", type: "text" },
+          { name: "active_since", type: "timestamp" },
+          { name: "counter", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_global_filters",
+        columns: [
+          { name: "filter_name", type: "text" },
+          { name: "filter_rule", type: "text" },
+          { name: "configured_by", type: "text" },
+          { name: "active_since", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_status",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "service_state", type: "text" },
+          { name: "remaining_delay", type: "integer" },
+          { name: "count_transactions_retries", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_status_by_coordinator",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "thread_id", type: "integer" },
+          { name: "service_state", type: "text" },
+          { name: "last_error_number", type: "integer" },
+          { name: "last_error_message", type: "text" },
+          { name: "last_error_timestamp", type: "timestamp" },
+          { name: "last_processed_transaction", type: "text" },
+          { name: "last_processed_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "last_processed_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "last_processed_transaction_start_buffer_timestamp", type: "timestamp" },
+          { name: "last_processed_transaction_end_buffer_timestamp", type: "timestamp" },
+          { name: "processing_transaction", type: "text" },
+          { name: "processing_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "processing_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "processing_transaction_start_buffer_timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_applier_status_by_worker",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "worker_id", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "service_state", type: "text" },
+          { name: "last_error_number", type: "integer" },
+          { name: "last_error_message", type: "text" },
+          { name: "last_error_timestamp", type: "timestamp" },
+          { name: "last_applied_transaction", type: "text" },
+          { name: "last_applied_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "last_applied_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "last_applied_transaction_start_apply_timestamp", type: "timestamp" },
+          { name: "last_applied_transaction_end_apply_timestamp", type: "timestamp" },
+          { name: "applying_transaction", type: "text" },
+          { name: "applying_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "applying_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "applying_transaction_start_apply_timestamp", type: "timestamp" },
+          { name: "last_applied_transaction_retries_count", type: "integer" },
+          { name: "last_applied_transaction_last_transient_error_number", type: "integer" },
+          { name: "last_applied_transaction_last_transient_error_message", type: "text" },
+          { name: "last_applied_transaction_last_transient_error_timestamp", type: "timestamp" },
+          { name: "applying_transaction_retries_count", type: "integer" },
+          { name: "applying_transaction_last_transient_error_number", type: "integer" },
+          { name: "applying_transaction_last_transient_error_message", type: "text" },
+          { name: "applying_transaction_last_transient_error_timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_asynchronous_connection_failover",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "host", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "network_namespace", type: "text" },
+          { name: "weight", type: "integer" },
+          { name: "managed_name", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_asynchronous_connection_failover_managed",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "managed_name", type: "text" },
+          { name: "managed_type", type: "text" },
+          { name: "configuration", type: "json" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_connection_configuration",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "host", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "network_interface", type: "text" },
+          { name: "auto_position", type: "text" },
+          { name: "ssl_allowed", type: "text" },
+          { name: "ssl_ca_file", type: "text" },
+          { name: "ssl_ca_path", type: "text" },
+          { name: "ssl_certificate", type: "text" },
+          { name: "ssl_cipher", type: "text" },
+          { name: "ssl_key", type: "text" },
+          { name: "ssl_verify_server_certificate", type: "text" },
+          { name: "ssl_crl_file", type: "text" },
+          { name: "ssl_crl_path", type: "text" },
+          { name: "connection_retry_interval", type: "integer" },
+          { name: "connection_retry_count", type: "integer" },
+          { name: "heartbeat_interval", type: "decimal" },
+          { name: "tls_version", type: "text" },
+          { name: "public_key_path", type: "text" },
+          { name: "get_public_key", type: "text" },
+          { name: "network_namespace", type: "text" },
+          { name: "compression_algorithm", type: "text" },
+          { name: "zstd_compression_level", type: "integer" },
+          { name: "tls_ciphersuites", type: "text" },
+          { name: "source_connection_auto_failover", type: "text" },
+          { name: "gtid_only", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_connection_status",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "group_name", type: "text" },
+          { name: "source_uuid", type: "text" },
+          { name: "thread_id", type: "integer" },
+          { name: "service_state", type: "text" },
+          { name: "count_received_heartbeats", type: "integer" },
+          { name: "last_heartbeat_timestamp", type: "timestamp" },
+          { name: "received_transaction_set", type: "text" },
+          { name: "last_error_number", type: "integer" },
+          { name: "last_error_message", type: "text" },
+          { name: "last_error_timestamp", type: "timestamp" },
+          { name: "last_queued_transaction", type: "text" },
+          { name: "last_queued_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "last_queued_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "last_queued_transaction_start_queue_timestamp", type: "timestamp" },
+          { name: "last_queued_transaction_end_queue_timestamp", type: "timestamp" },
+          { name: "queueing_transaction", type: "text" },
+          { name: "queueing_transaction_original_commit_timestamp", type: "timestamp" },
+          { name: "queueing_transaction_immediate_commit_timestamp", type: "timestamp" },
+          { name: "queueing_transaction_start_queue_timestamp", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_group_member_stats",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "view_id", type: "text" },
+          { name: "member_id", type: "text" },
+          { name: "count_transactions_in_queue", type: "integer" },
+          { name: "count_transactions_checked", type: "integer" },
+          { name: "count_conflicts_detected", type: "integer" },
+          { name: "count_transactions_rows_validating", type: "integer" },
+          { name: "transactions_committed_all_members", type: "text" },
+          { name: "last_conflict_free_transaction", type: "text" },
+          { name: "count_transactions_remote_in_applier_queue", type: "integer" },
+          { name: "count_transactions_remote_applied", type: "integer" },
+          { name: "count_transactions_local_proposed", type: "integer" },
+          { name: "count_transactions_local_rollback", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "replication_group_members",
+        columns: [
+          { name: "channel_name", type: "text" },
+          { name: "member_id", type: "text" },
+          { name: "member_host", type: "text" },
+          { name: "member_port", type: "integer" },
+          { name: "member_state", type: "text" },
+          { name: "member_role", type: "text" },
+          { name: "member_version", type: "text" },
+          { name: "member_communication_stack", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "rwlock_instances",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "write_locked_by_thread_id", type: "integer" },
+          { name: "read_locked_by_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "session_account_connect_attrs",
+        columns: [
+          { name: "processlist_id", type: "integer" },
+          { name: "attr_name", type: "text" },
+          { name: "attr_value", type: "text" },
+          { name: "ordinal_position", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "session_connect_attrs",
+        columns: [
+          { name: "processlist_id", type: "integer" },
+          { name: "attr_name", type: "text" },
+          { name: "attr_value", type: "text" },
+          { name: "ordinal_position", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "session_status",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "session_variables",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_actors",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "user", type: "text" },
+          { name: "role", type: "text" },
+          { name: "enabled", type: "text" },
+          { name: "history", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_consumers",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "enabled", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_instruments",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "enabled", type: "text" },
+          { name: "timed", type: "text" },
+          { name: "properties", type: "variant" },
+          { name: "flags", type: "variant" },
+          { name: "volatility", type: "integer" },
+          { name: "documentation", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_loggers",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "level", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_meters",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "frequency", type: "integer" },
+          { name: "enabled", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_metrics",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "meter", type: "text" },
+          { name: "metric_type", type: "text" },
+          { name: "num_type", type: "text" },
+          { name: "unit", type: "text" },
+          { name: "description", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_objects",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "enabled", type: "text" },
+          { name: "timed", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "setup_threads",
+        columns: [
+          { name: "name", type: "text" },
+          { name: "enabled", type: "text" },
+          { name: "history", type: "text" },
+          { name: "properties", type: "variant" },
+          { name: "volatility", type: "integer" },
+          { name: "documentation", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "socket_instances",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "socket_id", type: "integer" },
+          { name: "ip", type: "text" },
+          { name: "port", type: "integer" },
+          { name: "state", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "socket_summary_by_event_name",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "sum_number_of_bytes_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "sum_number_of_bytes_write", type: "integer" },
+          { name: "count_misc", type: "integer" },
+          { name: "sum_timer_misc", type: "integer" },
+          { name: "min_timer_misc", type: "integer" },
+          { name: "avg_timer_misc", type: "integer" },
+          { name: "max_timer_misc", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "socket_summary_by_instance",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "sum_number_of_bytes_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "sum_number_of_bytes_write", type: "integer" },
+          { name: "count_misc", type: "integer" },
+          { name: "sum_timer_misc", type: "integer" },
+          { name: "min_timer_misc", type: "integer" },
+          { name: "avg_timer_misc", type: "integer" },
+          { name: "max_timer_misc", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "status_by_account",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "host", type: "text" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "status_by_host",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "status_by_thread",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "status_by_user",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "table_handles",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "object_instance_begin", type: "integer" },
+          { name: "owner_thread_id", type: "integer" },
+          { name: "owner_event_id", type: "integer" },
+          { name: "internal_lock", type: "text" },
+          { name: "external_lock", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "table_io_waits_summary_by_index_usage",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "count_fetch", type: "integer" },
+          { name: "sum_timer_fetch", type: "integer" },
+          { name: "min_timer_fetch", type: "integer" },
+          { name: "avg_timer_fetch", type: "integer" },
+          { name: "max_timer_fetch", type: "integer" },
+          { name: "count_insert", type: "integer" },
+          { name: "sum_timer_insert", type: "integer" },
+          { name: "min_timer_insert", type: "integer" },
+          { name: "avg_timer_insert", type: "integer" },
+          { name: "max_timer_insert", type: "integer" },
+          { name: "count_update", type: "integer" },
+          { name: "sum_timer_update", type: "integer" },
+          { name: "min_timer_update", type: "integer" },
+          { name: "avg_timer_update", type: "integer" },
+          { name: "max_timer_update", type: "integer" },
+          { name: "count_delete", type: "integer" },
+          { name: "sum_timer_delete", type: "integer" },
+          { name: "min_timer_delete", type: "integer" },
+          { name: "avg_timer_delete", type: "integer" },
+          { name: "max_timer_delete", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "table_io_waits_summary_by_table",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "count_fetch", type: "integer" },
+          { name: "sum_timer_fetch", type: "integer" },
+          { name: "min_timer_fetch", type: "integer" },
+          { name: "avg_timer_fetch", type: "integer" },
+          { name: "max_timer_fetch", type: "integer" },
+          { name: "count_insert", type: "integer" },
+          { name: "sum_timer_insert", type: "integer" },
+          { name: "min_timer_insert", type: "integer" },
+          { name: "avg_timer_insert", type: "integer" },
+          { name: "max_timer_insert", type: "integer" },
+          { name: "count_update", type: "integer" },
+          { name: "sum_timer_update", type: "integer" },
+          { name: "min_timer_update", type: "integer" },
+          { name: "avg_timer_update", type: "integer" },
+          { name: "max_timer_update", type: "integer" },
+          { name: "count_delete", type: "integer" },
+          { name: "sum_timer_delete", type: "integer" },
+          { name: "min_timer_delete", type: "integer" },
+          { name: "avg_timer_delete", type: "integer" },
+          { name: "max_timer_delete", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "table_lock_waits_summary_by_table",
+        columns: [
+          { name: "object_type", type: "text" },
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "count_star", type: "integer" },
+          { name: "sum_timer_wait", type: "integer" },
+          { name: "min_timer_wait", type: "integer" },
+          { name: "avg_timer_wait", type: "integer" },
+          { name: "max_timer_wait", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "sum_timer_read", type: "integer" },
+          { name: "min_timer_read", type: "integer" },
+          { name: "avg_timer_read", type: "integer" },
+          { name: "max_timer_read", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "sum_timer_write", type: "integer" },
+          { name: "min_timer_write", type: "integer" },
+          { name: "avg_timer_write", type: "integer" },
+          { name: "max_timer_write", type: "integer" },
+          { name: "count_read_normal", type: "integer" },
+          { name: "sum_timer_read_normal", type: "integer" },
+          { name: "min_timer_read_normal", type: "integer" },
+          { name: "avg_timer_read_normal", type: "integer" },
+          { name: "max_timer_read_normal", type: "integer" },
+          { name: "count_read_with_shared_locks", type: "integer" },
+          { name: "sum_timer_read_with_shared_locks", type: "integer" },
+          { name: "min_timer_read_with_shared_locks", type: "integer" },
+          { name: "avg_timer_read_with_shared_locks", type: "integer" },
+          { name: "max_timer_read_with_shared_locks", type: "integer" },
+          { name: "count_read_high_priority", type: "integer" },
+          { name: "sum_timer_read_high_priority", type: "integer" },
+          { name: "min_timer_read_high_priority", type: "integer" },
+          { name: "avg_timer_read_high_priority", type: "integer" },
+          { name: "max_timer_read_high_priority", type: "integer" },
+          { name: "count_read_no_insert", type: "integer" },
+          { name: "sum_timer_read_no_insert", type: "integer" },
+          { name: "min_timer_read_no_insert", type: "integer" },
+          { name: "avg_timer_read_no_insert", type: "integer" },
+          { name: "max_timer_read_no_insert", type: "integer" },
+          { name: "count_read_external", type: "integer" },
+          { name: "sum_timer_read_external", type: "integer" },
+          { name: "min_timer_read_external", type: "integer" },
+          { name: "avg_timer_read_external", type: "integer" },
+          { name: "max_timer_read_external", type: "integer" },
+          { name: "count_write_allow_write", type: "integer" },
+          { name: "sum_timer_write_allow_write", type: "integer" },
+          { name: "min_timer_write_allow_write", type: "integer" },
+          { name: "avg_timer_write_allow_write", type: "integer" },
+          { name: "max_timer_write_allow_write", type: "integer" },
+          { name: "count_write_concurrent_insert", type: "integer" },
+          { name: "sum_timer_write_concurrent_insert", type: "integer" },
+          { name: "min_timer_write_concurrent_insert", type: "integer" },
+          { name: "avg_timer_write_concurrent_insert", type: "integer" },
+          { name: "max_timer_write_concurrent_insert", type: "integer" },
+          { name: "count_write_low_priority", type: "integer" },
+          { name: "sum_timer_write_low_priority", type: "integer" },
+          { name: "min_timer_write_low_priority", type: "integer" },
+          { name: "avg_timer_write_low_priority", type: "integer" },
+          { name: "max_timer_write_low_priority", type: "integer" },
+          { name: "count_write_normal", type: "integer" },
+          { name: "sum_timer_write_normal", type: "integer" },
+          { name: "min_timer_write_normal", type: "integer" },
+          { name: "avg_timer_write_normal", type: "integer" },
+          { name: "max_timer_write_normal", type: "integer" },
+          { name: "count_write_external", type: "integer" },
+          { name: "sum_timer_write_external", type: "integer" },
+          { name: "min_timer_write_external", type: "integer" },
+          { name: "avg_timer_write_external", type: "integer" },
+          { name: "max_timer_write_external", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "threads",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "name", type: "text" },
+          { name: "type", type: "text" },
+          { name: "processlist_id", type: "integer" },
+          { name: "processlist_user", type: "text" },
+          { name: "processlist_host", type: "text" },
+          { name: "processlist_db", type: "text" },
+          { name: "processlist_command", type: "text" },
+          { name: "processlist_time", type: "integer" },
+          { name: "processlist_state", type: "text" },
+          { name: "processlist_info", type: "text" },
+          { name: "parent_thread_id", type: "integer" },
+          { name: "role", type: "text" },
+          { name: "instrumented", type: "text" },
+          { name: "history", type: "text" },
+          { name: "connection_type", type: "text" },
+          { name: "thread_os_id", type: "integer" },
+          { name: "resource_group", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "controlled_memory", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "total_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "telemetry_active", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "tls_channel_status",
+        columns: [
+          { name: "channel", type: "text" },
+          { name: "property", type: "text" },
+          { name: "value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "user_defined_functions",
+        columns: [
+          { name: "udf_name", type: "text" },
+          { name: "udf_return_type", type: "text" },
+          { name: "udf_type", type: "text" },
+          { name: "udf_library", type: "text" },
+          { name: "udf_usage_count", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "user_variables_by_thread",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "bytes" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "users",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "current_connections", type: "integer" },
+          { name: "total_connections", type: "integer" },
+          { name: "max_session_controlled_memory", type: "integer" },
+          { name: "max_session_total_memory", type: "integer" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "variables_by_thread",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "performance_schema",
+        name: "variables_info",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_source", type: "text" },
+          { name: "variable_path", type: "text" },
+          { name: "min_value", type: "text" },
+          { name: "max_value", type: "text" },
+          { name: "set_time", type: "timestamp" },
+          { name: "set_user", type: "text" },
+          { name: "set_host", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "statements", type: "decimal" },
+          { name: "statement_latency", type: "text" },
+          { name: "statement_avg_latency", type: "text" },
+          { name: "table_scans", type: "decimal" },
+          { name: "file_ios", type: "decimal" },
+          { name: "file_io_latency", type: "text" },
+          { name: "current_connections", type: "decimal" },
+          { name: "total_connections", type: "decimal" },
+          { name: "unique_users", type: "integer" },
+          { name: "current_memory", type: "text" },
+          { name: "total_memory_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary_by_file_io",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "ios", type: "decimal" },
+          { name: "io_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary_by_file_io_type",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary_by_stages",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary_by_statement_latency",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_sent", type: "decimal" },
+          { name: "rows_examined", type: "decimal" },
+          { name: "rows_affected", type: "decimal" },
+          { name: "full_scans", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "host_summary_by_statement_type",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "statement", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "full_scans", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "innodb_buffer_stats_by_schema",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "allocated", type: "text" },
+          { name: "data", type: "text" },
+          { name: "pages", type: "integer" },
+          { name: "pages_hashed", type: "integer" },
+          { name: "pages_old", type: "integer" },
+          { name: "rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "innodb_buffer_stats_by_table",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "allocated", type: "text" },
+          { name: "data", type: "text" },
+          { name: "pages", type: "integer" },
+          { name: "pages_hashed", type: "integer" },
+          { name: "pages_old", type: "integer" },
+          { name: "rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "innodb_lock_waits",
+        columns: [
+          { name: "wait_started", type: "timestamp" },
+          { name: "wait_age", type: "time" },
+          { name: "wait_age_secs", type: "integer" },
+          { name: "locked_table", type: "text" },
+          { name: "locked_table_schema", type: "text" },
+          { name: "locked_table_name", type: "text" },
+          { name: "locked_table_partition", type: "text" },
+          { name: "locked_table_subpartition", type: "text" },
+          { name: "locked_index", type: "text" },
+          { name: "locked_type", type: "text" },
+          { name: "waiting_trx_id", type: "integer" },
+          { name: "waiting_trx_started", type: "timestamp" },
+          { name: "waiting_trx_age", type: "time" },
+          { name: "waiting_trx_rows_locked", type: "integer" },
+          { name: "waiting_trx_rows_modified", type: "integer" },
+          { name: "waiting_pid", type: "integer" },
+          { name: "waiting_query", type: "text" },
+          { name: "waiting_lock_id", type: "text" },
+          { name: "waiting_lock_mode", type: "text" },
+          { name: "blocking_trx_id", type: "integer" },
+          { name: "blocking_pid", type: "integer" },
+          { name: "blocking_query", type: "text" },
+          { name: "blocking_lock_id", type: "text" },
+          { name: "blocking_lock_mode", type: "text" },
+          { name: "blocking_trx_started", type: "timestamp" },
+          { name: "blocking_trx_age", type: "time" },
+          { name: "blocking_trx_rows_locked", type: "integer" },
+          { name: "blocking_trx_rows_modified", type: "integer" },
+          { name: "sql_kill_blocking_query", type: "text" },
+          { name: "sql_kill_blocking_connection", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "io_by_thread_by_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "text" },
+          { name: "min_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "thread_id", type: "integer" },
+          { name: "processlist_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "io_global_by_file_by_bytes",
+        columns: [
+          { name: "file", type: "text" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "text" },
+          { name: "avg_read", type: "text" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "text" },
+          { name: "avg_write", type: "text" },
+          { name: "total", type: "text" },
+          { name: "write_pct", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "io_global_by_file_by_latency",
+        columns: [
+          { name: "file", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "count_read", type: "integer" },
+          { name: "read_latency", type: "text" },
+          { name: "count_write", type: "integer" },
+          { name: "write_latency", type: "text" },
+          { name: "count_misc", type: "integer" },
+          { name: "misc_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "io_global_by_wait_by_bytes",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "min_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "text" },
+          { name: "avg_read", type: "text" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "text" },
+          { name: "avg_written", type: "text" },
+          { name: "total_requested", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "io_global_by_wait_by_latency",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "read_latency", type: "text" },
+          { name: "write_latency", type: "text" },
+          { name: "misc_latency", type: "text" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "text" },
+          { name: "avg_read", type: "text" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "text" },
+          { name: "avg_written", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "latest_file_io",
+        columns: [
+          { name: "thread", type: "text" },
+          { name: "file", type: "text" },
+          { name: "latency", type: "text" },
+          { name: "operation", type: "text" },
+          { name: "requested", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_by_host_by_current_bytes",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "text" },
+          { name: "current_avg_alloc", type: "text" },
+          { name: "current_max_alloc", type: "text" },
+          { name: "total_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_by_thread_by_current_bytes",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "text" },
+          { name: "current_avg_alloc", type: "text" },
+          { name: "current_max_alloc", type: "text" },
+          { name: "total_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_by_user_by_current_bytes",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "text" },
+          { name: "current_avg_alloc", type: "text" },
+          { name: "current_max_alloc", type: "text" },
+          { name: "total_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_global_by_current_bytes",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "current_count", type: "integer" },
+          { name: "current_alloc", type: "text" },
+          { name: "current_avg_alloc", type: "text" },
+          { name: "high_count", type: "integer" },
+          { name: "high_alloc", type: "text" },
+          { name: "high_avg_alloc", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "memory_global_total",
+        columns: [
+          { name: "total_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "metrics",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" },
+          { name: "type", type: "text" },
+          { name: "enabled", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "processlist",
+        columns: [
+          { name: "thd_id", type: "integer" },
+          { name: "conn_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "state", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "current_statement", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "statement_latency", type: "text" },
+          { name: "progress", type: "decimal" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "full_scan", type: "text" },
+          { name: "last_statement", type: "text" },
+          { name: "last_statement_latency", type: "text" },
+          { name: "current_memory", type: "text" },
+          { name: "last_wait", type: "text" },
+          { name: "last_wait_latency", type: "text" },
+          { name: "source", type: "text" },
+          { name: "trx_latency", type: "text" },
+          { name: "trx_state", type: "text" },
+          { name: "trx_autocommit", type: "text" },
+          { name: "pid", type: "text" },
+          { name: "program_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "ps_check_lost_instrumentation",
+        columns: [
+          { name: "variable_name", type: "text" },
+          { name: "variable_value", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_auto_increment_columns",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "column_name", type: "text" },
+          { name: "data_type", type: "text" },
+          { name: "column_type", type: "text" },
+          { name: "is_signed", type: "integer" },
+          { name: "is_unsigned", type: "integer" },
+          { name: "max_value", type: "integer" },
+          { name: "auto_increment", type: "integer" },
+          { name: "auto_increment_ratio", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_index_statistics",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "rows_selected", type: "integer" },
+          { name: "select_latency", type: "text" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "text" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "text" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_object_overview",
+        columns: [
+          { name: "db", type: "text" },
+          { name: "object_type", type: "text" },
+          { name: "count", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_redundant_indexes",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "redundant_index_name", type: "text" },
+          { name: "redundant_index_columns", type: "text" },
+          { name: "redundant_index_non_unique", type: "integer" },
+          { name: "dominant_index_name", type: "text" },
+          { name: "dominant_index_columns", type: "text" },
+          { name: "dominant_index_non_unique", type: "integer" },
+          { name: "subpart_exists", type: "integer" },
+          { name: "sql_drop_index", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_table_lock_waits",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "waiting_thread_id", type: "integer" },
+          { name: "waiting_pid", type: "integer" },
+          { name: "waiting_account", type: "text" },
+          { name: "waiting_lock_type", type: "text" },
+          { name: "waiting_lock_duration", type: "text" },
+          { name: "waiting_query", type: "text" },
+          { name: "waiting_query_secs", type: "integer" },
+          { name: "waiting_query_rows_affected", type: "integer" },
+          { name: "waiting_query_rows_examined", type: "integer" },
+          { name: "blocking_thread_id", type: "integer" },
+          { name: "blocking_pid", type: "integer" },
+          { name: "blocking_account", type: "text" },
+          { name: "blocking_lock_type", type: "text" },
+          { name: "blocking_lock_duration", type: "text" },
+          { name: "sql_kill_blocking_query", type: "text" },
+          { name: "sql_kill_blocking_connection", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_table_statistics",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "total_latency", type: "text" },
+          { name: "rows_fetched", type: "integer" },
+          { name: "fetch_latency", type: "text" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "text" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "text" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "text" },
+          { name: "io_read_requests", type: "decimal" },
+          { name: "io_read", type: "text" },
+          { name: "io_read_latency", type: "text" },
+          { name: "io_write_requests", type: "decimal" },
+          { name: "io_write", type: "text" },
+          { name: "io_write_latency", type: "text" },
+          { name: "io_misc_requests", type: "decimal" },
+          { name: "io_misc_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_table_statistics_with_buffer",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "rows_fetched", type: "integer" },
+          { name: "fetch_latency", type: "text" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "text" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "text" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "text" },
+          { name: "io_read_requests", type: "decimal" },
+          { name: "io_read", type: "text" },
+          { name: "io_read_latency", type: "text" },
+          { name: "io_write_requests", type: "decimal" },
+          { name: "io_write", type: "text" },
+          { name: "io_write_latency", type: "text" },
+          { name: "io_misc_requests", type: "decimal" },
+          { name: "io_misc_latency", type: "text" },
+          { name: "innodb_buffer_allocated", type: "text" },
+          { name: "innodb_buffer_data", type: "text" },
+          { name: "innodb_buffer_free", type: "text" },
+          { name: "innodb_buffer_pages", type: "integer" },
+          { name: "innodb_buffer_pages_hashed", type: "integer" },
+          { name: "innodb_buffer_pages_old", type: "integer" },
+          { name: "innodb_buffer_rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_tables_with_full_table_scans",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "rows_full_scanned", type: "integer" },
+          { name: "latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "schema_unused_indexes",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "index_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "session",
+        columns: [
+          { name: "thd_id", type: "integer" },
+          { name: "conn_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "state", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "current_statement", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "statement_latency", type: "text" },
+          { name: "progress", type: "decimal" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "full_scan", type: "text" },
+          { name: "last_statement", type: "text" },
+          { name: "last_statement_latency", type: "text" },
+          { name: "current_memory", type: "text" },
+          { name: "last_wait", type: "text" },
+          { name: "last_wait_latency", type: "text" },
+          { name: "source", type: "text" },
+          { name: "trx_latency", type: "text" },
+          { name: "trx_state", type: "text" },
+          { name: "trx_autocommit", type: "text" },
+          { name: "pid", type: "text" },
+          { name: "program_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "session_ssl_status",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "ssl_version", type: "text" },
+          { name: "ssl_cipher", type: "text" },
+          { name: "ssl_sessions_reused", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statement_analysis",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "full_scan", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "err_count", type: "integer" },
+          { name: "warn_count", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "rows_affected", type: "integer" },
+          { name: "rows_affected_avg", type: "decimal" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "rows_sorted", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "max_controlled_memory", type: "text" },
+          { name: "max_total_memory", type: "text" },
+          { name: "digest", type: "text" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statements_with_errors_or_warnings",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "errors", type: "integer" },
+          { name: "error_pct", type: "decimal" },
+          { name: "warnings", type: "integer" },
+          { name: "warning_pct", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statements_with_full_table_scans",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "no_index_used_count", type: "integer" },
+          { name: "no_good_index_used_count", type: "integer" },
+          { name: "no_index_used_pct", type: "decimal" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statements_with_runtimes_in_95th_percentile",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "full_scan", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "err_count", type: "integer" },
+          { name: "warn_count", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statements_with_sorting",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "avg_sort_merges", type: "decimal" },
+          { name: "sorts_using_scans", type: "integer" },
+          { name: "sort_using_range", type: "integer" },
+          { name: "rows_sorted", type: "integer" },
+          { name: "avg_rows_sorted", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "statements_with_temp_tables",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "memory_tmp_tables", type: "integer" },
+          { name: "disk_tmp_tables", type: "integer" },
+          { name: "avg_tmp_tables_per_query", type: "decimal" },
+          { name: "tmp_tables_to_disk_pct", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "sys_config",
+        columns: [
+          { name: "variable", type: "text" },
+          { name: "value", type: "text" },
+          { name: "set_time", type: "timestamp" },
+          { name: "set_by", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "statements", type: "decimal" },
+          { name: "statement_latency", type: "text" },
+          { name: "statement_avg_latency", type: "text" },
+          { name: "table_scans", type: "decimal" },
+          { name: "file_ios", type: "decimal" },
+          { name: "file_io_latency", type: "text" },
+          { name: "current_connections", type: "decimal" },
+          { name: "total_connections", type: "decimal" },
+          { name: "unique_hosts", type: "integer" },
+          { name: "current_memory", type: "text" },
+          { name: "total_memory_allocated", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary_by_file_io",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "ios", type: "decimal" },
+          { name: "io_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary_by_file_io_type",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary_by_stages",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary_by_statement_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_sent", type: "decimal" },
+          { name: "rows_examined", type: "decimal" },
+          { name: "rows_affected", type: "decimal" },
+          { name: "full_scans", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "user_summary_by_statement_type",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "statement", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "max_latency", type: "text" },
+          { name: "lock_latency", type: "text" },
+          { name: "cpu_latency", type: "text" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "full_scans", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "version",
+        columns: [
+          { name: "sys_version", type: "text" },
+          { name: "mysql_version", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "wait_classes_global_by_avg_latency",
+        columns: [
+          { name: "event_class", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "text" },
+          { name: "min_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "wait_classes_global_by_latency",
+        columns: [
+          { name: "event_class", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "text" },
+          { name: "min_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "waits_by_host_by_latency",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "waits_by_user_by_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "waits_global_by_latency",
+        columns: [
+          { name: "events", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "text" },
+          { name: "avg_latency", type: "text" },
+          { name: "max_latency", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "statements", type: "decimal" },
+          { name: "statement_latency", type: "decimal" },
+          { name: "statement_avg_latency", type: "decimal" },
+          { name: "table_scans", type: "decimal" },
+          { name: "file_ios", type: "decimal" },
+          { name: "file_io_latency", type: "decimal" },
+          { name: "current_connections", type: "decimal" },
+          { name: "total_connections", type: "decimal" },
+          { name: "unique_users", type: "integer" },
+          { name: "current_memory", type: "decimal" },
+          { name: "total_memory_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary_by_file_io",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "ios", type: "decimal" },
+          { name: "io_latency", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary_by_file_io_type",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary_by_stages",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary_by_statement_latency",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "decimal" },
+          { name: "max_latency", type: "integer" },
+          { name: "lock_latency", type: "decimal" },
+          { name: "cpu_latency", type: "decimal" },
+          { name: "rows_sent", type: "decimal" },
+          { name: "rows_examined", type: "decimal" },
+          { name: "rows_affected", type: "decimal" },
+          { name: "full_scans", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$host_summary_by_statement_type",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "statement", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "lock_latency", type: "integer" },
+          { name: "cpu_latency", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "full_scans", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$innodb_buffer_stats_by_schema",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "allocated", type: "decimal" },
+          { name: "data", type: "decimal" },
+          { name: "pages", type: "integer" },
+          { name: "pages_hashed", type: "integer" },
+          { name: "pages_old", type: "integer" },
+          { name: "rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$innodb_buffer_stats_by_table",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "allocated", type: "decimal" },
+          { name: "data", type: "decimal" },
+          { name: "pages", type: "integer" },
+          { name: "pages_hashed", type: "integer" },
+          { name: "pages_old", type: "integer" },
+          { name: "rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$innodb_lock_waits",
+        columns: [
+          { name: "wait_started", type: "timestamp" },
+          { name: "wait_age", type: "time" },
+          { name: "wait_age_secs", type: "integer" },
+          { name: "locked_table", type: "text" },
+          { name: "locked_table_schema", type: "text" },
+          { name: "locked_table_name", type: "text" },
+          { name: "locked_table_partition", type: "text" },
+          { name: "locked_table_subpartition", type: "text" },
+          { name: "locked_index", type: "text" },
+          { name: "locked_type", type: "text" },
+          { name: "waiting_trx_id", type: "integer" },
+          { name: "waiting_trx_started", type: "timestamp" },
+          { name: "waiting_trx_age", type: "time" },
+          { name: "waiting_trx_rows_locked", type: "integer" },
+          { name: "waiting_trx_rows_modified", type: "integer" },
+          { name: "waiting_pid", type: "integer" },
+          { name: "waiting_query", type: "text" },
+          { name: "waiting_lock_id", type: "text" },
+          { name: "waiting_lock_mode", type: "text" },
+          { name: "blocking_trx_id", type: "integer" },
+          { name: "blocking_pid", type: "integer" },
+          { name: "blocking_query", type: "text" },
+          { name: "blocking_lock_id", type: "text" },
+          { name: "blocking_lock_mode", type: "text" },
+          { name: "blocking_trx_started", type: "timestamp" },
+          { name: "blocking_trx_age", type: "time" },
+          { name: "blocking_trx_rows_locked", type: "integer" },
+          { name: "blocking_trx_rows_modified", type: "integer" },
+          { name: "sql_kill_blocking_query", type: "text" },
+          { name: "sql_kill_blocking_connection", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$io_by_thread_by_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "decimal" },
+          { name: "min_latency", type: "integer" },
+          { name: "avg_latency", type: "decimal" },
+          { name: "max_latency", type: "integer" },
+          { name: "thread_id", type: "integer" },
+          { name: "processlist_id", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$io_global_by_file_by_bytes",
+        columns: [
+          { name: "file", type: "text" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "integer" },
+          { name: "avg_read", type: "decimal" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "integer" },
+          { name: "avg_write", type: "decimal" },
+          { name: "total", type: "integer" },
+          { name: "write_pct", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$io_global_by_file_by_latency",
+        columns: [
+          { name: "file", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "read_latency", type: "integer" },
+          { name: "count_write", type: "integer" },
+          { name: "write_latency", type: "integer" },
+          { name: "count_misc", type: "integer" },
+          { name: "misc_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$io_global_by_wait_by_bytes",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "min_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "integer" },
+          { name: "avg_read", type: "decimal" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "integer" },
+          { name: "avg_written", type: "decimal" },
+          { name: "total_requested", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$io_global_by_wait_by_latency",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "read_latency", type: "integer" },
+          { name: "write_latency", type: "integer" },
+          { name: "misc_latency", type: "integer" },
+          { name: "count_read", type: "integer" },
+          { name: "total_read", type: "integer" },
+          { name: "avg_read", type: "decimal" },
+          { name: "count_write", type: "integer" },
+          { name: "total_written", type: "integer" },
+          { name: "avg_written", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$latest_file_io",
+        columns: [
+          { name: "thread", type: "text" },
+          { name: "file", type: "text" },
+          { name: "latency", type: "integer" },
+          { name: "operation", type: "text" },
+          { name: "requested", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$memory_by_host_by_current_bytes",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "decimal" },
+          { name: "current_avg_alloc", type: "decimal" },
+          { name: "current_max_alloc", type: "integer" },
+          { name: "total_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$memory_by_thread_by_current_bytes",
+        columns: [
+          { name: "thread_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "decimal" },
+          { name: "current_avg_alloc", type: "decimal" },
+          { name: "current_max_alloc", type: "integer" },
+          { name: "total_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$memory_by_user_by_current_bytes",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "current_count_used", type: "decimal" },
+          { name: "current_allocated", type: "decimal" },
+          { name: "current_avg_alloc", type: "decimal" },
+          { name: "current_max_alloc", type: "integer" },
+          { name: "total_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$memory_global_by_current_bytes",
+        columns: [
+          { name: "event_name", type: "text" },
+          { name: "current_count", type: "integer" },
+          { name: "current_alloc", type: "integer" },
+          { name: "current_avg_alloc", type: "decimal" },
+          { name: "high_count", type: "integer" },
+          { name: "high_alloc", type: "integer" },
+          { name: "high_avg_alloc", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$memory_global_total",
+        columns: [
+          { name: "total_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$processlist",
+        columns: [
+          { name: "thd_id", type: "integer" },
+          { name: "conn_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "state", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "current_statement", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "statement_latency", type: "integer" },
+          { name: "progress", type: "decimal" },
+          { name: "lock_latency", type: "integer" },
+          { name: "cpu_latency", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "full_scan", type: "text" },
+          { name: "last_statement", type: "text" },
+          { name: "last_statement_latency", type: "integer" },
+          { name: "current_memory", type: "decimal" },
+          { name: "last_wait", type: "text" },
+          { name: "last_wait_latency", type: "text" },
+          { name: "source", type: "text" },
+          { name: "trx_latency", type: "integer" },
+          { name: "trx_state", type: "text" },
+          { name: "trx_autocommit", type: "text" },
+          { name: "pid", type: "text" },
+          { name: "program_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$ps_digest_95th_percentile_by_avg_us",
+        columns: [
+          { name: "avg_us", type: "decimal" },
+          { name: "percentile", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$ps_digest_avg_latency_distribution",
+        columns: [
+          { name: "cnt", type: "integer" },
+          { name: "avg_us", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$ps_schema_table_statistics_io",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "count_read", type: "decimal" },
+          { name: "sum_number_of_bytes_read", type: "decimal" },
+          { name: "sum_timer_read", type: "decimal" },
+          { name: "count_write", type: "decimal" },
+          { name: "sum_number_of_bytes_write", type: "decimal" },
+          { name: "sum_timer_write", type: "decimal" },
+          { name: "count_misc", type: "decimal" },
+          { name: "sum_timer_misc", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_flattened_keys",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "non_unique", type: "integer" },
+          { name: "subpart_exists", type: "integer" },
+          { name: "index_columns", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_index_statistics",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "index_name", type: "text" },
+          { name: "rows_selected", type: "integer" },
+          { name: "select_latency", type: "integer" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "integer" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "integer" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_table_lock_waits",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "waiting_thread_id", type: "integer" },
+          { name: "waiting_pid", type: "integer" },
+          { name: "waiting_account", type: "text" },
+          { name: "waiting_lock_type", type: "text" },
+          { name: "waiting_lock_duration", type: "text" },
+          { name: "waiting_query", type: "text" },
+          { name: "waiting_query_secs", type: "integer" },
+          { name: "waiting_query_rows_affected", type: "integer" },
+          { name: "waiting_query_rows_examined", type: "integer" },
+          { name: "blocking_thread_id", type: "integer" },
+          { name: "blocking_pid", type: "integer" },
+          { name: "blocking_account", type: "text" },
+          { name: "blocking_lock_type", type: "text" },
+          { name: "blocking_lock_duration", type: "text" },
+          { name: "sql_kill_blocking_query", type: "text" },
+          { name: "sql_kill_blocking_connection", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_table_statistics",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "total_latency", type: "integer" },
+          { name: "rows_fetched", type: "integer" },
+          { name: "fetch_latency", type: "integer" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "integer" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "integer" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "integer" },
+          { name: "io_read_requests", type: "decimal" },
+          { name: "io_read", type: "decimal" },
+          { name: "io_read_latency", type: "decimal" },
+          { name: "io_write_requests", type: "decimal" },
+          { name: "io_write", type: "decimal" },
+          { name: "io_write_latency", type: "decimal" },
+          { name: "io_misc_requests", type: "decimal" },
+          { name: "io_misc_latency", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_table_statistics_with_buffer",
+        columns: [
+          { name: "table_schema", type: "text" },
+          { name: "table_name", type: "text" },
+          { name: "rows_fetched", type: "integer" },
+          { name: "fetch_latency", type: "integer" },
+          { name: "rows_inserted", type: "integer" },
+          { name: "insert_latency", type: "integer" },
+          { name: "rows_updated", type: "integer" },
+          { name: "update_latency", type: "integer" },
+          { name: "rows_deleted", type: "integer" },
+          { name: "delete_latency", type: "integer" },
+          { name: "io_read_requests", type: "decimal" },
+          { name: "io_read", type: "decimal" },
+          { name: "io_read_latency", type: "decimal" },
+          { name: "io_write_requests", type: "decimal" },
+          { name: "io_write", type: "decimal" },
+          { name: "io_write_latency", type: "decimal" },
+          { name: "io_misc_requests", type: "decimal" },
+          { name: "io_misc_latency", type: "decimal" },
+          { name: "innodb_buffer_allocated", type: "decimal" },
+          { name: "innodb_buffer_data", type: "decimal" },
+          { name: "innodb_buffer_free", type: "decimal" },
+          { name: "innodb_buffer_pages", type: "integer" },
+          { name: "innodb_buffer_pages_hashed", type: "integer" },
+          { name: "innodb_buffer_pages_old", type: "integer" },
+          { name: "innodb_buffer_rows_cached", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$schema_tables_with_full_table_scans",
+        columns: [
+          { name: "object_schema", type: "text" },
+          { name: "object_name", type: "text" },
+          { name: "rows_full_scanned", type: "integer" },
+          { name: "latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$session",
+        columns: [
+          { name: "thd_id", type: "integer" },
+          { name: "conn_id", type: "integer" },
+          { name: "user", type: "text" },
+          { name: "db", type: "text" },
+          { name: "command", type: "text" },
+          { name: "state", type: "text" },
+          { name: "time", type: "integer" },
+          { name: "current_statement", type: "text" },
+          { name: "execution_engine", type: "text" },
+          { name: "statement_latency", type: "integer" },
+          { name: "progress", type: "decimal" },
+          { name: "lock_latency", type: "integer" },
+          { name: "cpu_latency", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "full_scan", type: "text" },
+          { name: "last_statement", type: "text" },
+          { name: "last_statement_latency", type: "integer" },
+          { name: "current_memory", type: "decimal" },
+          { name: "last_wait", type: "text" },
+          { name: "last_wait_latency", type: "text" },
+          { name: "source", type: "text" },
+          { name: "trx_latency", type: "integer" },
+          { name: "trx_state", type: "text" },
+          { name: "trx_autocommit", type: "text" },
+          { name: "pid", type: "text" },
+          { name: "program_name", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statement_analysis",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "full_scan", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "exec_secondary_count", type: "integer" },
+          { name: "err_count", type: "integer" },
+          { name: "warn_count", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "lock_latency", type: "integer" },
+          { name: "cpu_latency", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "rows_affected", type: "integer" },
+          { name: "rows_affected_avg", type: "decimal" },
+          { name: "tmp_tables", type: "integer" },
+          { name: "tmp_disk_tables", type: "integer" },
+          { name: "rows_sorted", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "max_controlled_memory", type: "integer" },
+          { name: "max_total_memory", type: "integer" },
+          { name: "digest", type: "text" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statements_with_errors_or_warnings",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "errors", type: "integer" },
+          { name: "error_pct", type: "decimal" },
+          { name: "warnings", type: "integer" },
+          { name: "warning_pct", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statements_with_full_table_scans",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "no_index_used_count", type: "integer" },
+          { name: "no_good_index_used_count", type: "integer" },
+          { name: "no_index_used_pct", type: "decimal" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statements_with_runtimes_in_95th_percentile",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "full_scan", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "err_count", type: "integer" },
+          { name: "warn_count", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_sent_avg", type: "decimal" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_examined_avg", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statements_with_sorting",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "sort_merge_passes", type: "integer" },
+          { name: "avg_sort_merges", type: "decimal" },
+          { name: "sorts_using_scans", type: "integer" },
+          { name: "sort_using_range", type: "integer" },
+          { name: "rows_sorted", type: "integer" },
+          { name: "avg_rows_sorted", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$statements_with_temp_tables",
+        columns: [
+          { name: "query", type: "text" },
+          { name: "db", type: "text" },
+          { name: "exec_count", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "memory_tmp_tables", type: "integer" },
+          { name: "disk_tmp_tables", type: "integer" },
+          { name: "avg_tmp_tables_per_query", type: "decimal" },
+          { name: "tmp_tables_to_disk_pct", type: "decimal" },
+          { name: "first_seen", type: "timestamp" },
+          { name: "last_seen", type: "timestamp" },
+          { name: "digest", type: "text" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "statements", type: "decimal" },
+          { name: "statement_latency", type: "decimal" },
+          { name: "statement_avg_latency", type: "decimal" },
+          { name: "table_scans", type: "decimal" },
+          { name: "file_ios", type: "decimal" },
+          { name: "file_io_latency", type: "decimal" },
+          { name: "current_connections", type: "decimal" },
+          { name: "total_connections", type: "decimal" },
+          { name: "unique_hosts", type: "integer" },
+          { name: "current_memory", type: "decimal" },
+          { name: "total_memory_allocated", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary_by_file_io",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "ios", type: "decimal" },
+          { name: "io_latency", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary_by_file_io_type",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "latency", type: "integer" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary_by_stages",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event_name", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary_by_statement_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "decimal" },
+          { name: "max_latency", type: "decimal" },
+          { name: "lock_latency", type: "decimal" },
+          { name: "cpu_latency", type: "decimal" },
+          { name: "rows_sent", type: "decimal" },
+          { name: "rows_examined", type: "decimal" },
+          { name: "rows_affected", type: "decimal" },
+          { name: "full_scans", type: "decimal" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$user_summary_by_statement_type",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "statement", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "max_latency", type: "integer" },
+          { name: "lock_latency", type: "integer" },
+          { name: "cpu_latency", type: "integer" },
+          { name: "rows_sent", type: "integer" },
+          { name: "rows_examined", type: "integer" },
+          { name: "rows_affected", type: "integer" },
+          { name: "full_scans", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$wait_classes_global_by_avg_latency",
+        columns: [
+          { name: "event_class", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "decimal" },
+          { name: "min_latency", type: "integer" },
+          { name: "avg_latency", type: "decimal" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$wait_classes_global_by_latency",
+        columns: [
+          { name: "event_class", type: "text" },
+          { name: "total", type: "decimal" },
+          { name: "total_latency", type: "decimal" },
+          { name: "min_latency", type: "integer" },
+          { name: "avg_latency", type: "decimal" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$waits_by_host_by_latency",
+        columns: [
+          { name: "host", type: "text" },
+          { name: "event", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$waits_by_user_by_latency",
+        columns: [
+          { name: "user", type: "text" },
+          { name: "event", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "max_latency", type: "integer" }
+        ]
+      },
+      {
+        schema: "sys",
+        name: "x$waits_global_by_latency",
+        columns: [
+          { name: "events", type: "text" },
+          { name: "total", type: "integer" },
+          { name: "total_latency", type: "integer" },
+          { name: "avg_latency", type: "integer" },
+          { name: "max_latency", type: "integer" }
+        ]
+      }
     ],
     describeFunctionColumns: [
       { name: 'Name', type: 'text' },

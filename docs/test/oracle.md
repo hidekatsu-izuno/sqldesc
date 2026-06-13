@@ -4538,7 +4538,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| sid | number(10) | v$session.sid |
+| sid | number | v$session.sid |
 | username | varchar2(255) | v$session.username |
 
 ---

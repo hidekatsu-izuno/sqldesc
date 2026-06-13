@@ -3577,6 +3577,13 @@ verify: true
 | context | text | pg_settings.context |
 | vartype | text | pg_settings.vartype |
 | source | text | pg_settings.source |
+| min_val | text | pg_settings.min_val |
+| max_val | text | pg_settings.max_val |
+| enumvals | array<variant> | pg_settings.enumvals |
+| boot_val | text | pg_settings.boot_val |
+| reset_val | text | pg_settings.reset_val |
+| sourcefile | text | pg_settings.sourcefile |
+| sourceline | integer | pg_settings.sourceline |
 | pending_restart | boolean | pg_settings.pending_restart |
 
 ---
@@ -3595,7 +3602,7 @@ dialect: postgres
 ```
 
 ```sql
-SELECT * FROM pg_timezone_names() AS tz LIMIT 1
+SELECT * FROM pg_timezone_names AS tz LIMIT 1
 ```
 
 ### Then
@@ -3607,10 +3614,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | tz.name |
-| abbrev | text | tz.abbrev |
-| utc_offset | interval | tz.utc_offset |
-| is_dst | boolean | tz.is_dst |
+| name | text | pg_timezone_names.name |
+| abbrev | text | pg_timezone_names.abbrev |
+| utc_offset | interval | pg_timezone_names.utc_offset |
+| is_dst | boolean | pg_timezone_names.is_dst |
 
 ---
 ## pg_stat_activity
@@ -5370,6 +5377,74 @@ verify: true
 ```
 
 - `Error`: `Parse error`
+
+---
+# Docker 実測メタデータ
+
+`postgres:16` の `information_schema.columns` から取得した metadata schema を検証する。
+
+---
+
+## pg_catalog.pg_tables
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT tablename FROM pg_catalog.pg_tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| tablename | text | pg_catalog.pg_tables.tablename |
+
+---
+
+## information_schema.columns
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT table_name, column_name FROM information_schema.columns
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| table_name | text | information_schema.columns.table_name |
+| column_name | text | information_schema.columns.column_name |
 
 ---
 # 既知の限界

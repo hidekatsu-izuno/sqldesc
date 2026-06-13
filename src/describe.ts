@@ -46,12 +46,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
       ? await loadSchema(input.schemaPatterns, { cwd: input.cwd, dialect })
       : { tables: [] };
   const schema = mergeSchemas(input.schema, loadedSchema);
-  const effectiveSchema = mergeSchemas(schema, {
-    tables: getDialectConfig(dialect).metadata.builtinSchemaTables.map((table) => ({
-      ...table,
-      columns: table.columns.map((column) => ({ ...column })),
-    })),
-  });
+  const effectiveSchema = schemaWithBuiltinMetadata(schema, dialect);
   const warnings: string[] = [];
   const diagnostics: Diagnostic[] = [];
 
@@ -93,6 +88,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   let returnedDiagnostics = suppressResolvedNestedDiagnostics(diagnostics, allColumns);
   returnedDiagnostics = suppressOracleCurrentUserDiagnostics(returnedDiagnostics, annotatedAst, dialect);
   returnedDiagnostics = suppressCurrentTemporalIdentifierDiagnostics(returnedDiagnostics, annotatedAst);
+  returnedDiagnostics = suppressConfiguredDiagnosticPatterns(returnedDiagnostics, dialect);
   returnedDiagnostics = suppressWholeRowFunctionDiagnostics(returnedDiagnostics, annotatedAst, effectiveSchema);
   returnedDiagnostics = suppressNamedFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst);
   returnedDiagnostics = suppressKnownTableFunctionArgumentDiagnostics(returnedDiagnostics, annotatedAst, dialect);
@@ -2471,6 +2467,13 @@ function suppressCurrentTemporalIdentifierDiagnostics(diagnostics: Diagnostic[],
   });
 }
 
+function suppressConfiguredDiagnosticPatterns(diagnostics: Diagnostic[], dialect: string): Diagnostic[] {
+  const patterns = getDialectConfig(dialect).diagnosticRules.suppressDiagnosticPatterns ?? [];
+  if (patterns.length === 0) return diagnostics;
+  const regexes = patterns.map((pattern) => new RegExp(pattern, 'i'));
+  return diagnostics.filter((diagnostic) => !regexes.some((regex) => regex.test(diagnostic.message)));
+}
+
 function hasUnqualifiedCurrentUserColumn(value: unknown): boolean {
   let found = false;
   visitAst(value, (node) => {
@@ -2685,6 +2688,18 @@ function isColumnLikeExpression(expression: AstExpression): boolean {
   return isRecord(getAst(expression, 'column')) || isRecord(dotAsColumnRef(expression));
 }
 
+function schemaWithBuiltinMetadata(schema: ValidationSchema, dialect: string): ValidationSchema {
+  const unqualifiedSchemaTables = new Set(schema.tables.filter((table) => !table.schema).map((table) => table.name.toLowerCase()));
+  return mergeSchemas(schema, {
+    tables: getDialectConfig(dialect).metadata.builtinSchemaTables
+      .filter((table) => !table.schema || !unqualifiedSchemaTables.has(table.name.toLowerCase()))
+      .map((table) => ({
+        ...table,
+        columns: table.columns.map((column) => ({ ...column })),
+      })),
+  });
+}
+
 function schemaWithTableAliases(parsedAst: unknown, schema: ValidationSchema): ValidationSchema {
   const tables = [...schema.tables];
   const byName = new Map(schema.tables.map((table) => [schemaTableName(table).toLowerCase(), table]));
@@ -2829,7 +2844,7 @@ function outputItemsForStatement(statement: unknown, schema: ValidationSchema, c
     const serialized = outputItemsFromSerializedTsqlSelect(statement.select, dialect);
     if (serialized.length > 0) return serialized;
     const schemaWithFunctions = mergeSchemas({ tables: [...context.tableFunctions.values()] }, schema);
-    const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schemaWithFunctions), schemaWithFunctions);
+    const localSchema = mergeSchemas(schemaFromCtes(statement.select.with, schemaWithFunctions, dialect), schemaWithFunctions);
     const scopedSchema = mergeSchemas(schemaFromDerivedTables(statement.select, localSchema, dialect), localSchema);
     return outputItemsFromExpressions(statement.select.expressions, scopedSchema, statement.select, context, dialect);
   }
@@ -5553,7 +5568,7 @@ function typedNullExpression(type: string): AstExpression {
   };
 }
 
-function schemaFromCtes(withClause: unknown, baseSchema: ValidationSchema): ValidationSchema {
+function schemaFromCtes(withClause: unknown, baseSchema: ValidationSchema, dialect = 'generic'): ValidationSchema {
   if (!isRecord(withClause) || !Array.isArray(withClause.ctes)) return { tables: [] };
 
   const tables: SchemaTable[] = [];
@@ -5562,7 +5577,7 @@ function schemaFromCtes(withClause: unknown, baseSchema: ValidationSchema): Vali
     const name = identifierName(cte.alias);
     if (!name) continue;
     const explicitColumns = Array.isArray(cte.columns) ? cte.columns : [];
-    const items = outputItemsForStatement(cte.this, mergeSchemas(baseSchema, { tables }));
+    const items = outputItemsForStatement(cte.this, mergeSchemas(baseSchema, { tables }), emptyStatementContext(), dialect);
     tables.push({
       name,
       columns: columnsFromOutputItems(items, explicitColumns, mergeSchemas(baseSchema, { tables })),
@@ -5587,7 +5602,7 @@ function schemaFromDerivedTables(owner: Record<string, unknown>, baseSchema: Val
       const name = identifierName(subquery.alias);
       if (!name) continue;
       const explicitColumns = Array.isArray(subquery.column_aliases) ? subquery.column_aliases : [];
-      const items = outputItemsForStatement(subquery.this, mergeSchemas(baseSchema, { tables }));
+      const items = outputItemsForStatement(subquery.this, mergeSchemas(baseSchema, { tables }), emptyStatementContext(), dialect);
       tables.push({
         name,
         columns: columnsFromOutputItems(items, explicitColumns, mergeSchemas(baseSchema, { tables })),
@@ -5830,10 +5845,10 @@ function tableFunctionTupleAlias(source: Record<string, unknown>, schema: Valida
 function tableFromDirectTableFunction(source: Record<string, unknown>, schema: ValidationSchema, dialect = 'generic'): SchemaTable | undefined {
   if (isRecord(source.function)) {
     const name = String(source.function.name ?? '').toLowerCase();
-    const schemaTable = schema.tables.find((table) => table.name.toLowerCase() === name);
-    if (schemaTable) return schemaTable;
     const known = tableFromKnownTableFunction(source, name, schema, dialect);
     if (known) return known;
+    const schemaTable = schema.tables.find((table) => table.name.toLowerCase() === name);
+    if (schemaTable) return schemaTable;
     return { name, columns: [{ name, type: tableFunctionDefaultType(name, source, schema) }] };
   }
   if (isRecord(source.unnest)) {
@@ -5881,7 +5896,8 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     const wrapped = isRecord(firstArg) ? tableFromKnownTableFunction(firstArg, alias, schema, dialect) : undefined;
     if (wrapped) return wrapped;
   }
-  if (name === 'stack') return stackTable(fn, alias, schema);
+  const handlers = new Set(getDialectConfig(dialect).dynamicTableFunctions.enabledHandlers);
+  if (handlers.has('stack') && name === 'stack') return stackTable(fn, alias, schema);
   if (name === 'json_populate_record' || name === 'jsonb_populate_record') {
     const firstArg = functionArguments(fn)[0];
     const cast = isRecord(firstArg) ? getAst(firstArg, 'cast') : undefined;
@@ -5889,35 +5905,34 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
     const table = target ? schema.tables.find((candidate) => candidate.name.toLowerCase() === target.toLowerCase()) : undefined;
     if (table) return { ...table, name: alias };
   }
-  if (name === 'generate_series' || name === 'range') {
+  if ((handlers.has('generateSeries') && name === 'generate_series') || (handlers.has('range') && name === 'range')) {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] });
     const policy = getDialectConfig(dialect).dynamicTableFunctions;
     const configuredColumnName = name === 'generate_series' ? policy.generateSeriesColumn : policy.rangeColumn;
     const columnName = configuredColumnName === '$alias' ? alias : configuredColumnName;
     return { name: alias, columns: [{ name: columnName, type: type && /date|time|timestamp/i.test(type) ? type : 'integer' }] };
   }
-  const handlers = new Set(getDialectConfig(dialect).dynamicTableFunctions.enabledHandlers);
   if (handlers.has('sqliteFts5Vocab') && name === 'fts5vocab') return sqliteFts5VocabTable(fn, alias);
   if (handlers.has('sqlitePragma') && name.startsWith('pragma_')) return sqlitePragmaFunctionTable(name, alias);
-  if (name === 'numbers' || name === 'numbers_mt') return { name: alias, columns: [{ name: alias, type: 'integer' }] };
+  if (handlers.has('numbers') && (name === 'numbers' || name === 'numbers_mt')) return { name: alias, columns: [{ name: alias, type: 'integer' }] };
   if (handlers.has('clickhouseRemote') && ['remote', 'remotesecure', 'cluster', 'clusterallreplicas'].includes(name)) {
     const tableName = remoteTableFunctionTableName(functionArguments(fn));
     const table = tableName ? schema.tables.find((candidate) => candidate.name.toLowerCase() === tableName.toLowerCase()) : undefined;
     if (table) return { ...table, name: alias };
   }
-  if (name === 'sequence') {
+  if (handlers.has('sequence') && name === 'sequence') {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] }) ?? 'integer';
     return { name: alias, columns: [{ name: alias, type }] };
   }
-  if (name === 'generate_array') {
+  if (handlers.has('generateArray') && name === 'generate_array') {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] }) ?? 'integer';
     return { name: alias, columns: [{ name: alias, type }] };
   }
-  if (['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_ndjson', 'read_ndjson_auto', 'read_parquet', 'read_xlsx'].includes(name)) {
+  if (handlers.has('fileColumns') && ['read_csv', 'read_csv_auto', 'read_json', 'read_json_auto', 'read_ndjson', 'read_ndjson_auto', 'read_parquet', 'read_xlsx'].includes(name)) {
     const columns = tableFunctionColumnsArgument(fn);
     if (columns.length > 0) return { name: alias, columns };
   }
-  if (['file', 'url', 's3', 's3cluster', 'hdfs', 'azureblobstorage', 'generaterandom'].includes(name)) {
+  if (handlers.has('schemaStringTableFunctions') && ['file', 'url', 's3', 's3cluster', 'hdfs', 'azureblobstorage', 'generaterandom'].includes(name)) {
     const columns = columnsFromSchemaString(lastSchemaLikeLiteral(functionArguments(fn)));
     if (columns.length > 0) return { name: alias, columns };
   }
