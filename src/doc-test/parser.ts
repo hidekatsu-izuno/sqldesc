@@ -5,7 +5,6 @@ import type {
   GivenSpec,
   ParsedTestDoc,
   PrepareBlock,
-  PrepareKind,
   ThenKind,
   ThenSpec,
   WhenSpec,
@@ -69,15 +68,14 @@ function parsePrepareSection(section: { heading: string; title: string; body: st
 
   const meta = parseYamlFence(section.body);
   const sql = extractFence(section.body, 'sql');
-  const json = extractFence(section.body, 'json');
-  const kind = (meta.kind as PrepareKind | undefined) ?? (json ? 'schema-json' : 'schema-ddl');
+  if (!sql) return undefined;
 
   return {
     id: `Prepare-${match[1]}`,
     title: match[2].trim(),
-    kind,
+    kind: 'schema-ddl',
     dialect: typeof meta.dialect === 'string' ? meta.dialect : undefined,
-    content: kind === 'schema-json' ? (json ?? '') : (sql ?? ''),
+    content: sql,
   };
 }
 

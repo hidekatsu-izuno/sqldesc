@@ -18,24 +18,17 @@ dialect: generic
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: generic
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "text" },
-        { "name": "amount", "type": "decimal" },
-        { "name": "created_at", "type": "timestamp" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id INTEGER,
+  name TEXT,
+  amount DECIMAL,
+  created_at TIMESTAMP
+);
 ```
 
 ---
@@ -82,31 +75,22 @@ verify: true
 ## Prepare-2: users / orders 結合用スキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: generic
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "text" },
-        { "name": "age", "type": "integer" }
-      ]
-    },
-    {
-      "name": "orders",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "user_id", "type": "integer" },
-        { "name": "total", "type": "decimal" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id INTEGER,
+  name TEXT,
+  age INTEGER
+);
+
+CREATE TABLE orders (
+  id INTEGER,
+  user_id INTEGER,
+  total DECIMAL
+);
 ```
 
 ---
@@ -383,10 +367,6 @@ verify: true
 
 ```yaml
 prepare: none
-```
-
-```json
-{"tables": []}
 ```
 
 ### When

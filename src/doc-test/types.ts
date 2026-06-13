@@ -1,4 +1,4 @@
-export type PrepareKind = 'schema-ddl' | 'schema-json';
+export type PrepareKind = 'schema-ddl';
 
 export interface PrepareBlock {
   id: string;

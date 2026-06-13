@@ -135,37 +135,17 @@ CREATE TABLE src (
 ## Prepare-2: public スキーマメタデータ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: postgres
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "schema": "public",
-      "columns": [
-        {
-          "name": "id",
-          "type": "integer"
-        },
-        {
-          "name": "name",
-          "type": "text"
-        },
-        {
-          "name": "age",
-          "type": "integer"
-        },
-        {
-          "name": "dept",
-          "type": "text"
-        }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE public.users (
+  id INTEGER,
+  name TEXT,
+  age INTEGER,
+  dept TEXT
+);
 ```
 
 ---

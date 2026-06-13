@@ -110,25 +110,17 @@ CREATE TABLE departments (
 ## Prepare-2: main スキーマメタデータ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: duckdb
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "schema": "main",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "text" },
-        { "name": "age", "type": "integer" },
-        { "name": "dept", "type": "text" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE main.users (
+  id INTEGER,
+  name VARCHAR,
+  age INTEGER,
+  dept VARCHAR
+);
 ```
 
 ---
@@ -3600,7 +3592,7 @@ target: last
 ### Given
 
 ```yaml
-prepare: Prepare-1, Prepare-2
+prepare: Prepare-2
 ```
 
 ### When

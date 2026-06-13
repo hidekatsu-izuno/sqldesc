@@ -18,24 +18,17 @@ dialect: dune
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: dune
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "text" },
-        { "name": "amount", "type": "decimal" },
-        { "name": "created_at", "type": "timestamp" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id INTEGER,
+  name TEXT,
+  amount DECIMAL,
+  created_at TIMESTAMP
+);
 ```
 
 ---

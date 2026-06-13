@@ -136,33 +136,6 @@ CREATE TABLE max_length_values (
 );
 ```
 
-## Prepare-2: dbo スキーマメタデータ
-
-```yaml
-kind: schema-json
-dialect: tsql
-```
-
-```json
-{
-  "tables": [
-    {
-      "name": "people",
-      "schema": "dbo",
-      "columns": [
-        {
-          "name": "id",
-          "type": "integer"
-        },
-        {
-          "name": "name",
-          "type": "text"
-        }
-      ]
-    }
-  ]
-}
-```
 
 ## Prepare-3: dbo.people テーブル
 
@@ -4162,7 +4135,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2, Prepare-3
+prepare: Prepare-3
 ```
 
 ### When
@@ -4185,7 +4158,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | dbo.people.id |
-| name | nvarchar(max) | dbo.people.name |
+| name | nvarchar(100) | dbo.people.name |
 
 ---
 ## dbo エイリアス
@@ -4193,7 +4166,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2, Prepare-3
+prepare: Prepare-3
 ```
 
 ### When
@@ -4216,7 +4189,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | dbo.people.id |
-| name | nvarchar(max) | dbo.people.name |
+| name | nvarchar(100) | dbo.people.name |
 
 ---
 # カタログ
@@ -5601,6 +5574,6 @@ verify: true
 | テーブル変数 / sp_rename | `DECLARE @t TABLE`、`sp_rename` | パース未対応 |
 | 動的 EXEC | `EXEC dbo.my_proc`（結果セット宣言なし） | `SQLDESC_RUNTIME_RESULT_SHAPE` 警告 |
 | DBCC | `DBCC CHECKDB` 等 | 結果列なし + 実行時依存 |
-| スキーマ修飾（メタなし） | `dbo.people` | `unknown` になりやすい（`Prepare-2` で解決） |
+| スキーマ修飾（メタなし） | `dbo.people` | `unknown` になりやすい（`Prepare-3` で解決） |
 | DML | `INSERT` / `UPDATE` / `DELETE`（OUTPUT なし） | 結果列なし |
 | メタデータ依存 | 未登録テーブル参照 | `unknown` + warnings |

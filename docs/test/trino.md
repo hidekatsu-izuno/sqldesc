@@ -43,37 +43,28 @@ dialect: trino
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: trino
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "varchar" },
-        { "name": "age", "type": "integer" },
-        { "name": "dept", "type": "varchar" },
-        { "name": "amount", "type": "decimal(10,2)" },
-        { "name": "data", "type": "json" },
-        { "name": "tags", "type": "array<varchar>" },
-        { "name": "attrs", "type": "map<varchar, varchar>" },
-        { "name": "created_at", "type": "timestamp" }
-      ]
-    },
-    {
-      "name": "orders",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "user_id", "type": "integer" },
-        { "name": "amount", "type": "decimal(10,2)" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id INTEGER,
+  name VARCHAR,
+  age INTEGER,
+  dept VARCHAR,
+  amount DECIMAL(10, 2),
+  data JSON,
+  tags array<varchar>,
+  attrs map<varchar, varchar>,
+  created_at TIMESTAMP
+);
+
+CREATE TABLE orders (
+  id INTEGER,
+  user_id INTEGER,
+  amount DECIMAL(10, 2)
+);
 ```
 
 ---

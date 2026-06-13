@@ -33,29 +33,22 @@ dialect: bigquery
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: bigquery
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "int64" },
-        { "name": "name", "type": "string" },
-        { "name": "amount", "type": "numeric" },
-        { "name": "big_amount", "type": "bignumeric" },
-        { "name": "data", "type": "json" },
-        { "name": "tags", "type": "array<string>" },
-        { "name": "g", "type": "geography" },
-        { "name": "created_at", "type": "timestamp" },
-        { "name": "d", "type": "date" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id int64,
+  name string,
+  amount numeric,
+  big_amount bignumeric,
+  data json,
+  tags array<string>,
+  g geography,
+  created_at TIMESTAMP,
+  d date
+);
 ```
 
 ---
@@ -130,7 +123,7 @@ verify: true
 | amount | numeric | users.amount |
 | big_amount | bignumeric | users.big_amount |
 | data | json | users.data |
-| tags | array<string> | users.tags |
+| tags | array<text> | users.tags |
 | g | geography | users.g |
 | created_at | timestamp | users.created_at |
 | d | date | users.d |

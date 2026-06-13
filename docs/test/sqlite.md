@@ -13,7 +13,7 @@ dialect: sqlite
 
 ### Prepare（再利用可能な前提）
 
-`## Prepare-N: タイトル` で定義します。メタデータは \`yaml\` フェンス、本体は \`sql\` または \`json\` フェンスです。
+`## Prepare-N: タイトル` で定義します。メタデータは \`yaml\` フェンス、本体は \`sql\` フェンス（CREATE TABLE 等）です。
 
 ### テストケース
 
@@ -26,7 +26,7 @@ dialect: sqlite
 | `prepare: Prepare-1` | 共通ベーススキーマ（`Prepare-1`）を使用 |
 | `prepare: Prepare-1, Prepare-2` | ベース DDL + FTS 仮想テーブルメタデータ |
 | `prepare: none` | スキーマ不要 |
-| `kind: schema-json` + \`json\` フェンス | JSON メタデータ |
+| `kind: schema-ddl` + \`sql\` フェンス | スキーマ DDL（CREATE TABLE 等） |
 | \`sql\` フェンスのみ | インライン DDL |
 
 **When** — 実行 SQL（\`yaml\` で `dialect` / `binds` を任意指定）:
@@ -182,49 +182,38 @@ CREATE VIRTUAL TABLE customers USING fts5(name, addr, uuid UNINDEXED);
 CREATE VIRTUAL TABLE docs_fts USING fts4(title, content);
 ```
 
-FTS テストでは `email` / `docs_fts` / `customers` の列定義をスキーマメタデータとして渡します。`rank` は FTS の暗黙列です。外部コンテンツ構成では `email_content` もメタデータに含めます。
+FTS テストでは `email` / `docs_fts` / `customers` の列定義を `CREATE TABLE` として渡します。`rank` は FTS の暗黙列です。外部コンテンツ構成では `email_content` もメタデータに含めます。
 
-ATTACH 先テーブル参照では、スキーマメタデータに `schema: 'other'` を付与したテーブル定義を使います。
+ATTACH 先テーブル参照では、`other.table_name` 形式の修飾 `CREATE TABLE` を使います。
 
 ## Prepare-2: FTS 仮想テーブルメタデータ
 
-`CREATE VIRTUAL TABLE` は DDL パースでは列が展開されないため、FTS テストでは JSON メタデータを併用します。`prepare: Prepare-1, Prepare-2` でベース DDL と FTS 列定義を同時に渡します。
+`CREATE VIRTUAL TABLE` は DDL パースでは列が展開されないため、FTS テストでは `Prepare-2` に通常の `CREATE TABLE` で列定義を併記します。`prepare: Prepare-1, Prepare-2` でベース DDL と FTS 列定義を同時に渡します。
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: sqlite
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "email",
-      "columns": [
-        { "name": "sender", "type": "text" },
-        { "name": "title", "type": "text" },
-        { "name": "body", "type": "text" },
-        { "name": "rank", "type": "decimal" }
-      ]
-    },
-    {
-      "name": "customers",
-      "columns": [
-        { "name": "name", "type": "text" },
-        { "name": "addr", "type": "text" },
-        { "name": "uuid", "type": "text" }
-      ]
-    },
-    {
-      "name": "docs_fts",
-      "columns": [
-        { "name": "title", "type": "text" },
-        { "name": "content", "type": "text" },
-        { "name": "rank", "type": "integer" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE email (
+  sender TEXT,
+  title TEXT,
+  body TEXT,
+  rank REAL
+);
+
+CREATE TABLE customers (
+  name TEXT,
+  addr TEXT,
+  uuid TEXT
+);
+
+CREATE TABLE docs_fts (
+  title TEXT,
+  content TEXT,
+  rank INTEGER
+);
 ```
 
 ---
@@ -8538,32 +8527,24 @@ verify: true
 ### Given
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
+dialect: sqlite
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "email",
-      "columns": [
-        { "name": "sender", "type": "text" },
-        { "name": "title", "type": "text" },
-        { "name": "body", "type": "text" },
-        { "name": "rank", "type": "decimal" }
-      ]
-    },
-    {
-      "name": "email_content",
-      "columns": [
-        { "name": "rowid", "type": "integer" },
-        { "name": "sender", "type": "text" },
-        { "name": "title", "type": "text" },
-        { "name": "body", "type": "text" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE email (
+  sender TEXT,
+  title TEXT,
+  body TEXT,
+  rank REAL
+);
+
+CREATE TABLE email_content (
+  rowid INTEGER,
+  sender TEXT,
+  title TEXT,
+  body TEXT
+);
 ```
 
 ```sql
@@ -8609,22 +8590,16 @@ verify: true
 ### Given
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
+dialect: sqlite
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "customers",
-      "columns": [
-        { "name": "name", "type": "text" },
-        { "name": "addr", "type": "text" },
-        { "name": "uuid", "type": "text" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE customers (
+  name TEXT,
+  addr TEXT,
+  uuid TEXT
+);
 ```
 
 ```sql

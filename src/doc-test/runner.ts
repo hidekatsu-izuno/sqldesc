@@ -129,12 +129,7 @@ function resolveSchema(
       if (!prepare) {
         throw new Error(`unknown prepare reference: ${prepareId}`);
       }
-      if (prepare.kind === 'schema-json') {
-        const parsed = JSON.parse(prepare.content) as ValidationSchema;
-        mergedTables.push(...parsed.tables);
-      } else {
-        ddlParts.push(prepare.content);
-      }
+      ddlParts.push(prepare.content);
     }
   }
   if (given.schemaDdl) ddlParts.push(given.schemaDdl);

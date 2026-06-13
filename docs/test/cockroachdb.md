@@ -28,26 +28,19 @@ Docker 検証:
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: cockroachdb
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "columns": [
-        { "name": "id", "type": "integer" },
-        { "name": "name", "type": "text" },
-        { "name": "amount", "type": "decimal" },
-        { "name": "created_at", "type": "timestamp" },
-        { "name": "tags", "type": "array<text>" },
-        { "name": "attrs", "type": "map<text, integer>" }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE users (
+  id INTEGER,
+  name TEXT,
+  amount DECIMAL,
+  created_at TIMESTAMP,
+  tags Array(TEXT),
+  attrs Map(TEXT, INTEGER)
+);
 ```
 
 ---

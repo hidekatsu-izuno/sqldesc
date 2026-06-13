@@ -136,37 +136,17 @@ CREATE TABLE special_char_semantics (
 ## Prepare-2: hr スキーマメタデータ
 
 ```yaml
-kind: schema-json
+kind: schema-ddl
 dialect: oracle
 ```
 
-```json
-{
-  "tables": [
-    {
-      "name": "employees",
-      "schema": "hr",
-      "columns": [
-        {
-          "name": "employee_id",
-          "type": "integer"
-        },
-        {
-          "name": "first_name",
-          "type": "text"
-        },
-        {
-          "name": "last_name",
-          "type": "text"
-        },
-        {
-          "name": "department_id",
-          "type": "integer"
-        }
-      ]
-    }
-  ]
-}
+```sql
+CREATE TABLE hr.employees (
+  employee_id   NUMBER(10),
+  first_name    VARCHAR2(100),
+  last_name     VARCHAR2(100),
+  department_id NUMBER(10)
+);
 ```
 
 ---
@@ -4291,7 +4271,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | employee_id | number(10) | hr.employees.employee_id |
-| first_name | varchar2(255) | hr.employees.first_name |
+| first_name | varchar2(100) | hr.employees.first_name |
 
 ---
 ## hr エイリアス
@@ -4322,7 +4302,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | employee_id | number(10) | hr.employees.employee_id |
-| last_name | varchar2(255) | hr.employees.last_name |
+| last_name | varchar2(100) | hr.employees.last_name |
 
 ---
 # カタログ

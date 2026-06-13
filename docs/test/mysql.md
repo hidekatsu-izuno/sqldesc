@@ -134,42 +134,6 @@ CREATE TABLE mydb.users (
 );
 ```
 
-## Prepare-2: mydb スキーマメタデータ
-
-```yaml
-kind: schema-json
-dialect: mysql
-```
-
-```json
-{
-  "tables": [
-    {
-      "name": "users",
-      "schema": "mydb",
-      "columns": [
-        {
-          "name": "id",
-          "type": "integer"
-        },
-        {
-          "name": "name",
-          "type": "text"
-        },
-        {
-          "name": "age",
-          "type": "integer"
-        },
-        {
-          "name": "dept",
-          "type": "text"
-        }
-      ]
-    }
-  ]
-}
-```
-
 ---
 
 # SELECT 基本
@@ -3662,7 +3626,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2, Prepare-3
+prepare: Prepare-3
 ```
 
 ### When
@@ -3685,7 +3649,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | mydb.users.id |
-| name | varchar(255) | mydb.users.name |
+| name | varchar(100) | mydb.users.name |
 
 ---
 ## mydb エイリアス
@@ -3693,7 +3657,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: Prepare-2, Prepare-3
+prepare: Prepare-3
 ```
 
 ### When
@@ -3716,7 +3680,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | id | int | mydb.users.id |
-| name | varchar(255) | mydb.users.name |
+| name | varchar(100) | mydb.users.name |
 
 ---
 # カタログ
