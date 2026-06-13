@@ -7,7 +7,7 @@ export interface SqlType {
   toJdbcType(): string;
 }
 
-type TypeFamily = 'postgresql' | 'mysql' | 'sqlite' | 'tsql' | 'oracle' | 'duckdb' | 'bigquery' | 'generic';
+type TypeFamily = 'postgresql' | 'mysql' | 'sqlite' | 'tsql' | 'oracle' | 'duckdb' | 'bigquery' | 'trino' | 'generic';
 
 const JDBC_TYPE_BY_NORMALIZED: Record<string, string> = {
   integer: 'INTEGER',
@@ -115,6 +115,12 @@ export class BigQuerySqlType extends BaseSqlType {
   }
 }
 
+export class TrinoSqlType extends BaseSqlType {
+  protected display(normalizedType: string): string {
+    return displayByFamily(normalizedType, 'trino');
+  }
+}
+
 export function createSqlType(type: string, dialect?: string): SqlType {
   const family = dialectTypeFamily(normalizeDialect(dialect));
   switch (family) {
@@ -132,6 +138,8 @@ export function createSqlType(type: string, dialect?: string): SqlType {
       return new DuckDbSqlType(type);
     case 'bigquery':
       return new BigQuerySqlType(type);
+    case 'trino':
+      return new TrinoSqlType(type);
     default:
       return new GenericSqlType(type);
   }
@@ -192,6 +200,7 @@ export function dialectTypeFamily(dialect: string): TypeFamily {
   if (dialect === 'oracle') return 'oracle';
   if (dialect === 'duckdb') return 'duckdb';
   if (dialect === 'bigquery') return 'bigquery';
+  if (dialect === 'trino' || dialect === 'presto' || dialect === 'athena') return 'trino';
   return 'generic';
 }
 
@@ -220,7 +229,29 @@ function displayByFamily(normalized: string, family: TypeFamily): string {
 
 function displayComplexType(type: string, family: TypeFamily): string {
   if (family === 'bigquery') return type.replace(/^array</, 'array<').replace(/^struct</, 'struct<');
+  if (family === 'trino') return displayTrinoComplexType(type);
   return type;
+}
+
+function displayTrinoComplexType(type: string): string {
+  const arrayMatch = /^array<([\s\S]+)>$/.exec(type);
+  if (arrayMatch?.[1]) return `array(${displayTrinoTypeArgument(arrayMatch[1])})`;
+  const mapMatch = /^map<([\s\S]+)>$/.exec(type);
+  if (mapMatch?.[1]) {
+    const args = splitTopLevel(mapMatch[1], ',');
+    return `map(${args.map(displayTrinoTypeArgument).join(', ')})`;
+  }
+  const structMatch = /^struct<([\s\S]+)>$/.exec(type);
+  if (structMatch?.[1]) return `row(${structMatch[1]})`;
+  return type;
+}
+
+function displayTrinoTypeArgument(type: string): string {
+  const normalized = normalizeTypeName(type);
+  if (normalized.startsWith('array<') || normalized.startsWith('map<') || normalized.startsWith('struct<')) {
+    return displayTrinoComplexType(normalized);
+  }
+  return DISPLAY_MAPS.trino[normalized] ?? normalized;
 }
 
 const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
@@ -376,6 +407,26 @@ const DISPLAY_MAPS: Record<TypeFamily, Record<string, string>> = {
     timestamptz: 'timestamp',
     datetime: 'datetime',
     uuid: 'string',
+  },
+  trino: {
+    integer: 'integer',
+    bigint: 'bigint',
+    decimal: 'decimal',
+    double: 'double',
+    boolean: 'boolean',
+    text: 'varchar',
+    clob: 'varchar',
+    nclob: 'varchar',
+    bytes: 'varbinary',
+    blob: 'varbinary',
+    json: 'json',
+    jsonb: 'json',
+    date: 'date',
+    time: 'time',
+    timestamp: 'timestamp(3)',
+    timestamptz: 'timestamp(3) with time zone',
+    datetime: 'timestamp(3)',
+    uuid: 'uuid',
   },
   generic: {
     integer: 'INTEGER',

@@ -830,7 +830,7 @@ function inferColumn(
     return { type: castType, confidence: 'high', source: 'cast' };
   }
 
-  const literalType = inferLiteralType(expression);
+  const literalType = inferLiteralType(expression, dialect);
   if (literalType) {
     return { type: literalType, confidence: 'high', source: 'literal' };
   }
@@ -2965,7 +2965,7 @@ function inferExpressionType(expression: AstExpression, schema: ValidationSchema
   const collation = getAst(expression, 'collation');
   if (isRecord(collation) && isRecord(collation.this)) return inferColumn(collation.this, 'expression', schema, binds, 'generic').type;
 
-  const windowType = inferWindowFunctionType(expression, schema, binds);
+  const windowType = inferWindowFunctionType(expression, schema, binds, dialect);
   if (windowType) return windowType;
   const constructorType = inferConstructorType(expression, schema, binds);
   if (constructorType) return constructorType;
@@ -3116,7 +3116,7 @@ function inferAggregateType(expression: AstExpression, schema: ValidationSchema,
 }
 
 function dialectCountType(dialect: string): string {
-  if (['postgresql', 'mysql', 'mariadb', 'singlestore', 'tidb', 'duckdb'].includes(dialect)) return 'bigint';
+  if (['postgresql', 'mysql', 'mariadb', 'singlestore', 'tidb', 'duckdb', 'trino', 'presto', 'athena'].includes(dialect)) return 'bigint';
   if (dialect === 'oracle') return 'number';
   return 'integer';
 }
@@ -3145,14 +3145,14 @@ function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSc
   const decimal = innerType ? decimalTypeParts(innerType) : undefined;
   if (!decimal) return innerType;
   if (['mysql', 'mariadb', 'singlestore', 'tidb'].includes(dialect)) return `decimal(${decimal.precision + 22},${decimal.scale})`;
-  if (dialect === 'tsql' || dialect === 'duckdb') return `decimal(38,${decimal.scale})`;
+  if (dialect === 'tsql' || dialect === 'duckdb' || dialect === 'trino' || dialect === 'presto' || dialect === 'athena') return `decimal(38,${decimal.scale})`;
   if (dialect === 'postgresql') return 'numeric';
   if (dialect === 'oracle') return 'number';
   return innerType;
 }
 
 function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: BindSpec, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
-  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return 'integer';
+  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return dialectCountType(dialect);
   if ([
     'avg',
     'corr',
@@ -4225,11 +4225,13 @@ function commonTypeFromTypes(types: string[]): string | undefined {
   return types[0];
 }
 
-function inferWindowFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec): string | undefined {
+function inferWindowFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
   const windowFunction = getAst(expression, 'window_function');
   if (!isRecord(windowFunction) || !isRecord(windowFunction.this)) return undefined;
   const inner = windowFunction.this;
-  if (isAst(inner, 'row_number') || isAst(inner, 'rank') || isAst(inner, 'dense_rank') || isAst(inner, 'ntile') || isAst(inner, 'n_tile')) return 'integer';
+  if (isAst(inner, 'row_number') || isAst(inner, 'rank') || isAst(inner, 'dense_rank') || isAst(inner, 'ntile') || isAst(inner, 'n_tile')) {
+    return ['trino', 'presto', 'athena'].includes(dialect) ? 'bigint' : 'integer';
+  }
   if (isAst(inner, 'percent_rank') || isAst(inner, 'cume_dist')) return 'decimal';
   const valueFunction = getAst(inner, 'lag') ?? getAst(inner, 'lead') ?? getAst(inner, 'first_value') ?? getAst(inner, 'last_value') ?? getAst(inner, 'nth_value');
   if (isRecord(valueFunction) && isRecord(valueFunction.this)) {
@@ -4295,12 +4297,12 @@ function isIntegerLikeType(type: string): boolean {
   return /^(?:integer|int|signed|bigint|smallint|tinyint|number\(\d+,0\))$/i.test(type);
 }
 
-function inferLiteralType(expression: AstExpression): string | undefined {
+function inferLiteralType(expression: AstExpression, dialect = 'generic'): string | undefined {
   const literal = getAst(expression, 'literal');
   if (isRecord(literal)) {
     const literalType = String(literal.literal_type ?? '');
     const value = String(literal.value ?? '');
-    if (literalType === 'string') return 'text';
+    if (literalType === 'string') return dialect === 'trino' || dialect === 'presto' || dialect === 'athena' ? `varchar(${value.length})` : 'text';
     if (literalType === 'boolean') return 'boolean';
     if (literalType === 'number') return value.includes('.') ? 'decimal' : 'integer';
     if (literalType === 'date') return 'date';

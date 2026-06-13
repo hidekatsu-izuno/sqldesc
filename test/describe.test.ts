@@ -1112,7 +1112,7 @@ describe('describeQuery', () => {
 
     const prestoSequenceResult = await describeQuery({ sql: 'select * from sequence(1,3) as t(x)', dialect: 'presto' });
     assert.deepStrictEqual(prestoSequenceResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['x', 'INTEGER', 't.x'],
+      ['x', 'integer', 't.x'],
     ]);
 
     const pragmaTableInfoResult = await describeQuery({ sql: "select * from pragma_table_info('users')", dialect: 'duckdb' });
@@ -1393,8 +1393,8 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(mapResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['k', 'VARCHAR(255)', 't.k'],
-      ['v', 'INTEGER', 't.v'],
+      ['k', 'varchar', 't.k'],
+      ['v', 'integer', 't.v'],
     ]);
   });
 
@@ -2090,10 +2090,10 @@ describe('describeQuery', () => {
       schema,
     });
     assert.deepStrictEqual(dialectScalarResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['n', 'VARCHAR(255)', 'expression'],
-      ['type_name', 'VARCHAR(255)', 'expression'],
-      ['encoded', 'VARBINARY(255)', 'expression'],
-      ['decoded', 'VARCHAR(255)', 'expression'],
+      ['n', 'varchar', 'expression'],
+      ['type_name', 'varchar', 'expression'],
+      ['encoded', 'varbinary', 'expression'],
+      ['decoded', 'varchar', 'expression'],
     ]);
 
     const numericScalarResult = await describeQuery({
@@ -3051,7 +3051,7 @@ describe('describeQuery', () => {
 
     const catalogsResult = await describeQuery({ sql: 'show catalogs', dialect: 'trino' });
     assert.deepStrictEqual(catalogsResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['Catalog', 'VARCHAR(255)', 'cast'],
+      ['Catalog', 'varchar', 'cast'],
     ]);
 
     const clickHouseShowDatabasesResult = await describeQuery({ sql: 'show databases', dialect: 'clickhouse' });
@@ -3084,10 +3084,10 @@ describe('describeQuery', () => {
 
     const trinoStatsResult = await describeQuery({ sql: 'show stats for users', dialect: 'trino' });
     assert.deepStrictEqual(trinoStatsResult.columns.slice(0, 4).map((column) => [column.name, column.type, column.source]), [
-      ['column_name', 'VARCHAR(255)', 'cast'],
-      ['data_size', 'INTEGER', 'cast'],
-      ['distinct_values_count', 'INTEGER', 'cast'],
-      ['nulls_fraction', 'DECIMAL', 'cast'],
+      ['column_name', 'varchar', 'cast'],
+      ['data_size', 'integer', 'cast'],
+      ['distinct_values_count', 'integer', 'cast'],
+      ['nulls_fraction', 'decimal', 'cast'],
     ]);
 
     const mysqlGrantsResult = await describeQuery({ sql: 'show grants for current_user', dialect: 'mysql' });
@@ -3107,7 +3107,7 @@ describe('describeQuery', () => {
 
     const trinoCreateSchemaResult = await describeQuery({ sql: 'show create schema default', dialect: 'trino' });
     assert.deepStrictEqual(trinoCreateSchemaResult.columns.map((column) => [column.name, column.type, column.source]), [
-      ['Create Schema', 'VARCHAR(255)', 'cast'],
+      ['Create Schema', 'varchar', 'cast'],
     ]);
 
     const mysqlCreateDatabaseResult = await describeQuery({ sql: 'show create database mydb', dialect: 'mysql' });
