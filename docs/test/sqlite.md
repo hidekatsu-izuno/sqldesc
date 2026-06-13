@@ -114,7 +114,7 @@ SELECT ...
 | カタログ | sqlite_master、sqlite_schema、DESCRIBE、pragma_table_info |
 | sqldesc メタ | 複数文、resultSets（3件以上）、resultKind、warnings、diagnostics コード |
 | CLI 検証 | `--dialect sqlite3`、複数 `--schema`、`--binds`、複数文 `--json`、エラー出力、JSON スキーマ |
-| スキーマファイル | `loadSchema` / `schemaPatterns` / 修飾 DDL によるメタデータ読み込み |
+| スキーマファイル | `loadSchema` / 修飾 DDL によるメタデータ読み込み |
 | 負のテスト | パースエラー（ライブラリ・CLI）、結果なし DML、メタデータ不足 |
 | EXPLAIN | バイトコード出力 |
 | 結果なし文 | ATTACH/DETACH、VACUUM、REINDEX、BEGIN 変種、INDEX/TRIGGER、FTS 管理、PREPARE |
@@ -10785,9 +10785,10 @@ verify: true
 
 ---
 
-## loadSchema — describeQuery の schemaPatterns
+## loadSchema — CLI / library schema loading
 
-`describeQuery({ schemaPatterns, cwd })` で glob 読み込みと推論を一度に行えます。
+`loadSchema(patterns, { cwd, dialect })` で glob 読み込みした `ValidationSchema` を
+`describeQuery({ schema })` に渡して推論します。
 
 ### Given
 
@@ -10796,11 +10797,14 @@ verify: true
 スキーマ読み込み:
 
 ```js
+const schema = await loadSchema(['schemas/**/*.sql'], {
+  cwd: '<作業ディレクトリ>',
+  dialect: 'sqlite',
+});
 describeQuery({
   dialect: 'sqlite',
   sql: 'SELECT u.id, o.amount FROM users u JOIN orders o ON o.user_id = u.id',
-  schemaPatterns: ['schemas/**/*.sql'],
-  cwd: '<作業ディレクトリ>',
+  schema,
 });
 ```
 
@@ -10869,10 +10873,11 @@ verify: true
 ### When
 
 ```js
+const schema = await loadSchema(['schemas/missing/*.sql'], { dialect: 'sqlite' });
 describeQuery({
   dialect: 'sqlite',
   sql: 'SELECT id FROM users',
-  schemaPatterns: ['schemas/missing/*.sql'],
+  schema,
 });
 ```
 

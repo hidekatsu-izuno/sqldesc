@@ -10,7 +10,7 @@ import {
   type ConfigColumn,
 } from './dialect.js';
 import { normalizeJdbcBindTypes, transformJdbcSql } from './jdbc.js';
-import { loadSchema, loadSchemaFiles, mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
+import { mergeSchemas, parseCreateTables, splitTopLevel, cleanIdentifier } from './schema.js';
 import { displayTypeName, normalizeTypeName } from './sql-type.js';
 import type {
   AstExpression,
@@ -40,12 +40,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   const sql = input.jdbc ? transformJdbcSql(input.sql, dialect) : input.sql;
   const parsedBinds = typeof input.binds === 'string' || input.binds === undefined ? parseBinds(input.binds) : input.binds;
   const binds = input.jdbc ? normalizeJdbcBindTypes(parsedBinds, dialect) : parsedBinds;
-  const loadedSchema = input.schemaFiles?.length
-    ? await loadSchemaFiles(input.schemaFiles, { dialect })
-    : input.schemaPatterns?.length
-      ? await loadSchema(input.schemaPatterns, { cwd: input.cwd, dialect })
-      : { tables: [] };
-  const schema = mergeSchemas(input.schema, loadedSchema);
+  const schema = input.schema ?? { tables: [] };
   const effectiveSchema = schemaWithBuiltinMetadata(schema, dialect);
   const warnings: string[] = [];
   const diagnostics: Diagnostic[] = [];

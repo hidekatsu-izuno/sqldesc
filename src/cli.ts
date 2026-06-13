@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { describeQuery } from './describe.js';
 import { getSupportedDialects } from './dialect.js';
-import { resolveSchemaGlobPatterns } from './schema.js';
+import { loadSchema } from './schema.js';
 
 type CliIo = {
   cwd: string;
@@ -78,16 +78,15 @@ export async function main(argv = process.argv.slice(2), io: CliIo = {
 
   try {
     const sql = await readSql(file, values.sql, io.stdin);
-    const schemaFiles = values.schema?.length
-      ? await resolveSchemaGlobPatterns(values.schema, io.cwd)
+    const schema = values.schema?.length
+      ? await loadSchema(values.schema, { cwd: io.cwd, dialect: values.dialect })
       : undefined;
     const result = await describeQuery({
       sql,
       dialect: values.dialect,
       binds: values.binds,
       jdbc: values.jdbc,
-      schemaFiles,
-      cwd: io.cwd,
+      schema,
     });
 
     if (values.json) {
