@@ -37,9 +37,12 @@ describe('dialect configuration registry', () => {
       assert.strictEqual(config.jdbcTypeMap.NULL, 'unknown');
       assert.ok(Object.keys(config.displayTypes).length > 0);
       assert.ok(config.displayTypes.integer);
+      assert.ok(config.outputTypeOverrides);
       assert.ok(Object.keys(config.scalarFunctionTypes).length > 0);
       assert.strictEqual(config.scalarFunctionTypes.gen_random_uuid, 'uuid');
       assert.strictEqual(config.scalarFunctionTypes.st_distance, 'decimal');
+      assert.ok(Object.keys(config.tableFunctions).length > 0);
+      assert.deepStrictEqual(config.tableFunctions.json_each?.[0], { name: 'key', type: 'text' });
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
       assert.deepStrictEqual(imports, ['./types.js']);
       const exports = [...source.matchAll(/^export\s+/gm)];
@@ -61,6 +64,29 @@ describe('dialect configuration registry', () => {
       mode: 'positional',
       binds: [{ index: 1, type: 'jdbc:JAVA_OBJECT' }],
     }, 'postgres').binds[0]?.type, 'json');
+  });
+
+  it('keeps output type override data in dialect configs', () => {
+    const mysql = dialectConfigs.find((config) => config.name === 'mysql');
+    const duckdb = dialectConfigs.find((config) => config.name === 'duckdb');
+    assert.strictEqual(mysql?.outputTypeOverrides.concat_text, 'varchar(5)');
+    assert.strictEqual(mysql?.outputTypeOverrides.enum_value, "enum('a','b')");
+    assert.strictEqual(duckdb?.outputTypeOverrides['/^avg_/'], 'double');
+  });
+
+  it('keeps fixed table function schemas in dialect configs', async () => {
+    const postgres = dialectConfigs.find((config) => config.name === 'postgresql');
+    assert.strictEqual(postgres?.tableFunctions.pg_get_keywords?.[0]?.name, 'word');
+    assert.strictEqual(postgres?.tableFunctions.current_setting?.[0]?.name, '$alias');
+
+    const result = await describeQuery({
+      dialect: 'postgres',
+      sql: 'select * from pg_catalog.pg_get_keywords() as k',
+    });
+    assert.deepStrictEqual(result.columns.slice(0, 2).map((column) => [column.name, column.type]), [
+      ['word', 'text'],
+      ['catcode', 'text'],
+    ]);
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

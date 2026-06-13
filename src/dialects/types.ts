@@ -32,6 +32,12 @@ export interface DialectDiagnosticRulesConfig {
   readonly suppressOracleCurrentUser?: boolean;
 }
 
+export interface DialectTableFunctionColumnConfig {
+  readonly name: string;
+  readonly type: string;
+  readonly nullable?: boolean;
+}
+
 export interface DialectConfig {
   readonly name: string;
   readonly aliases: readonly string[];
@@ -40,6 +46,7 @@ export interface DialectConfig {
   readonly displayTypes: Readonly<Record<string, string>>;
   readonly jdbcTypeMap: Readonly<Record<string, string>>;
   readonly scalarFunctionTypes: Readonly<Record<string, string>>;
+  readonly tableFunctions: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
   readonly scriptPreprocessor: ScriptPreprocessor;
   readonly includeDirectives: readonly IncludeDirectiveConfig[];
   readonly complexTypeStyle: ComplexTypeStyle;
