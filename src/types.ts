@@ -104,3 +104,44 @@ export interface StatementSummary {
   resultKind: StatementResultKind;
   message?: string;
 }
+
+export type AstExpression = Record<string, unknown>;
+export type TableAliasMap = Map<string, TableAliasEntry>;
+
+export type ColumnInference = Omit<DescribeColumn, 'index' | 'name'> & {
+  confidence?: 'high' | 'medium' | 'low';
+};
+
+export interface OutputItem {
+  expression: AstExpression;
+  name?: string;
+  source?: string;
+  schema?: ValidationSchema;
+  tableAliases?: TableAliasMap;
+  functionReturnTypes?: Map<string, string>;
+}
+
+export interface TableAliasEntry {
+  tableName: string;
+  schemaName?: string;
+  visibleColumnNames: string[];
+  nullable?: boolean;
+}
+
+export interface NestedBaseColumn {
+  table: SchemaTable;
+  column: SchemaColumn;
+  source: string;
+}
+
+export type NestedPathStep =
+  | { kind: 'field'; name: string }
+  | { kind: 'element' };
+
+export interface StatementContext {
+  prepared: Map<string, AstExpression>;
+  functionReturnTypes: Map<string, string>;
+  tableFunctions: Map<string, SchemaTable>;
+  procedureResultSets: Map<string, OutputItem[]>;
+  typeAliases: Map<string, string>;
+}

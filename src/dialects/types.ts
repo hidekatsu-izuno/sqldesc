@@ -28,6 +28,7 @@ export interface IncludeDirectiveConfig {
 export interface DialectMetadataConfig {
   readonly sqliteRowidColumns?: readonly string[];
   readonly oracleCurrentUserColumn?: boolean;
+  readonly builtinSchemaTables: readonly DialectSchemaTableConfig[];
   readonly describeFunctionColumns: readonly DialectTableFunctionColumnConfig[];
   readonly explainColumns: readonly DialectTableFunctionColumnConfig[];
   readonly snowflakeDescribeObjectColumns: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
@@ -47,6 +48,12 @@ export interface DialectTableFunctionColumnConfig {
   readonly name: string;
   readonly type: string;
   readonly nullable?: boolean;
+}
+
+export interface DialectSchemaTableConfig {
+  readonly name: string;
+  readonly schema?: string;
+  readonly columns: readonly DialectTableFunctionColumnConfig[];
 }
 
 export interface DialectCommandResultConfig {

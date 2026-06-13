@@ -13,6 +13,42 @@ import {
 } from '../dist/index.js';
 import { dialectConfigs } from '../dist/dialects/index.js';
 
+const DIALECT_CONFIG_KEY_ORDER = [
+  'name',
+  'aliases',
+  'family',
+  'typeFamily',
+  'displayTypes',
+  'jdbcTypeMap',
+  'scalarFunctionTypes',
+  'scalarFunctionTypePatterns',
+  'tableFunctions',
+  'aggregate',
+  'commonTypes',
+  'cast',
+  'arithmetic',
+  'windowFunctionTypes',
+  'specialParameterTypes',
+  'specialColumnTypes',
+  'qualifiedSpecialColumnTypes',
+  'pseudoColumnTypes',
+  'generatedNames',
+  'scriptPreprocessor',
+  'includeDirectives',
+  'complexTypeStyle',
+  'jdbcEscapeStyle',
+  'jdbcEscape',
+  'jdbcParameterMarker',
+  'parserFallbacks',
+  'parameterizedTypeFormats',
+  'literalTypes',
+  'dynamicTableFunctions',
+  'serializedSelect',
+  'outputTypeOverrides',
+  'metadata',
+  'diagnosticRules',
+] as const;
+
 describe('dialect configuration registry', () => {
   it('has an independent config file for every polyglot-sql dialect', async () => {
     const sdkDialects = getDialects().map(String).sort();
@@ -60,6 +96,8 @@ describe('dialect configuration registry', () => {
       assert.ok(config.dynamicTableFunctions.generateSeriesColumn);
       assert.ok(config.dynamicTableFunctions.enabledHandlers.includes('embeddedSql'));
       assert.ok(config.serializedSelect);
+      assert.ok(config.metadata.builtinSchemaTables.length > 0);
+      assert.strictEqual(config.metadata.builtinSchemaTables[0]?.schema, 'information_schema');
       assert.ok(config.metadata.describeFunctionColumns.length > 0);
       assert.ok(config.metadata.explainColumns.length > 0);
       assert.ok(config.metadata.showTableListingColumns?.length);
@@ -71,6 +109,8 @@ describe('dialect configuration registry', () => {
       const exports = [...source.matchAll(/^export\s+/gm)];
       assert.strictEqual(exports.length, 1);
       assert.match(source, /export const dialectConfig = /);
+      const keys = [...source.matchAll(/^  ([a-zA-Z]\w*):/gm)].map((match) => match[1]);
+      assert.deepStrictEqual(keys, DIALECT_CONFIG_KEY_ORDER, `${config.name} config key order`);
     }
   });
 
