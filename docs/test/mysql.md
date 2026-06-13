@@ -2618,7 +2618,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | varchar(255) | v.id |
+| id | int | v.id |
+| label | varchar(255) | v.label |
 
 ---
 # 日付・時刻

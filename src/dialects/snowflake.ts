@@ -149,6 +149,7 @@ export const dialectConfig = {
     months_between: 'decimal',
     newid: 'uuid',
     nextval: 'bigint',
+    normal: 'decimal',
     octet_length: 'integer',
     overlay: 'text',
     parse_json: 'json',
@@ -161,6 +162,7 @@ export const dialectConfig = {
     radians: 'decimal',
     rand: 'decimal',
     random: 'decimal',
+    randstr: 'text',
     regexp_contains: 'boolean',
     regexp_count: 'integer',
     regexp_extract: 'text',
@@ -182,6 +184,10 @@ export const dialectConfig = {
     safe_divide: 'decimal',
     scope_identity: 'integer',
     second: 'integer',
+    seq1: 'integer',
+    seq2: 'integer',
+    seq4: 'integer',
+    seq8: 'integer',
     setval: 'bigint',
     sha: 'text',
     sha1: 'text',
@@ -245,6 +251,7 @@ export const dialectConfig = {
     try_to_decimal: 'decimal',
     try_to_number: 'decimal',
     typeof: 'text',
+    uniform: 'decimal',
     unhex: 'bytes',
     upper: 'text',
     user: 'text',
@@ -254,6 +261,7 @@ export const dialectConfig = {
     week: 'integer',
     xxhash64: 'integer',
     year: 'integer',
+    zipf: 'decimal',
   },
   scalarFunctionTypePatterns: {},
   tableFunctions:   {
@@ -284,6 +292,12 @@ export const dialectConfig = {
       }
     ],
     generator: [],
+    getnextval: [
+      {
+        name: "nextval",
+        type: "integer"
+      }
+    ],
     infer_schema: [
       {
         name: "expression",

@@ -838,6 +838,119 @@ describe('describeQuery', () => {
     assert.deepStrictEqual(widenedResult.columns.map((column) => [column.name, column.type]), [
       ['column_1', 'DECIMAL'],
     ]);
+
+    const rowSyntaxResult = await describeQuery({
+      sql: "select * from (values row(1, 'a'), row(2, 'b')) as t(id, name)",
+      dialect: 'singlestore',
+    });
+    assert.deepStrictEqual(rowSyntaxResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['id', 'int', 't.id'],
+      ['name', 'varchar(255)', 't.name'],
+    ]);
+  });
+
+  it('describes singlestore json_extract_json and mysql-style convert', async () => {
+    const singlestoreSchema: ValidationSchema = {
+      tables: [{
+        name: 'users',
+        columns: [
+          { name: 'amount', type: 'decimal' },
+          { name: 'data', type: 'json' },
+        ],
+      }],
+    };
+
+    const jsonExtractJsonResult = await describeQuery({
+      sql: "select json_extract_json(data, '$.x') as j from users",
+      dialect: 'singlestore',
+      schema: singlestoreSchema,
+    });
+    assert.deepStrictEqual(jsonExtractJsonResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['j', 'json', 'expression'],
+    ]);
+
+    const convertResult = await describeQuery({
+      sql: 'select convert(amount, decimal(10,2)) as ca from users',
+      dialect: 'singlestore',
+      schema: singlestoreSchema,
+    });
+    assert.deepStrictEqual(convertResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['ca', 'decimal(10,2)', 'expression'],
+    ]);
+  });
+
+  it('describes starrocks get_json_string and bitmap_union_count', async () => {
+    const starrocksSchema: ValidationSchema = {
+      tables: [{
+        name: 'users',
+        columns: [
+          { name: 'id', type: 'integer' },
+          { name: 'data', type: 'json' },
+        ],
+      }],
+    };
+
+    const jsonResult = await describeQuery({
+      sql: "select get_json_string(data, '$.x') as gjs from users",
+      dialect: 'starrocks',
+      schema: starrocksSchema,
+    });
+    assert.deepStrictEqual(jsonResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['gjs', 'varchar(255)', 'expression'],
+    ]);
+
+    const bitmapResult = await describeQuery({
+      sql: 'select bitmap_union_count(to_bitmap(id)) as buc from users',
+      dialect: 'starrocks',
+      schema: starrocksSchema,
+    });
+    assert.deepStrictEqual(bitmapResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['buc', 'int', 'expression'],
+    ]);
+  });
+
+  it('describes teradata csum, otranslate, and hash functions', async () => {
+    const teradataSchema: ValidationSchema = {
+      tables: [{
+        name: 'users',
+        columns: [
+          { name: 'id', type: 'integer' },
+          { name: 'name', type: 'text' },
+          { name: 'amount', type: 'decimal' },
+        ],
+      }],
+    };
+
+    const windowResult = await describeQuery({
+      sql: 'select csum(amount) over (order by id) as csum, mavg(amount) over (order by id) as mavg from users',
+      dialect: 'teradata',
+      schema: teradataSchema,
+    });
+    assert.deepStrictEqual(windowResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['csum', 'DECIMAL', 'expression'],
+      ['mavg', 'DECIMAL', 'expression'],
+    ]);
+
+    const stringResult = await describeQuery({
+      sql: "select otranslate(name, 'abc', 'xyz') as ot, oreplace(name, 'a', 'b') as orp from users",
+      dialect: 'teradata',
+      schema: teradataSchema,
+    });
+    assert.deepStrictEqual(stringResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['ot', 'VARCHAR(255)', 'expression'],
+      ['orp', 'VARCHAR(255)', 'expression'],
+    ]);
+
+    const hashResult = await describeQuery({
+      sql: 'select hashamp(id) as ha, hashbucket(id) as hb, index(name) as idx from users',
+      dialect: 'teradata',
+      schema: teradataSchema,
+    });
+    assert.deepStrictEqual(hashResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['ha', 'INTEGER', 'expression'],
+      ['hb', 'INTEGER', 'expression'],
+      ['idx', 'INTEGER', 'expression'],
+    ]);
   });
 
   it('describes set operations from the left query shape', async () => {
@@ -2366,6 +2479,32 @@ describe('describeQuery', () => {
       ['index', 'INTEGER', 'f.index'],
       ['value', 'variant', 'f.value'],
       ['this', 'variant', 'f.this'],
+    ]);
+  });
+
+  it('describes snowflake generator and sequence functions', async () => {
+    const generatorResult = await describeQuery({
+      sql: 'select * from table(generator(rowcount => 5)) g',
+      dialect: 'snowflake',
+    });
+    assert.deepStrictEqual(generatorResult.columns, []);
+
+    const seqResult = await describeQuery({
+      sql: 'select seq4() as s, seq8() as s8 from table(generator(rowcount => 3)) g',
+      dialect: 'snowflake',
+    });
+    assert.deepStrictEqual(seqResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['s', 'INTEGER', 'expression'],
+      ['s8', 'INTEGER', 'expression'],
+    ]);
+
+    const getNextValResult = await describeQuery({
+      sql: 'select s.nextval from users u, table(getnextval(seq1)) s',
+      dialect: 'snowflake',
+      schema,
+    });
+    assert.deepStrictEqual(getNextValResult.columns.map((column) => [column.name, column.type, column.source]), [
+      ['nextval', 'INTEGER', 's.nextval'],
     ]);
   });
 

@@ -1101,7 +1101,7 @@ verify: true
 |------|------|--------|
 | concat_text | text | polyglot |
 | date_plus | text | polyglot |
-| datetime_plus | text | polyglot |
+| datetime_plus | text | expression |
 
 ---
 ## 算術・文字列関数・ウィンドウ — storage class metadata
@@ -1293,7 +1293,7 @@ verify: true
 | case_all_null | null | expression |
 | div_decimal | real | polyglot |
 | div_decimal_int | real | polyglot |
-| tz_text | text | polyglot |
+| tz_text | text | expression |
 
 ---
 ## NULL型解決・追加演算・set operation・JSON scalar — storage class metadata
@@ -1361,7 +1361,7 @@ verify: true
 | min_date | text | expression |
 | max_ts | text | expression |
 | date_interval_plus | text | polyglot |
-| ts_interval_plus | text | polyglot |
+| ts_interval_plus | text | expression |
 | json_scalar_num | integer | expression |
 | json_scalar_bool | integer | expression |
 | json_scalar_null | null | expression |
@@ -1490,7 +1490,7 @@ verify: true
 | case_num_text | integer | expression |
 | case_date_ts | text | expression |
 | bool_sum | integer | expression |
-| timezone_convert | text | polyglot |
+| timezone_convert | text | expression |
 | json_unquote_text | text | expression |
 | bind_coalesce_equiv | integer | expression |
 | bind_cast_equiv | text | polyglot |
@@ -3696,7 +3696,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| r | text | polyglot |
+| r | text | expression |
 | s | text | expression |
 | t | text | expression |
 | i | integer | expression |
@@ -3768,7 +3768,7 @@ verify: true
 | a | real | polyglot |
 | r | real | polyglot |
 | sq | real | polyglot |
-| p | real | polyglot |
+| p | real | expression |
 
 ---
 
@@ -3827,7 +3827,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| p | text | polyglot |
+| p | text | expression |
 
 ---
 
@@ -5531,8 +5531,8 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | t | text | expression |
-| lt | text | polyglot |
-| rt | text | polyglot |
+| lt | text | expression |
+| rt | text | expression |
 
 ---
 
@@ -5803,8 +5803,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | text | polyglot |
-| nd | text | polyglot |
+| n | text | expression |
+| nd | text | expression |
 | sm | text | polyglot |
 
 ---

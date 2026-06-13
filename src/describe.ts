@@ -219,6 +219,11 @@ function inferColumn(
     return { type: sequenceType, confidence: 'medium', source: 'expression' };
   }
 
+  const configuredScalarType = inferConfiguredScalarFunctionType(expression, dialect);
+  if (configuredScalarType) {
+    return { type: configuredScalarType, confidence: 'medium', source: 'expression' };
+  }
+
   const definedFunctionType = inferDefinedFunctionType(expression, functionReturnTypes);
   if (definedFunctionType) {
     return { type: definedFunctionType, confidence: 'medium', source: 'function' };
@@ -313,7 +318,15 @@ function inferSequenceFunctionType(expression: AstExpression): string | undefine
   const fn = getAst(expression, 'function');
   if (!isRecord(fn)) return undefined;
   const name = String(fn.name ?? '').toLowerCase();
+  if (['seq1', 'seq2', 'seq4', 'seq8'].includes(name)) return 'integer';
   return ['nextval', 'currval', 'lastval', 'setval'].includes(name) ? 'bigint' : undefined;
+}
+
+function inferConfiguredScalarFunctionType(expression: AstExpression, dialect: string): string | undefined {
+  const fn = getAst(expression, 'function');
+  if (!isRecord(fn)) return undefined;
+  const name = String(fn.name ?? '').toLowerCase();
+  return getDialectConfig(dialect).scalarFunctionTypes[name] ?? getDialectConfig('generic').scalarFunctionTypes[name];
 }
 
 function inferDefinedFunctionType(expression: AstExpression, functionReturnTypes?: Map<string, string>): string | undefined {
@@ -574,7 +587,7 @@ function dialectSumType(aggregate: Record<string, unknown>, schema: ValidationSc
 }
 
 function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, schema: ValidationSchema, binds: Binds | undefined, tableAliases?: TableAliasMap, dialect = 'generic'): string | undefined {
-  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact'].includes(name)) return dialectCountType(dialect);
+  if (['count', 'count_if', 'approx_count_distinct', 'approx_distinct', 'hash_agg', 'regr_count', 'uniq', 'uniqexact', 'bitmap_union_count'].includes(name)) return dialectCountType(dialect);
   if ([
     'avg',
     'corr',
@@ -618,6 +631,10 @@ function aggregateTypeByName(name: string, aggregate: Record<string, unknown>, s
     return 'decimal';
   }
   if (name === 'sum') return dialectSumType(aggregate, schema, binds, tableAliases, dialect);
+  if (['csum', 'mavg'].includes(name)) {
+    const inner = firstAggregateExpression(aggregate);
+    return inner ? inferAggregateExpressionType(inner, schema, binds, tableAliases) : 'decimal';
+  }
   if (['bool_and', 'bool_or', 'every', 'logical_and', 'logical_or', 'booland_agg', 'boolor_agg'].includes(name)) return 'boolean';
   if (['string_agg', 'group_concat', 'listagg', 'ai_agg'].includes(name)) return 'text';
   if (['json_group_array', 'json_group_object', 'jsonb_group_array', 'jsonb_group_object'].includes(name)) return 'json';
@@ -751,10 +768,10 @@ function inferJsonType(expression: AstExpression): string | undefined {
   const name = String(fn.name ?? '').toLowerCase();
   if (['json_build_object', 'json_build_array', 'json_object', 'json_array', 'json_keys', 'to_json'].includes(name)) return 'json';
   if (['jsonb_build_object', 'jsonb_build_array', 'to_jsonb', 'jsonb_path_query', 'jsonb_path_query_first', 'jsonb_path_query_array'].includes(name)) return 'jsonb';
-  if (['json_extract', 'json_query', 'json_set', 'json_insert', 'json_replace', 'json_remove', 'json_patch', 'json_merge_patch', 'json_array_append', 'json_array_insert'].includes(name)) return 'json';
+  if (['json_extract', 'json_query', 'json_set', 'json_insert', 'json_replace', 'json_remove', 'json_patch', 'json_merge_patch', 'json_array_append', 'json_array_insert', 'json_extract_json'].includes(name)) return 'json';
   if (['json_query_array'].includes(name)) return 'array<json>';
   if (['json_value_array'].includes(name)) return 'array<text>';
-  if (['json_extract_scalar', 'json_value', 'json_search', 'get_json_object', 'json_tuple', 'jsonextractstring', 'jsonb_extract_path_text'].includes(name)) return 'text';
+  if (['json_extract_scalar', 'json_value', 'json_search', 'get_json_object', 'get_json_string', 'json_tuple', 'jsonextractstring', 'jsonb_extract_path_text'].includes(name)) return 'text';
   if (['json_array_length', 'jsonb_array_length', 'json_length', 'json_size'].includes(name)) return 'integer';
   if (['jsonextractint', 'jsonextractuint'].includes(name)) return 'integer';
   if (['jsonextractfloat'].includes(name)) return 'decimal';
@@ -1233,6 +1250,8 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'repeat',
     'overlay',
     'replace',
+    'otranslate',
+    'oreplace',
     'regexp_replace',
     'regexp_extract',
     'regexp_substr',
@@ -1255,6 +1274,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'to_json_string',
     'json_value',
     'json_extract_string',
+    'get_json_string',
     'tidb_version',
     'stringify_json',
     'from_utf8',
@@ -1334,7 +1354,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
     'object_name',
     'schema_name',
 	  ].includes(name)) return 'text';
-	  if (['length', 'char_length', 'character_length', 'bit_length', 'byte_length', 'octet_length', 'ascii', 'codepoint', 'instr', 'locate', 'strpos', 'position', 'charindex', 'size', 'match_number', 'array_position', 'array_size', 'array_ndims', 'array_upper', 'array_lower', 'field', 'find_in_set', 'inet_aton', 'inet_client_port', 'datalength', 'width_bucket', 'num_nonnulls', 'num_nulls', 'crc32', 'farm_fingerprint', 'cityhash64', 'siphash64', 'checksum', 'levenshtein', 'editdistance', 'bit_count', 'bitcount', 'bitmap_count', 'hll_cardinality', 'jsonlength', 'connection_id', 'last_insert_id', 'changes', 'total_changes', 'last_insert_rowid', 'pg_backend_pid', 'inet_server_port', 'txid_current', 'binary_checksum', 'patindex', 'monotonically_increasing_id', 'ora_hash', 'json_storage_size', 'day', 'dayofmonth', 'month', 'year', 'quarter', 'week', 'weekofyear', 'hour', 'minute', 'second', 'db_id', 'object_id', 'isdate', 'isnumeric'].includes(name)) return 'integer';
+	  if (['length', 'char_length', 'character_length', 'bit_length', 'byte_length', 'octet_length', 'ascii', 'codepoint', 'instr', 'locate', 'strpos', 'position', 'charindex', 'size', 'match_number', 'array_position', 'array_size', 'array_ndims', 'array_upper', 'array_lower', 'field', 'find_in_set', 'inet_aton', 'inet_client_port', 'datalength', 'width_bucket', 'num_nonnulls', 'num_nulls', 'crc32', 'farm_fingerprint', 'cityhash64', 'siphash64', 'checksum', 'levenshtein', 'editdistance', 'bit_count', 'bitcount', 'bitmap_count', 'bitmap_union_count', 'hll_cardinality', 'jsonlength', 'connection_id', 'last_insert_id', 'changes', 'total_changes', 'last_insert_rowid', 'pg_backend_pid', 'inet_server_port', 'txid_current', 'binary_checksum', 'patindex', 'monotonically_increasing_id', 'ora_hash', 'json_storage_size', 'day', 'dayofmonth', 'month', 'year', 'quarter', 'week', 'weekofyear', 'hour', 'minute', 'second', 'db_id', 'object_id', 'isdate', 'isnumeric', 'hashamp', 'hashbucket', 'index'].includes(name)) return 'integer';
   if (name === 'matchinfo') return 'bytes';
   if (name === 'offsets') return 'text';
   if (name === 'bm25') return 'decimal';
@@ -1427,9 +1447,7 @@ function inferScalarFunctionType(expression: AstExpression, schema: ValidationSc
   if (name === 'isnumeric') return 'integer';
   if (['grouping', 'grouping_id', 'groupingid'].includes(name)) return 'integer';
   if (name === 'convert' || name === 'try_convert') {
-    const targetType = Array.isArray(genericFunction.args) ? genericFunction.args[0] : undefined;
-    const type = isRecord(targetType) ? dataTypeToString(targetType.data_type ?? targetType) : undefined;
-    if (type) return type;
+    return convertFunctionResultType(genericFunction, dialect);
   }
 	  if (['abs', 'round', 'ceil', 'ceiling', 'floor', 'degrees', 'radians', 'truncate', 'safe_add', 'safe_subtract', 'safe_multiply', 'pmod', 'div', 'mod'].includes(name)) return commonArgumentType(functionArguments(genericFunction), schema, binds) ?? 'decimal';
 	  if (['safe_divide', 'ieee_divide', 'cbrt'].includes(name)) return 'decimal';
@@ -1979,6 +1997,46 @@ function numericLiteralValue(expression: unknown): number | undefined {
   if (!isRecord(literal) || literal.literal_type !== 'number') return undefined;
   const value = Number(literal.value);
   return Number.isFinite(value) ? value : undefined;
+}
+
+function convertFunctionResultType(functionNode: Record<string, unknown>, dialect: string): string | undefined {
+  const args = functionArguments(functionNode);
+  if (args.length === 0) return undefined;
+  if (isMysqlLikeDialect(dialect)) {
+    return convertTypeFromAst(args[1]) ?? convertTypeFromAst(args[0]);
+  }
+  return convertTypeFromAst(args[0]) ?? convertTypeFromAst(args[1]);
+}
+
+function convertTypeFromAst(node: unknown): string | undefined {
+  if (!isRecord(node)) return undefined;
+  const directType = dataTypeToString(node.data_type ?? node);
+  if (directType) return directType;
+
+  const fn = getAst(node, 'function');
+  if (isRecord(fn)) {
+    const name = String(fn.name ?? '').toLowerCase();
+    const fnArgs = functionArguments(fn);
+    if (['decimal', 'dec', 'numeric', 'number'].includes(name)) {
+      const precision = numericLiteralValue(fnArgs[0]);
+      const scale = numericLiteralValue(fnArgs[1]);
+      if (precision !== undefined) {
+        return scale !== undefined ? `decimal(${precision},${scale})` : `decimal(${precision})`;
+      }
+      return 'decimal';
+    }
+    if (['char', 'varchar', 'binary', 'varbinary', 'nchar', 'nvarchar'].includes(name)) {
+      const length = numericLiteralValue(fnArgs[0]);
+      return length !== undefined ? `${name}(${length})` : name;
+    }
+    return name;
+  }
+
+  const literal = getAst(node, 'literal');
+  if (isRecord(literal) && literal.literal_type === 'string') {
+    return String(literal.value ?? '').toLowerCase();
+  }
+  return undefined;
 }
 
 function isNumericString(value: string): boolean {
@@ -5443,10 +5501,22 @@ function definitionColumns(definition: Record<string, unknown>): unknown[] {
   return [];
 }
 
+function normalizedValuesRowExpressions(row: unknown): AstExpression[] {
+  if (!isRecord(row) || !Array.isArray(row.expressions)) return [];
+  const rowExpressions = row.expressions.filter(isRecord);
+  if (rowExpressions.length === 1) {
+    const rowFunction = getAst(rowExpressions[0], 'function');
+    if (isRecord(rowFunction) && String(rowFunction.name ?? '').toLowerCase() === 'row') {
+      return functionArguments(rowFunction).filter(isRecord);
+    }
+  }
+  return rowExpressions;
+}
+
 function outputItemsFromValues(values: Record<string, unknown>, schema: ValidationSchema): OutputItem[] {
   const rows = Array.isArray(values.expressions) ? values.expressions : [];
   const firstRow = rows.find(isRecord);
-  const expressions = isRecord(firstRow) && Array.isArray(firstRow.expressions) ? firstRow.expressions : [];
+  const expressions = firstRow ? normalizedValuesRowExpressions(firstRow) : [];
   const aliases = Array.isArray(values.column_aliases) ? values.column_aliases : [];
   return expressions.filter(isRecord).map((expression, index) => ({
     expression: valuesColumnExpression(rows, index, expression, schema),
@@ -5456,7 +5526,10 @@ function outputItemsFromValues(values: Record<string, unknown>, schema: Validati
 
 function valuesColumnExpression(rows: unknown[], index: number, fallback: AstExpression, schema: ValidationSchema): AstExpression {
   const columnExpressions = rows
-    .flatMap((row) => isRecord(row) && Array.isArray(row.expressions) && isRecord(row.expressions[index]) ? [row.expressions[index]] : []);
+    .flatMap((row) => {
+      const expression = normalizedValuesRowExpressions(row)[index];
+      return expression && isRecord(expression) ? [expression] : [];
+    });
   const type = commonArgumentType(columnExpressions, schema, undefined);
   return type
     ? {
