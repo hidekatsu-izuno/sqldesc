@@ -189,6 +189,8 @@ describe('dialect configuration registry', () => {
     assert.ok(!names('sqlite').includes('pg_catalog.pg_tables'));
     assert.ok(names('trino').includes('information_schema.tables'));
     assert.ok(names('trino').includes('runtime.nodes'));
+    assert.ok(names('datafusion').includes('information_schema.tables'));
+    assert.ok(names('datafusion').includes('information_schema.df_settings'));
     assert.deepStrictEqual(names('spark'), []);
     assert.deepStrictEqual(names('solr'), []);
     assert.ok(postgres);
