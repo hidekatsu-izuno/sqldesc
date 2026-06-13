@@ -13,6 +13,12 @@ a representative cross-dialect coverage suite for SQL that Polyglot can parse.
 When a result shape is inherently runtime dependent, `sqldesc` reports that
 state explicitly instead of rejecting the SQL.
 
+## Demo
+
+A browser demo is published at [https://hidekatsu-izuno.github.io/sqldesc/](https://hidekatsu-izuno.github.io/sqldesc/).
+It runs `sqldesc` in the browser via WebAssembly and lets you try SQL, bind
+types, optional schema DDL, and JDBC mode without installing anything.
+
 ## Install
 
 ```sh
