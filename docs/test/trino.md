@@ -567,3 +567,135 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | table_name | varchar | information_schema.tables.table_name |
+
+---
+
+## information_schema.tables Docker 実測列
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: trino
+```
+
+```sql
+SELECT table_catalog, table_schema, table_name, table_type FROM information_schema.tables
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| table_catalog | varchar | information_schema.tables.table_catalog |
+| table_schema | varchar | information_schema.tables.table_schema |
+| table_name | varchar | information_schema.tables.table_name |
+| table_type | varchar | information_schema.tables.table_type |
+
+---
+
+## information_schema.columns Docker 実測列
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: trino
+```
+
+```sql
+SELECT column_name, data_type FROM information_schema.columns
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| column_name | varchar | information_schema.columns.column_name |
+| data_type | varchar | information_schema.columns.data_type |
+
+---
+
+## system.runtime.nodes Docker 実測列
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: trino
+```
+
+```sql
+SELECT node_id, http_uri, coordinator FROM runtime.nodes
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| node_id | varchar | runtime.nodes.node_id |
+| http_uri | varchar | runtime.nodes.http_uri |
+| coordinator | boolean | runtime.nodes.coordinator |
+
+---
+
+## system.runtime.queries Docker 実測列
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: trino
+```
+
+```sql
+SELECT query_id, state, query FROM runtime.queries
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| query_id | varchar | runtime.queries.query_id |
+| state | varchar | runtime.queries.state |
+| query | varchar | runtime.queries.query |

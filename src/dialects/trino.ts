@@ -339,91 +339,23 @@ export const dialectConfig = {
     builtinSchemaTables:                 [
       {
         schema: "information_schema",
-        name: "tables",
+        name: "applicable_roles",
         columns: [
           {
-            name: "table_catalog",
-            type: "text"
+            name: "grantee",
+            type: "varchar"
           },
           {
-            name: "table_schema",
-            type: "text"
+            name: "grantee_type",
+            type: "varchar"
           },
           {
-            name: "table_name",
-            type: "text"
+            name: "role_name",
+            type: "varchar"
           },
           {
-            name: "name",
-            type: "text"
-          },
-          {
-            name: "table_type",
-            type: "text"
-          },
-          {
-            name: "self_referencing_column_name",
-            type: "text"
-          },
-          {
-            name: "reference_generation",
-            type: "text"
-          },
-          {
-            name: "user_defined_type_catalog",
-            type: "text"
-          },
-          {
-            name: "user_defined_type_schema",
-            type: "text"
-          },
-          {
-            name: "user_defined_type_name",
-            type: "text"
-          },
-          {
-            name: "is_insertable_into",
-            type: "boolean"
-          },
-          {
-            name: "is_typed",
-            type: "boolean"
-          },
-          {
-            name: "commit_action",
-            type: "text"
-          },
-          {
-            name: "created",
-            type: "timestamp"
-          },
-          {
-            name: "last_altered",
-            type: "timestamp"
-          },
-          {
-            name: "row_count",
-            type: "integer"
-          },
-          {
-            name: "bytes",
-            type: "integer"
-          },
-          {
-            name: "owner",
-            type: "text"
-          },
-          {
-            name: "retention_time",
-            type: "text"
-          },
-          {
-            name: "is_transient",
-            type: "boolean"
-          },
-          {
-            name: "is_temporary",
-            type: "boolean"
+            name: "is_grantable",
+            type: "varchar"
           }
         ]
       },
@@ -433,179 +365,55 @@ export const dialectConfig = {
         columns: [
           {
             name: "table_catalog",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "table_schema",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "table_name",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "column_name",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "ordinal_position",
-            type: "integer"
+            type: "bigint"
           },
           {
             name: "column_default",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "is_nullable",
-            type: "boolean"
+            type: "varchar"
           },
           {
             name: "data_type",
-            type: "text"
-          },
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "enabled_roles",
+        columns: [
           {
-            name: "character_maximum_length",
-            type: "integer"
-          },
+            name: "role_name",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "roles",
+        columns: [
           {
-            name: "character_octet_length",
-            type: "integer"
-          },
-          {
-            name: "numeric_precision",
-            type: "integer"
-          },
-          {
-            name: "numeric_precision_radix",
-            type: "integer"
-          },
-          {
-            name: "numeric_scale",
-            type: "integer"
-          },
-          {
-            name: "datetime_precision",
-            type: "integer"
-          },
-          {
-            name: "interval_type",
-            type: "text"
-          },
-          {
-            name: "interval_precision",
-            type: "integer"
-          },
-          {
-            name: "character_set_catalog",
-            type: "text"
-          },
-          {
-            name: "character_set_schema",
-            type: "text"
-          },
-          {
-            name: "character_set_name",
-            type: "text"
-          },
-          {
-            name: "collation_catalog",
-            type: "text"
-          },
-          {
-            name: "collation_schema",
-            type: "text"
-          },
-          {
-            name: "collation_name",
-            type: "text"
-          },
-          {
-            name: "domain_catalog",
-            type: "text"
-          },
-          {
-            name: "domain_schema",
-            type: "text"
-          },
-          {
-            name: "domain_name",
-            type: "text"
-          },
-          {
-            name: "udt_catalog",
-            type: "text"
-          },
-          {
-            name: "udt_schema",
-            type: "text"
-          },
-          {
-            name: "udt_name",
-            type: "text"
-          },
-          {
-            name: "scope_catalog",
-            type: "text"
-          },
-          {
-            name: "scope_schema",
-            type: "text"
-          },
-          {
-            name: "scope_name",
-            type: "text"
-          },
-          {
-            name: "maximum_cardinality",
-            type: "integer"
-          },
-          {
-            name: "dtd_identifier",
-            type: "text"
-          },
-          {
-            name: "is_self_referencing",
-            type: "boolean"
-          },
-          {
-            name: "is_identity",
-            type: "boolean"
-          },
-          {
-            name: "identity_generation",
-            type: "text"
-          },
-          {
-            name: "identity_start",
-            type: "text"
-          },
-          {
-            name: "identity_increment",
-            type: "text"
-          },
-          {
-            name: "identity_maximum",
-            type: "text"
-          },
-          {
-            name: "identity_minimum",
-            type: "text"
-          },
-          {
-            name: "identity_cycle",
-            type: "boolean"
-          },
-          {
-            name: "is_generated",
-            type: "boolean"
-          },
-          {
-            name: "generation_expression",
-            type: "text"
-          },
-          {
-            name: "is_updatable",
-            type: "boolean"
+            name: "role_name",
+            type: "varchar"
           }
         ]
       },
@@ -614,77 +422,80 @@ export const dialectConfig = {
         name: "schemata",
         columns: [
           {
-            name: "project_id",
-            type: "text"
-          },
-          {
-            name: "project_number",
-            type: "text"
-          },
-          {
             name: "catalog_name",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "schema_name",
-            type: "text"
-          },
-          {
-            name: "schema_owner",
-            type: "text"
-          },
-          {
-            name: "default_character_set_catalog",
-            type: "text"
-          },
-          {
-            name: "default_character_set_schema",
-            type: "text"
-          },
-          {
-            name: "default_character_set_name",
-            type: "text"
-          },
-          {
-            name: "sql_path",
-            type: "text"
+            type: "varchar"
           }
         ]
       },
       {
-        name: "information_schema.routines",
+        schema: "information_schema",
+        name: "table_privileges",
         columns: [
           {
-            name: "specific_catalog",
-            type: "text"
+            name: "grantor",
+            type: "varchar"
           },
           {
-            name: "specific_schema",
-            type: "text"
+            name: "grantor_type",
+            type: "varchar"
           },
           {
-            name: "specific_name",
-            type: "text"
+            name: "grantee",
+            type: "varchar"
           },
           {
-            name: "routine_catalog",
-            type: "text"
+            name: "grantee_type",
+            type: "varchar"
           },
           {
-            name: "routine_schema",
-            type: "text"
+            name: "table_catalog",
+            type: "varchar"
           },
           {
-            name: "routine_name",
-            type: "text"
+            name: "table_schema",
+            type: "varchar"
           },
           {
-            name: "routine_type",
-            type: "text"
+            name: "table_name",
+            type: "varchar"
           },
           {
-            name: "data_type",
-            type: "text"
+            name: "privilege_type",
+            type: "varchar"
+          },
+          {
+            name: "is_grantable",
+            type: "varchar"
+          },
+          {
+            name: "with_hierarchy",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "information_schema",
+        name: "tables",
+        columns: [
+          {
+            name: "table_catalog",
+            type: "varchar"
+          },
+          {
+            name: "table_schema",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "table_type",
+            type: "varchar"
           }
         ]
       },
@@ -694,43 +505,1177 @@ export const dialectConfig = {
         columns: [
           {
             name: "table_catalog",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "table_schema",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "table_name",
-            type: "text"
+            type: "varchar"
           },
           {
             name: "view_definition",
-            type: "text"
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "attributes",
+        columns: [
+          {
+            name: "type_cat",
+            type: "varchar"
           },
           {
-            name: "check_option",
+            name: "type_schem",
+            type: "varchar"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "attr_name",
+            type: "varchar"
+          },
+          {
+            name: "data_type",
+            type: "bigint"
+          },
+          {
+            name: "attr_type_name",
+            type: "varchar"
+          },
+          {
+            name: "attr_size",
+            type: "bigint"
+          },
+          {
+            name: "decimal_digits",
+            type: "bigint"
+          },
+          {
+            name: "num_prec_radix",
+            type: "bigint"
+          },
+          {
+            name: "nullable",
+            type: "bigint"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "attr_def",
+            type: "varchar"
+          },
+          {
+            name: "sql_data_type",
+            type: "bigint"
+          },
+          {
+            name: "sql_datetime_sub",
+            type: "bigint"
+          },
+          {
+            name: "char_octet_length",
+            type: "bigint"
+          },
+          {
+            name: "ordinal_position",
+            type: "bigint"
+          },
+          {
+            name: "is_nullable",
+            type: "varchar"
+          },
+          {
+            name: "scope_catalog",
+            type: "varchar"
+          },
+          {
+            name: "scope_schema",
+            type: "varchar"
+          },
+          {
+            name: "scope_table",
+            type: "varchar"
+          },
+          {
+            name: "source_data_type",
+            type: "bigint"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "catalogs",
+        columns: [
+          {
+            name: "table_cat",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "columns",
+        columns: [
+          {
+            name: "table_cat",
+            type: "varchar"
+          },
+          {
+            name: "table_schem",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "column_name",
+            type: "varchar"
+          },
+          {
+            name: "data_type",
+            type: "bigint"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "column_size",
+            type: "bigint"
+          },
+          {
+            name: "buffer_length",
+            type: "bigint"
+          },
+          {
+            name: "decimal_digits",
+            type: "bigint"
+          },
+          {
+            name: "num_prec_radix",
+            type: "bigint"
+          },
+          {
+            name: "nullable",
+            type: "bigint"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "column_def",
+            type: "varchar"
+          },
+          {
+            name: "sql_data_type",
+            type: "bigint"
+          },
+          {
+            name: "sql_datetime_sub",
+            type: "bigint"
+          },
+          {
+            name: "char_octet_length",
+            type: "bigint"
+          },
+          {
+            name: "ordinal_position",
+            type: "bigint"
+          },
+          {
+            name: "is_nullable",
+            type: "varchar"
+          },
+          {
+            name: "scope_catalog",
+            type: "varchar"
+          },
+          {
+            name: "scope_schema",
+            type: "varchar"
+          },
+          {
+            name: "scope_table",
+            type: "varchar"
+          },
+          {
+            name: "source_data_type",
+            type: "bigint"
+          },
+          {
+            name: "is_autoincrement",
+            type: "varchar"
+          },
+          {
+            name: "is_generatedcolumn",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "procedure_columns",
+        columns: [
+          {
+            name: "procedure_cat",
+            type: "varchar"
+          },
+          {
+            name: "procedure_schem",
+            type: "varchar"
+          },
+          {
+            name: "procedure_name",
+            type: "varchar"
+          },
+          {
+            name: "column_name",
+            type: "varchar"
+          },
+          {
+            name: "column_type",
+            type: "bigint"
+          },
+          {
+            name: "data_type",
+            type: "bigint"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "precision",
+            type: "bigint"
+          },
+          {
+            name: "length",
+            type: "bigint"
+          },
+          {
+            name: "scale",
+            type: "bigint"
+          },
+          {
+            name: "radix",
+            type: "bigint"
+          },
+          {
+            name: "nullable",
+            type: "bigint"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "column_def",
+            type: "varchar"
+          },
+          {
+            name: "sql_data_type",
+            type: "bigint"
+          },
+          {
+            name: "sql_datetime_sub",
+            type: "bigint"
+          },
+          {
+            name: "char_octet_length",
+            type: "bigint"
+          },
+          {
+            name: "ordinal_position",
+            type: "bigint"
+          },
+          {
+            name: "is_nullable",
+            type: "varchar"
+          },
+          {
+            name: "specific_name",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "procedures",
+        columns: [
+          {
+            name: "procedure_cat",
+            type: "varchar"
+          },
+          {
+            name: "procedure_schem",
+            type: "varchar"
+          },
+          {
+            name: "procedure_name",
+            type: "varchar"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "procedure_type",
+            type: "bigint"
+          },
+          {
+            name: "specific_name",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "pseudo_columns",
+        columns: [
+          {
+            name: "table_cat",
+            type: "varchar"
+          },
+          {
+            name: "table_schem",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "column_name",
+            type: "varchar"
+          },
+          {
+            name: "data_type",
+            type: "bigint"
+          },
+          {
+            name: "column_size",
+            type: "bigint"
+          },
+          {
+            name: "decimal_digits",
+            type: "bigint"
+          },
+          {
+            name: "num_prec_radix",
+            type: "bigint"
+          },
+          {
+            name: "column_usage",
+            type: "varchar"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "char_octet_length",
+            type: "bigint"
+          },
+          {
+            name: "is_nullable",
+            type: "bigint"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "schemas",
+        columns: [
+          {
+            name: "table_schem",
+            type: "varchar"
+          },
+          {
+            name: "table_catalog",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "super_tables",
+        columns: [
+          {
+            name: "table_cat",
+            type: "varchar"
+          },
+          {
+            name: "table_schem",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "supertable_name",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "super_types",
+        columns: [
+          {
+            name: "type_cat",
+            type: "varchar"
+          },
+          {
+            name: "type_schem",
+            type: "varchar"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "supertype_cat",
+            type: "varchar"
+          },
+          {
+            name: "supertype_schem",
+            type: "varchar"
+          },
+          {
+            name: "supertype_name",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "table_types",
+        columns: [
+          {
+            name: "table_type",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "tables",
+        columns: [
+          {
+            name: "table_cat",
+            type: "varchar"
+          },
+          {
+            name: "table_schem",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "table_type",
+            type: "varchar"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "type_cat",
+            type: "varchar"
+          },
+          {
+            name: "type_schem",
+            type: "varchar"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "self_referencing_col_name",
+            type: "varchar"
+          },
+          {
+            name: "ref_generation",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "types",
+        columns: [
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "data_type",
+            type: "bigint"
+          },
+          {
+            name: "precision",
+            type: "bigint"
+          },
+          {
+            name: "literal_prefix",
+            type: "varchar"
+          },
+          {
+            name: "literal_suffix",
+            type: "varchar"
+          },
+          {
+            name: "create_params",
+            type: "varchar"
+          },
+          {
+            name: "nullable",
+            type: "bigint"
+          },
+          {
+            name: "case_sensitive",
             type: "boolean"
           },
           {
-            name: "is_updatable",
+            name: "searchable",
+            type: "bigint"
+          },
+          {
+            name: "unsigned_attribute",
             type: "boolean"
           },
           {
-            name: "is_insertable_into",
+            name: "fixed_prec_scale",
             type: "boolean"
           },
           {
-            name: "is_trigger_updatable",
+            name: "auto_increment",
             type: "boolean"
           },
           {
-            name: "is_trigger_deletable",
+            name: "local_type_name",
+            type: "varchar"
+          },
+          {
+            name: "minimum_scale",
+            type: "bigint"
+          },
+          {
+            name: "maximum_scale",
+            type: "bigint"
+          },
+          {
+            name: "sql_data_type",
+            type: "bigint"
+          },
+          {
+            name: "sql_datetime_sub",
+            type: "bigint"
+          },
+          {
+            name: "num_prec_radix",
+            type: "bigint"
+          }
+        ]
+      },
+      {
+        schema: "jdbc",
+        name: "udts",
+        columns: [
+          {
+            name: "type_cat",
+            type: "varchar"
+          },
+          {
+            name: "type_schem",
+            type: "varchar"
+          },
+          {
+            name: "type_name",
+            type: "varchar"
+          },
+          {
+            name: "class_name",
+            type: "varchar"
+          },
+          {
+            name: "data_type",
+            type: "varchar"
+          },
+          {
+            name: "remarks",
+            type: "varchar"
+          },
+          {
+            name: "base_type",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "analyze_properties",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "property_name",
+            type: "varchar"
+          },
+          {
+            name: "default_value",
+            type: "varchar"
+          },
+          {
+            name: "type",
+            type: "varchar"
+          },
+          {
+            name: "description",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "catalogs",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "connector_id",
+            type: "varchar"
+          },
+          {
+            name: "connector_name",
+            type: "varchar"
+          },
+          {
+            name: "state",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "column_properties",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "property_name",
+            type: "varchar"
+          },
+          {
+            name: "default_value",
+            type: "varchar"
+          },
+          {
+            name: "type",
+            type: "varchar"
+          },
+          {
+            name: "description",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "functions_authorization",
+        columns: [
+          {
+            name: "catalog",
+            type: "varchar"
+          },
+          {
+            name: "schema",
+            type: "varchar"
+          },
+          {
+            name: "name",
+            type: "varchar"
+          },
+          {
+            name: "authorization_type",
+            type: "varchar"
+          },
+          {
+            name: "authorization",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "materialized_view_properties",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "property_name",
+            type: "varchar"
+          },
+          {
+            name: "default_value",
+            type: "varchar"
+          },
+          {
+            name: "type",
+            type: "varchar"
+          },
+          {
+            name: "description",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "materialized_views",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "schema_name",
+            type: "varchar"
+          },
+          {
+            name: "name",
+            type: "varchar"
+          },
+          {
+            name: "storage_catalog",
+            type: "varchar"
+          },
+          {
+            name: "storage_schema",
+            type: "varchar"
+          },
+          {
+            name: "storage_table",
+            type: "varchar"
+          },
+          {
+            name: "freshness",
+            type: "varchar"
+          },
+          {
+            name: "last_fresh_time",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "comment",
+            type: "varchar"
+          },
+          {
+            name: "definition",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "schema_properties",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "property_name",
+            type: "varchar"
+          },
+          {
+            name: "default_value",
+            type: "varchar"
+          },
+          {
+            name: "type",
+            type: "varchar"
+          },
+          {
+            name: "description",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "schemas_authorization",
+        columns: [
+          {
+            name: "catalog",
+            type: "varchar"
+          },
+          {
+            name: "schema",
+            type: "varchar"
+          },
+          {
+            name: "authorization_type",
+            type: "varchar"
+          },
+          {
+            name: "authorization",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "table_comments",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "schema_name",
+            type: "varchar"
+          },
+          {
+            name: "table_name",
+            type: "varchar"
+          },
+          {
+            name: "comment",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "table_properties",
+        columns: [
+          {
+            name: "catalog_name",
+            type: "varchar"
+          },
+          {
+            name: "property_name",
+            type: "varchar"
+          },
+          {
+            name: "default_value",
+            type: "varchar"
+          },
+          {
+            name: "type",
+            type: "varchar"
+          },
+          {
+            name: "description",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "metadata",
+        name: "tables_authorization",
+        columns: [
+          {
+            name: "catalog",
+            type: "varchar"
+          },
+          {
+            name: "schema",
+            type: "varchar"
+          },
+          {
+            name: "name",
+            type: "varchar"
+          },
+          {
+            name: "authorization_type",
+            type: "varchar"
+          },
+          {
+            name: "authorization",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "runtime",
+        name: "nodes",
+        columns: [
+          {
+            name: "node_id",
+            type: "varchar"
+          },
+          {
+            name: "http_uri",
+            type: "varchar"
+          },
+          {
+            name: "node_version",
+            type: "varchar"
+          },
+          {
+            name: "coordinator",
             type: "boolean"
           },
           {
-            name: "is_trigger_insertable_into",
+            name: "state",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "runtime",
+        name: "optimizer_rule_stats",
+        columns: [
+          {
+            name: "rule_name",
+            type: "varchar"
+          },
+          {
+            name: "invocations",
+            type: "bigint"
+          },
+          {
+            name: "matches",
+            type: "bigint"
+          },
+          {
+            name: "failures",
+            type: "bigint"
+          },
+          {
+            name: "average_time",
+            type: "double"
+          },
+          {
+            name: "time_distribution_percentiles",
+            type: "map(double, double)"
+          }
+        ]
+      },
+      {
+        schema: "runtime",
+        name: "queries",
+        columns: [
+          {
+            name: "query_id",
+            type: "varchar"
+          },
+          {
+            name: "state",
+            type: "varchar"
+          },
+          {
+            name: "user",
+            type: "varchar"
+          },
+          {
+            name: "source",
+            type: "varchar"
+          },
+          {
+            name: "query",
+            type: "varchar"
+          },
+          {
+            name: "resource_group_id",
+            type: "array(varchar)"
+          },
+          {
+            name: "queued_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "analysis_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "planning_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "created",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "started",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "last_heartbeat",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "end",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "error_type",
+            type: "varchar"
+          },
+          {
+            name: "error_code",
+            type: "varchar"
+          }
+        ]
+      },
+      {
+        schema: "runtime",
+        name: "tasks",
+        columns: [
+          {
+            name: "node_id",
+            type: "varchar"
+          },
+          {
+            name: "task_id",
+            type: "varchar"
+          },
+          {
+            name: "stage_id",
+            type: "varchar"
+          },
+          {
+            name: "query_id",
+            type: "varchar"
+          },
+          {
+            name: "state",
+            type: "varchar"
+          },
+          {
+            name: "splits",
+            type: "bigint"
+          },
+          {
+            name: "queued_splits",
+            type: "bigint"
+          },
+          {
+            name: "running_splits",
+            type: "bigint"
+          },
+          {
+            name: "completed_splits",
+            type: "bigint"
+          },
+          {
+            name: "split_scheduled_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "split_cpu_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "split_blocked_time_ms",
+            type: "bigint"
+          },
+          {
+            name: "internal_network_input_bytes",
+            type: "bigint"
+          },
+          {
+            name: "processed_input_bytes",
+            type: "bigint"
+          },
+          {
+            name: "processed_input_rows",
+            type: "bigint"
+          },
+          {
+            name: "output_bytes",
+            type: "bigint"
+          },
+          {
+            name: "output_rows",
+            type: "bigint"
+          },
+          {
+            name: "physical_input_bytes",
+            type: "bigint"
+          },
+          {
+            name: "physical_written_bytes",
+            type: "bigint"
+          },
+          {
+            name: "created",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "start",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "last_heartbeat",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "end",
+            type: "timestamp with time zone"
+          }
+        ]
+      },
+      {
+        schema: "runtime",
+        name: "transactions",
+        columns: [
+          {
+            name: "transaction_id",
+            type: "varchar"
+          },
+          {
+            name: "isolation_level",
+            type: "varchar"
+          },
+          {
+            name: "read_only",
             type: "boolean"
+          },
+          {
+            name: "auto_commit_context",
+            type: "boolean"
+          },
+          {
+            name: "create_time",
+            type: "timestamp with time zone"
+          },
+          {
+            name: "idle_time_secs",
+            type: "bigint"
+          },
+          {
+            name: "written_catalog",
+            type: "varchar"
+          },
+          {
+            name: "catalogs",
+            type: "array(varchar)"
           }
         ]
       }

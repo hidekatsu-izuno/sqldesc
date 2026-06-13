@@ -38,6 +38,29 @@ dialect: solr
 }
 ```
 
+## Prepare-2: SolrCloud SQL 実測スキーマ
+
+```yaml
+kind: schema-json
+dialect: solr
+```
+
+```json
+{
+  "tables": [
+    {
+      "name": "users",
+      "columns": [
+        { "name": "id", "type": "string" },
+        { "name": "name_s", "type": "string" },
+        { "name": "amount_f", "type": "float" },
+        { "name": "created_at_dt", "type": "timestamp" }
+      ]
+    }
+  ]
+}
+```
+
 ---
 
 # SELECT 基本
@@ -76,5 +99,70 @@ verify: true
 | id | INTEGER | users.id |
 | name | VARCHAR(255) | users.name |
 | amount | DECIMAL | users.amount |
+
+---
+
+## SolrCloud SQL handler 実測列
+
+### Given
+
+```yaml
+prepare: Prepare-2
+```
+
+### When
+
+```yaml
+dialect: solr
+```
+
+```sql
+SELECT id, name_s, amount_f, created_at_dt FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| id | VARCHAR(255) | users.id |
+| name_s | VARCHAR(255) | users.name_s |
+| amount_f | DECIMAL | users.amount_f |
+| created_at_dt | TIMESTAMP | users.created_at_dt |
+
+---
+
+## SolrCloud 集約
+
+### Given
+
+```yaml
+prepare: Prepare-2
+```
+
+### When
+
+```yaml
+dialect: solr
+```
+
+```sql
+SELECT COUNT(*) AS total FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| total | INTEGER | expression |
 
 ---

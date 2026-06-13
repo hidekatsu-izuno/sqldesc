@@ -78,3 +78,171 @@ verify: true
 | amount | DECIMAL | users.amount |
 
 ---
+
+# メタデータ
+
+[Spark SQL SHOW](https://spark.apache.org/docs/latest/sql-ref-syntax-aux-show.html)
+
+---
+
+## SHOW CURRENT NAMESPACE
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: spark
+```
+
+```sql
+SHOW CURRENT NAMESPACE
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| namespace | VARCHAR(255) | cast |
+
+---
+
+## DESCRIBE DATABASE
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: spark
+```
+
+```sql
+DESCRIBE DATABASE default
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| database_description_item | VARCHAR(255) | cast |
+| database_description_value | VARCHAR(255) | cast |
+
+---
+
+## DESCRIBE FUNCTION
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: spark
+```
+
+```sql
+DESCRIBE FUNCTION abs
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| function_desc | VARCHAR(255) | cast |
+
+---
+
+## SHOW FUNCTIONS
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: spark
+```
+
+```sql
+SHOW FUNCTIONS
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| Function | VARCHAR(255) | cast |
+| Type | VARCHAR(255) | cast |
+| Definer | VARCHAR(255) | cast |
+| Modified | TIMESTAMP | cast |
+| Created | TIMESTAMP | cast |
+| Security_type | VARCHAR(255) | cast |
+| Comment | VARCHAR(255) | cast |
+
+---
+
+## SHOW TABLES
+
+### Given
+
+```yaml
+prepare: none
+```
+
+### When
+
+```yaml
+dialect: spark
+```
+
+```sql
+SHOW TABLES
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| Table | VARCHAR(255) | cast |
+
+---
