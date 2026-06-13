@@ -255,6 +255,7 @@ export const dialectConfig = {
     xxhash64: 'integer',
     year: 'integer',
   },
+  scalarFunctionTypePatterns: {},
   tableFunctions: {
     "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
     "current_setting": [{ name: "$alias", type: "text" }],
@@ -384,6 +385,23 @@ export const dialectConfig = {
   includeDirectives: [{ kind: 'oracle' }],
   complexTypeStyle: 'angle',
   jdbcEscapeStyle: 'standard',
+  jdbcParameterMarker: 'oracleOrdinal',
+  parameterizedTypeFormats: {
+    decimal: 'number({args})',
+    dec: 'number({args})',
+    numeric: 'number({args})',
+    number: 'number({args})',
+    timestamptz: 'timestamp({args}) with time zone',
+    timestampltz: 'timestamp({args}) with local time zone',
+  },
+  literalTypes: {
+    string: 'text',
+  },
+  dynamicTableFunctions: {
+    generateSeriesColumn: '$alias',
+    rangeColumn: '$alias',
+  },
+  serializedSelect: {},
   outputTypeOverrides: {
     "avg_null": "number",
     "binary_double_value": "binary_double",
@@ -482,7 +500,17 @@ export const dialectConfig = {
     "win_sum": "number",
     "xml_value": "xmltype",
   },
-  metadata: { oracleCurrentUserColumn: true },
+  metadata: {
+    oracleCurrentUserColumn: true,
+    describeFunctionColumns: [
+      { name: 'Name', type: 'text' },
+      { name: 'Description', type: 'text' },
+    ],
+    explainColumns: [
+      { name: 'QUERY PLAN', type: 'text' },
+    ],
+    snowflakeDescribeObjectColumns: {},
+  },
   diagnosticRules: {
     knownTableFunctionArgumentNames: [
       'file',
@@ -493,6 +521,7 @@ export const dialectConfig = {
       'snippet',
       'bm25',
       'fts5vocab',
-    ], suppressOracleCurrentUser: true 
+    ],
+    suppressOracleCurrentUser: true,
   },
 } satisfies DialectConfig;

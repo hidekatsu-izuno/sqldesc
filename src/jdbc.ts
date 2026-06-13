@@ -319,10 +319,10 @@ function transformParameterMarkers(sql: string, dialect: string): string {
 }
 
 function parameterMarker(index: number, dialect: string): string {
-  const config = getDialectConfig(dialect);
-  if (config.typeFamily === 'postgresql') return `$${index}`;
-  if (config.typeFamily === 'oracle') return `:${index}`;
-  if (config.jdbcEscapeStyle === 'tsql') return `@P${index}`;
+  const style = getDialectConfig(dialect).jdbcParameterMarker;
+  if (style === 'postgresOrdinal') return `$${index}`;
+  if (style === 'oracleOrdinal') return `:${index}`;
+  if (style === 'tsqlOrdinal') return `@P${index}`;
   return '?';
 }
 

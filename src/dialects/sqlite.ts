@@ -254,6 +254,7 @@ export const dialectConfig = {
     xxhash64: 'integer',
     year: 'integer',
   },
+  scalarFunctionTypePatterns: {},
   tableFunctions: {
     "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
     "current_setting": [{ name: "$alias", type: "text" }],
@@ -372,6 +373,21 @@ export const dialectConfig = {
   includeDirectives: [{ kind: 'dot' }],
   complexTypeStyle: 'angle',
   jdbcEscapeStyle: 'standard',
+  jdbcParameterMarker: 'question',
+  parameterizedTypeFormats: {
+    decimal: 'decimal({args})',
+    dec: 'decimal({args})',
+    numeric: 'decimal({args})',
+    number: 'decimal({args})',
+  },
+  literalTypes: {
+    string: 'text',
+  },
+  dynamicTableFunctions: {
+    generateSeriesColumn: 'value',
+    rangeColumn: '$alias',
+  },
+  serializedSelect: {},
   outputTypeOverrides: {
     "avg_null": "null",
     "bind_add_equiv": "integer",
@@ -441,7 +457,24 @@ export const dialectConfig = {
     "unicode_text": "text",
     "zero_blob": "blob",
   },
-  metadata: { sqliteRowidColumns: ['rowid', '_rowid_', 'oid'] },
+  metadata: {
+    sqliteRowidColumns: ['rowid', '_rowid_', 'oid'],
+    describeFunctionColumns: [
+      { name: 'Name', type: 'text' },
+      { name: 'Description', type: 'text' },
+    ],
+    explainColumns: [
+      { name: 'addr', type: 'integer' },
+      { name: 'opcode', type: 'text' },
+      { name: 'p1', type: 'integer' },
+      { name: 'p2', type: 'integer' },
+      { name: 'p3', type: 'integer' },
+      { name: 'p4', type: 'text' },
+      { name: 'p5', type: 'integer' },
+      { name: 'comment', type: 'text' },
+    ],
+    snowflakeDescribeObjectColumns: {},
+  },
   diagnosticRules: {
     knownTableFunctionArgumentNames: [
       'file',
@@ -452,6 +485,7 @@ export const dialectConfig = {
       'snippet',
       'bm25',
       'fts5vocab',
-    ], suppressSqliteRowid: true 
+    ],
+    suppressSqliteRowid: true,
   },
 } satisfies DialectConfig;

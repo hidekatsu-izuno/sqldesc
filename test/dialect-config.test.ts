@@ -41,6 +41,7 @@ describe('dialect configuration registry', () => {
       assert.ok(Object.keys(config.scalarFunctionTypes).length > 0);
       assert.strictEqual(config.scalarFunctionTypes.gen_random_uuid, 'uuid');
       assert.strictEqual(config.scalarFunctionTypes.st_distance, 'decimal');
+      assert.ok(config.scalarFunctionTypePatterns);
       assert.ok(Object.keys(config.tableFunctions).length > 0);
       assert.deepStrictEqual(config.tableFunctions.json_each?.[0], { name: 'key', type: 'text' });
       assert.ok(config.aggregate.countType);
@@ -51,6 +52,13 @@ describe('dialect configuration registry', () => {
       assert.strictEqual(typeof config.generatedNames.countStar, 'string');
       assert.strictEqual(config.specialColumnTypes.current_date, 'date');
       assert.ok(config.qualifiedSpecialColumnTypes);
+      assert.ok(config.parameterizedTypeFormats.decimal);
+      assert.ok(config.jdbcParameterMarker);
+      assert.ok(config.literalTypes.string);
+      assert.ok(config.dynamicTableFunctions.generateSeriesColumn);
+      assert.ok(config.serializedSelect);
+      assert.ok(config.metadata.describeFunctionColumns.length > 0);
+      assert.ok(config.metadata.explainColumns.length > 0);
       assert.deepStrictEqual(config.diagnosticRules.knownTableFunctionArgumentNames, ['file', 'url']);
       assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes('highlight'));
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
@@ -111,6 +119,10 @@ describe('dialect configuration registry', () => {
     assert.strictEqual(oracle?.qualifiedSpecialColumnTypes.nextval, 'integer');
     assert.strictEqual(oracle?.commonTypes.resultDecimalInteger, 'number');
     assert.strictEqual(oracle?.generatedNames.upper, 'oracleUpperCall');
+    const duckdb = dialectConfigs.find((config) => config.name === 'duckdb');
+    const tsql = dialectConfigs.find((config) => config.name === 'tsql');
+    assert.strictEqual(duckdb?.scalarFunctionTypePatterns['/^avg(?:_|$)/i'], 'double');
+    assert.strictEqual(tsql?.serializedSelect.forJson, 'json');
   });
 
   it('uses scalar function type maps from dialect configs', async () => {

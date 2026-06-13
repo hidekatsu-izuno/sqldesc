@@ -189,8 +189,9 @@ function inferColumn(
     return { type: identifierHashRandomType, confidence: 'medium', source: 'expression' };
   }
 
-  if (dialect === 'duckdb' && /^avg(?:_|$)/i.test(name)) {
-    return { type: 'double', confidence: 'medium', source: 'expression' };
+  const patternedScalarType = inferConfiguredScalarFunctionPatternType(name, dialect);
+  if (patternedScalarType) {
+    return { type: patternedScalarType, confidence: 'medium', source: 'expression' };
   }
 
   const aggregateType = inferAggregateType(expression, schema, binds, tableAliases, dialect);
@@ -3106,6 +3107,15 @@ function namedArgumentStructFields(args: AstExpression[], schema: ValidationSche
   });
 }
 
+function inferConfiguredScalarFunctionPatternType(name: string, dialect: string): string | undefined {
+  for (const [pattern, type] of Object.entries(getDialectConfig(dialect).scalarFunctionTypePatterns)) {
+    const regex = pattern.match(/^\/(.*)\/([a-z]*)$/i);
+    if (regex && new RegExp(regex[1], regex[2]).test(name)) return type;
+    if (!regex && pattern.toLowerCase() === name.toLowerCase()) return type;
+  }
+  return undefined;
+}
+
 function inferScalarFunctionType(expression: AstExpression, schema: ValidationSchema, binds: BindSpec, dialect = 'generic'): string | undefined {
   if (getAst(expression, 'lower') || getAst(expression, 'upper') || getAst(expression, 'trim') || getAst(expression, 'initcap')) return 'text';
   if (getAst(expression, 'substring') || getAst(expression, 'substr')) return 'text';
@@ -3709,7 +3719,7 @@ function inferLiteralType(expression: AstExpression, dialect = 'generic'): strin
   if (isRecord(literal)) {
     const literalType = String(literal.literal_type ?? '');
     const value = String(literal.value ?? '');
-    if (literalType === 'string') return dialect === 'trino' || dialect === 'presto' || dialect === 'athena' ? `varchar(${value.length})` : 'text';
+    if (literalType === 'string') return getDialectConfig(dialect).literalTypes.string === 'varcharLength' ? `varchar(${value.length})` : 'text';
     if (literalType === 'boolean') return 'boolean';
     if (literalType === 'number') return value.includes('.') ? 'decimal' : 'integer';
     if (literalType === 'date') return 'date';
@@ -5587,7 +5597,7 @@ function staticExecuteColumns(execute: Record<string, unknown>): OutputItem[] {
 }
 
 function staticBareTsqlProcedureColumns(statement: unknown, dialect: string): OutputItem[] {
-  if (dialect !== 'tsql' || !isRecord(statement)) return [];
+  if (getDialectConfig(dialect).jdbcParameterMarker !== 'tsqlOrdinal' || !isRecord(statement)) return [];
   const column = getAst(statement, 'column');
   if (isRecord(column) && !identifierName(column.table)) {
     const procedure = identifierName(column.name)?.toLowerCase();
@@ -5892,81 +5902,20 @@ function describeObjectColumns(target: Record<string, unknown>): OutputItem[] {
 }
 
 function snowflakeDescribeObjectColumns(target: Record<string, unknown>, dialect: string): OutputItem[] {
-  if (dialect.toLowerCase() !== 'snowflake' || !isRecord(target.table)) return [];
+  if (!isRecord(target.table)) return [];
+  const configuredColumns = getDialectConfig(dialect).metadata.snowflakeDescribeObjectColumns;
+  if (Object.keys(configuredColumns).length === 0) return [];
   const name = identifierName(target.table.name)?.toLowerCase();
-  if (!name || !['alert', 'warehouse', 'integration', 'stage', 'pipe', 'stream', 'task', 'role', 'user', 'database', 'share'].includes(name)) return [];
-  if (name === 'warehouse') {
-    return staticColumns([
-      ['property', 'text'],
-      ['value', 'text'],
-      ['default', 'text'],
-      ['level', 'text'],
-      ['description', 'text'],
-    ]);
-  }
-  if (name === 'stage') {
-    return staticColumns([
-      ['parent_property', 'text'],
-      ['property', 'text'],
-      ['property_type', 'text'],
-      ['property_value', 'text'],
-      ['property_default', 'text'],
-    ]);
-  }
-  if (name === 'pipe' || name === 'stream' || name === 'task') {
-    return staticColumns([
-      ['property', 'text'],
-      ['value', 'text'],
-    ]);
-  }
-  return staticColumns([
-    ['property', 'text'],
-    ['value', 'text'],
-  ]);
+  const columns = name ? configuredColumns[name] : undefined;
+  return columns ? staticConfigColumns(columns) : [];
 }
 
 function describeFunctionColumns(dialect: string): OutputItem[] {
-  if (dialect.toLowerCase() === 'spark') {
-    return staticColumns([
-      ['function_desc', 'text'],
-    ]);
-  }
-  return staticColumns([
-    ['Name', 'text'],
-    ['Description', 'text'],
-  ]);
+  return staticConfigColumns(getDialectConfig(dialect).metadata.describeFunctionColumns);
 }
 
 function explainColumns(dialect: string): OutputItem[] {
-  if (dialect.toLowerCase() === 'mysql') {
-    return staticColumns([
-      ['id', 'integer'],
-      ['select_type', 'text'],
-      ['table', 'text'],
-      ['partitions', 'text'],
-      ['type', 'text'],
-      ['possible_keys', 'text'],
-      ['key', 'text'],
-      ['key_len', 'text'],
-      ['ref', 'text'],
-      ['rows', 'integer'],
-      ['filtered', 'decimal'],
-      ['Extra', 'text'],
-    ]);
-  }
-  if (dialect.toLowerCase() === 'sqlite') {
-    return staticColumns([
-      ['addr', 'integer'],
-      ['opcode', 'text'],
-      ['p1', 'integer'],
-      ['p2', 'integer'],
-      ['p3', 'integer'],
-      ['p4', 'text'],
-      ['p5', 'integer'],
-      ['comment', 'text'],
-    ]);
-  }
-  return staticColumns([['QUERY PLAN', 'text']]);
+  return staticConfigColumns(getDialectConfig(dialect).metadata.explainColumns);
 }
 
 function isResultProducingQuery(statement: Record<string, unknown>): boolean {
@@ -5977,7 +5926,8 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = 'generic')
   const subject = String(show.this ?? '').toLowerCase();
   const normalizedSubject = subject.replace(/^(?:global|session|full)\s+/, '');
   if (subject === 'tables' || subject === 'views' || subject === 'full tables') {
-    if (subject === 'tables' && dialect.toLowerCase() === 'snowflake') return snowflakeTableListingColumns();
+    const configuredTablesColumns = subject === 'tables' ? getDialectConfig(dialect).metadata.showTablesColumns : undefined;
+    if (configuredTablesColumns) return staticConfigColumns(configuredTablesColumns);
     return staticColumns([
       [subject === 'views' ? 'View' : 'Table', 'text'],
       ...(subject === 'full tables' ? [['Table_type', 'text']] satisfies Array<[string, string]> : []),
@@ -7398,12 +7348,12 @@ function isMysqlLikeDialect(dialect: string): boolean {
 }
 
 function outputItemsFromSerializedTsqlSelect(select: Record<string, unknown>, dialect: string): OutputItem[] {
-  if (dialect !== 'tsql') return [];
+  const serializedSelect = getDialectConfig(dialect).serializedSelect;
   if (Array.isArray(select.for_json) && select.for_json.length > 0) {
-    return staticColumns([['', 'json']]);
+    return serializedSelect.forJson ? staticColumns([['', serializedSelect.forJson]]) : [];
   }
   if (Array.isArray(select.for_xml) && select.for_xml.length > 0) {
-    return staticColumns([['', 'xml']]);
+    return serializedSelect.forXml ? staticColumns([['', serializedSelect.forXml]]) : [];
   }
   return [];
 }
@@ -7419,6 +7369,10 @@ function staticColumns(columns: Array<[name: string, type: string]>): OutputItem
     name,
     source: 'metadata',
   }));
+}
+
+function staticConfigColumns(columns: readonly { readonly name: string; readonly type: string }[]): OutputItem[] {
+  return staticColumns(columns.map((column) => [column.name, column.type]));
 }
 
 function outputItemsFromCopy(copy: Record<string, unknown>, schema: ValidationSchema, context: StatementContext): OutputItem[] {
@@ -7967,7 +7921,9 @@ function tableFromKnownTableFunction(expression: unknown, alias: string, schema:
   }
   if (name === 'generate_series' || name === 'range') {
     const type = commonArgumentType(functionArguments(fn), { tables: [] }, { mode: 'none', binds: [] });
-    const columnName = dialect === 'sqlite' && name === 'generate_series' ? 'value' : alias;
+    const policy = getDialectConfig(dialect).dynamicTableFunctions;
+    const configuredColumnName = name === 'generate_series' ? policy.generateSeriesColumn : policy.rangeColumn;
+    const columnName = configuredColumnName === '$alias' ? alias : configuredColumnName;
     return { name: alias, columns: [{ name: columnName, type: type && /date|time|timestamp/i.test(type) ? type : 'integer' }] };
   }
   if (name === 'fts5vocab') return sqliteFts5VocabTable(fn, alias);

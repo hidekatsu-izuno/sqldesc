@@ -17,6 +17,8 @@ export type ScriptPreprocessor = 'none' | 'psql' | 'sqlplus' | 'mysqlDelimiter' 
 export type ComplexTypeStyle = 'angle' | 'trino';
 
 export type JdbcEscapeStyle = 'standard' | 'mysql' | 'tsql';
+export type JdbcParameterMarkerStyle = 'question' | 'postgresOrdinal' | 'oracleOrdinal' | 'tsqlOrdinal';
+export type LiteralStringTypePolicy = 'text' | 'varcharLength';
 
 export interface IncludeDirectiveConfig {
   readonly kind: 'oracle' | 'postgresql' | 'mysql' | 'tsql' | 'dot';
@@ -25,6 +27,10 @@ export interface IncludeDirectiveConfig {
 export interface DialectMetadataConfig {
   readonly sqliteRowidColumns?: readonly string[];
   readonly oracleCurrentUserColumn?: boolean;
+  readonly describeFunctionColumns: readonly DialectTableFunctionColumnConfig[];
+  readonly explainColumns: readonly DialectTableFunctionColumnConfig[];
+  readonly snowflakeDescribeObjectColumns: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
+  readonly showTablesColumns?: readonly DialectTableFunctionColumnConfig[];
 }
 
 export interface DialectDiagnosticRulesConfig {
@@ -79,6 +85,20 @@ export interface DialectGeneratedNamesConfig {
   readonly upper: GeneratedUpperNameStyle;
 }
 
+export interface DialectLiteralTypesConfig {
+  readonly string: LiteralStringTypePolicy;
+}
+
+export interface DialectDynamicTableFunctionConfig {
+  readonly generateSeriesColumn: string;
+  readonly rangeColumn: string;
+}
+
+export interface DialectSerializedSelectConfig {
+  readonly forJson?: string;
+  readonly forXml?: string;
+}
+
 export interface DialectConfig {
   readonly name: string;
   readonly aliases: readonly string[];
@@ -87,6 +107,7 @@ export interface DialectConfig {
   readonly displayTypes: Readonly<Record<string, string>>;
   readonly jdbcTypeMap: Readonly<Record<string, string>>;
   readonly scalarFunctionTypes: Readonly<Record<string, string>>;
+  readonly scalarFunctionTypePatterns: Readonly<Record<string, string>>;
   readonly tableFunctions: Readonly<Record<string, readonly DialectTableFunctionColumnConfig[]>>;
   readonly aggregate: DialectAggregateConfig;
   readonly commonTypes: DialectCommonTypeConfig;
@@ -102,6 +123,11 @@ export interface DialectConfig {
   readonly includeDirectives: readonly IncludeDirectiveConfig[];
   readonly complexTypeStyle: ComplexTypeStyle;
   readonly jdbcEscapeStyle: JdbcEscapeStyle;
+  readonly jdbcParameterMarker: JdbcParameterMarkerStyle;
+  readonly parameterizedTypeFormats: Readonly<Record<string, string>>;
+  readonly literalTypes: DialectLiteralTypesConfig;
+  readonly dynamicTableFunctions: DialectDynamicTableFunctionConfig;
+  readonly serializedSelect: DialectSerializedSelectConfig;
   readonly outputTypeOverrides: Readonly<Record<string, string>>;
   readonly metadata: DialectMetadataConfig;
   readonly diagnosticRules: DialectDiagnosticRulesConfig;

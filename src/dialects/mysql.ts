@@ -255,6 +255,7 @@ export const dialectConfig = {
     xxhash64: 'integer',
     year: 'integer',
   },
+  scalarFunctionTypePatterns: {},
   tableFunctions: {
     "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
     "current_setting": [{ name: "$alias", type: "text" }],
@@ -370,6 +371,21 @@ export const dialectConfig = {
   includeDirectives: [{ kind: 'mysql' }],
   complexTypeStyle: 'angle',
   jdbcEscapeStyle: 'mysql',
+  jdbcParameterMarker: 'question',
+  parameterizedTypeFormats: {
+    decimal: 'decimal({args})',
+    dec: 'decimal({args})',
+    numeric: 'decimal({args})',
+    number: 'decimal({args})',
+  },
+  literalTypes: {
+    string: 'text',
+  },
+  dynamicTableFunctions: {
+    generateSeriesColumn: '$alias',
+    rangeColumn: '$alias',
+  },
+  serializedSelect: {},
   outputTypeOverrides: {
     "avg_null": "decimal(24,4)",
     "bind_add_equiv": "bigint",
@@ -477,7 +493,27 @@ export const dialectConfig = {
     "win_sum": "decimal(28,2)",
     "year_value": "year",
   },
-  metadata: {},
+  metadata: {
+    describeFunctionColumns: [
+      { name: 'Name', type: 'text' },
+      { name: 'Description', type: 'text' },
+    ],
+    explainColumns: [
+      { name: 'id', type: 'integer' },
+      { name: 'select_type', type: 'text' },
+      { name: 'table', type: 'text' },
+      { name: 'partitions', type: 'text' },
+      { name: 'type', type: 'text' },
+      { name: 'possible_keys', type: 'text' },
+      { name: 'key', type: 'text' },
+      { name: 'key_len', type: 'text' },
+      { name: 'ref', type: 'text' },
+      { name: 'rows', type: 'integer' },
+      { name: 'filtered', type: 'decimal' },
+      { name: 'Extra', type: 'text' },
+    ],
+    snowflakeDescribeObjectColumns: {},
+  },
   diagnosticRules: {
     knownTableFunctionArgumentNames: [
       'file',

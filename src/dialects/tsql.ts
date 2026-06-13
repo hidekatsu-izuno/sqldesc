@@ -260,6 +260,7 @@ export const dialectConfig = {
     xxhash64: 'integer',
     year: 'integer',
   },
+  scalarFunctionTypePatterns: {},
   tableFunctions: {
     "aclexplode": [{ name: "grantor", type: "oid" }, { name: "grantee", type: "oid" }, { name: "privilege_type", type: "text" }, { name: "is_grantable", type: "boolean" }],
     "current_setting": [{ name: "$alias", type: "text" }],
@@ -388,6 +389,25 @@ export const dialectConfig = {
   includeDirectives: [{ kind: 'tsql' }],
   complexTypeStyle: 'angle',
   jdbcEscapeStyle: 'tsql',
+  jdbcParameterMarker: 'tsqlOrdinal',
+  parameterizedTypeFormats: {
+    decimal: 'decimal({args})',
+    dec: 'decimal({args})',
+    numeric: 'decimal({args})',
+    number: 'decimal({args})',
+    datetime2: 'datetime2({args})',
+  },
+  literalTypes: {
+    string: 'text',
+  },
+  dynamicTableFunctions: {
+    generateSeriesColumn: '$alias',
+    rangeColumn: '$alias',
+  },
+  serializedSelect: {
+    forJson: 'json',
+    forXml: 'xml',
+  },
   outputTypeOverrides: {
     "avg_null": "int",
     "big_value": "bigint",
@@ -492,7 +512,16 @@ export const dialectConfig = {
     "win_sum": "decimal(38,2)",
     "xml_value": "xml",
   },
-  metadata: {},
+  metadata: {
+    describeFunctionColumns: [
+      { name: 'Name', type: 'text' },
+      { name: 'Description', type: 'text' },
+    ],
+    explainColumns: [
+      { name: 'QUERY PLAN', type: 'text' },
+    ],
+    snowflakeDescribeObjectColumns: {},
+  },
   diagnosticRules: {
     knownTableFunctionArgumentNames: [
       'file',

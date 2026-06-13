@@ -122,14 +122,8 @@ function displayByDialect(normalized: string, config: DialectConfig): string {
   const parameterized = /^([a-z_][\w]*)\(([^)]*)\)$/.exec(normalized);
   if (parameterized) {
     const [, base, args] = parameterized;
-    if (['decimal', 'dec', 'numeric', 'number'].includes(base)) {
-      if (config.typeFamily === 'postgresql') return `numeric(${args})`;
-      if (config.typeFamily === 'oracle') return `number(${args})`;
-      return `decimal(${args})`;
-    }
-    if (base === 'datetime2' && config.typeFamily === 'tsql') return `datetime2(${args})`;
-    if (base === 'timestamptz' && (config.typeFamily === 'postgresql' || config.typeFamily === 'oracle')) return `timestamp(${args}) with time zone`;
-    if (base === 'timestampltz' && config.typeFamily === 'oracle') return `timestamp(${args}) with local time zone`;
+    const format = config.parameterizedTypeFormats[base];
+    if (format) return format.replaceAll('{args}', args);
     return normalized;
   }
 
