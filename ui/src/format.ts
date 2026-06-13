@@ -1,33 +1,30 @@
-export interface DescribeColumnView {
-  index: number;
-  name: string | null;
-  type: string;
-  nullable?: boolean;
-  confidence: string;
-  source?: string;
-  note?: string;
+import type { DescribeColumn, StatementResultKind } from 'sqldesc';
+
+export interface ColumnRow extends DescribeColumn {
+  jdbcType?: string;
 }
 
-export type StatementResultKind = 'static' | 'none' | 'runtime' | 'metadata' | 'unknown';
-
-export interface StatementSummaryView {
-  index: number;
-  kind: string;
-  resultKind: StatementResultKind;
-  message?: string;
-}
-
-export function formatColumnsTable(columns: DescribeColumnView[]): string[][] {
-  const headers = ['#', 'name', 'type', 'nullable', 'confidence', 'source', 'note'];
-  const rows = columns.map((column) => [
-    String(column.index),
-    column.name ?? '',
-    column.type,
-    column.nullable === undefined ? '' : String(column.nullable),
-    column.confidence,
-    column.source ?? '',
-    column.note ?? '',
-  ]);
+export function formatColumnsTable(columns: ColumnRow[], options?: { showJdbc?: boolean }): string[][] {
+  const showJdbc = options?.showJdbc ?? false;
+  const headers = showJdbc
+    ? ['#', 'name', 'type', 'jdbc', 'nullable', 'source', 'note']
+    : ['#', 'name', 'type', 'nullable', 'source', 'note'];
+  const rows = columns.map((column) => {
+    const cells = [
+      String(column.index),
+      column.name,
+      column.type,
+    ];
+    if (showJdbc) {
+      cells.push(column.jdbcType ?? '');
+    }
+    cells.push(
+      column.nullable === undefined ? '' : String(column.nullable),
+      column.source ?? '',
+      column.note ?? '',
+    );
+    return cells;
+  });
   return [headers, ...rows];
 }
 

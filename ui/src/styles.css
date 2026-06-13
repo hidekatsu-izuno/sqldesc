@@ -27,7 +27,8 @@
 html,
 body {
   margin: 0;
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
   background: radial-gradient(circle at top left, #162032 0%, var(--bg) 45%);
   color: var(--text);
   font-family: var(--sans);
@@ -35,13 +36,18 @@ body {
 }
 
 #app {
+  height: 100vh;
   min-height: 100vh;
 }
 
 .layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1.25rem 1.5rem 2rem;
+  padding: 1rem 1.5rem 1rem;
+  min-height: 0;
 }
 
 .header {
@@ -49,7 +55,8 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
 }
 
 .header-brand h1 {
@@ -84,7 +91,9 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
-  align-items: start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 
 .panel {
@@ -93,9 +102,79 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   overflow: hidden;
-  min-height: 520px;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.panel-input {
+  min-height: 0;
+}
+
+.input-body {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.input-body.schema-open {
+  grid-template-rows: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+.sql-body {
+  min-height: 0;
+  position: relative;
+}
+
+.sql-editor,
+.schema-editor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.schema-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-top: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.schema-section:not(.schema-open) .schema-body {
+  display: none;
+}
+
+.schema-toggle {
+  flex-shrink: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.65rem 1rem;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.schema-section.schema-open .schema-toggle {
+  border-bottom-color: var(--border-soft);
+}
+
+.schema-toggle:hover {
+  color: var(--text);
+}
+
+.schema-body {
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
 }
 
 .panel-head {
@@ -107,6 +186,7 @@ body {
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border-soft);
   background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
 }
 
 .panel-head h2 {
@@ -189,10 +269,9 @@ input[type='text'] {
 }
 
 .editor {
-  flex: 1;
   width: 100%;
-  min-height: 280px;
-  resize: vertical;
+  min-height: 0;
+  resize: none;
   border: none;
   outline: none;
   padding: 1rem;
@@ -202,26 +281,6 @@ input[type='text'] {
   font-size: 0.88rem;
   line-height: 1.6;
   tab-size: 2;
-}
-
-.editor-sm {
-  min-height: 120px;
-}
-
-.schema-details {
-  border-top: 1px solid var(--border-soft);
-}
-
-.schema-details summary {
-  padding: 0.65rem 1rem;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-size: 0.85rem;
-  user-select: none;
-}
-
-.schema-details summary:hover {
-  color: var(--text);
 }
 
 .tabs {
@@ -255,6 +314,7 @@ input[type='text'] {
   padding: 0.55rem 0.75rem;
   border-radius: 6px;
   font-size: 0.85rem;
+  flex-shrink: 0;
 }
 
 .status-idle {
@@ -278,7 +338,8 @@ input[type='text'] {
 }
 
 .output {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   padding: 0.75rem 1rem 1rem;
   overflow: auto;
 }
@@ -406,11 +467,44 @@ tbody tr:hover {
 }
 
 @media (max-width: 960px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  #app,
+  .layout {
+    height: auto;
+    min-height: 100vh;
+  }
+
   .main {
     grid-template-columns: 1fr;
+    flex: none;
   }
 
   .panel {
-    min-height: auto;
+    height: auto;
+    min-height: 360px;
+  }
+
+  .input-body,
+  .input-body.schema-open {
+    grid-template-rows: auto auto;
+  }
+
+  .sql-body {
+    min-height: 220px;
+  }
+
+  .schema-body {
+    min-height: 140px;
+  }
+
+  .sql-editor,
+  .schema-editor {
+    position: static;
+    height: 100%;
+    min-height: inherit;
   }
 }

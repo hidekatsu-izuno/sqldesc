@@ -1,22 +1,9 @@
+import type { AnalyzeResult } from './analyzer';
 import { DEFAULT_SCHEMA, DEFAULT_SQL, FALLBACK_DIALECTS } from './constants';
-import {
-  formatColumnsTable,
-  resultKindClass,
-  resultKindLabel,
-  type DescribeColumnView,
-  type StatementSummaryView,
-} from './format';
+import { formatColumnsTable, resultKindClass, resultKindLabel } from './format';
 import './styles.css';
 
 type TabId = 'columns' | 'statements' | 'messages' | 'json';
-
-type AnalyzeResult = {
-  columns: DescribeColumnView[];
-  resultSets: Array<{ index: number; columns: DescribeColumnView[] }>;
-  statements: StatementSummaryView[];
-  warnings: string[];
-  diagnostics: Array<{ message: string; severity?: string; line?: number; column?: number }>;
-};
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('#app not found');
@@ -34,7 +21,7 @@ function renderShell(dialects: string[]): void {
       <header class="header">
         <div class="header-brand">
           <h1>sqldesc</h1>
-          <p>SQL の結果セット列を静的に推論します</p>
+          <p>Infer SQL result-set columns statically</p>
         </div>
         <a class="header-link" href="https://github.com/hidekatsu-izuno/sqldesc" target="_blank" rel="noreferrer">
           GitHub
@@ -52,26 +39,31 @@ function renderShell(dialects: string[]): void {
               </label>
               <label class="field field-inline">
                 <span>Binds</span>
-                <input id="binds" type="text" placeholder="int,text または id=int,name=text" spellcheck="false" />
+                <input id="binds" type="text" placeholder="int,text or id=int,name=text" spellcheck="false" />
               </label>
               <label class="field field-check">
                 <input id="jdbc" type="checkbox" />
                 <span>JDBC</span>
               </label>
-              <button id="analyze" type="button" class="btn-primary">解析</button>
+              <button id="analyze" type="button" class="btn-primary">Analyze</button>
             </div>
           </div>
-          <textarea id="sql" class="editor" spellcheck="false" aria-label="SQL">${escapeHtml(DEFAULT_SQL)}</textarea>
-
-          <details class="schema-details" open>
-            <summary>Schema DDL（任意）</summary>
-            <textarea id="schema" class="editor editor-sm" spellcheck="false" aria-label="Schema DDL">${escapeHtml(DEFAULT_SCHEMA)}</textarea>
-          </details>
+          <div class="input-body schema-open">
+            <div class="sql-body">
+              <textarea id="sql" class="editor sql-editor" spellcheck="false" aria-label="SQL">${escapeHtml(DEFAULT_SQL)}</textarea>
+            </div>
+            <div class="schema-section schema-open">
+              <button type="button" class="schema-toggle" aria-expanded="true">Schema DDL (optional)</button>
+              <div class="schema-body">
+                <textarea id="schema" class="editor schema-editor" spellcheck="false" aria-label="Schema DDL">${escapeHtml(DEFAULT_SCHEMA)}</textarea>
+              </div>
+            </div>
+          </div>
         </section>
 
         <section class="panel panel-output">
           <div class="panel-head">
-            <h2>結果</h2>
+            <h2>Output</h2>
             <div class="tabs" role="tablist">
               <button type="button" class="tab active" data-tab="columns">Columns</button>
               <button type="button" class="tab" data-tab="statements">Statements</button>
@@ -79,8 +71,8 @@ function renderShell(dialects: string[]): void {
               <button type="button" class="tab" data-tab="json">JSON</button>
             </div>
           </div>
-          <div id="status" class="status status-idle">SQL を入力して「解析」を押してください</div>
-          <div id="output" class="output"><p class="placeholder">解析結果がここに表示されます</p></div>
+          <div id="status" class="status status-idle">Enter SQL and click Analyze</div>
+          <div id="output" class="output"><p class="placeholder">Analysis results will appear here</p></div>
         </section>
       </main>
     </div>
@@ -95,6 +87,15 @@ function renderShell(dialects: string[]): void {
   bindsEl.value = 'int';
 
   analyzeBtn.addEventListener('click', () => void runAnalysis());
+
+  const inputBody = mustGet<HTMLDivElement>('.input-body');
+  const schemaSection = mustGet<HTMLDivElement>('.schema-section');
+  const schemaToggle = mustGet<HTMLButtonElement>('.schema-toggle');
+  schemaToggle.addEventListener('click', () => {
+    const open = schemaSection.classList.toggle('schema-open');
+    inputBody.classList.toggle('schema-open', open);
+    schemaToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
 
   for (const button of app!.querySelectorAll<HTMLButtonElement>('.tab')) {
     button.addEventListener('click', () => {
@@ -117,7 +118,7 @@ function renderShell(dialects: string[]): void {
 }
 
 async function bootstrap(): Promise<void> {
-  setStatus('loading', 'SQL エンジンを読み込み中…');
+  setStatus('loading', 'Loading SQL engine…');
   try {
     const { getSupportedDialects } = await import('./analyzer');
     const dialects = getSupportedDialects();
@@ -125,17 +126,17 @@ async function bootstrap(): Promise<void> {
     const selected = dialectEl.value;
     dialectEl.innerHTML = renderDialectOptions(dialects);
     dialectEl.value = dialects.includes(selected) ? selected : (dialects.includes('generic') ? 'generic' : dialects[0] ?? 'generic');
-    setStatus('idle', 'SQL を入力して「解析」を押してください');
+    setStatus('idle', 'Enter SQL and click Analyze');
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    setStatus('error', `SQL エンジンの読み込みに失敗しました: ${message}`);
+    setStatus('error', `Failed to load SQL engine: ${message}`);
   }
 }
 
 async function runAnalysis(): Promise<void> {
   const analyzeBtn = mustGet<HTMLButtonElement>('#analyze');
   analyzeBtn.disabled = true;
-  setStatus('loading', '解析中…');
+  setStatus('loading', 'Analyzing…');
 
   try {
     const { analyzeSql } = await import('./analyzer');
@@ -151,7 +152,7 @@ async function runAnalysis(): Promise<void> {
     const columnCount = result.resultSets.reduce((sum, rs) => sum + rs.columns.length, 0);
     setStatus(
       'success',
-      `${result.statements.length} ステートメント / ${result.resultSets.length} 結果セット / ${columnCount} 列`,
+      `${result.statements.length} statements / ${result.resultSets.length} result sets / ${columnCount} columns`,
     );
     renderOutput();
   } catch (error) {
@@ -174,7 +175,7 @@ function renderOutput(): void {
       outputEl.innerHTML = `<pre class="json-box">${escapeHtml(lastJson)}</pre>`;
       return;
     }
-    outputEl.innerHTML = '<p class="placeholder">解析結果がここに表示されます</p>';
+    outputEl.innerHTML = '<p class="placeholder">Analysis results will appear here</p>';
     return;
   }
 
@@ -196,18 +197,18 @@ function renderOutput(): void {
 
 function renderColumnsPanel(result: AnalyzeResult): string {
   if (result.resultSets.length === 0) {
-    return '<p class="placeholder">結果列はありません</p>';
+    return '<p class="placeholder">No result columns</p>';
   }
 
   return result.resultSets.map((resultSet) => {
     const title = result.resultSets.length > 1 ? `<h3 class="result-set-title">Result set ${resultSet.index}</h3>` : '';
-    return `${title}${renderTable(formatColumnsTable(resultSet.columns))}`;
+    return `${title}${renderTable(formatColumnsTable(resultSet.columns, { showJdbc: result.jdbcEnabled }))}`;
   }).join('');
 }
 
 function renderStatementsPanel(result: AnalyzeResult): string {
   if (result.statements.length === 0) {
-    return '<p class="placeholder">ステートメント情報はありません</p>';
+    return '<p class="placeholder">No statement information</p>';
   }
 
   const rows = result.statements.map((statement) => `
@@ -245,7 +246,7 @@ function renderMessagesPanel(result: AnalyzeResult): string {
   }).join('');
 
   if (!warnings && !diagnostics) {
-    return '<p class="placeholder">警告・診断はありません</p>';
+    return '<p class="placeholder">No warnings or diagnostics</p>';
   }
 
   return `
@@ -256,7 +257,7 @@ function renderMessagesPanel(result: AnalyzeResult): string {
 
 function renderTable(rows: string[][]): string {
   if (rows.length <= 1) {
-    return '<p class="placeholder">列がありません</p>';
+    return '<p class="placeholder">No columns</p>';
   }
 
   const [headers, ...body] = rows;

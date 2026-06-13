@@ -57,7 +57,7 @@ describe('dialect configuration registry', () => {
     assert.deepStrictEqual(getSupportedDialects(), sdkDialects);
 
     const files = (await readdir(path.resolve('src/dialects')))
-      .filter((file) => file.endsWith('.ts') && file !== 'index.ts' && file !== 'types.ts')
+      .filter((file) => file.endsWith('.ts') && file !== 'index.ts')
       .map((file) => file.replace(/\.ts$/, ''))
       .sort();
     assert.deepStrictEqual(files, sdkDialects);
@@ -103,7 +103,7 @@ describe('dialect configuration registry', () => {
       assert.deepStrictEqual(config.diagnosticRules.knownTableFunctionArgumentNames, ['file', 'url']);
       assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes('highlight'));
       const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map((match) => match[1]);
-      assert.deepStrictEqual(imports, ['./types.js']);
+      assert.deepStrictEqual(imports, ['../types.js']);
       const exports = [...source.matchAll(/^export\s+/gm)];
       assert.strictEqual(exports.length, 1);
       assert.match(source, /export const dialectConfig = /);
