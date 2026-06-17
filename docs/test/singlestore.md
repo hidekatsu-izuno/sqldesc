@@ -17,7 +17,7 @@ dialect: singlestore
 | JOIN | INNER JOIN、LEFT JOIN |
 | 集約 | GROUP BY / HAVING、GROUP_CONCAT、AVG |
 | ウィンドウ関数 | ROW_NUMBER / RANK / LAG / ウィンドウ集約、NTILE / dense_rank |
-| 複合行ソース | VALUES、**VALUES ROW** |
+| 複合行ソース | UNION ALL 行集合 |
 | 型・関数 | json_extract_string、**json_extract_json**、JSON_EXTRACT / JSON_UNQUOTE、regexp_match、日時・条件関数、CAST、**CONVERT**、ハッシュ・文字列、CASE |
 | 全文検索 | **MATCH ... AGAINST** |
 | 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、EXCEPT、UNION、INTERSECT |
@@ -31,6 +31,11 @@ dialect: singlestore
 | JSON | [JSON functions](https://docs.singlestore.com/db/v9.0/reference/sql-reference/json-functions/) |
 | 全文検索 | [Full-text search](https://docs.singlestore.com/db/v9.0/reference/sql-reference/full-text-search/) |
 | パイプライン | [SHOW PIPELINES](https://docs.singlestore.com/db/v9.0/reference/sql-reference/pipelines/show-pipelines/) |
+
+Docker 検証:
+
+- `ghcr.io/singlestore-labs/singlestoredb-dev:latest` を `ROOT_PASSWORD=sqldesc` で起動し、MySQL プロトコル（ポート **3306**）で接続する。
+- 一括検証: `node scripts/verify-singlestore-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -468,7 +473,7 @@ verify: true
 
 ---
 
-## VALUES
+## UNION ALL 行集合
 
 ### Given
 
@@ -483,38 +488,7 @@ dialect: singlestore
 ```
 
 ```sql
-SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t(id, name)
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| id | int | t.id |
-| name | varchar(255) | t.name |
-
----
-## VALUES ROW
-
-### Given
-
-```yaml
-prepare: Prepare-1
-```
-
-### When
-
-```yaml
-dialect: singlestore
-```
-
-```sql
-SELECT * FROM (VALUES ROW(1, 'a'), ROW(2, 'b')) AS t(id, name)
+SELECT * FROM (SELECT 1 AS id, 'a' AS name UNION ALL SELECT 2, 'b') AS t
 ```
 
 ### Then
@@ -610,7 +584,7 @@ dialect: singlestore
 ```
 
 ```sql
-SELECT JSON_EXTRACT(data, '$.x') AS je, JSON_UNQUOTE(JSON_EXTRACT(data, '$.x')) AS ju FROM users
+SELECT JSON_EXTRACT_JSON(data, 'x') AS je, JSON_EXTRACT_STRING(data, 'x') AS ju FROM users
 ```
 
 ### Then
@@ -1099,7 +1073,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Schema | varchar(255) | cast |
+| Database | varchar(255) | cast |
 
 ---
 ## SHOW TABLES
@@ -1129,7 +1103,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | varchar(255) | cast |
+| Tables_in_db | varchar(255) | cast |
 
 ---
 ## SHOW COLUMNS
@@ -1207,6 +1181,7 @@ verify: true
 | Index_type | varchar(255) | cast |
 | Comment | varchar(255) | cast |
 | Index_comment | varchar(255) | cast |
+| Index_options | varchar(255) | cast |
 
 ---
 ## SHOW CREATE TABLE
@@ -1269,11 +1244,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Database | varchar(255) | cast |
-| Pipeline | varchar(255) | cast |
+| Pipelines_in_db | varchar(255) | cast |
 | State | varchar(255) | cast |
-| Source_Type | varchar(255) | cast |
-| Config_JSON | varchar(255) | cast |
+| Scheduled | varchar(255) | cast |
 
 ---
 ## DESCRIBE
@@ -1303,13 +1276,12 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | int | users.id |
-| name | varchar(255) | users.name |
-| age | int | users.age |
-| dept | varchar(255) | users.dept |
-| amount | decimal | users.amount |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
+| Field | varchar(255) | cast |
+| Type | varchar(255) | cast |
+| Null | varchar(255) | cast |
+| Key | varchar(255) | cast |
+| Default | varchar(255) | cast |
+| Extra | varchar(255) | cast |
 
 ---
 ## EXPLAIN
@@ -1339,7 +1311,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | varchar(255) | cast |
+| EXPLAIN | varchar(255) | cast |
 
 ---
 ## information_schema.tables

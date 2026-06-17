@@ -43,6 +43,7 @@ const DIALECT_CONFIG_KEY_ORDER = [
   "parameterizedTypeFormats",
   "literalTypes",
   "dynamicTableFunctions",
+  "selectStar",
   "serializedSelect",
   "outputTypeOverrides",
   "metadata",
@@ -94,6 +95,7 @@ describe("dialect configuration registry", () => {
       assert.ok(config.literalTypes.string);
       assert.ok(config.dynamicTableFunctions.generateSeriesColumn);
       assert.ok(config.dynamicTableFunctions.enabledHandlers);
+      assert.ok(config.selectStar);
       assert.ok(config.serializedSelect);
       assert.ok(config.metadata.builtinSchemaTables);
       assert.ok(config.metadata.describeFunctionColumns.length > 0);

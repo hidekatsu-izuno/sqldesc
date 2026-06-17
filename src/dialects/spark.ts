@@ -256,7 +256,10 @@ export const dialectConfig = {
     year: "integer",
   },
   scalarFunctionTypePatterns: {},
-  tableFunctions: {},
+  tableFunctions: {
+    explode: [{ name: "col", type: "integer" }],
+    explode_outer: [{ name: "col", type: "unknown" }],
+  },
   aggregate: {
     countType: "integer",
     avgDefault: "decimal",
@@ -327,6 +330,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["stack"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -337,8 +341,35 @@ export const dialectConfig = {
   metadata: {
     builtinSchemaTables: [],
     describeFunctionColumns: [{ name: "function_desc", type: "text" }],
-    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
-    snowflakeDescribeObjectColumns: {},
+    explainColumns: [{ name: "plan", type: "text" }],
+    snowflakeDescribeObjectColumns: {
+      database: [
+        { name: "info_name", type: "text" },
+        { name: "info_value", type: "text" },
+      ],
+      namespace: [
+        { name: "info_name", type: "text" },
+        { name: "info_value", type: "text" },
+      ],
+    },
+    describeTableResultColumns: [
+      { name: "col_name", type: "text" },
+      { name: "data_type", type: "text" },
+      { name: "comment", type: "text" },
+    ],
+    showTablesColumns: [
+      { name: "namespace", type: "text" },
+      { name: "tableName", type: "text" },
+      { name: "isTemporary", type: "boolean" },
+    ],
+    showDatabasesColumns: [{ name: "namespace", type: "text" }],
+    showNamespacesColumns: [{ name: "namespace", type: "text" }],
+    showCurrentNamespaceColumns: [
+      { name: "catalog", type: "text" },
+      { name: "namespace", type: "text" },
+    ],
+    showFunctionsColumns: [{ name: "function", type: "text" }],
+    showColumnsColumns: [{ name: "col_name", type: "text" }],
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },
       { name: "name", type: "text" },

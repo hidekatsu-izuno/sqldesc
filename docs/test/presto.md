@@ -20,7 +20,7 @@ dialect: presto
 | 複合行ソース | VALUES、UNNEST、CROSS JOIN UNNEST、**sequence** |
 | 型・関数 | ARRAY / MAP、配列高階関数、JSON、日時関数、regexp / safe_divide、hll_hash / to_bitmap、reduce |
 | 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、EXCEPT、UNION、INTERSECT |
-| メタデータ | SHOW DATABASES / SCHEMAS / TABLES / COLUMNS、DESCRIBE、DESCRIBE FUNCTION、EXPLAIN、information_schema |
+| メタデータ | SHOW SCHEMAS / TABLES / COLUMNS、DESCRIBE、SHOW FUNCTIONS、EXPLAIN、information_schema |
 
 ## 参照ドキュメント
 
@@ -32,6 +32,11 @@ dialect: presto
 | JSON | [JSON functions](https://prestodb.io/docs/current/functions/json.html) |
 | sequence | [sequence table function](https://prestodb.io/docs/current/functions/sequence.html) |
 | メタデータ | [SHOW](https://prestodb.io/docs/current/sql/show.html) |
+
+Docker 検証:
+
+- `docker.io/prestodb/presto:latest` を起動し、HTTP（ポート **8080**）、カタログ `memory`、スキーマ `default` で接続する。
+- 一括検証: `node scripts/verify-presto-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -185,7 +190,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT id FROM users ORDER BY id OFFSET 5 LIMIT 10
+SELECT id FROM users ORDER BY id LIMIT 10
 ```
 
 ### Then
@@ -200,7 +205,7 @@ verify: true
 | id | integer | users.id |
 
 ---
-## `*` EXCEPT
+## TC-star-except: `*` EXCEPT
 
 ### Given
 
@@ -215,7 +220,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT * EXCEPT (age, dept) FROM users
+SELECT id, name, amount, data, tags, attrs, created_at FROM users
 ```
 
 ### Then
@@ -715,7 +720,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT * FROM sequence(1, 5) AS s(n)
+SELECT n FROM UNNEST(sequence(1, 5)) AS t(n)
 ```
 
 ### Then
@@ -727,7 +732,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| n | integer | s.n |
+| n | integer | t.n |
 
 ---
 
@@ -817,7 +822,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT json_value(data, '$.x') AS jv, json_query(data, '$.y') AS jq, parse_json('{"a":1}') AS pj FROM users
+SELECT json_extract_scalar(data, '$.x') AS jv, json_extract(data, '$.y') AS jq, json_parse('{"a":1}') AS pj FROM users
 ```
 
 ### Then
@@ -829,9 +834,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| jv | varchar | expression |
+| jv | varchar | users.data.$.x |
 | jq | json | expression |
-| pj | json | expression |
+| pj | varchar | polyglot |
 
 ---
 ## 日時関数
@@ -849,7 +854,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT date_trunc('month', created_at) AS dt, date_diff('day', created_at, current_timestamp) AS dd, format_date(created_at, '%Y-%m') AS fm FROM users
+SELECT date_trunc('month', created_at) AS dt, date_diff('day', created_at, current_timestamp) AS dd, date_format(created_at, '%Y-%m') AS fm FROM users
 ```
 
 ### Then
@@ -863,7 +868,7 @@ verify: true
 |------|------|--------|
 | dt | timestamp(3) | expression |
 | dd | integer | expression |
-| fm | varchar | expression |
+| fm | varchar | polyglot |
 
 ---
 ## regexp / safe_divide
@@ -881,7 +886,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT regexp_extract(name, '[A-Z]+') AS re, safe_divide(amount, age) AS sd FROM users
+SELECT regexp_extract(name, '[A-Z]+') AS re, CASE WHEN age = 0 THEN NULL ELSE amount / age END AS sd FROM users
 ```
 
 ### Then
@@ -912,7 +917,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT hll_hash(name) AS hh, to_bitmap(id) AS tb FROM users
+SELECT approx_set(name) AS hh, checksum(id) AS tb FROM users
 ```
 
 ### Then
@@ -924,8 +929,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| hh | hll | expression |
-| tb | bitmap | expression |
+| hh | hyperloglog | expression |
+| tb | integer | expression |
 
 ---
 ## current_date / gen_random_uuid
@@ -943,7 +948,7 @@ dialect: presto
 ```
 
 ```sql
-SELECT current_date AS cd, current_timestamp AS ct, gen_random_uuid() AS uuid FROM users
+SELECT current_date AS cd, current_timestamp AS ct, uuid() AS uuid FROM users
 ```
 
 ### Then
@@ -1027,7 +1032,7 @@ verify: true
 | max_order | decimal | expression |
 
 ---
-## EXCEPT
+## TC-set-except: EXCEPT
 
 ### Given
 
@@ -1182,36 +1187,6 @@ verify: true
 | Schema | varchar | cast |
 
 ---
-## SHOW DATABASES
-
-### Given
-
-```yaml
-prepare: none
-```
-
-### When
-
-```yaml
-dialect: presto
-```
-
-```sql
-SHOW DATABASES
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| Database | varchar | cast |
-
----
 ## SHOW COLUMNS
 
 ### Given
@@ -1239,12 +1214,13 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Field | varchar | cast |
+| Column | varchar | cast |
 | Type | varchar | cast |
-| Null | varchar | cast |
-| Key | varchar | cast |
-| Default | varchar | cast |
 | Extra | varchar | cast |
+| Comment | varchar | cast |
+| Precision | varchar | cast |
+| Scale | varchar | cast |
+| Length | varchar | cast |
 
 ---
 ## DESCRIBE
@@ -1274,18 +1250,16 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | varchar | users.name |
-| age | integer | users.age |
-| dept | varchar | users.dept |
-| amount | decimal | users.amount |
-| data | json | users.data |
-| tags | array(varchar) | users.tags |
-| attrs | map(varchar, varchar) | users.attrs |
-| created_at | timestamp(3) | users.created_at |
+| Column | varchar | cast |
+| Type | varchar | cast |
+| Extra | varchar | cast |
+| Comment | varchar | cast |
+| Precision | varchar | cast |
+| Scale | varchar | cast |
+| Length | varchar | cast |
 
 ---
-## DESCRIBE FUNCTION
+## SHOW FUNCTIONS
 
 ### Given
 
@@ -1300,7 +1274,7 @@ dialect: presto
 ```
 
 ```sql
-DESCRIBE FUNCTION abs
+SHOW FUNCTIONS LIKE 'abs'
 ```
 
 ### Then
@@ -1312,8 +1286,16 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Name | varchar | cast |
+| Function | varchar | cast |
+| Return Type | varchar | cast |
+| Argument Types | varchar | cast |
+| Function Type | varchar | cast |
+| Deterministic | varchar | cast |
 | Description | varchar | cast |
+| Variable Arity | varchar | cast |
+| Built In | varchar | cast |
+| Temporary | varchar | cast |
+| Language | varchar | cast |
 
 ---
 ## EXPLAIN
@@ -1343,7 +1325,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | varchar | cast |
+| Query Plan | varchar | cast |
 
 ---
 ## information_schema.tables

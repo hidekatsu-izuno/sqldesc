@@ -90,6 +90,32 @@ describe("describeQuery", () => {
         ["name", "string"],
       ],
     );
+
+    const solrStarResult = await describeQuery({
+      sql: "select * from users limit 10",
+      dialect: "solr",
+      schema,
+    });
+    assert.deepStrictEqual(
+      solrStarResult.columns.map((column) => [column.name, column.type, column.source]),
+      [
+        ["_nest_path_", "VARCHAR(255)", "cast"],
+        ["_root_", "VARCHAR(255)", "cast"],
+        ["_text_", "VARCHAR(255)", "cast"],
+        ["_version_", "BIGINT", "cast"],
+        ["age", "INTEGER", "users.age"],
+        ["amount", "DECIMAL", "users.amount"],
+        ["created_at", "TIMESTAMP", "users.created_at"],
+        ["dept", "VARCHAR(255)", "users.dept"],
+        ["dept_str", "VARCHAR(255)", "cast"],
+        ["id", "INTEGER", "users.id"],
+        ["name", "VARCHAR(255)", "users.name"],
+        ["name_str", "VARCHAR(255)", "cast"],
+        ["user_id", "INTEGER", "cast"],
+        ["_query_", "VARCHAR(255)", "cast"],
+        ["score", "DECIMAL", "expression"],
+      ],
+    );
   });
 
   it("describes schema-qualified table references", async () => {

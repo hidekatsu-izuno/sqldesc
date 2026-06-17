@@ -969,6 +969,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["generateSeries", "range", "fileColumns"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     "/^avg_/": "double",

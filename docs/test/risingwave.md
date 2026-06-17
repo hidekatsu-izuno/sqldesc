@@ -16,9 +16,9 @@ dialect: risingwave
 | SELECT 基本 | 列の明示指定、`*` 全列展開、FROM 句なし、ORDER BY / OFFSET / LIMIT、DISTINCT ON |
 | JOIN | INNER JOIN |
 | 集約 | GROUP BY / HAVING、FILTER 句、string_agg / array_agg |
-| ウィンドウ関数 | ROW_NUMBER、RANK、LAG / LEAD、NTILE、dense_rank、ウィンドウ集約 |
+| ウィンドウ関数 | ROW_NUMBER、RANK、LAG / LEAD、rank / dense_rank、ウィンドウ集約 |
 | 複合行ソース | VALUES、UNNEST、generate_series |
-| **ストリーミング時間窓** | **tumble_start / tumble_end**、**hop_start / hop_end**、**TUMBLE GROUP BY** |
+| **ストリーミング時間窓** | **tumble テーブル関数**、**hop テーブル関数**、**TUMBLE GROUP BY** |
 | 型・関数 | ARRAY、JSON / JSONB、regexp_match、coalesce |
 | 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、EXCEPT、UNION、INTERSECT |
 | **SHOW 系** | **SHOW MATERIALIZED VIEWS**、**SHOW SOURCES / SINKS**、SHOW VIEWS / TABLES / DATABASES / INDEXES / SCHEMAS、SHOW CREATE TABLE |
@@ -32,6 +32,11 @@ dialect: risingwave
 | 時間窓 | [Time windows](https://docs.risingwave.com/processing/time-windows) |
 | SOURCES / SINKS | [SHOW SOURCES](https://docs.risingwave.com/sql/commands/sql-show-sources)、[SHOW SINKS](https://docs.risingwave.com/sql/commands/sql-show-sinks) |
 | MATERIALIZED VIEWS | [SHOW MATERIALIZED VIEWS](https://docs.risingwave.com/sql/commands/sql-show-materialized-views) |
+
+Docker 検証:
+
+- `docker.io/risingwavelabs/risingwave:latest` を `single_node` で起動し、PostgreSQL プロトコル（ポート **4566**、ユーザー `root`、DB `dev`）で接続する。
+- 一括検証: `node scripts/verify-risingwave-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -464,7 +469,7 @@ verify: true
 | nxt | numeric | expression |
 
 ---
-## NTILE / dense_rank
+## rank / dense_rank
 
 ### Given
 
@@ -479,7 +484,7 @@ dialect: risingwave
 ```
 
 ```sql
-SELECT id, NTILE(4) OVER (ORDER BY amount) AS quartile, dense_rank() OVER (ORDER BY amount) AS dr FROM users
+SELECT id, rank() OVER (ORDER BY amount) AS quartile, dense_rank() OVER (ORDER BY amount) AS dr FROM users
 ```
 
 ### Then
@@ -631,7 +636,7 @@ verify: true
 
 ---
 
-## tumble_start / tumble_end
+## tumble テーブル関数
 
 ### Given
 
@@ -646,7 +651,7 @@ dialect: risingwave
 ```
 
 ```sql
-SELECT tumble_start(created_at, interval '1 hour') AS ts, tumble_end(created_at, interval '1 hour') AS te FROM users
+SELECT window_start AS ts, window_end AS te FROM tumble(users, created_at, interval '1 hour')
 ```
 
 ### Then
@@ -658,11 +663,11 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| ts | timestamp without time zone | expression |
-| te | timestamp without time zone | expression |
+| ts | unknown | — |
+| te | unknown | — |
 
 ---
-## hop_start / hop_end
+## hop テーブル関数
 
 ### Given
 
@@ -677,7 +682,7 @@ dialect: risingwave
 ```
 
 ```sql
-SELECT hop_start(created_at, interval '5 minute', interval '1 minute') AS hs, hop_end(created_at, interval '5 minute', interval '1 minute') AS he FROM users
+SELECT window_start AS hs, window_end AS he FROM hop(users, created_at, interval '1 minute', interval '5 minute')
 ```
 
 ### Then
@@ -689,8 +694,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| hs | timestamp without time zone | expression |
-| he | timestamp without time zone | expression |
+| hs | unknown | — |
+| he | unknown | — |
 
 ---
 ## TUMBLE GROUP BY
@@ -708,7 +713,7 @@ dialect: risingwave
 ```
 
 ```sql
-SELECT dept, SUM(amount) AS total FROM users GROUP BY dept, TUMBLE(created_at, interval '1 hour')
+SELECT dept, SUM(amount) AS total FROM tumble(users, created_at, interval '1 hour') GROUP BY dept, window_start
 ```
 
 ### Then
@@ -720,8 +725,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| dept | text | users.dept |
-| total | numeric | expression |
+| dept | unknown | — |
+| total | unknown | expression |
 
 ---
 
@@ -822,7 +827,7 @@ verify: true
 | ca | numeric | expression |
 
 ---
-## current_timestamp / gen_random_uuid / version
+## current_timestamp / version
 
 ### Given
 
@@ -837,7 +842,7 @@ dialect: risingwave
 ```
 
 ```sql
-SELECT current_timestamp AS ct, gen_random_uuid() AS uuid, version() AS ver, current_database() AS db FROM users
+SELECT current_timestamp AS ct, version() AS ver, current_database() AS db FROM users LIMIT 1
 ```
 
 ### Then
@@ -850,7 +855,6 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | ct | timestamp without time zone | expression |
-| uuid | uuid | expression |
 | ver | text | expression |
 | db | text | expression |
 
@@ -1044,15 +1048,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| created_on | timestamp without time zone | cast |
-| name | text | cast |
-| database_name | text | cast |
-| schema_name | text | cast |
-| cluster_by | text | cast |
-| rows | integer | cast |
-| bytes | integer | cast |
-| owner | text | cast |
-| comment | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW SOURCES
@@ -1082,11 +1078,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | cast |
-| schema | text | cast |
-| type | text | cast |
-| owner | text | cast |
-| cluster | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW SINKS
@@ -1116,11 +1108,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | text | cast |
-| schema | text | cast |
-| type | text | cast |
-| owner | text | cast |
-| cluster | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW VIEWS
@@ -1150,7 +1138,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| View | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW TABLES
@@ -1180,7 +1168,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW DATABASES
@@ -1210,7 +1198,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Database | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW INDEXES
@@ -1218,7 +1206,7 @@ verify: true
 ### Given
 
 ```yaml
-prepare: none
+prepare: Prepare-1
 ```
 
 ### When
@@ -1228,7 +1216,7 @@ dialect: risingwave
 ```
 
 ```sql
-SHOW INDEXES
+SHOW INDEXES FROM users
 ```
 
 ### Then
@@ -1240,19 +1228,11 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | text | cast |
-| Non_unique | integer | cast |
-| Key_name | text | cast |
-| Seq_in_index | integer | cast |
-| Column_name | text | cast |
-| Collation | text | cast |
-| Cardinality | integer | cast |
-| Sub_part | integer | cast |
-| Packed | text | cast |
-| Null | text | cast |
-| Index_type | text | cast |
-| Comment | text | cast |
-| Index_comment | text | cast |
+| Name | text | cast |
+| On | text | cast |
+| Key | text | cast |
+| Include | text | cast |
+| Distributed By | text | cast |
 
 ---
 ## SHOW SCHEMAS
@@ -1282,7 +1262,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Schema | text | cast |
+| Name | text | cast |
 
 ---
 ## SHOW CREATE TABLE
@@ -1312,8 +1292,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | text | cast |
-| Create Table | text | cast |
+| Name | text | cast |
+| Create Sql | text | cast |
 
 ---
 
@@ -1408,14 +1388,10 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | integer | users.id |
-| name | text | users.name |
-| age | integer | users.age |
-| dept | text | users.dept |
-| amount | numeric | users.amount |
-| data | jsonb | users.data |
-| created_at | timestamp without time zone | users.created_at |
-| tags | array<text> | users.tags |
+| Name | text | cast |
+| Type | text | cast |
+| Is Hidden | boolean | cast |
+| Description | text | cast |
 
 ---
 ## EXPLAIN

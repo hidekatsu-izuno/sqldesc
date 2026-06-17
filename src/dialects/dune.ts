@@ -326,6 +326,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["sequence"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",

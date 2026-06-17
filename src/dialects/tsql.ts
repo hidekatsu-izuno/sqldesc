@@ -371,6 +371,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["embeddedSql"],
   },
+  selectStar: {},
   serializedSelect: {
     forJson: "json",
     forXml: "xml",

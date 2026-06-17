@@ -326,6 +326,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["sequence"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -734,10 +735,27 @@ export const dialectConfig = {
       },
     ],
     describeFunctionColumns: [
-      { name: "Name", type: "text" },
-      { name: "Description", type: "text" },
+      { name: "Function", type: "varchar" },
+      { name: "Return Type", type: "varchar" },
+      { name: "Argument Types", type: "varchar" },
+      { name: "Function Type", type: "varchar" },
+      { name: "Deterministic", type: "varchar" },
+      { name: "Description", type: "varchar" },
+      { name: "Variable Arity", type: "varchar" },
+      { name: "Built In", type: "varchar" },
+      { name: "Temporary", type: "varchar" },
+      { name: "Language", type: "varchar" },
     ],
-    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
+    explainColumns: [{ name: "Query Plan", type: "varchar" }],
+    describeTableResultColumns: [
+      { name: "Column", type: "varchar" },
+      { name: "Type", type: "varchar" },
+      { name: "Extra", type: "varchar" },
+      { name: "Comment", type: "varchar" },
+      { name: "Precision", type: "varchar" },
+      { name: "Scale", type: "varchar" },
+      { name: "Length", type: "varchar" },
+    ],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },
@@ -756,6 +774,33 @@ export const dialectConfig = {
       { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
+      {
+        pattern: "/^show\\s+columns\\b/i",
+        columns: [
+          { name: "Column", type: "varchar" },
+          { name: "Type", type: "varchar" },
+          { name: "Extra", type: "varchar" },
+          { name: "Comment", type: "varchar" },
+          { name: "Precision", type: "varchar" },
+          { name: "Scale", type: "varchar" },
+          { name: "Length", type: "varchar" },
+        ],
+      },
+      {
+        pattern: "/^show\\s+functions\\b/i",
+        columns: [
+          { name: "Function", type: "varchar" },
+          { name: "Return Type", type: "varchar" },
+          { name: "Argument Types", type: "varchar" },
+          { name: "Function Type", type: "varchar" },
+          { name: "Deterministic", type: "varchar" },
+          { name: "Description", type: "varchar" },
+          { name: "Variable Arity", type: "varchar" },
+          { name: "Built In", type: "varchar" },
+          { name: "Temporary", type: "varchar" },
+          { name: "Language", type: "varchar" },
+        ],
+      },
       {
         pattern: "/^(?:list|ls)\\s+@/",
         columns: [

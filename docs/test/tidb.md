@@ -20,7 +20,7 @@ dialect: tidb
 | JSON | **json_extract** / **json_unquote** / **json_contains** |
 | TiDB 関数 | **tidb_version** / version、**tidb_decode_key** |
 | 型・関数 | IF / COALESCE、DATE_ADD / DATEDIFF、CAST、CONVERT、REGEXP、MD5 / SHA2 |
-| 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、IN 副問い合わせ、UNION、EXCEPT、INTERSECT、VALUES ROW |
+| 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、IN 副問い合わせ、UNION、EXCEPT、INTERSECT、UNION ALL 行集合 |
 | メタデータ | **SHOW STATS_META** / **SHOW STATS_HISTOGRAMS**、**SHOW TABLE REGIONS**、SHOW DATABASES / COLUMNS / CREATE TABLE、DESCRIBE、EXPLAIN、information_schema |
 
 ## 参照ドキュメント
@@ -31,6 +31,11 @@ dialect: tidb
 | JSON | [JSON Functions](https://docs.pingcap.com/tidb/stable/json-functions) |
 | 統計 | [SHOW STATS](https://docs.pingcap.com/tidb/stable/sql-statement-show-stats-meta) |
 | リージョン | [SHOW TABLE REGIONS](https://docs.pingcap.com/tidb/stable/sql-statement-show-table-regions) |
+
+Docker 検証:
+
+- `docker.io/pingcap/tidb:v8.5.1` を `-P 4000 --store unistore` で起動し、MySQL プロトコル（ポート **4000**）で接続する。
+- 一括検証: `node scripts/verify-tidb-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -889,7 +894,7 @@ verify: true
 | id | int | cast |
 
 ---
-## VALUES ROW
+## UNION ALL 行集合
 
 ### Given
 
@@ -904,7 +909,7 @@ dialect: tidb
 ```
 
 ```sql
-SELECT * FROM (VALUES ROW(1, 'a'), ROW(2, 'b')) AS t(id, name)
+SELECT * FROM (SELECT 1 AS id, 'a' AS name UNION ALL SELECT 2, 'b') AS t
 ```
 
 ### Then
@@ -952,7 +957,13 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| stats_meta | varchar(255) | cast |
+| Db_name | varchar(255) | cast |
+| Table_name | varchar(255) | cast |
+| Partition_name | varchar(255) | cast |
+| Update_time | timestamp | cast |
+| Modify_count | bigint | cast |
+| Row_count | bigint | cast |
+| Last_analyze_time | timestamp | cast |
 
 ---
 ## SHOW STATS_HISTOGRAMS
@@ -982,7 +993,21 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| stats_histograms | varchar(255) | cast |
+| Db_name | varchar(255) | cast |
+| Table_name | varchar(255) | cast |
+| Partition_name | varchar(255) | cast |
+| Column_name | varchar(255) | cast |
+| Is_index | tinyint(1) | cast |
+| Update_time | timestamp | cast |
+| Distinct_count | bigint | cast |
+| Null_count | bigint | cast |
+| Avg_col_size | decimal | cast |
+| Correlation | decimal | cast |
+| Load_status | varchar(255) | cast |
+| Total_mem_usage | bigint | cast |
+| Hist_mem_usage | bigint | cast |
+| Topn_mem_usage | bigint | cast |
+| Cms_mem_usage | bigint | cast |
 
 ---
 ## SHOW TABLE REGIONS
@@ -1000,7 +1025,7 @@ dialect: tidb
 ```
 
 ```sql
-SHOW TABLE REGIONS FROM users
+SHOW TABLE db.users REGIONS
 ```
 
 ### Then
@@ -1012,20 +1037,19 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| created_on | timestamp | cast |
-| name | varchar(255) | cast |
-| database_name | varchar(255) | cast |
-| schema_name | varchar(255) | cast |
-| kind | varchar(255) | cast |
-| comment | varchar(255) | cast |
-| cluster_by | varchar(255) | cast |
-| rows | int | cast |
-| bytes | int | cast |
-| owner | varchar(255) | cast |
-| retention_time | int | cast |
-| automatic_clustering | varchar(255) | cast |
-| change_tracking | tinyint(1) | cast |
-| search_optimization | tinyint(1) | cast |
+| REGION_ID | bigint | cast |
+| START_KEY | varchar(255) | cast |
+| END_KEY | varchar(255) | cast |
+| LEADER_ID | bigint | cast |
+| LEADER_STORE_ID | bigint | cast |
+| PEERS | varchar(255) | cast |
+| SCATTERING | tinyint(1) | cast |
+| WRITTEN_BYTES | bigint | cast |
+| READ_BYTES | bigint | cast |
+| APPROXIMATE_SIZE(MB) | bigint | cast |
+| APPROXIMATE_KEYS | bigint | cast |
+| SCHEDULING_CONSTRAINTS | varchar(255) | cast |
+| SCHEDULING_STATE | varchar(255) | cast |
 
 ---
 ## SHOW DATABASES
@@ -1151,13 +1175,12 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | int | users.id |
-| name | varchar(255) | users.name |
-| age | int | users.age |
-| dept | varchar(255) | users.dept |
-| amount | decimal | users.amount |
-| data | json | users.data |
-| created_at | timestamp | users.created_at |
+| Field | varchar(255) | cast |
+| Type | varchar(255) | cast |
+| Null | varchar(255) | cast |
+| Key | varchar(255) | cast |
+| Default | varchar(255) | cast |
+| Extra | varchar(255) | cast |
 
 ---
 ## EXPLAIN
@@ -1187,7 +1210,11 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | varchar(255) | cast |
+| id | varchar(255) | cast |
+| estRows | varchar(255) | cast |
+| task | varchar(255) | cast |
+| access object | varchar(255) | cast |
+| operator info | varchar(255) | cast |
 
 ---
 ## information_schema.tables

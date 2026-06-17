@@ -424,6 +424,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["generateSeries", "sqliteFts5Vocab", "sqlitePragma"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     avg_null: "null",

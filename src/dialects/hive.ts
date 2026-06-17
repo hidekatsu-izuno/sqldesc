@@ -327,6 +327,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["stack"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -336,11 +337,15 @@ export const dialectConfig = {
   },
   metadata: {
     builtinSchemaTables: [],
-    describeFunctionColumns: [
-      { name: "Name", type: "text" },
-      { name: "Description", type: "text" },
+    describeFunctionColumns: [{ name: "tab_name", type: "varchar" }],
+    explainColumns: [{ name: "Explain", type: "varchar" }],
+    describeTableResultColumns: [
+      { name: "col_name", type: "varchar" },
+      { name: "data_type", type: "varchar" },
+      { name: "comment", type: "varchar" },
     ],
-    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
+    showTablesColumns: [{ name: "tab_name", type: "varchar" }],
+    showDatabasesColumns: [{ name: "database_name", type: "varchar" }],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },

@@ -332,6 +332,7 @@ export const dialectConfig = {
       "externalConnection",
     ],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",

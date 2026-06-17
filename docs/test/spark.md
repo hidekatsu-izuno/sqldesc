@@ -24,7 +24,7 @@ dialect: spark
 | 型・関数 | sha2 / xxhash64、date_add / datediff、**monotonically_increasing_id**、current_database / version |
 | 分散・サンプリング | **TABLESAMPLE**、**DISTRIBUTE BY / SORT BY** |
 | 副問い合わせ・集合演算 | CTE（WITH）、UNION、EXCEPT、INTERSECT |
-| メタデータ | SHOW CURRENT NAMESPACE / DATABASES / NAMESPACES / TABLES / FUNCTIONS / COLUMNS / PARTITIONS / TBLPROPERTIES、DESCRIBE DATABASE / NAMESPACE / TABLE / TABLE EXTENDED / FUNCTION、EXPLAIN |
+| メタデータ | SHOW CURRENT NAMESPACE / DATABASES / NAMESPACES / TABLES / FUNCTIONS / COLUMNS / TBLPROPERTIES、DESCRIBE DATABASE / NAMESPACE / TABLE / TABLE EXTENDED / FUNCTION、EXPLAIN |
 
 ## 参照ドキュメント
 
@@ -35,6 +35,11 @@ dialect: spark
 | JSON | [JSON Functions](https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#json-functions) |
 | 配列 | [Array Functions](https://spark.apache.org/docs/latest/sql-ref-functions-builtin.html#array-functions) |
 | メタデータ | [SHOW](https://spark.apache.org/docs/latest/sql-ref-syntax-aux-show.html) |
+
+Docker 検証:
+
+- `docker.io/apache/spark:latest` の `spark-submit` でローカル SparkSession を起動し、各 SQL をバッチ実行する（常駐コンテナは不要）。
+- 一括検証: `node scripts/verify-spark-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -479,7 +484,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| t | INTEGER | t.t |
+| col | INTEGER | t.col |
 
 ---
 ## stack
@@ -1046,6 +1051,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
+| catalog | VARCHAR(255) | cast |
 | namespace | VARCHAR(255) | cast |
 
 ---
@@ -1076,7 +1082,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Database | VARCHAR(255) | cast |
+| namespace | VARCHAR(255) | cast |
 
 ---
 ## SHOW NAMESPACES
@@ -1136,8 +1142,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| database_description_item | VARCHAR(255) | cast |
-| database_description_value | VARCHAR(255) | cast |
+| info_name | VARCHAR(255) | cast |
+| info_value | VARCHAR(255) | cast |
 
 ---
 ## DESCRIBE NAMESPACE
@@ -1167,8 +1173,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| database_description_item | VARCHAR(255) | cast |
-| database_description_value | VARCHAR(255) | cast |
+| info_name | VARCHAR(255) | cast |
+| info_value | VARCHAR(255) | cast |
 
 ---
 ## DESCRIBE TABLE
@@ -1198,15 +1204,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | INTEGER | users.id |
-| name | VARCHAR(255) | users.name |
-| age | INTEGER | users.age |
-| dept | VARCHAR(255) | users.dept |
-| amount | DECIMAL | users.amount |
-| data | VARCHAR(4000) | users.data |
-| tags | array<text> | users.tags |
-| attrs | map<text, integer> | users.attrs |
-| created_at | TIMESTAMP | users.created_at |
+| col_name | VARCHAR(255) | cast |
+| data_type | VARCHAR(255) | cast |
+| comment | VARCHAR(255) | cast |
 
 ---
 ## DESCRIBE TABLE EXTENDED
@@ -1298,13 +1298,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Function | VARCHAR(255) | cast |
-| Type | VARCHAR(255) | cast |
-| Definer | VARCHAR(255) | cast |
-| Modified | TIMESTAMP | cast |
-| Created | TIMESTAMP | cast |
-| Security_type | VARCHAR(255) | cast |
-| Comment | VARCHAR(255) | cast |
+| function | VARCHAR(255) | cast |
 
 ---
 ## SHOW TABLES
@@ -1334,7 +1328,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | VARCHAR(255) | cast |
+| namespace | VARCHAR(255) | cast |
+| tableName | VARCHAR(255) | cast |
+| isTemporary | BOOLEAN | cast |
 
 ---
 ## SHOW COLUMNS
@@ -1364,42 +1360,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Field | VARCHAR(255) | cast |
-| Type | VARCHAR(255) | cast |
-| Null | VARCHAR(255) | cast |
-| Key | VARCHAR(255) | cast |
-| Default | VARCHAR(255) | cast |
-| Extra | VARCHAR(255) | cast |
-
----
-## SHOW PARTITIONS
-
-### Given
-
-```yaml
-prepare: none
-```
-
-### When
-
-```yaml
-dialect: spark
-```
-
-```sql
-SHOW PARTITIONS users
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| partition | VARCHAR(255) | cast |
+| col_name | VARCHAR(255) | cast |
 
 ---
 ## SHOW TBLPROPERTIES
@@ -1460,6 +1421,6 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | VARCHAR(255) | cast |
+| plan | VARCHAR(255) | cast |
 
 ---

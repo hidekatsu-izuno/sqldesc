@@ -22,7 +22,7 @@ dialect: fabric
 | PIVOT / 出力句 | **PIVOT**、**FOR JSON PATH / AUTO**、**FOR XML PATH**、**FOR SYSTEM_TIME** |
 | 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、EXCEPT、UNION、INTERSECT |
 | カタログ・DMV | **sys.tables** / **sys.databases** / **sys.indexes**、**sys.dm_exec_sessions** / **sys.dm_exec_requests** |
-| メタデータ | SHOW TABLES、sp_help / sp_columns、information_schema、@@VERSION、DESCRIBE、EXPLAIN |
+| メタデータ | sp_help / sp_columns、information_schema、@@VERSION |
 
 ## 参照ドキュメント
 
@@ -36,6 +36,11 @@ dialect: fabric
 | PIVOT | [PIVOT and UNPIVOT](https://learn.microsoft.com/en-us/sql/t-sql/queries/from-using-pivot-and-unpivot) |
 | 時間指定 | [Temporal tables](https://learn.microsoft.com/en-us/sql/relational-databases/tables/temporal-tables) |
 | カタログ | [sys.tables](https://learn.microsoft.com/en-us/sql/relational-databases/system-catalog-views/sys-tables-transact-sql) |
+
+Docker 検証:
+
+- Microsoft Fabric SQL 本体の公式 Docker イメージは存在しない。T-SQL 互換の **`mcr.microsoft.com/mssql/server:2022-latest`** をローカル代替として起動し、TDS プロトコル（ポート **1433**）で接続する。
+- 一括検証: `node scripts/verify-fabric-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -445,7 +450,7 @@ dialect: fabric
 ```
 
 ```sql
-SELECT COUNT(DISTINCT dept) AS cd, percentile_cont(0.5) WITHIN GROUP (ORDER BY amount) AS pc FROM users
+SELECT (SELECT COUNT(DISTINCT dept) FROM users) AS cd, (SELECT TOP 1 PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount) OVER () FROM users) AS pc
 ```
 
 ### Then
@@ -457,7 +462,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| cd | int | expression |
+| cd | bigint | polyglot |
 | pc | decimal(38, 10) | expression |
 
 ---
@@ -991,8 +996,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | int | users.id |
-| name | nvarchar(max) | users.name |
+|  | nvarchar(max) | cast |
 
 ---
 ## FOR JSON AUTO
@@ -1022,9 +1026,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| name | nvarchar(max) | users.name |
-| dept | nvarchar(max) | users.dept |
-| amount | decimal(38, 10) | users.amount |
+|  | nvarchar(max) | cast |
 
 ---
 ## FOR XML PATH
@@ -1054,8 +1056,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | int | users.id |
-| name | nvarchar(max) | users.name |
+|  | xml | cast |
 
 ---
 ## FOR SYSTEM_TIME
@@ -1411,36 +1412,6 @@ verify: true
 
 ---
 
-## SHOW TABLES
-
-### Given
-
-```yaml
-prepare: none
-```
-
-### When
-
-```yaml
-dialect: fabric
-```
-
-```sql
-SHOW TABLES
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| Table | nvarchar(max) | cast |
-
----
 ## sp_help
 
 ### Given
@@ -1513,6 +1484,13 @@ verify: true
 | RADIX | int | cast |
 | NULLABLE | int | cast |
 | REMARKS | nvarchar(max) | cast |
+| COLUMN_DEF | nvarchar(max) | cast |
+| SQL_DATA_TYPE | int | cast |
+| SQL_DATETIME_SUB | int | cast |
+| CHAR_OCTET_LENGTH | int | cast |
+| ORDINAL_POSITION | int | cast |
+| IS_NULLABLE | nvarchar(max) | cast |
+| SS_DATA_TYPE | int | cast |
 
 ---
 ## information_schema.tables
@@ -1607,73 +1585,5 @@ verify: true
 | ver | nvarchar(max) | expression |
 | dbn | nvarchar(max) | expression |
 | sn | nvarchar(max) | expression |
-
----
-## DESCRIBE
-
-### Given
-
-```yaml
-prepare: Prepare-1
-```
-
-### When
-
-```yaml
-dialect: fabric
-```
-
-```sql
-DESCRIBE users
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| id | int | users.id |
-| name | nvarchar(max) | users.name |
-| age | int | users.age |
-| dept | nvarchar(max) | users.dept |
-| amount | decimal(38, 10) | users.amount |
-| data | nvarchar(max) | users.data |
-| tags | nvarchar(max) | users.tags |
-| created_at | datetime2(7) | users.created_at |
-| d | date | users.d |
-
----
-## EXPLAIN
-
-### Given
-
-```yaml
-prepare: Prepare-1
-```
-
-### When
-
-```yaml
-dialect: fabric
-```
-
-```sql
-EXPLAIN SELECT id FROM users
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| QUERY PLAN | nvarchar(max) | cast |
 
 ---

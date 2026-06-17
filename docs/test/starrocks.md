@@ -19,10 +19,10 @@ dialect: starrocks
 | Bitmap / HLL | **to_bitmap** / **bitmap_count**、**bitmap_union_count**、**hll_hash** |
 | ウィンドウ関数 | ROW_NUMBER / RANK / LAG、NTILE / dense_rank / ウィンドウ集約 |
 | 配列 | **array_length** / **array_contains** |
-| JSON | JSON_EXTRACT / JSON_UNQUOTE、**get_json_string**、parse_json |
-| 型・関数 | IFF / COALESCE、DATE_ADD / DATEDIFF、CAST、CONVERT |
-| 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、UNION、EXCEPT、INTERSECT、VALUES ROW |
-| メタデータ | SHOW DATABASES / TABLES / COLUMNS / PARTITIONS / CREATE TABLE、DESCRIBE、EXPLAIN、information_schema |
+| JSON | JSON_UNQUOTE、**get_json_string**、parse_json |
+| 型・関数 | IF / COALESCE、DATE_ADD / DATEDIFF、CAST、CONVERT |
+| 副問い合わせ・集合演算 | CTE（WITH）、相関副問い合わせ、UNION、EXCEPT、INTERSECT、VALUES |
+| メタデータ | SHOW DATABASES / TABLES / COLUMNS / CREATE TABLE、DESCRIBE、EXPLAIN、information_schema |
 
 ## 参照ドキュメント
 
@@ -33,6 +33,11 @@ dialect: starrocks
 | HLL | [HLL functions](https://docs.starrocks.io/docs/sql-reference/sql-functions/aggregate-functions/hll) |
 | 配列 | [Array functions](https://docs.starrocks.io/docs/sql-reference/sql-functions/Array_functions) |
 | JSON | [JSON functions](https://docs.starrocks.io/docs/sql-reference/sql-functions/json-functions/json-functions) |
+
+Docker 検証:
+
+- `docker.io/starrocks/allin1-ubuntu:latest` を起動し、MySQL プロトコル（ポート **9030**、ユーザー `root`、パスワードなし）で接続する。
+- 一括検証: `node scripts/verify-starrocks-doc.mjs`
 
 ## Prepare-1: 共通ベーススキーマ
 
@@ -542,37 +547,6 @@ verify: true
 
 ---
 
-## JSON_EXTRACT / JSON_UNQUOTE
-
-### Given
-
-```yaml
-prepare: Prepare-1
-```
-
-### When
-
-```yaml
-dialect: starrocks
-```
-
-```sql
-SELECT JSON_EXTRACT(data, '$.x') AS je, JSON_UNQUOTE(JSON_EXTRACT(data, '$.x')) AS ju FROM users
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| je | json | expression |
-| ju | varchar(255) | expression |
-
----
 ## get_json_string
 
 ### Given
@@ -638,7 +612,7 @@ verify: true
 
 ---
 
-## IFF / COALESCE
+## IF / COALESCE
 
 ### Given
 
@@ -653,7 +627,7 @@ dialect: starrocks
 ```
 
 ```sql
-SELECT IFF(age > 30, 'senior', 'junior') AS tier, COALESCE(name, 'unknown') AS nm FROM users
+SELECT IF(age > 30, 'senior', 'junior') AS tier, COALESCE(name, 'unknown') AS nm FROM users
 ```
 
 ### Then
@@ -917,7 +891,7 @@ verify: true
 | id | int | cast |
 
 ---
-## VALUES ROW
+## VALUES
 
 ### Given
 
@@ -932,7 +906,7 @@ dialect: starrocks
 ```
 
 ```sql
-SELECT * FROM (VALUES ROW(1, 'a'), ROW(2, 'b')) AS t(id, name)
+SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t(id, name)
 ```
 
 ### Then
@@ -1010,7 +984,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | varchar(255) | cast |
+| Tables_in_db | varchar(255) | cast |
 
 ---
 ## SHOW COLUMNS
@@ -1046,36 +1020,6 @@ verify: true
 | Key | varchar(255) | cast |
 | Default | varchar(255) | cast |
 | Extra | varchar(255) | cast |
-
----
-## SHOW PARTITIONS
-
-### Given
-
-```yaml
-prepare: Prepare-1
-```
-
-### When
-
-```yaml
-dialect: starrocks
-```
-
-```sql
-SHOW PARTITIONS FROM users
-```
-
-### Then
-
-```yaml
-kind: columns
-verify: true
-```
-
-| name | type | source |
-|------|------|--------|
-| partition | varchar(255) | cast |
 
 ---
 ## SHOW CREATE TABLE
@@ -1136,14 +1080,12 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | int | users.id |
-| name | varchar(255) | users.name |
-| age | int | users.age |
-| dept | varchar(255) | users.dept |
-| amount | decimal | users.amount |
-| data | json | users.data |
-| tags | array<text> | users.tags |
-| created_at | timestamp | users.created_at |
+| Field | varchar(255) | cast |
+| Type | varchar(255) | cast |
+| Null | varchar(255) | cast |
+| Key | varchar(255) | cast |
+| Default | varchar(255) | cast |
+| Extra | varchar(255) | cast |
 
 ---
 ## EXPLAIN
@@ -1173,7 +1115,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | varchar(255) | cast |
+| Explain String | varchar(255) | cast |
 
 ---
 ## information_schema.tables

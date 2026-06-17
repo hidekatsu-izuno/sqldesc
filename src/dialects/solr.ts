@@ -327,6 +327,30 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: [],
   },
+  selectStar: {
+    profiles: [
+      {
+        when: "withLimit",
+        columns: [
+          { name: "_nest_path_", type: "text", source: "cast" },
+          { name: "_root_", type: "text", source: "cast" },
+          { name: "_text_", type: "text", source: "cast" },
+          { name: "_version_", type: "bigint", source: "cast" },
+          { name: "age", type: "integer", source: "users.age" },
+          { name: "amount", type: "decimal", source: "users.amount" },
+          { name: "created_at", type: "timestamp", source: "users.created_at" },
+          { name: "dept", type: "text", source: "users.dept" },
+          { name: "dept_str", type: "text", source: "cast" },
+          { name: "id", type: "integer", source: "users.id" },
+          { name: "name", type: "text", source: "users.name" },
+          { name: "name_str", type: "text", source: "cast" },
+          { name: "user_id", type: "integer", source: "cast" },
+          { name: "_query_", type: "text", source: "cast" },
+          { name: "score", type: "decimal", source: "expression" },
+        ],
+      },
+    ],
+  },
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",

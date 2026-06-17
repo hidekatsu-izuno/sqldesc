@@ -327,6 +327,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: [],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -1314,8 +1315,17 @@ export const dialectConfig = {
       { name: "Name", type: "text" },
       { name: "Description", type: "text" },
     ],
-    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
+    explainColumns: [{ name: "Explain String", type: "text" }],
     snowflakeDescribeObjectColumns: {},
+    describeTableResultColumns: [
+      { name: "Field", type: "text" },
+      { name: "Type", type: "text" },
+      { name: "Null", type: "text" },
+      { name: "Key", type: "text" },
+      { name: "Default", type: "text" },
+      { name: "Extra", type: "text" },
+    ],
+    showTablesColumns: [{ name: "Tables_in_db", type: "text" }],
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },
       { name: "name", type: "text" },

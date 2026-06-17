@@ -4475,6 +4475,13 @@ verify: true
 | RADIX | int | cast |
 | NULLABLE | int | cast |
 | REMARKS | nvarchar(max) | cast |
+| COLUMN_DEF | nvarchar(max) | cast |
+| SQL_DATA_TYPE | int | cast |
+| SQL_DATETIME_SUB | int | cast |
+| CHAR_OCTET_LENGTH | int | cast |
+| ORDINAL_POSITION | int | cast |
+| IS_NULLABLE | nvarchar(max) | cast |
+| SS_DATA_TYPE | int | cast |
 
 ---
 ## sp_tables

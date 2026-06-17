@@ -327,6 +327,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: [],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -1314,7 +1315,16 @@ export const dialectConfig = {
       { name: "Name", type: "text" },
       { name: "Description", type: "text" },
     ],
-    explainColumns: [{ name: "QUERY PLAN", type: "text" }],
+    explainColumns: [{ name: "EXPLAIN", type: "text" }],
+    describeTableResultColumns: [
+      { name: "Field", type: "text" },
+      { name: "Type", type: "text" },
+      { name: "Null", type: "text" },
+      { name: "Key", type: "text" },
+      { name: "Default", type: "text" },
+      { name: "Extra", type: "text" },
+    ],
+    showTablesColumns: [{ name: "Tables_in_db", type: "text" }],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },
@@ -1333,6 +1343,37 @@ export const dialectConfig = {
       { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
+      {
+        pattern: "/^show\\s+schemas$/i",
+        columns: [{ name: "Database", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+indexes$/i",
+        columns: [
+          { name: "Table", type: "text" },
+          { name: "Non_unique", type: "integer" },
+          { name: "Key_name", type: "text" },
+          { name: "Seq_in_index", type: "integer" },
+          { name: "Column_name", type: "text" },
+          { name: "Collation", type: "text" },
+          { name: "Cardinality", type: "integer" },
+          { name: "Sub_part", type: "integer" },
+          { name: "Packed", type: "text" },
+          { name: "Null", type: "text" },
+          { name: "Index_type", type: "text" },
+          { name: "Comment", type: "text" },
+          { name: "Index_comment", type: "text" },
+          { name: "Index_options", type: "text" },
+        ],
+      },
+      {
+        pattern: "/^show\\s+pipelines$/i",
+        columns: [
+          { name: "Pipelines_in_db", type: "text" },
+          { name: "State", type: "text" },
+          { name: "Scheduled", type: "text" },
+        ],
+      },
       {
         pattern: "/^(?:list|ls)\\s+@/",
         columns: [

@@ -791,6 +791,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["generateSeries"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     ifnull_text: "varchar(7)",
@@ -3122,6 +3123,12 @@ export const dialectConfig = {
       { name: "Description", type: "text" },
     ],
     explainColumns: [{ name: "QUERY PLAN", type: "text" }],
+    describeTableResultColumns: [
+      { name: "Name", type: "text" },
+      { name: "Type", type: "text" },
+      { name: "Is Hidden", type: "boolean" },
+      { name: "Description", type: "text" },
+    ],
     snowflakeDescribeObjectColumns: {},
     showTableListingColumns: [
       { name: "created_on", type: "timestamp" },
@@ -3140,6 +3147,51 @@ export const dialectConfig = {
       { name: "search_optimization", type: "boolean" },
     ],
     commandResultColumns: [
+      {
+        pattern: "/^show\\s+materialized\\s+views$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+sources$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+sinks$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+views$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+tables$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+databases$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+schemas$/i",
+        columns: [{ name: "Name", type: "text" }],
+      },
+      {
+        pattern: "/^show\\s+indexes$/i",
+        columns: [
+          { name: "Name", type: "text" },
+          { name: "On", type: "text" },
+          { name: "Key", type: "text" },
+          { name: "Include", type: "text" },
+          { name: "Distributed By", type: "text" },
+        ],
+      },
+      {
+        pattern: "/^show\\s+create\\s+table\\b/i",
+        columns: [
+          { name: "Name", type: "text" },
+          { name: "Create Sql", type: "text" },
+        ],
+      },
       {
         pattern: "/^(?:list|ls)\\s+@/",
         columns: [

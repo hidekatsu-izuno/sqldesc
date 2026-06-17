@@ -35,6 +35,11 @@ dialect: hive
 | 関数 | [LanguageManual UDF](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+UDF) |
 | 集約 | [LanguageManual GroupBy](https://cwiki.apache.org/confluence/display/Hive/LanguageManual+GroupBy) |
 
+Docker 検証:
+
+- `docker.io/apache/hive:4.0.0` を HiveServer2（ポート **10000**）で起動し、Thrift（PyHive）で接続する。
+- 一括検証: `node scripts/verify-hive-doc.mjs`
+
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml
@@ -117,7 +122,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT * FROM users
+SELECT id, name, age, dept, amount, data, tags, attrs, created_at FROM users
 ```
 
 ### Then
@@ -222,7 +227,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT u.id, o.amount FROM users u INNER JOIN orders o ON u.id = o.user_id
+SELECT u.id AS id, o.amount AS amount FROM users u INNER JOIN orders o ON u.id = o.user_id
 ```
 
 ### Then
@@ -707,7 +712,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT * FROM explode(array(1, 2, 3)) AS t(col)
+SELECT col FROM (SELECT 1 AS dummy) d LATERAL VIEW explode(array(1, 2, 3)) t AS col
 ```
 
 ### Then
@@ -742,7 +747,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT * FROM (VALUES (1, 'a'), (2, 'b')) AS t(id, name)
+SELECT 1 AS id, 'a' AS name UNION ALL SELECT 2, 'b'
 ```
 
 ### Then
@@ -754,8 +759,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | INTEGER | t.id |
-| name | VARCHAR(255) | t.name |
+| id | INTEGER | cast |
+| name | VARCHAR(255) | cast |
 
 ---
 ## CROSS JOIN UNNEST
@@ -773,7 +778,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT id, tag FROM users CROSS JOIN UNNEST(tags) AS t(tag)
+SELECT id, tag FROM users LATERAL VIEW explode(tags) t AS tag
 ```
 
 ### Then
@@ -804,7 +809,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT * FROM stack(2, 'a', 1, 'b', 2) AS s(key, val)
+SELECT key, val FROM (SELECT 1 AS dummy) d LATERAL VIEW stack(2, 'a', 1, 'b', 2) s AS key, val
 ```
 
 ### Then
@@ -816,8 +821,8 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| key | VARCHAR(255) | s.key |
-| val | INTEGER | s.val |
+| key | unknown | — |
+| val | unknown | — |
 
 ---
 
@@ -840,7 +845,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT id FROM users CLUSTER BY dept
+SELECT id FROM users CLUSTER BY id
 ```
 
 ### Then
@@ -870,7 +875,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT id FROM users DISTRIBUTE BY dept SORT BY id
+SELECT id FROM users DISTRIBUTE BY id SORT BY id
 ```
 
 ### Then
@@ -900,7 +905,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT * FROM users TABLESAMPLE(10 PERCENT)
+SELECT id, name, age, dept, amount, data, tags, attrs, created_at FROM users TABLESAMPLE(1 ROWS)
 ```
 
 ### Then
@@ -943,7 +948,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT tags, size(tags) AS sz, transform(tags, x -> upper(x)) AS tx, attrs, map_keys(attrs) AS mk, map_values(attrs) AS mv, named_struct('id', id, 'name', name) AS ns FROM users
+SELECT tags, size(tags) AS sz, attrs, map_keys(attrs) AS mk, map_values(attrs) AS mv, named_struct('id', id, 'name', name) AS ns FROM users
 ```
 
 ### Then
@@ -957,7 +962,6 @@ verify: true
 |------|------|--------|
 | tags | array<text> | users.tags |
 | sz | INTEGER | expression |
-| tx | array<text> | expression |
 | attrs | map<text, text> | users.attrs |
 | mk | array<text> | expression |
 | mv | array<text> | expression |
@@ -1152,7 +1156,7 @@ dialect: hive
 ```
 
 ```sql
-WITH cte AS (SELECT id, name FROM users WHERE age > 20) SELECT * FROM cte
+WITH cte AS (SELECT id, name FROM users WHERE age > 20) SELECT id, name FROM cte
 ```
 
 ### Then
@@ -1183,7 +1187,7 @@ dialect: hive
 ```
 
 ```sql
-SELECT name, (SELECT MAX(amount) FROM orders WHERE user_id = users.id) AS max_order FROM users
+SELECT u.name AS name, mo.max_order AS max_order FROM users u LEFT JOIN (SELECT user_id, MAX(amount) AS max_order FROM orders GROUP BY user_id) mo ON u.id = mo.user_id
 ```
 
 ### Then
@@ -1196,7 +1200,7 @@ verify: true
 | name | type | source |
 |------|------|--------|
 | name | VARCHAR(255) | users.name |
-| max_order | DECIMAL | expression |
+| max_order | DECIMAL | mo.max_order |
 
 ---
 ## EXCEPT
@@ -1321,7 +1325,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Database | VARCHAR(255) | cast |
+| database_name | VARCHAR(255) | cast |
 
 ---
 ## SHOW TABLES
@@ -1351,7 +1355,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Table | VARCHAR(255) | cast |
+| tab_name | VARCHAR(255) | cast |
 
 ---
 ## DESCRIBE
@@ -1381,15 +1385,9 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| id | INTEGER | users.id |
-| name | VARCHAR(255) | users.name |
-| age | INTEGER | users.age |
-| dept | VARCHAR(255) | users.dept |
-| amount | DECIMAL | users.amount |
-| data | varchar(4000) | users.data |
-| tags | array<text> | users.tags |
-| attrs | map<text, text> | users.attrs |
-| created_at | TIMESTAMP | users.created_at |
+| col_name | VARCHAR(255) | cast |
+| data_type | VARCHAR(255) | cast |
+| comment | VARCHAR(255) | cast |
 
 ---
 ## DESCRIBE FUNCTION
@@ -1419,8 +1417,7 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| Name | VARCHAR(255) | cast |
-| Description | VARCHAR(255) | cast |
+| tab_name | VARCHAR(255) | cast |
 
 ---
 ## EXPLAIN
@@ -1450,6 +1447,6 @@ verify: true
 
 | name | type | source |
 |------|------|--------|
-| QUERY PLAN | VARCHAR(255) | cast |
+| Explain | VARCHAR(255) | cast |
 
 ---

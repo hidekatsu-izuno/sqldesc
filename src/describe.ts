@@ -20,6 +20,8 @@ import type {
   DescribeInput,
   DescribeResult,
   Diagnostic,
+  DialectSelectStarColumnConfig,
+  DialectSelectStarProfileConfig,
   NestedBaseColumn,
   NestedPathStep,
   OutputItem,
@@ -45,7 +47,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   const diagnostics: Diagnostic[] = [];
 
   const parseResult = parse(sql, dialect as never) as PolyglotParseResult;
-  const fallbackSql = rewriteCreateValuesSql(sql);
+  const fallbackSql = rewriteParseSql(sql, dialect);
   const fallbackParseResult =
     !parseResult.success && fallbackSql !== sql
       ? (parse(fallbackSql, dialect as never) as PolyglotParseResult)
@@ -167,6 +169,14 @@ function describeOutputItems(
   return outputItems.map((item, index) => {
     const name = item.name ?? inferNameFromAst(item.expression, index + 1);
     const inferenceName = name || `column_${index + 1}`;
+    if (item.type) {
+      return {
+        index: index + 1,
+        name,
+        type: displayTypeName(item.type, dialect),
+        source: item.source,
+      };
+    }
     const inferred = inferColumn(
       item.expression,
       inferenceName,
@@ -470,6 +480,21 @@ function rewriteCreateValuesSql(sql: string): string {
       return `create ${prefix}select * from (values ${valuesBody}) as sqldesc_values(${aliases.join(", ")})`;
     },
   );
+}
+
+function rewriteParseSql(sql: string, dialect: string): string {
+  let rewritten = rewriteCreateValuesSql(sql);
+  if (dialect === "tidb") {
+    rewritten = rewriteTidbShowTableRegionsSql(rewritten);
+  }
+  return rewritten;
+}
+
+function rewriteTidbShowTableRegionsSql(sql: string): string {
+  const match = sql.trim().match(/^show\s+table\s+([\w`".]+)\.([\w`".]+)\s+regions\s*;?$/i);
+  if (!match) return sql;
+  const table = match[2].replace(/^[`"]|[`"]$/g, "");
+  return `SHOW TABLE REGIONS FROM ${table}`;
 }
 
 function inferWholeRowType(
@@ -5457,6 +5482,13 @@ function staticProcedureColumns(name: string | undefined): OutputItem[] {
       ["RADIX", "integer"],
       ["NULLABLE", "integer"],
       ["REMARKS", "text"],
+      ["COLUMN_DEF", "text"],
+      ["SQL_DATA_TYPE", "integer"],
+      ["SQL_DATETIME_SUB", "integer"],
+      ["CHAR_OCTET_LENGTH", "integer"],
+      ["ORDINAL_POSITION", "integer"],
+      ["IS_NULLABLE", "text"],
+      ["SS_DATA_TYPE", "integer"],
     ]);
   }
   if (name === "sp_helpindex") {
@@ -5629,6 +5661,17 @@ function outputItemsFromDescribe(
   if (snowflakeObject.length > 0) return snowflakeObject;
   const genericObject = describeObjectColumns(target);
   if (genericObject.length > 0) return genericObject;
+  if (isRecord(target.table)) {
+    const tableName = identifierName(target.table.name)?.toLowerCase();
+    const configuredDescribeTable = getDialectConfig(dialect).metadata.describeTableResultColumns;
+    if (
+      configuredDescribeTable &&
+      tableName &&
+      !["database", "schema", "namespace", "catalog", "extended", "formatted"].includes(tableName)
+    ) {
+      return staticConfigColumns(configuredDescribeTable);
+    }
+  }
   if (isRecord(target.table)) return outputItemsFromDescribedTable(target.table, schema);
   if (isResultProducingQuery(target)) return explainColumns(dialect);
   return outputItemsForStatement(target, schema, context, dialect);
@@ -5730,6 +5773,8 @@ function isResultProducingQuery(statement: Record<string, unknown>): boolean {
 
 function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic"): OutputItem[] {
   const subject = String(show.this ?? "").toLowerCase();
+  const configuredShowColumns = commandResultColumnConfigs(`show ${subject}`, dialect);
+  if (configuredShowColumns) return staticConfigColumns(configuredShowColumns);
   const normalizedSubject = subject.replace(/^(?:global|session|full)\s+/, "");
   if (subject === "tables" || subject === "views" || subject === "full tables") {
     const configuredTablesColumns =
@@ -5743,6 +5788,11 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     ]);
   }
   if (subject === "databases" || subject === "schemas") {
+    const configuredDatabasesColumns =
+      subject === "databases"
+        ? getDialectConfig(dialect).metadata.showDatabasesColumns
+        : undefined;
+    if (configuredDatabasesColumns) return staticConfigColumns(configuredDatabasesColumns);
     return staticColumns([[subject === "schemas" ? "Schema" : "Database", "text"]]);
   }
   if (normalizedSubject === "variables" || normalizedSubject === "status") {
@@ -5765,6 +5815,11 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     return staticColumns([["Catalog", "text"]]);
   }
   if (subject === "current namespace" || subject === "namespaces") {
+    const configuredNamespaceColumns =
+      subject === "current namespace"
+        ? getDialectConfig(dialect).metadata.showCurrentNamespaceColumns
+        : getDialectConfig(dialect).metadata.showNamespacesColumns;
+    if (configuredNamespaceColumns) return staticConfigColumns(configuredNamespaceColumns);
     return staticColumns([["namespace", "text"]]);
   }
   if (subject === "authors" || subject === "contributors") {
@@ -6418,6 +6473,9 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     ]);
   }
   if (subject === "functions" || subject === "procedures") {
+    const configuredFunctionsColumns =
+      subject === "functions" ? getDialectConfig(dialect).metadata.showFunctionsColumns : undefined;
+    if (configuredFunctionsColumns) return staticConfigColumns(configuredFunctionsColumns);
     return staticColumns([
       [subject === "functions" ? "Function" : "Procedure", "text"],
       ["Type", "text"],
@@ -6429,6 +6487,8 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     ]);
   }
   if (subject === "columns" || subject === "full columns") {
+    const configuredColumns = getDialectConfig(dialect).metadata.showColumnsColumns;
+    if (configuredColumns) return staticConfigColumns(configuredColumns);
     return staticColumns([
       ["Field", "text"],
       ["Type", "text"],
@@ -6568,7 +6628,11 @@ function outputItemsFromCommand(
       ["value", "text"],
       ["comment", "text"],
     ]);
-  if (/^show\s+functions\b/.test(text)) return staticColumns([["name", "text"]]);
+  if (/^show\s+functions\b/.test(text)) {
+    const configuredColumns = getDialectConfig(dialect).metadata.showFunctionsColumns;
+    if (configuredColumns) return staticConfigColumns(configuredColumns);
+    return staticColumns([["name", "text"]]);
+  }
   if (/^show\s+databases\b/.test(text)) return outputItemsFromShow({ this: "databases" });
   if (/^show\s+schemas\b/.test(text)) return outputItemsFromShow({ this: "schemas" });
   if (/^show\s+tables\b/.test(text)) return outputItemsFromShow({ this: "tables" });
@@ -8672,7 +8736,7 @@ function outputItemsFromExpressions(
     const unwrapped = unwrapAlias(expression, dialect);
     const star = getAst(unwrapped.expression, "star");
     if (isRecord(star)) {
-      expanded.push(...expandStar(star, schema, owner, tableAliases));
+      expanded.push(...expandStar(star, schema, owner, tableAliases, dialect));
       continue;
     }
     expanded.push({
@@ -8710,11 +8774,75 @@ function unwrapAlias(expression: AstExpression, dialect?: string): OutputItem {
   };
 }
 
+function selectHasLimit(owner?: Record<string, unknown>): boolean {
+  if (!owner) return false;
+  if (owner.limit != null) return true;
+  if (owner.fetch != null) return true;
+  if (isRecord(owner.top)) return true;
+  return false;
+}
+
+function hasStarModifiers(star: Record<string, unknown>): boolean {
+  if (Array.isArray(star.except) && star.except.length > 0) return true;
+  if (Array.isArray(star.rename) && star.rename.length > 0) return true;
+  if (Array.isArray(star.replace) && star.replace.length > 0) return true;
+  return false;
+}
+
+function matchingSelectStarProfile(
+  dialect: string | undefined,
+  owner: Record<string, unknown> | undefined,
+  star: Record<string, unknown>,
+  tables: SchemaTable[],
+): DialectSelectStarProfileConfig | undefined {
+  if (!dialect || tables.length !== 1 || hasStarModifiers(star)) return undefined;
+  const profiles = getDialectConfig(dialect).selectStar.profiles;
+  if (!profiles?.length) return undefined;
+  const tableQualifier = identifierName(star.table)?.toLowerCase();
+  if (tableQualifier && tableQualifier !== tables[0].name.toLowerCase()) return undefined;
+
+  for (const profile of profiles) {
+    if (profile.when === "withLimit" && !selectHasLimit(owner)) continue;
+    if (profile.when === "withoutLimit" && selectHasLimit(owner)) continue;
+    return profile;
+  }
+  return undefined;
+}
+
+function outputItemsFromSelectStarProfile(
+  profile: DialectSelectStarProfileConfig,
+  schema: ValidationSchema,
+  tableAliases: TableAliasMap,
+): OutputItem[] {
+  return profile.columns.map((column) => ({
+    expression: selectStarProfileExpression(column),
+    name: column.name,
+    source: column.source,
+    type: column.type,
+    schema,
+    tableAliases,
+  }));
+}
+
+function selectStarProfileExpression(
+  column: DialectSelectStarColumnConfig,
+): AstExpression {
+  const sourceMatch = column.source.match(/^([^.]+)\.([^.]+)$/);
+  if (sourceMatch) {
+    const [, tableName, columnName] = sourceMatch;
+    return {
+      column: { name: { name: columnName }, table: { name: tableName } },
+    };
+  }
+  return { literal: { value: null, literal_type: "null" } };
+}
+
 function expandStar(
   star: Record<string, unknown>,
   schema: ValidationSchema,
   owner?: Record<string, unknown>,
   tableAliases = tableAliasesFromOwner(owner),
+  dialect?: string,
 ): OutputItem[] {
   const tableQualifier = identifierName(star.table)?.toLowerCase();
   const relation = tableQualifier ? tableAliases.get(tableQualifier) : undefined;
@@ -8751,6 +8879,12 @@ function expandStar(
       return true;
     }),
   );
+
+  const profile = matchingSelectStarProfile(dialect, owner, star, tables);
+  if (profile) {
+    return outputItemsFromSelectStarProfile(profile, schema, tableAliases);
+  }
+
   const except = new Set(
     (Array.isArray(star.except) ? star.except : [])
       .map(identifierName)

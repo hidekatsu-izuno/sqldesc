@@ -97,6 +97,7 @@ export type ColumnInference = Omit<DescribeColumn, "index" | "name"> & {
 export interface OutputItem {
   expression: AstExpression;
   name?: string;
+  type?: string;
   source?: string;
   schema?: ValidationSchema;
   tableAliases?: TableAliasMap;
@@ -173,6 +174,12 @@ export interface DialectMetadataConfig {
     Record<string, readonly DialectTableFunctionColumnConfig[]>
   >;
   readonly showTablesColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showDatabasesColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showNamespacesColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showCurrentNamespaceColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showFunctionsColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly showColumnsColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly describeTableResultColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly showTableListingColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly commandResultColumns: readonly DialectCommandResultConfig[];
 }
@@ -270,6 +277,23 @@ export interface DialectDynamicTableFunctionConfig {
   readonly enabledHandlers: readonly string[];
 }
 
+export type DialectSelectStarWhen = "always" | "withLimit" | "withoutLimit";
+
+export interface DialectSelectStarColumnConfig {
+  readonly name: string;
+  readonly type: string;
+  readonly source: string;
+}
+
+export interface DialectSelectStarProfileConfig {
+  readonly when?: DialectSelectStarWhen;
+  readonly columns: readonly DialectSelectStarColumnConfig[];
+}
+
+export interface DialectSelectStarConfig {
+  readonly profiles?: readonly DialectSelectStarProfileConfig[];
+}
+
 export interface DialectSerializedSelectConfig {
   readonly forJson?: string;
   readonly forXml?: string;
@@ -319,6 +343,7 @@ export interface DialectConfig {
   readonly parameterizedTypeFormats: Readonly<Record<string, string>>;
   readonly literalTypes: DialectLiteralTypesConfig;
   readonly dynamicTableFunctions: DialectDynamicTableFunctionConfig;
+  readonly selectStar: DialectSelectStarConfig;
   readonly serializedSelect: DialectSerializedSelectConfig;
   readonly outputTypeOverrides: Readonly<Record<string, string>>;
   readonly metadata: DialectMetadataConfig;

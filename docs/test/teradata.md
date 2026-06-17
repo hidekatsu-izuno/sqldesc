@@ -31,6 +31,36 @@ dialect: teradata
 | 文字列関数 | [String Functions](https://docs.teradata.com/r/Teradata-VantageCloud-Lake/SQL-Functions-Operators-Expressions/String-Functions) |
 | HELP | [HELP Statements](https://docs.teradata.com/r/Teradata-VantageCloud-Lake/SQL-Reference/SQL-Data-Definition-Language/HELP-Statements) |
 
+Docker 検証:
+
+- Teradata Vantage **データベース本体の公式 Docker イメージは存在しない**（Vantage Express は VM 配布）。
+- クライアントは `docker.io/teradata/python-teradatasql:latest` を `--network host` で実行し、MySQL 互換ではない Teradata プロトコル（既定ポート **1025**）で接続する。
+- 接続先は Vantage Express / Developer Tier 等を VM で起動し、ホストへポート転送したインスタンス。環境変数 `TERADATA_HOST`（WSL では `127.0.0.1` と Windows ホスト IP を自動試行）、`TERADATA_PORT`（既定 `1025`）、`TERADATA_USER` / `TERADATA_PASSWORD`（既定 `dbc` / `dbc`）で上書き可能。
+- VM セットアップ（WSL + Windows VirtualBox）:
+  1. [Vantage Express OVA](https://downloads.teradata.com/download/database/teradata-express/vmware) をダウンロード（要 Teradata アカウント）
+  2. `winget install Oracle.VirtualBox`（未導入時）
+  3. `node scripts/setup-vantage-express-vbox.mjs /path/to/VantageExpress.ova`
+- 一括検証: `node scripts/verify-teradata-doc.mjs`
+
+### 検証状況（2026-06-17）
+
+| 項目 | 結果 |
+|------|------|
+| 静的検証 | `npm run test:doc:file -- docs/test/teradata.md` で **40 passed / 40 verified** |
+| Docker / VM 実測 | 未完了。Vantage Express VM は起動し、Windows 側 `127.0.0.1:1025` と `127.0.0.1:2222` は TCP 接続可能だが、`teradatasql` の SQL ログインが完了しない |
+
+確認した状態:
+
+- Windows VirtualBox 7.2.8 で `sqldesc-vantage` は `running`。
+- VM の NIC は NAT、ポート転送は `teradata,tcp,,1025,,1025` と `ssh,tcp,,2222,,22`。
+- Windows PowerShell の `Test-NetConnection 127.0.0.1 -Port 1025` と `-Port 2222` は成功。
+- WSL から `VBoxManage.exe` を直接実行すると `UtilBindVsockAnyPort` で失敗することがあるため、VM 状態確認は `powershell.exe -NoProfile -Command "& 'C:\Program Files\Oracle\VirtualBox\VBoxManage.exe' ..."` 経由で実施。
+- Podman/Docker コンテナからは `172.26.64.1:1025`、`192.168.56.1:1025`、`192.168.3.3:1025` の TCP 接続は開く。
+- `docker.io/teradata/python-teradatasql:latest` 内の `teradatasql` は `17.10.0.9`。`host=172.26.64.1`, `dbs_port=1025`, `cop=false`, `logmech=TD2` でも SQL 接続が返らない。
+- Windows Python に `teradatasql 20.0.0.61` を `--user` インストールし、`host=127.0.0.1`, `dbs_port=1025`, `cop=false`, `logmech=TD2` で直接接続を試したが、ログイン完了まで進まない。
+
+このため、現在の未完了点は `sqldesc` の推論ではなく Vantage Express VM 内の DBS 起動状態、または `teradatasql` と当該 VM のログインハンドシェイクの問題。再開時は SSH (`127.0.0.1:2222`) または VM コンソールから DBS 状態を確認してから `node scripts/verify-teradata-doc.mjs` を再実行する。
+
 ## Prepare-1: 共通ベーススキーマ
 
 ```yaml

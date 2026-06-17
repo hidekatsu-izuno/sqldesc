@@ -343,6 +343,7 @@ export const dialectConfig = {
     rangeColumn: "$alias",
     enabledHandlers: ["oracleDbmsXplan", "oracleCollection"],
   },
+  selectStar: {},
   serializedSelect: {},
   outputTypeOverrides: {
     avg_null: "number",
