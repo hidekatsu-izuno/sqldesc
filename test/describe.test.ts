@@ -1728,7 +1728,7 @@ describe("describeQuery", () => {
     });
     assert.deepStrictEqual(
       sparkExplodeResult.columns.map((column) => [column.name, column.type, column.source]),
-      [["t", "INTEGER", "t.t"]],
+      [["col", "INTEGER", "t.col"]],
     );
 
     const bigQueryArrayResult = await describeQuery({
@@ -4111,7 +4111,10 @@ describe("describeQuery", () => {
     });
     assert.deepStrictEqual(
       currentNamespaceResult.columns.map((column) => [column.name, column.type, column.source]),
-      [["namespace", "VARCHAR(255)", "cast"]],
+      [
+        ["catalog", "VARCHAR(255)", "cast"],
+        ["namespace", "VARCHAR(255)", "cast"],
+      ],
     );
 
     const trinoStatsResult = await describeQuery({ sql: "show stats for users", dialect: "trino" });

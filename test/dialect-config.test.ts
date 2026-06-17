@@ -68,7 +68,7 @@ describe("dialect configuration registry", () => {
     for (const config of dialectConfigs) {
       const file = path.resolve("src/dialects", `${config.name}.ts`);
       const source = await readFile(file, "utf8");
-      assert.match(source, new RegExp(`name:\\s*'${config.name}'`));
+      assert.match(source, new RegExp(`name:\\s*['"]${config.name}['"]`));
       assert.ok(Object.keys(config.jdbcTypeMap).length > 0);
       assert.strictEqual(config.jdbcTypeMap.VARCHAR, "text");
       assert.strictEqual(config.jdbcTypeMap.NULL, "unknown");
@@ -107,7 +107,7 @@ describe("dialect configuration registry", () => {
         "url",
       ]);
       assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes("highlight"));
-      const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+'([^']+)'/gm)].map(
+      const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+['"]([^'"]+)['"]/gm)].map(
         (match) => match[1],
       );
       assert.deepStrictEqual(imports, ["../types.js"]);
