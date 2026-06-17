@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   loadSchema,
+  loadSchemaFiles,
   parseCreateAsTables,
   parseCreateProcedures,
   parseCreateScalarFunctions,
@@ -1603,6 +1604,24 @@ describe("loadSchema", () => {
         ["m", "text"],
         ["p", "struct<id integer, name text>"],
       ],
+    );
+  });
+
+  it("applies schema files in sorted filename order", async () => {
+    const cwd = path.join(tmpdir(), `sqldesc-schema-order-${Date.now()}`);
+    const schemasDir = path.join(cwd, "schemas");
+    await mkdir(schemasDir, { recursive: true });
+    const typesFile = path.join(schemasDir, "00-types.sql");
+    const tableFile = path.join(schemasDir, "10-table.sql");
+    await writeFile(typesFile, "create domain positive_int as int check (value > 0);");
+    await writeFile(tableFile, "create table t(id positive_int);");
+
+    const schema = await loadSchemaFiles([tableFile, typesFile], { dialect: "postgres" });
+    assert.deepStrictEqual(
+      schema.tables
+        .find((table) => table.name === "t")
+        ?.columns.map((column) => [column.name, column.type]),
+      [["id", "integer"]],
     );
   });
 

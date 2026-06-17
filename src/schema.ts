@@ -15,11 +15,23 @@ import type {
 const TABLE_CONSTRAINT_RE =
   /^(?:constraint\s+\S+\s+)?(?:primary\s+key|foreign\s+key|unique|check|period\s+for)\b/i;
 
+function sortSchemaFilesByName(files: string[]): string[] {
+  return [...files].sort((left, right) => {
+    const byName = path.basename(left).localeCompare(path.basename(right), undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+    return byName !== 0 ? byName : left.localeCompare(right, undefined, { numeric: true });
+  });
+}
+
 export async function resolveSchemaGlobPatterns(
   patterns: string[],
   cwd = process.cwd(),
 ): Promise<string[]> {
-  return (await Promise.all(patterns.map((pattern) => globFiles(pattern, cwd)))).flat().sort();
+  return sortSchemaFilesByName(
+    (await Promise.all(patterns.map((pattern) => globFiles(pattern, cwd)))).flat(),
+  );
 }
 
 export async function loadSchema(
@@ -39,7 +51,7 @@ export async function loadSchemaFiles(
   const tables: SchemaTable[] = [];
   const sqlFiles: string[] = [];
   const typeAliases = new Map<string, string>();
-  for (const file of files) {
+  for (const file of sortSchemaFilesByName(files)) {
     const sql = await loadSchemaScript(file, dialect);
     sqlFiles.push(sql);
     const astTables = parseCreateTablesWithAst(sql, dialect, typeAliases);
