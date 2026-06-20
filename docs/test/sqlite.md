@@ -250,6 +250,71 @@ verify: true
 | name | text | users.name |
 
 ---
+## 単純 SELECT — 重複した結果列名
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL
+);
+```
+
+### When
+
+```sql
+SELECT name, name FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | text | users.name |
+| name | text | users.name |
+
+---
+## Updatable ResultSet — キー列名重複
+
+### Given
+
+```sql
+CREATE TABLE users (
+  id    INTEGER NOT NULL PRIMARY KEY,
+  name  TEXT    NOT NULL
+);
+```
+
+### When
+
+```yaml
+api: updatable
+```
+
+```sql
+SELECT name AS id FROM users;
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name AS id, users.id FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| id | text | users.name | false |
+| id | integer | users.id | true |
+
+---
 
 ## 単純 SELECT — `*` による全列展開
 

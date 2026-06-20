@@ -187,6 +187,103 @@ verify: true
 | name | text | users.name |
 
 ---
+## 重複した結果列名
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+```
+
+```sql
+SELECT name, name FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | text | users.name |
+| name | text | users.name |
+
+---
+## Updatable ResultSet 用キー列追加
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+api: updatable
+```
+
+```sql
+SELECT name FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name, users.id FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| name | text | users.name | false |
+| id | integer | users.id | true |
+
+---
+## Updatable ResultSet 用キー列名重複
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: postgres
+api: updatable
+```
+
+```sql
+SELECT name AS id FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name AS id, users.id FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| id | text | users.name | false |
+| id | integer | users.id | true |
+
+---
 ## `*` 全列展開
 
 ### Given

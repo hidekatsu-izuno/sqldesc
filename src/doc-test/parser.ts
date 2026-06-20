@@ -199,6 +199,7 @@ function parseWhen(body: string, defaultDialect: string): WhenSpec {
     sql,
     dialect: typeof meta.dialect === "string" ? meta.dialect : defaultDialect,
     binds: typeof meta.binds === "string" ? meta.binds : undefined,
+    api: meta.api === "updatable" ? "updatable" : "describe",
   };
 
   const prose = body.replace(/```[\s\S]*?```/g, "").trim();
@@ -274,7 +275,13 @@ function parseThen(body: string): ThenSpec {
   }
 
   if (columns.length > 0) {
-    return { kind: "columns", target, verify, columns };
+    return {
+      kind: "columns",
+      target,
+      verify,
+      columns,
+      sql: typeof meta.sql === "string" ? meta.sql : undefined,
+    };
   }
 
   if (bullets.length > 0 && !columns.length) {
@@ -287,11 +294,16 @@ function parseThen(body: string): ThenSpec {
 function parseColumnTable(body: string): ExpectedColumn[] {
   const lines = body.split("\n");
   const columns: ExpectedColumn[] = [];
+  let headers: string[] = [];
   let inTable = false;
 
   for (const line of lines) {
-    if (/^\|\s*name\s*\|\s*type\s*\|\s*source\s*\|/.test(line)) {
+    if (/^\|\s*name\s*\|\s*type\s*\|/.test(line)) {
       inTable = true;
+      headers = line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim());
       continue;
     }
     if (!inTable) continue;
@@ -304,17 +316,27 @@ function parseColumnTable(body: string): ExpectedColumn[] {
       .map((cell) => cell.trim());
     if (cells.length < 2) continue;
 
-    const [name, type, sourceRaw] = cells;
+    const [name, type] = cells;
     if (!type || (name === "name" && type === "type")) continue;
+    const sourceIndex = headers.indexOf("source");
+    const keyIndex = headers.indexOf("key");
 
     columns.push({
       name,
       type,
-      source: normalizeSource(sourceRaw),
+      source: normalizeSource(sourceIndex >= 0 ? cells[sourceIndex] : undefined),
+      key: normalizeBoolean(keyIndex >= 0 ? cells[keyIndex] : undefined),
     });
   }
 
   return columns;
+}
+
+function normalizeBoolean(value?: string): boolean | undefined {
+  if (!value || value === "-" || value === "") return undefined;
+  if (/^(?:true|yes)$/i.test(value)) return true;
+  if (/^(?:false|no)$/i.test(value)) return false;
+  return undefined;
 }
 
 function normalizeSource(source?: string): string | undefined {

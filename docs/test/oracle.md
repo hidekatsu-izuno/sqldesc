@@ -188,6 +188,39 @@ verify: true
 | name | varchar2(100) | users.name |
 
 ---
+## Updatable ResultSet 用ROWID追加
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: oracle
+api: updatable
+```
+
+```sql
+SELECT name FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name, users.ROWID FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| name | varchar2(100) | users.name | false |
+| ROWID | varchar2(255) | expression | true |
+
+---
 ## `*` 全列展開
 
 ### Given

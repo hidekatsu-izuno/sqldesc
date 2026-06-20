@@ -57,7 +57,7 @@ Unsupported dialect names fail before parsing SQL and point to `sqldesc
 ## Library
 
 ```ts
-import { describeQuery, loadSchema, parseBinds } from "sqldesc";
+import { describeQuery, describeUpdatableQuery, loadSchema, parseBinds } from "sqldesc";
 
 const schema = await loadSchema(["schemas/**/*.sql"]);
 const result = await describeQuery({
@@ -70,9 +70,49 @@ console.log(result.columns);
 console.log(result.resultSets);
 ```
 
+Set `jdbc: true` when the input SQL uses JDBC syntax. In JDBC mode sqldesc
+translates `?` parameter markers and JDBC escape syntax such as `{fn ...}`,
+`{d '2024-01-01'}`, or `{call ...}` before parsing. Bind types are normalized
+for the selected dialect while preserving positional or named bind intent.
+
+```ts
+const jdbcResult = await describeQuery({
+  jdbc: true,
+  dialect: "postgres",
+  sql: "select * from users where id = ? and created_at >= {ts '2024-01-01 00:00:00'}",
+  binds: ["jdbc:INTEGER"],
+  schema,
+});
+```
+
+For JDBC updatable `ResultSet` style workflows, use
+`describeUpdatableQuery(input)`. It accepts the same input shape as
+`describeQuery`. The query must be a single-table, statically describable
+`SELECT`. If it is updatable, the result contains a rewritten SQL string that
+includes key columns, plus result columns with `key: true` for the row identity
+columns.
+
+```ts
+const updatable = await describeUpdatableQuery({
+  dialect: "mysql",
+  sql: "select name from users",
+  schema,
+});
+
+console.log(updatable.sql); // SELECT name, users.id FROM users
+console.log(updatable.columns);
+```
+
+For Oracle, the key column is `ROWID`. For other dialects, key columns are the
+table primary key columns from schema metadata. If the key column is already
+projected, it is marked with `key: true`; otherwise it is appended to the
+projection. Duplicate result column names are preserved to match database
+behavior. Non-updatable queries throw an `Error` with the reason.
+
 Exports:
 
 - `describeQuery(input)`
+- `describeUpdatableQuery(input)`
 - `parseBinds(spec)` — CLI-oriented helper that parses `"int,text"` or `"id=int,name=text"` into `Binds`
 - `loadSchema(patterns, options)`
 - `getSupportedDialects()`

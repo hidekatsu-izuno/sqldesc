@@ -1,4 +1,4 @@
-import { parse, validateWithSchema, annotateTypes, ast } from "@polyglot-sql/sdk";
+import { parse, validateWithSchema, annotateTypes, generate, ast } from "@polyglot-sql/sdk";
 import { namedBindType, positionalBindType } from "./binds.js";
 import {
   adjustedOutputType,
@@ -34,6 +34,9 @@ import type {
   StatementSummary,
   TableAliasEntry,
   TableAliasMap,
+  UpdatableDescribeColumn,
+  UpdatableDescribeInput,
+  UpdatableDescribeResult,
   ValidationSchema,
 } from "./types.js";
 
@@ -157,6 +160,294 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
     binds,
     schema,
   };
+}
+
+export async function describeUpdatableQuery(
+  input: UpdatableDescribeInput,
+): Promise<UpdatableDescribeResult> {
+  const dialect = assertSupportedDialect(input.dialect);
+  const sql = input.jdbc ? transformJdbcSql(input.sql, dialect) : input.sql;
+  const binds = input.jdbc ? normalizeJdbcBindTypes(input.binds, dialect) : input.binds;
+  const schema = input.schema ?? { tables: [] };
+  const parseResult = parse(sql, dialect as never) as PolyglotParseResult;
+  if (!parseResult.success) {
+    throw new Error(parseResult.error ?? "Failed to parse SQL.");
+  }
+
+  const analysis = analyzeUpdatableSelect(parseResult.ast, schema, dialect);
+  if (analysis.reasons.length > 0 || !analysis.select || !analysis.table) {
+    throw new Error(`Query is not updatable: ${analysis.reasons.join("; ")}.`);
+  }
+
+  const original = await describeQuery({ ...input, sql, jdbc: false, binds, dialect, schema });
+  const existingKeyIndexes = projectedKeyIndexes(analysis.select, analysis.keyColumns);
+  const existingKeyNames = projectedKeyNames(analysis.select, analysis.keyColumns);
+  const missingKeys = analysis.keyColumns.filter(
+    (column) => !existingKeyNames.has(column.resultName.toLowerCase()),
+  );
+
+  const rewrittenSql =
+    missingKeys.length > 0
+      ? generateUpdatableSql(
+          parseResult.ast,
+          analysis.select,
+          analysis.qualifier,
+          missingKeys,
+          dialect,
+        )
+      : sql;
+  const described =
+    missingKeys.length > 0
+      ? await describeQuery({ ...input, sql: rewrittenSql, jdbc: false, binds, dialect, schema })
+      : original;
+  if (described.resultSets.length !== 1) {
+    throw new Error("Query is not updatable: expected exactly one static result set.");
+  }
+
+  const table = analysis.table;
+  const keySources = new Set(
+    dialect === "oracle"
+      ? []
+      : analysis.keyColumns.map((column) => schemaColumnSource(table, column.name).toLowerCase()),
+  );
+  const columns: UpdatableDescribeColumn[] = described.columns.map((column) => ({
+    ...column,
+    key:
+      existingKeyIndexes.has(column.index) ||
+      keySources.has(column.source?.toLowerCase() ?? "") ||
+      (dialect === "oracle" && column.name.toLowerCase() === "rowid"),
+  }));
+
+  return {
+    updatable: true,
+    sql: rewrittenSql,
+    columns,
+    resultSets: [{ index: 1, columns }],
+    statements: described.statements,
+    warnings: described.warnings,
+    diagnostics: described.diagnostics,
+    binds: described.binds,
+    schema: described.schema,
+  };
+}
+
+interface UpdatableSelectAnalysis {
+  select?: Record<string, unknown>;
+  table?: SchemaTable;
+  qualifier: string;
+  keyColumns: UpdatableKeyColumn[];
+  reasons: string[];
+}
+
+interface UpdatableKeyColumn {
+  name: string;
+  resultName: string;
+}
+
+function analyzeUpdatableSelect(
+  parsedAst: unknown,
+  schema: ValidationSchema,
+  dialect: string,
+): UpdatableSelectAnalysis {
+  const reasons: string[] = [];
+  const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
+  if (statements.length !== 1) reasons.push("expected a single statement");
+  const statement = statements[0];
+  const select = isRecord(statement) && isRecord(statement.select) ? statement.select : undefined;
+  if (!select) reasons.push("expected a top-level SELECT");
+  if (!select) return { qualifier: "", keyColumns: [], reasons };
+
+  reasons.push(...nonUpdatableSelectReasons(select));
+  const sources = baseSelectSources(select);
+  if (sources.length !== 1) reasons.push("expected exactly one base table in FROM");
+  const source = sources[0];
+  const tableName = source ? relationTableName(source) : undefined;
+  const schemaName = source ? relationSchemaName(source) : undefined;
+  if (!source || !isRecord(source.table) || !tableName) {
+    reasons.push("expected FROM to reference a base table");
+    return { select, qualifier: "", keyColumns: [], reasons };
+  }
+
+  const table = findSchemaTable(schema, tableName, schemaName);
+  if (!table) {
+    reasons.push(
+      `table ${schemaName ? `${schemaName}.` : ""}${tableName} was not found in schema`,
+    );
+    return { select, qualifier: tableQualifier(source, tableName), keyColumns: [], reasons };
+  }
+
+  const keyColumns =
+    dialect === "oracle"
+      ? [{ name: "ROWID", resultName: "ROWID" }]
+      : primaryKeyColumns(table).map((column) => ({ name: column.name, resultName: column.name }));
+  if (keyColumns.length === 0) reasons.push(`table ${schemaTableName(table)} has no primary key`);
+
+  return {
+    select,
+    table,
+    qualifier: tableQualifier(source, tableName),
+    keyColumns,
+    reasons,
+  };
+}
+
+function nonUpdatableSelectReasons(select: Record<string, unknown>): string[] {
+  const reasons: string[] = [];
+  if (Array.isArray(select.joins) && select.joins.length > 0) reasons.push("JOIN is not updatable");
+  if (Array.isArray(select.from_joins) && select.from_joins.length > 0)
+    reasons.push("JOIN is not updatable");
+  if (Array.isArray(select.lateral_views) && select.lateral_views.length > 0)
+    reasons.push("lateral views are not updatable");
+  if (select.with != null) reasons.push("CTE queries are not updatable");
+  if (select.group_by != null) reasons.push("GROUP BY is not updatable");
+  if (select.having != null) reasons.push("HAVING is not updatable");
+  if (select.distinct === true || select.distinct_on != null)
+    reasons.push("DISTINCT is not updatable");
+  if (Array.isArray(select.expressions) && select.expressions.some(isAggregateExpression))
+    reasons.push("aggregate queries are not updatable");
+  return reasons;
+}
+
+function baseSelectSources(select: Record<string, unknown>): Record<string, unknown>[] {
+  const from =
+    isRecord(select.from) && Array.isArray(select.from.expressions) ? select.from.expressions : [];
+  const fromClause =
+    isRecord(select.from_clause) && Array.isArray(select.from_clause.expressions)
+      ? select.from_clause.expressions
+      : [];
+  return [...from, ...fromClause].filter(isRecord);
+}
+
+function findSchemaTable(
+  schema: ValidationSchema,
+  tableName: string,
+  schemaName: string | undefined,
+): SchemaTable | undefined {
+  return schema.tables.find((table) => {
+    if (table.name.toLowerCase() !== tableName.toLowerCase()) return false;
+    if (schemaName) return table.schema?.toLowerCase() === schemaName.toLowerCase();
+    return !table.schema;
+  });
+}
+
+function primaryKeyColumns(table: SchemaTable): SchemaColumn[] {
+  const keyNames = table.primaryKey?.length
+    ? table.primaryKey
+    : table.columns.filter((column) => column.primaryKey === true).map((column) => column.name);
+  const lowered = new Set(keyNames.map((name) => name.toLowerCase()));
+  return table.columns.filter((column) => lowered.has(column.name.toLowerCase()));
+}
+
+function projectedKeyIndexes(
+  select: Record<string, unknown>,
+  keyColumns: UpdatableKeyColumn[],
+): Set<number> {
+  const indexes = new Set<number>();
+  const expressions = Array.isArray(select.expressions) ? select.expressions : [];
+  expressions.forEach((expression, index) => {
+    if (isProjectedKeyExpression(expression, keyColumns)) indexes.add(index + 1);
+  });
+  return indexes;
+}
+
+function projectedKeyNames(
+  select: Record<string, unknown>,
+  keyColumns: UpdatableKeyColumn[],
+): Set<string> {
+  const names = new Set<string>();
+  const expressions = Array.isArray(select.expressions) ? select.expressions : [];
+  for (const expression of expressions) {
+    const name = projectedKeyName(expression, keyColumns);
+    if (name) names.add(name.toLowerCase());
+  }
+  return names;
+}
+
+function isProjectedKeyExpression(
+  expression: unknown,
+  keyColumns: UpdatableKeyColumn[],
+): boolean {
+  return Boolean(projectedKeyName(expression, keyColumns));
+}
+
+function projectedKeyName(
+  expression: unknown,
+  keyColumns: UpdatableKeyColumn[],
+): string | undefined {
+  if (!isRecord(expression)) return undefined;
+  const unwrapped = unwrapAlias(expression);
+  if (isOracleRowidExpression(unwrapped.expression)) return "ROWID";
+  const name = columnName(unwrapped.expression);
+  if (!name) return undefined;
+  return keyColumns.find((key) => key.name.toLowerCase() === name.toLowerCase())?.resultName;
+}
+
+function isOracleRowidExpression(expression: unknown): boolean {
+  const pseudocolumn = getAst(expression, "pseudocolumn");
+  if (isRecord(pseudocolumn) && String(pseudocolumn.kind ?? "").toLowerCase() === "rowid")
+    return true;
+  const name = columnName(isRecord(expression) ? expression : {});
+  return name?.toLowerCase() === "rowid";
+}
+
+function tableQualifier(source: Record<string, unknown>, tableName: string): string {
+  const aliasNode =
+    isRecord(source.alias) && isRecord(source.alias.this) ? source.alias : undefined;
+  const alias = aliasNode ? identifierName(aliasNode.alias) : identifierName(source.alias);
+  return alias ?? tableName;
+}
+
+function isAggregateExpression(expression: unknown): boolean {
+  return [
+    "aggregate_function",
+    "avg",
+    "count",
+    "count_if",
+    "sum",
+    "min",
+    "max",
+    "median",
+    "stddev",
+    "variance",
+    "string_agg",
+    "group_concat",
+    "listagg",
+    "array_agg",
+  ].some((key) => containsAstKey(expression, key));
+}
+
+function generateUpdatableSql(
+  parsedAst: unknown,
+  select: Record<string, unknown>,
+  qualifier: string,
+  missingKeys: UpdatableKeyColumn[],
+  dialect: string,
+): string {
+  if (!Array.isArray(select.expressions)) select.expressions = [];
+  const expressions = select.expressions;
+  if (Array.isArray(expressions)) {
+    expressions.push(...missingKeys.map((key) => keyColumnExpression(qualifier, key)));
+  }
+  const result = generate(parsedAst as never, dialect as never) as PolyglotGenerateResult;
+  if (!result.success || !result.sql) {
+    throw new Error(result.error ?? "Failed to generate updatable SQL.");
+  }
+  return Array.isArray(result.sql) ? result.sql.join("; ") : result.sql;
+}
+
+function keyColumnExpression(qualifier: string, key: UpdatableKeyColumn): AstExpression {
+  return {
+    column: {
+      name: identifierExpression(key.name),
+      table: identifierExpression(qualifier),
+      join_mark: false,
+      trailing_comments: [],
+    },
+  };
+}
+
+function identifierExpression(name: string): Record<string, unknown> {
+  return { name, quoted: false, trailing_comments: [] };
 }
 
 function describeOutputItems(
@@ -390,8 +681,10 @@ function inferSpecialIdentifierType(
     const name = identifierName(column.name)?.toLowerCase();
     const type = name
       ? identifierName(column.table)
-        ? config.qualifiedSpecialColumnTypes[name]
-        : config.specialColumnTypes[name]
+        ? (config.qualifiedSpecialColumnTypes[name] ??
+          config.specialColumnTypes[name] ??
+          config.pseudoColumnTypes[name])
+        : (config.specialColumnTypes[name] ?? config.pseudoColumnTypes[name])
       : undefined;
     if (type) return type;
   }
@@ -9348,6 +9641,12 @@ interface PolyglotParseResult {
   success: boolean;
   ast?: unknown;
   error?: string;
+}
+
+interface PolyglotGenerateResult {
+  success: boolean;
+  sql?: string | string[];
+  error?: string | null;
 }
 
 interface PolyglotDiagnostic {

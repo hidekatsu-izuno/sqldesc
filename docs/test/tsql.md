@@ -191,6 +191,70 @@ verify: true
 | name | nvarchar(100) | users.name |
 
 ---
+## 重複した結果列名
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+```
+
+```sql
+SELECT name, name FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | nvarchar(100) | users.name |
+| name | nvarchar(100) | users.name |
+
+---
+## Updatable ResultSet 用キー列名重複
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: tsql
+api: updatable
+```
+
+```sql
+SELECT name AS id FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name AS id, users.id FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| id | nvarchar(100) | users.name | false |
+| id | int | users.id | true |
+
+---
 ## `*` 全列展開
 
 ### Given

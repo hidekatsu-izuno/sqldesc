@@ -1,5 +1,5 @@
 import { parseBinds } from "../binds.js";
-import { describeQuery } from "../describe.js";
+import { describeQuery, describeUpdatableQuery } from "../describe.js";
 import { parseTestDocFile } from "./parser.js";
 import { parseCreateTables } from "../schema.js";
 import type { DescribeColumn, ValidationSchema } from "../types.js";
@@ -83,12 +83,21 @@ async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise
     return;
   }
 
-  const result = await describeQuery({
+  const result = await (testCase.when.api === "updatable" ? describeUpdatableQuery : describeQuery)({
     sql: testCase.when.sql!,
     dialect,
     binds,
     schema,
   });
+
+  if (testCase.then.sql !== undefined) {
+    const actualSql = "sql" in result && typeof result.sql === "string" ? result.sql : undefined;
+    if (actualSql !== testCase.then.sql) {
+      throw new Error(
+        `sql: expected ${JSON.stringify(testCase.then.sql)}, got ${JSON.stringify(actualSql)}`,
+      );
+    }
+  }
 
   if (testCase.then.kind === "none") {
     assertNone(
@@ -207,13 +216,25 @@ function assertColumns(actual: DescribeColumn[], expected: ExpectedColumn[], cas
         `column ${exp.name} source: expected ${exp.source}, got ${act.source ?? "(none)"}`,
       );
     }
+    if (exp.key !== undefined && exp.key !== (act as DescribeColumn & { key?: boolean }).key) {
+      throw new Error(
+        `column ${exp.name} key: expected ${exp.key}, got ${(act as DescribeColumn & { key?: boolean }).key ?? "(none)"}`,
+      );
+    }
   }
 }
 
 function formatExpected(columns: ExpectedColumn[]): string {
-  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}`).join(", ");
+  return columns
+    .map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}${c.key ? "#key" : ""}`)
+    .join(", ");
 }
 
 function formatActual(columns: DescribeColumn[]): string {
-  return columns.map((c) => `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}`).join(", ");
+  return columns
+    .map(
+      (c) =>
+        `${c.name}:${c.type}${c.source ? `@${c.source}` : ""}${(c as DescribeColumn & { key?: boolean }).key ? "#key" : ""}`,
+    )
+    .join(", ");
 }

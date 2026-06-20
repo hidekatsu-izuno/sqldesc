@@ -1,5 +1,5 @@
 export { parseBinds } from "./binds.js";
-export { describeQuery } from "./describe.js";
+export { describeQuery, describeUpdatableQuery } from "./describe.js";
 export {
   assertSupportedDialect,
   getDialectConfig,
@@ -24,5 +24,8 @@ export type {
   SchemaTable,
   StatementResultKind,
   StatementSummary,
+  UpdatableDescribeColumn,
+  UpdatableDescribeInput,
+  UpdatableDescribeResult,
   ValidationSchema,
 } from "./types.js";

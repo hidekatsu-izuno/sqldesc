@@ -22,12 +22,14 @@ export interface ExpectedColumn {
   name: string;
   type: string;
   source?: string;
+  key?: boolean;
 }
 
 export interface ThenSpec {
   kind: ThenKind;
   target: "first" | "last";
   verify: boolean;
+  sql?: string;
   columns?: ExpectedColumn[];
   errorMatch?: string;
   diagnostics?: string[];
@@ -39,6 +41,7 @@ export interface WhenSpec {
   sql?: string;
   dialect?: string;
   binds?: string;
+  api?: "describe" | "updatable";
   kind: "sql" | "cli" | "js" | "none";
 }
 

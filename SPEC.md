@@ -29,7 +29,8 @@ The CLI accepts SQL from a file, `--sql`, or stdin, in that priority order. It
 accepts schema glob patterns, bind type specs, dialect names, JDBC translation,
 and JSON output.
 
-The library entry point is `describeQuery(input)`. The stable input shape is:
+The main library entry point is `describeQuery(input)`. The stable input shape
+is:
 
 ```ts
 type Binds = string[] | Record<string, string>;
@@ -59,6 +60,34 @@ interface DescribeResult {
 
 `columns` is the first result set for convenience. `resultSets` is the complete
 set of statically discovered result sets.
+
+The library also exposes `describeUpdatableQuery(input)` for JDBC updatable
+`ResultSet` style workflows. It accepts the same input shape as
+`describeQuery(input)` and returns:
+
+```ts
+type UpdatableDescribeInput = DescribeInput;
+
+type UpdatableDescribeColumn = DescribeColumn & {
+  key: boolean;
+};
+
+interface UpdatableDescribeResult {
+  updatable: true;
+  sql: string;
+  columns: UpdatableDescribeColumn[];
+  resultSets: Array<{ index: 1; columns: UpdatableDescribeColumn[] }>;
+  statements: StatementSummary[];
+  warnings: string[];
+  diagnostics: Diagnostic[];
+  binds?: Binds;
+  schema: ValidationSchema;
+}
+```
+
+`sql` is the SQL text to execute for an updatable result set. It is the original
+query when all required key columns are already projected, otherwise it is a
+rewritten query with missing key columns appended.
 
 CLI JSON output should mirror the library result closely enough that automation
 can make the same decisions from either surface.
@@ -193,6 +222,40 @@ when doing so is deterministic, such as a table or view created earlier and
 referenced later. It must not pretend to know effects that depend on runtime
 database state.
 
+Duplicate result column names should be preserved. Real databases commonly
+return duplicate labels for projections such as `select 1 as id, 2 as id`; the
+library should not invent suffixes such as `id_2` merely to make names unique.
+
+## Updatable Query Contract
+
+`describeUpdatableQuery(input)` determines whether a query can be used for an
+updatable result-set workflow and, if so, returns the SQL and column metadata
+needed to identify rows.
+
+A query is updatable only when it is a single, top-level `SELECT` over exactly
+one schema-backed base table. The static analysis rejects joins, set
+operations, derived tables, CTE-backed selections, `DISTINCT`, grouping,
+`HAVING`, aggregate projections, unknown tables, missing primary keys for
+non-Oracle dialects, and multiple result sets. Rejected queries throw `Error`
+with a message beginning `Query is not updatable:`.
+
+Key selection is dialect-specific:
+
+- Oracle uses `ROWID`.
+- Other dialects use the target table primary key columns from schema metadata,
+  whether declared on `SchemaTable.primaryKey` or on `SchemaColumn.primaryKey`.
+
+If a key expression is already projected, the existing result column is returned
+with `key: true`. If a key expression is missing, it is appended to the SELECT
+projection and marked `key: true` in the returned column metadata. The rewritten
+SQL should qualify appended key columns with the table alias when present, or
+the table name otherwise.
+
+The API must preserve database-style duplicate result labels. If an appended
+key column has the same result label as an existing projected column, both
+columns keep that label; callers should use the `key` flag and column position
+rather than assuming result names are unique.
+
 ## Sources And Lineage Hints
 
 Column `source` values are hints, not a full lineage graph. They should be
@@ -229,6 +292,12 @@ When `jdbc` is enabled, JDBC parameter markers and JDBC escape syntax are
 translated before parsing and describing. Bind metadata returned in the result
 must correspond to the translated SQL shape while preserving the user's bind
 intent.
+
+JDBC mode applies to both `describeQuery(input)` and
+`describeUpdatableQuery(input)`. The original `input.sql` may contain JDBC
+parameter markers and standard JDBC escapes. The implementation should convert
+those to the selected dialect before parsing, validation, static inference, and
+updatable-query rewriting.
 
 ## Documentation And Tests
 

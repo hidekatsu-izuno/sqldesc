@@ -173,6 +173,70 @@ verify: true
 | name | varchar(100) | users.name |
 
 ---
+## 重複した結果列名
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+```
+
+```sql
+SELECT name, name FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+```
+
+| name | type | source |
+|------|------|--------|
+| name | varchar(100) | users.name |
+| name | varchar(100) | users.name |
+
+---
+## Updatable ResultSet 用キー列名重複
+
+### Given
+
+```yaml
+prepare: Prepare-1
+```
+
+### When
+
+```yaml
+dialect: mysql
+api: updatable
+```
+
+```sql
+SELECT name AS id FROM users
+```
+
+### Then
+
+```yaml
+kind: columns
+verify: true
+sql: SELECT name AS id, users.id FROM users
+```
+
+| name | type | source | key |
+|------|------|--------|-----|
+| id | varchar(100) | users.name | false |
+| id | int | users.id | true |
+
+---
 ## `*` 全列展開
 
 ### Given

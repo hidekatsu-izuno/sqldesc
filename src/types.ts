@@ -48,6 +48,8 @@ export interface DescribeInput {
   schema?: ValidationSchema;
 }
 
+export type UpdatableDescribeInput = DescribeInput;
+
 export interface Diagnostic {
   code?: string;
   message: string;
@@ -65,11 +67,30 @@ export interface DescribeColumn {
   note?: string;
 }
 
+export type UpdatableDescribeColumn = DescribeColumn & {
+  key: boolean;
+};
+
 export interface DescribeResult {
   columns: DescribeColumn[];
   resultSets: Array<{
     index: number;
     columns: DescribeColumn[];
+  }>;
+  statements: StatementSummary[];
+  warnings: string[];
+  diagnostics: Diagnostic[];
+  binds?: Binds;
+  schema: ValidationSchema;
+}
+
+export interface UpdatableDescribeResult {
+  updatable: true;
+  sql: string;
+  columns: UpdatableDescribeColumn[];
+  resultSets: Array<{
+    index: 1;
+    columns: UpdatableDescribeColumn[];
   }>;
   statements: StatementSummary[];
   warnings: string[];

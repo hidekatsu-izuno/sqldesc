@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { getDialects } from "@polyglot-sql/sdk";
-import { describeQuery } from "../dist/describe.js";
+import { describeQuery, describeUpdatableQuery } from "../dist/describe.js";
 import { getSupportedDialects, normalizeDialect } from "../dist/index.js";
 
 function matchesPartial(actual: unknown, expected: Record<string, unknown>): boolean {
@@ -5371,6 +5371,191 @@ describe("describeQuery", () => {
     assert.deepStrictEqual(
       cloneResult.columns.map((column) => [column.name, column.type, column.source]),
       [["age", "INTEGER", "cloned_users.age"]],
+    );
+  });
+});
+
+describe("describeUpdatableQuery", () => {
+  const updatableSchema: ValidationSchema = {
+    tables: [
+      {
+        name: "users",
+        primaryKey: ["id"],
+        columns: [
+          { name: "id", type: "integer", nullable: false, primaryKey: true },
+          { name: "name", type: "text", nullable: false },
+          { name: "age", type: "integer", nullable: true },
+        ],
+      },
+      {
+        name: "line_items",
+        primaryKey: ["order_id", "line_no"],
+        columns: [
+          { name: "order_id", type: "integer", nullable: false, primaryKey: true },
+          { name: "line_no", type: "integer", nullable: false, primaryKey: true },
+          { name: "description", type: "text" },
+        ],
+      },
+      {
+        name: "logs",
+        columns: [
+          { name: "id", type: "integer", nullable: false },
+          { name: "message", type: "text" },
+        ],
+      },
+      {
+        name: "orders",
+        primaryKey: ["id"],
+        columns: [
+          { name: "id", type: "integer", nullable: false, primaryKey: true },
+          { name: "user_id", type: "integer", nullable: false },
+          { name: "total", type: "decimal", nullable: false },
+        ],
+      },
+    ],
+  };
+
+  it("adds missing primary key columns for updatable single-table selects", async () => {
+    const result = await describeUpdatableQuery({
+      sql: "select name from users",
+      dialect: "postgres",
+      schema: updatableSchema,
+    });
+
+    assert.strictEqual(result.updatable, true);
+    assert.match(result.sql, /users\.id/i);
+    assert.deepStrictEqual(
+      result.columns.map((column) => [column.name, column.type, column.key]),
+      [
+        ["name", "text", false],
+        ["id", "integer", true],
+      ],
+    );
+    assert.deepStrictEqual(result.resultSets[0]?.columns, result.columns);
+  });
+
+  it("marks existing primary key columns without adding them again", async () => {
+    const result = await describeUpdatableQuery({
+      sql: "select id, name from users",
+      dialect: "postgres",
+      schema: updatableSchema,
+    });
+
+    assert.strictEqual(result.sql, "select id, name from users");
+    assert.deepStrictEqual(
+      result.columns.map((column) => [column.name, column.key]),
+      [
+        ["id", true],
+        ["name", false],
+      ],
+    );
+  });
+
+  it("adds only missing columns for composite primary keys", async () => {
+    const result = await describeUpdatableQuery({
+      sql: "select order_id, description from line_items",
+      dialect: "postgres",
+      schema: updatableSchema,
+    });
+
+    assert.match(result.sql, /line_items\.line_no/i);
+    assert.deepStrictEqual(
+      result.columns.map((column) => [column.name, column.key]),
+      [
+        ["order_id", true],
+        ["description", false],
+        ["line_no", true],
+      ],
+    );
+  });
+
+  it("uses ROWID as the Oracle updatable key", async () => {
+    const added = await describeUpdatableQuery({
+      sql: "select name from users",
+      dialect: "oracle",
+      schema: updatableSchema,
+    });
+
+    assert.match(added.sql, /users\.ROWID/i);
+    assert.deepStrictEqual(
+      added.columns.map((column) => [column.name.toLowerCase(), column.key]),
+      [
+        ["name", false],
+        ["rowid", true],
+      ],
+    );
+
+    const existing = await describeUpdatableQuery({
+      sql: "select rowid, name from users",
+      dialect: "oracle",
+      schema: updatableSchema,
+    });
+    assert.strictEqual(existing.sql, "select rowid, name from users");
+    assert.deepStrictEqual(
+      existing.columns.map((column) => [column.name, column.key]),
+      [
+        ["column_1", true],
+        ["name", false],
+      ],
+    );
+  });
+
+  it("rejects non-updatable query shapes", async () => {
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select users.id from users join orders on users.id = orders.user_id",
+          schema: updatableSchema,
+        }),
+      /JOIN is not updatable/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select id, count(*) from users group by id",
+          schema: updatableSchema,
+        }),
+      /GROUP BY is not updatable/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select distinct id from users",
+          schema: updatableSchema,
+        }),
+      /DISTINCT is not updatable/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select id from (select id from users) u",
+          schema: updatableSchema,
+        }),
+      /expected FROM to reference a base table/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select message from logs",
+          schema: updatableSchema,
+        }),
+      /has no primary key/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select id from missing_users",
+          schema: updatableSchema,
+        }),
+      /was not found in schema/,
+    );
+    await assert.rejects(
+      () =>
+        describeUpdatableQuery({
+          sql: "select id from users; select id from orders",
+          schema: updatableSchema,
+        }),
+      /expected a single statement/,
     );
   });
 });
