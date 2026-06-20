@@ -77,6 +77,20 @@ export function commandResultColumnConfigs(
   return undefined;
 }
 
-export function isMysqlLikeDialect(dialect: string): boolean {
-  return getDialectConfig(dialect).family === "mysql";
+export function procedureResultColumnConfigs(
+  name: string | undefined,
+  dialect: string,
+): readonly ConfigColumn[] | undefined {
+  if (!name) return undefined;
+  const config = getDialectConfig(dialect);
+  const normalizedName = name.toLowerCase();
+  return (
+    config.metadata.procedureResultColumns?.[normalizedName] ??
+    getDialectConfig(config.family).metadata.procedureResultColumns?.[normalizedName] ??
+    getDialectConfig("generic").metadata.procedureResultColumns?.[normalizedName]
+  );
+}
+
+export function isDialectFamily(dialect: string, family: string): boolean {
+  return getDialectConfig(dialect).family === family;
 }

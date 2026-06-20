@@ -6,7 +6,8 @@ import {
   commandResultColumnConfigs,
   configuredScalarFunctionPatternType,
   getDialectConfig,
-  isMysqlLikeDialect,
+  isDialectFamily,
+  procedureResultColumnConfigs,
   type ConfigColumn,
 } from "./dialect.js";
 import { normalizeJdbcBindTypes, transformJdbcSql } from "./jdbc.js";
@@ -84,7 +85,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
       columns: describeOutputItems(items, effectiveSchema, binds, dialect, warnings),
     }))
     .filter((resultSet) => resultSet.columns.length > 0);
-  const statements = summarizeStatements(annotatedAst, resultSets);
+  const statements = summarizeStatements(annotatedAst, resultSets, dialect);
   const statementDiagnostics = diagnosticsForStatements(statements, resultSets.length === 0);
   warnings.push(...statementDiagnostics.map((diagnostic) => diagnostic.message));
   diagnostics.push(...statementDiagnostics);
@@ -92,7 +93,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
   const columns = resultSets[0]?.columns ?? [];
   const allColumns = resultSets.flatMap((resultSet) => resultSet.columns);
   let returnedDiagnostics = suppressResolvedNestedDiagnostics(diagnostics, allColumns);
-  returnedDiagnostics = suppressOracleCurrentUserDiagnostics(
+  returnedDiagnostics = suppressConfiguredCurrentUserDiagnostics(
     returnedDiagnostics,
     annotatedAst,
     dialect,
@@ -119,7 +120,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
     effectiveSchema,
     dialect,
   );
-  returnedDiagnostics = suppressSqliteRowidDiagnostics(returnedDiagnostics, annotatedAst, dialect);
+  returnedDiagnostics = suppressConfiguredRowidDiagnostics(returnedDiagnostics, annotatedAst, dialect);
   returnedDiagnostics = suppressResolvedColumnDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressResolvedSourceDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressCompatibleComparisonDiagnostics(
@@ -140,6 +141,7 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
     returnedDiagnostics,
     annotatedAst,
     resultSets,
+    dialect,
   );
   returnedDiagnostics = suppressNonShapeValidationDiagnostics(returnedDiagnostics, resultSets);
   returnedDiagnostics = suppressRuntimeOnlyDiagnostics(returnedDiagnostics, statements);
@@ -205,8 +207,9 @@ export async function describeUpdatableQuery(
   }
 
   const table = analysis.table;
+  const configuredKeyColumn = getDialectConfig(dialect).metadata.updatableKeyColumn;
   const keySources = new Set(
-    dialect === "oracle"
+    configuredKeyColumn
       ? []
       : analysis.keyColumns.map((column) => schemaColumnSource(table, column.name).toLowerCase()),
   );
@@ -215,7 +218,7 @@ export async function describeUpdatableQuery(
     key:
       existingKeyIndexes.has(column.index) ||
       keySources.has(column.source?.toLowerCase() ?? "") ||
-      (dialect === "oracle" && column.name.toLowerCase() === "rowid"),
+      column.name.toLowerCase() === configuredKeyColumn?.toLowerCase(),
   }));
 
   return {
@@ -276,10 +279,10 @@ function analyzeUpdatableSelect(
     return { select, qualifier: tableQualifier(source, tableName), keyColumns: [], reasons };
   }
 
-  const keyColumns =
-    dialect === "oracle"
-      ? [{ name: "ROWID", resultName: "ROWID" }]
-      : primaryKeyColumns(table).map((column) => ({ name: column.name, resultName: column.name }));
+  const configuredKeyColumn = getDialectConfig(dialect).metadata.updatableKeyColumn;
+  const keyColumns = configuredKeyColumn
+    ? [{ name: configuredKeyColumn, resultName: configuredKeyColumn }]
+    : primaryKeyColumns(table).map((column) => ({ name: column.name, resultName: column.name }));
   if (keyColumns.length === 0) reasons.push(`table ${schemaTableName(table)} has no primary key`);
 
   return {
@@ -376,13 +379,14 @@ function projectedKeyName(
 ): string | undefined {
   if (!isRecord(expression)) return undefined;
   const unwrapped = unwrapAlias(expression);
-  if (isOracleRowidExpression(unwrapped.expression)) return "ROWID";
+  const rowidKey = keyColumns.find((key) => key.name.toLowerCase() === "rowid");
+  if (rowidKey && isRowidExpression(unwrapped.expression)) return rowidKey.resultName;
   const name = columnName(unwrapped.expression);
   if (!name) return undefined;
   return keyColumns.find((key) => key.name.toLowerCase() === name.toLowerCase())?.resultName;
 }
 
-function isOracleRowidExpression(expression: unknown): boolean {
+function isRowidExpression(expression: unknown): boolean {
   const pseudocolumn = getAst(expression, "pseudocolumn");
   if (isRecord(pseudocolumn) && String(pseudocolumn.kind ?? "").toLowerCase() === "rowid")
     return true;
@@ -777,17 +781,12 @@ function rewriteCreateValuesSql(sql: string): string {
 
 function rewriteParseSql(sql: string, dialect: string): string {
   let rewritten = rewriteCreateValuesSql(sql);
-  if (dialect === "tidb") {
-    rewritten = rewriteTidbShowTableRegionsSql(rewritten);
+  for (const rewrite of getDialectConfig(dialect).parserFallbacks.parseSqlRewrites ?? []) {
+    const match = rewrite.pattern.match(/^\/(.*)\/([a-z]*)$/i);
+    if (!match) continue;
+    rewritten = rewritten.replace(new RegExp(match[1], match[2]), rewrite.replacement);
   }
   return rewritten;
-}
-
-function rewriteTidbShowTableRegionsSql(sql: string): string {
-  const match = sql.trim().match(/^show\s+table\s+([\w`".]+)\.([\w`".]+)\s+regions\s*;?$/i);
-  if (!match) return sql;
-  const table = match[2].replace(/^[`"]|[`"]$/g, "");
-  return `SHOW TABLE REGIONS FROM ${table}`;
 }
 
 function inferWholeRowType(
@@ -3468,7 +3467,7 @@ function convertFunctionResultType(
 ): string | undefined {
   const args = functionArguments(functionNode);
   if (args.length === 0) return undefined;
-  if (isMysqlLikeDialect(dialect)) {
+  if (isDialectFamily(dialect, "mysql")) {
     return convertTypeFromAst(args[1]) ?? convertTypeFromAst(args[0]);
   }
   return convertTypeFromAst(args[0]) ?? convertTypeFromAst(args[1]);
@@ -3560,6 +3559,7 @@ function extractResultSets(
 function summarizeStatements(
   parsedAst: unknown,
   resultSets: Array<{ index: number; columns: DescribeColumn[] }>,
+  dialect: string,
 ): StatementSummary[] {
   const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
   return statements.map((statement, index) => {
@@ -3568,7 +3568,7 @@ function summarizeStatements(
     if (resultSet && resultSet.columns.length > 0) {
       return { index: index + 1, kind, resultKind: "static" };
     }
-    const resultKind = resultKindForStatement(statement);
+    const resultKind = resultKindForStatement(statement, dialect);
     return {
       index: index + 1,
       kind,
@@ -3612,7 +3612,7 @@ function statementKind(statement: unknown): string {
   return Object.keys(statement)[0] ?? "unknown";
 }
 
-function resultKindForStatement(statement: unknown): StatementResultKind {
+function resultKindForStatement(statement: unknown, dialect: string): StatementResultKind {
   if (!isRecord(statement)) return "unknown";
   if (isNoResultExpressionCommand(statement)) return "none";
   if (isRuntimeExpressionCommand(statement)) return "runtime";
@@ -3621,8 +3621,8 @@ function resultKindForStatement(statement: unknown): StatementResultKind {
   if (isRecord(statement.summarize)) return "metadata";
   if (isRecord(statement.copy) && isNoResultCopy(statement.copy)) return "none";
   if (isNoResultCommandStatement(statement)) return "none";
-  if (isStaticCommandStatement(statement)) return "static";
-  if (isStaticExecuteStatement(statement)) return "static";
+  if (isStaticCommandStatement(statement, dialect)) return "static";
+  if (isStaticExecuteStatement(statement, dialect)) return "static";
   if (isRecord(statement.execute) || isRecord(statement.copy)) return "runtime";
   if (isRuntimeCommandStatement(statement)) return "runtime";
   if (
@@ -3646,14 +3646,14 @@ function isRuntimeCommandStatement(statement: Record<string, unknown>): boolean 
   return /^(call|execute|exec|copy)\b/.test(command);
 }
 
-function isStaticCommandStatement(statement: Record<string, unknown>): boolean {
+function isStaticCommandStatement(statement: Record<string, unknown>, dialect: string): boolean {
   if (!isRecord(statement.command)) return false;
   const command = String(statement.command.this ?? "").toLowerCase();
-  return isStaticCommandText(command);
+  return isStaticCommandText(command, dialect);
 }
 
-function isStaticCommandText(command: string): boolean {
-  if (staticProcedureColumns(commandProcedureName(command)).length > 0) return true;
+function isStaticCommandText(command: string, dialect: string): boolean {
+  if (staticProcedureColumns(commandProcedureName(command), dialect).length > 0) return true;
   return (
     /^begin\s+select\b/.test(command) ||
     /^(?:optimize|repair|check|checksum)\s+table\b/.test(command) ||
@@ -3671,8 +3671,8 @@ function isStaticCommandText(command: string): boolean {
   );
 }
 
-function isStaticExecuteStatement(statement: Record<string, unknown>): boolean {
-  return isRecord(statement.execute) && staticExecuteColumns(statement.execute).length > 0;
+function isStaticExecuteStatement(statement: Record<string, unknown>, dialect: string): boolean {
+  return isRecord(statement.execute) && staticExecuteColumns(statement.execute, dialect).length > 0;
 }
 
 function isNoResultCommandStatement(statement: Record<string, unknown>): boolean {
@@ -4011,14 +4011,14 @@ function suppressVirtualTableArgumentDiagnostics(
   });
 }
 
-function suppressSqliteRowidDiagnostics(
+function suppressConfiguredRowidDiagnostics(
   diagnostics: Diagnostic[],
   parsedAst: unknown,
   dialect: string,
 ): Diagnostic[] {
   if (
     !getDialectConfig(dialect).diagnosticRules.suppressSqliteRowid ||
-    !hasSqliteRowidColumn(parsedAst)
+    !hasConfiguredRowidColumn(parsedAst)
   )
     return diagnostics;
   return diagnostics.filter(
@@ -4048,7 +4048,7 @@ function suppressWholeRowFunctionDiagnostics(
   });
 }
 
-function suppressOracleCurrentUserDiagnostics(
+function suppressConfiguredCurrentUserDiagnostics(
   diagnostics: Diagnostic[],
   parsedAst: unknown,
   dialect: string,
@@ -4187,7 +4187,7 @@ function virtualTableArgumentNames(
   return names;
 }
 
-function hasSqliteRowidColumn(value: unknown): boolean {
+function hasConfiguredRowidColumn(value: unknown): boolean {
   let found = false;
   visitAst(value, (node) => {
     if (found || !isRecord(node.column)) return;
@@ -4518,6 +4518,7 @@ function suppressStaticStatementDiagnostics(
   diagnostics: Diagnostic[],
   parsedAst: unknown,
   resultSets: Array<{ index: number; columns: DescribeColumn[] }>,
+  dialect: string,
 ): Diagnostic[] {
   const statements = Array.isArray(parsedAst) ? parsedAst : [parsedAst];
   const staticStatementIndexes = new Set(
@@ -4532,14 +4533,14 @@ function suppressStaticStatementDiagnostics(
   const hasStaticBareProcedure = statements.some(
     (statement, index) =>
       staticStatementIndexes.has(index + 1) &&
-      staticBareTsqlProcedureColumns(statement, "tsql").length > 0,
+      staticBareProcedureColumns(statement, dialect).length > 0,
   );
   const hasStaticMetadata = statements.some((statement, index) => {
     if (!staticStatementIndexes.has(index + 1) || !isRecord(statement)) return false;
     return (
       isDescribeMetadataStatement(statement) ||
       isRecord(statement.show) ||
-      isStaticCommandStatement(statement)
+      isStaticCommandStatement(statement, dialect)
     );
   });
   const hasStaticExecute = statements.some(
@@ -4644,7 +4645,7 @@ function outputItemsForStatement(
 ): OutputItem[] {
   if (!isRecord(statement)) return [];
   if (isRecord(statement.select)) {
-    const serialized = outputItemsFromSerializedTsqlSelect(statement.select, dialect);
+    const serialized = outputItemsFromSerializedSelect(statement.select, dialect);
     if (serialized.length > 0) return serialized;
     const schemaWithFunctions = mergeSchemas(
       { tables: [...context.tableFunctions.values()] },
@@ -4701,7 +4702,7 @@ function outputItemsForStatement(
   if (isWatchExpressionStatement(statement))
     return outputItemsFromWatchExpression(statement, schema);
   {
-    const bareProcedureColumns = staticBareTsqlProcedureColumns(statement, dialect);
+    const bareProcedureColumns = staticBareProcedureColumns(statement, dialect);
     if (bareProcedureColumns.length > 0) return bareProcedureColumns;
   }
   if (isTopLevelExpressionStatement(statement))
@@ -5688,7 +5689,7 @@ function outputItemsFromExecute(
   context: StatementContext,
   dialect = "generic",
 ): OutputItem[] {
-  const staticColumns = staticExecuteColumns(execute);
+  const staticColumns = staticExecuteColumns(execute, dialect);
   if (staticColumns.length > 0) return staticColumns;
   const name = executeName(execute);
   const prepared = name ? context.prepared.get(name.toLowerCase()) : undefined;
@@ -5697,222 +5698,31 @@ function outputItemsFromExecute(
   return procedure ? cloneOutputItems(procedure) : [];
 }
 
-function staticExecuteColumns(execute: Record<string, unknown>): OutputItem[] {
+function staticExecuteColumns(execute: Record<string, unknown>, dialect: string): OutputItem[] {
   const declaredColumns = executeResultSetColumns(execute);
   if (declaredColumns.length > 0) return declaredColumns;
 
   const name = executeName(execute)?.toLowerCase();
-  return staticProcedureColumns(name);
+  return staticProcedureColumns(name, dialect);
 }
 
-function staticBareTsqlProcedureColumns(statement: unknown, dialect: string): OutputItem[] {
-  if (getDialectConfig(dialect).jdbcParameterMarker !== "tsqlOrdinal" || !isRecord(statement))
-    return [];
+function staticBareProcedureColumns(statement: unknown, dialect: string): OutputItem[] {
+  if (!isRecord(statement)) return [];
   const column = getAst(statement, "column");
   if (isRecord(column) && !identifierName(column.table)) {
     const procedure = identifierName(column.name)?.toLowerCase();
-    if (procedure?.startsWith("sp_")) return staticProcedureColumns(procedure);
+    const columns = staticProcedureColumns(procedure, dialect);
+    if (columns.length > 0) return columns;
   }
   const alias = getAst(statement, "alias");
   if (!isRecord(alias)) return [];
   const procedure = identifierName(alias.this)?.toLowerCase();
-  if (!procedure?.startsWith("sp_")) return [];
-  return staticProcedureColumns(procedure);
+  return staticProcedureColumns(procedure, dialect);
 }
 
-function staticProcedureColumns(name: string | undefined): OutputItem[] {
-  if (name === "sp_help") {
-    return staticColumns([
-      ["Name", "text"],
-      ["Owner", "text"],
-      ["Type", "text"],
-      ["Created_datetime", "timestamp"],
-    ]);
-  }
-  if (name === "sp_who" || name === "sp_who2") {
-    return staticColumns([
-      ["spid", "integer"],
-      ["ecid", "integer"],
-      ["status", "text"],
-      ["loginame", "text"],
-      ["hostname", "text"],
-      ["blk", "text"],
-      ["dbname", "text"],
-      ["cmd", "text"],
-      ["request_id", "integer"],
-    ]);
-  }
-  if (name === "sp_spaceused") {
-    return staticColumns([
-      ["name", "text"],
-      ["rows", "text"],
-      ["reserved", "text"],
-      ["data", "text"],
-      ["index_size", "text"],
-      ["unused", "text"],
-    ]);
-  }
-  if (name === "sp_tables") {
-    return staticColumns([
-      ["TABLE_QUALIFIER", "text"],
-      ["TABLE_OWNER", "text"],
-      ["TABLE_NAME", "text"],
-      ["TABLE_TYPE", "text"],
-      ["REMARKS", "text"],
-    ]);
-  }
-  if (name === "sp_columns") {
-    return staticColumns([
-      ["TABLE_QUALIFIER", "text"],
-      ["TABLE_OWNER", "text"],
-      ["TABLE_NAME", "text"],
-      ["COLUMN_NAME", "text"],
-      ["DATA_TYPE", "integer"],
-      ["TYPE_NAME", "text"],
-      ["PRECISION", "integer"],
-      ["LENGTH", "integer"],
-      ["SCALE", "integer"],
-      ["RADIX", "integer"],
-      ["NULLABLE", "integer"],
-      ["REMARKS", "text"],
-      ["COLUMN_DEF", "text"],
-      ["SQL_DATA_TYPE", "integer"],
-      ["SQL_DATETIME_SUB", "integer"],
-      ["CHAR_OCTET_LENGTH", "integer"],
-      ["ORDINAL_POSITION", "integer"],
-      ["IS_NULLABLE", "text"],
-      ["SS_DATA_TYPE", "integer"],
-    ]);
-  }
-  if (name === "sp_helpindex") {
-    return staticColumns([
-      ["index_name", "text"],
-      ["index_description", "text"],
-      ["index_keys", "text"],
-    ]);
-  }
-  if (name === "sp_helpconstraint") {
-    return staticColumns([
-      ["constraint_type", "text"],
-      ["constraint_name", "text"],
-      ["delete_action", "text"],
-      ["update_action", "text"],
-      ["status_enabled", "text"],
-      ["status_for_replication", "text"],
-      ["constraint_keys", "text"],
-    ]);
-  }
-  if (name === "sp_databases") {
-    return staticColumns([
-      ["DATABASE_NAME", "text"],
-      ["DATABASE_SIZE", "integer"],
-      ["REMARKS", "text"],
-    ]);
-  }
-  if (name === "sp_server_info") {
-    return staticColumns([
-      ["attribute_id", "integer"],
-      ["attribute_name", "text"],
-      ["attribute_value", "text"],
-    ]);
-  }
-  if (name === "sp_helpdb") {
-    return staticColumns([
-      ["name", "text"],
-      ["db_size", "text"],
-      ["owner", "text"],
-      ["dbid", "integer"],
-      ["created", "text"],
-      ["status", "text"],
-      ["compatibility_level", "integer"],
-    ]);
-  }
-  if (name === "sp_helpfile") {
-    return staticColumns([
-      ["name", "text"],
-      ["fileid", "integer"],
-      ["filename", "text"],
-      ["filegroup", "text"],
-      ["size", "text"],
-      ["maxsize", "text"],
-      ["growth", "text"],
-      ["usage", "text"],
-    ]);
-  }
-  if (name === "sp_helpfilegroup") {
-    return staticColumns([
-      ["groupname", "text"],
-      ["groupid", "integer"],
-      ["filecount", "integer"],
-    ]);
-  }
-  if (name === "sp_stored_procedures") {
-    return staticColumns([
-      ["PROCEDURE_QUALIFIER", "text"],
-      ["PROCEDURE_OWNER", "text"],
-      ["PROCEDURE_NAME", "text"],
-      ["NUM_INPUT_PARAMS", "integer"],
-      ["NUM_OUTPUT_PARAMS", "integer"],
-      ["NUM_RESULT_SETS", "integer"],
-      ["REMARKS", "text"],
-      ["PROCEDURE_TYPE", "integer"],
-    ]);
-  }
-  if (name === "sp_pkeys") {
-    return staticColumns([
-      ["TABLE_QUALIFIER", "text"],
-      ["TABLE_OWNER", "text"],
-      ["TABLE_NAME", "text"],
-      ["COLUMN_NAME", "text"],
-      ["KEY_SEQ", "integer"],
-      ["PK_NAME", "text"],
-    ]);
-  }
-  if (name === "sp_fkeys") {
-    return staticColumns([
-      ["PKTABLE_QUALIFIER", "text"],
-      ["PKTABLE_OWNER", "text"],
-      ["PKTABLE_NAME", "text"],
-      ["PKCOLUMN_NAME", "text"],
-      ["FKTABLE_QUALIFIER", "text"],
-      ["FKTABLE_OWNER", "text"],
-      ["FKTABLE_NAME", "text"],
-      ["FKCOLUMN_NAME", "text"],
-      ["KEY_SEQ", "integer"],
-      ["FK_NAME", "text"],
-      ["PK_NAME", "text"],
-    ]);
-  }
-  if (name === "sp_statistics") {
-    return staticColumns([
-      ["TABLE_QUALIFIER", "text"],
-      ["TABLE_OWNER", "text"],
-      ["TABLE_NAME", "text"],
-      ["NON_UNIQUE", "integer"],
-      ["INDEX_QUALIFIER", "text"],
-      ["INDEX_NAME", "text"],
-      ["TYPE", "integer"],
-      ["SEQ_IN_INDEX", "integer"],
-      ["COLUMN_NAME", "text"],
-      ["COLLATION", "text"],
-      ["CARDINALITY", "integer"],
-      ["PAGES", "integer"],
-      ["FILTER_CONDITION", "text"],
-    ]);
-  }
-  if (name === "sp_special_columns") {
-    return staticColumns([
-      ["SCOPE", "integer"],
-      ["COLUMN_NAME", "text"],
-      ["DATA_TYPE", "integer"],
-      ["TYPE_NAME", "text"],
-      ["PRECISION", "integer"],
-      ["LENGTH", "integer"],
-      ["SCALE", "integer"],
-      ["PSEUDO_COLUMN", "integer"],
-    ]);
-  }
-  return [];
+function staticProcedureColumns(name: string | undefined, dialect: string): OutputItem[] {
+  const columns = procedureResultColumnConfigs(name, dialect);
+  return columns ? staticConfigColumns(columns) : [];
 }
 
 function executeResultSetColumns(execute: Record<string, unknown>): OutputItem[] {
@@ -6134,7 +5944,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     ]);
   }
   if (subject === "grants") {
-    if (isMysqlLikeDialect(dialect)) {
+    if (isDialectFamily(dialect, "mysql")) {
       return staticColumns([["Grants", "text"]]);
     }
     return staticColumns([
@@ -6816,7 +6626,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     ]);
   }
   if (subject.startsWith("create schema")) {
-    if (isMysqlLikeDialect(dialect)) {
+    if (isDialectFamily(dialect, "mysql")) {
       return staticColumns([
         ["Database", "text"],
         ["Create Database", "text"],
@@ -6824,7 +6634,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
     }
     return staticColumns([["Create Schema", "text"]]);
   }
-  if (subject.startsWith("create database") && isMysqlLikeDialect(dialect)) {
+  if (subject.startsWith("create database") && isDialectFamily(dialect, "mysql")) {
     return staticColumns([
       ["Database", "text"],
       ["Create Database", "text"],
@@ -6900,7 +6710,7 @@ function outputItemsFromCommand(
   if (blockStart.length > 0) return blockStart;
   const procedure = context.procedureResultSets.get(commandProcedureName(text) ?? "");
   if (procedure) return cloneOutputItems(procedure);
-  const procedureColumns = staticProcedureColumns(commandProcedureName(text));
+  const procedureColumns = staticProcedureColumns(commandProcedureName(text), dialect);
   if (procedureColumns.length > 0) return procedureColumns;
   if (/^(optimize|repair|check|checksum)\s+table\b/.test(text))
     return tableMaintenanceStatusColumns();
@@ -6909,12 +6719,6 @@ function outputItemsFromCommand(
   if (/^exists\s+(?:table|database|view|dictionary)\b/.test(text))
     return staticColumns([["result", "boolean"]]);
   if (/^explain\b/.test(text)) return explainColumns(dialect);
-  if (/^show\s+clusters\b/.test(text)) return clickHouseClustersColumns();
-  if (/^show\s+users\b/.test(text)) return clickHouseUsersColumns();
-  if (/^show\s+roles\b/.test(text)) return clickHouseRolesColumns();
-  if (/^show\s+grants\b/.test(text)) return clickHouseGrantsColumns();
-  if (/^show\s+settings\b/.test(text)) return clickHouseSettingsColumns();
-  if (/^show\s+dictionaries\b/.test(text)) return clickHouseDictionariesColumns();
   if (/^show\s+engines\b/.test(text))
     return staticColumns([
       ["name", "text"],
@@ -6996,9 +6800,6 @@ function outputItemsFromCommand(
       ["query_id", "text"],
     ]);
   }
-  if (/^show\s+processes\b/.test(text)) return clickHouseProcessesColumns();
-  if (/^show\s+merges\b/.test(text)) return clickHouseMergesColumns();
-  if (/^show\s+mutations\b/.test(text)) return clickHouseMutationsColumns();
   if (/^(?:describe|desc)(?:\s+table)?\s+\S+/.test(text)) {
     return staticColumns([
       ["name", "text"],
@@ -7092,101 +6893,6 @@ function outputItemsFromBeginSelectCommand(
 function executeImmediateSql(command: string): string | undefined {
   const match = command.match(/^execute\s+immediate\s+'((?:''|[^'])*)'/i);
   return match ? match[1].replace(/''/g, "'") : undefined;
-}
-
-function clickHouseSettingsColumns(): OutputItem[] {
-  return staticColumns([
-    ["name", "text"],
-    ["value", "text"],
-    ["changed", "boolean"],
-    ["description", "text"],
-    ["min", "text"],
-    ["max", "text"],
-    ["readonly", "boolean"],
-    ["type", "text"],
-  ]);
-}
-
-function clickHouseClustersColumns(): OutputItem[] {
-  return staticColumns([
-    ["cluster", "text"],
-    ["shard_num", "integer"],
-    ["shard_weight", "integer"],
-    ["replica_num", "integer"],
-    ["host_name", "text"],
-    ["host_address", "text"],
-    ["port", "integer"],
-    ["is_local", "boolean"],
-    ["user", "text"],
-  ]);
-}
-
-function clickHouseUsersColumns(): OutputItem[] {
-  return staticColumns([["name", "text"]]);
-}
-
-function clickHouseRolesColumns(): OutputItem[] {
-  return staticColumns([["name", "text"]]);
-}
-
-function clickHouseGrantsColumns(): OutputItem[] {
-  return staticColumns([["GRANTS", "text"]]);
-}
-
-function clickHouseDictionariesColumns(): OutputItem[] {
-  return staticColumns([
-    ["database", "text"],
-    ["name", "text"],
-    ["uuid", "uuid"],
-    ["status", "text"],
-    ["origin", "text"],
-    ["type", "text"],
-    ["key", "text"],
-    ["attribute.names", "array<text>"],
-  ]);
-}
-
-function clickHouseProcessesColumns(): OutputItem[] {
-  return staticColumns([
-    ["user", "text"],
-    ["address", "text"],
-    ["elapsed", "integer"],
-    ["read_rows", "integer"],
-    ["read_bytes", "integer"],
-    ["total_rows_approx", "integer"],
-    ["memory_usage", "integer"],
-    ["query", "text"],
-    ["query_id", "text"],
-  ]);
-}
-
-function clickHouseMergesColumns(): OutputItem[] {
-  return staticColumns([
-    ["database", "text"],
-    ["table", "text"],
-    ["elapsed", "integer"],
-    ["progress", "decimal"],
-    ["num_parts", "integer"],
-    ["source_part_names", "array<text>"],
-    ["result_part_name", "text"],
-    ["partition_id", "text"],
-    ["is_mutation", "boolean"],
-  ]);
-}
-
-function clickHouseMutationsColumns(): OutputItem[] {
-  return staticColumns([
-    ["database", "text"],
-    ["table", "text"],
-    ["mutation_id", "text"],
-    ["command", "text"],
-    ["create_time", "timestamp"],
-    ["block_numbers.partition_id", "array<text>"],
-    ["parts_to_do", "integer"],
-    ["is_done", "boolean"],
-    ["latest_failed_part", "text"],
-    ["latest_fail_reason", "text"],
-  ]);
 }
 
 function outputItemsFromPut(): OutputItem[] {
@@ -7472,7 +7178,7 @@ function commandResultColumns(command: string, dialect: string): OutputItem[] {
   return columns ? staticConfigColumns(columns) : [];
 }
 
-function outputItemsFromSerializedTsqlSelect(
+function outputItemsFromSerializedSelect(
   select: Record<string, unknown>,
   dialect: string,
 ): OutputItem[] {

@@ -210,6 +210,70 @@ describe("dialect configuration registry", () => {
     assert.ok(sqlite);
   });
 
+  it("keeps dialect-specific command result schemas in dialect configs", async () => {
+    const clickhouse = dialectConfigs.find((config) => config.name === "clickhouse");
+    assert.ok(
+      clickhouse?.metadata.commandResultColumns.some(
+        (entry) =>
+          entry.pattern === "/^show\\s+clusters\\b/" &&
+          entry.columns[0]?.name === "cluster" &&
+          entry.columns[0]?.type === "text",
+      ),
+    );
+
+    const clusters = await describeQuery({
+      dialect: "clickhouse",
+      sql: "show clusters",
+    });
+    assert.deepStrictEqual(
+      clusters.columns.map((column) => [column.name, column.type]),
+      [
+        ["cluster", "VARCHAR(255)"],
+        ["shard_num", "INTEGER"],
+        ["shard_weight", "INTEGER"],
+        ["replica_num", "INTEGER"],
+        ["host_name", "VARCHAR(255)"],
+        ["host_address", "VARCHAR(255)"],
+        ["port", "INTEGER"],
+        ["is_local", "BOOLEAN"],
+        ["user", "VARCHAR(255)"],
+      ],
+    );
+
+    const mutations = await describeQuery({
+      dialect: "clickhouse",
+      sql: "show mutations",
+    });
+    assert.deepStrictEqual(
+      mutations.columns.map((column) => [column.name, column.type]).slice(0, 4),
+      [
+        ["database", "VARCHAR(255)"],
+        ["table", "VARCHAR(255)"],
+        ["mutation_id", "VARCHAR(255)"],
+        ["command", "VARCHAR(255)"],
+      ],
+    );
+  });
+
+  it("keeps dialect-specific procedure result schemas in dialect configs", async () => {
+    const tsql = dialectConfigs.find((config) => config.name === "tsql");
+    assert.strictEqual(tsql?.metadata.procedureResultColumns?.sp_who?.[0]?.name, "spid");
+    assert.strictEqual(tsql?.metadata.procedureResultColumns?.sp_columns?.[4]?.type, "integer");
+
+    const result = await describeQuery({
+      dialect: "tsql",
+      sql: "exec sp_who",
+    });
+    assert.deepStrictEqual(
+      result.columns.slice(0, 3).map((column) => [column.name, column.type]),
+      [
+        ["spid", "int"],
+        ["ecid", "int"],
+        ["status", "nvarchar(max)"],
+      ],
+    );
+  });
+
   it("uses scalar function type maps from dialect configs", async () => {
     const result = await describeQuery({
       dialect: "postgres",

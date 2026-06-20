@@ -188,6 +188,7 @@ export interface IncludeDirectiveConfig {
 export interface DialectMetadataConfig {
   readonly sqliteRowidColumns?: readonly string[];
   readonly oracleCurrentUserColumn?: boolean;
+  readonly updatableKeyColumn?: string;
   readonly builtinSchemaTables: readonly DialectSchemaTableConfig[];
   readonly describeFunctionColumns: readonly DialectTableFunctionColumnConfig[];
   readonly explainColumns: readonly DialectTableFunctionColumnConfig[];
@@ -202,6 +203,9 @@ export interface DialectMetadataConfig {
   readonly showColumnsColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly describeTableResultColumns?: readonly DialectTableFunctionColumnConfig[];
   readonly showTableListingColumns?: readonly DialectTableFunctionColumnConfig[];
+  readonly procedureResultColumns?: Readonly<
+    Record<string, readonly DialectTableFunctionColumnConfig[]>
+  >;
   readonly commandResultColumns: readonly DialectCommandResultConfig[];
 }
 
@@ -332,6 +336,12 @@ export interface DialectParserFallbackConfig {
   readonly createView: string;
   readonly tableMacro: string;
   readonly embeddedSqlTableFunction: string;
+  readonly parseSqlRewrites?: readonly DialectParseSqlRewriteConfig[];
+}
+
+export interface DialectParseSqlRewriteConfig {
+  readonly pattern: string;
+  readonly replacement: string;
 }
 
 export interface DialectConfig {

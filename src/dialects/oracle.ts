@@ -445,6 +445,7 @@ export const dialectConfig = {
   },
   metadata: {
     oracleCurrentUserColumn: true,
+    updatableKeyColumn: "ROWID",
     builtinSchemaTables: [
       {
         name: "all_all_tables",

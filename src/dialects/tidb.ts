@@ -312,6 +312,12 @@ export const dialectConfig = {
     createView: "postgres",
     tableMacro: "duckdb",
     embeddedSqlTableFunction: "tsql",
+    parseSqlRewrites: [
+      {
+        pattern: "/^show\\s+table\\s+([\\w`\".]+)\\.([\\w`\".]+)\\s+regions\\s*;?$/i",
+        replacement: "SHOW TABLE REGIONS FROM $2",
+      },
+    ],
   },
   parameterizedTypeFormats: {
     decimal: "decimal({args})",
