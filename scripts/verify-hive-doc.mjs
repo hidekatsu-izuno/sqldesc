@@ -18,7 +18,7 @@ const user = process.env.HIVE_USER ?? "sqldesc";
 
 const hivePythonDeps =
   "pip install -q pyhive thrift thrift_sasl pure-sasl && " +
-  "python -c \"from pyhive import hive; import thrift; import thrift_sasl\"";
+  'python -c "from pyhive import hive; import thrift; import thrift_sasl"';
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -235,6 +235,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

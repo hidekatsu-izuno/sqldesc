@@ -82,15 +82,7 @@ function setupDocker() {
   const running = docker(["ps", "-q", "-f", `name=${prefix}`]).stdout.trim();
   if (running) return;
   docker(["rm", "-f", prefix]);
-  docker([
-    "run",
-    "-d",
-    "--name",
-    prefix,
-    "-p",
-    `127.0.0.1:${prestoPort}:8080`,
-    prestoImage,
-  ]);
+  docker(["run", "-d", "--name", prefix, "-p", `127.0.0.1:${prestoPort}:8080`, prestoImage]);
 }
 
 function runPrestoBatch(queries) {
@@ -228,6 +220,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

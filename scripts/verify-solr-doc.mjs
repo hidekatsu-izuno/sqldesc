@@ -240,7 +240,8 @@ async function verifyDocCases() {
     if (solrResult.ok) {
       const actual = solrResult.fields;
       const namesMatch =
-        actual.length === expected.length && actual.every((name, index) => name === expected[index]);
+        actual.length === expected.length &&
+        actual.every((name, index) => name === expected[index]);
       const subsetMatch =
         expected.every((name) => actual.includes(name)) && actual.length >= expected.length;
       if (namesMatch) {
@@ -334,6 +335,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

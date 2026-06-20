@@ -18,8 +18,7 @@ import process from "node:process";
 const vmName = process.env.VANTAGE_VM_NAME ?? "sqldesc-vantage";
 const teradataPort = process.env.TERADATA_PORT ?? "1025";
 const vboxManage =
-  process.env.VBOX_MANAGE ??
-  "/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe";
+  process.env.VBOX_MANAGE ?? "/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe";
 
 function run(command, args) {
   const result = spawnSync(command, args, {
@@ -158,7 +157,9 @@ function configureNetworking() {
   if (result.status !== 0) {
     throw new Error(result.stderr || result.stdout || "failed to configure port forwarding");
   }
-  console.log(`Configured NAT networking with port forward: host ${teradataPort} -> guest ${teradataPort}`);
+  console.log(
+    `Configured NAT networking with port forward: host ${teradataPort} -> guest ${teradataPort}`,
+  );
 }
 
 function configurePortForward() {
@@ -223,7 +224,9 @@ function printStatus() {
     console.log(
       "Download OVA from https://downloads.teradata.com/download/database/teradata-express/vmware",
     );
-    console.log("Then run: node scripts/setup-vantage-express-vbox.mjs /path/to/VantageExpress.ova");
+    console.log(
+      "Then run: node scripts/setup-vantage-express-vbox.mjs /path/to/VantageExpress.ova",
+    );
     return;
   }
   console.log(`Status: ${vmState() ?? "unknown"}`);

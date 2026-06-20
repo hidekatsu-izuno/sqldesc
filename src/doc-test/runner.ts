@@ -83,12 +83,14 @@ async function runSingleCase(testCase: DocTestCase, doc: ParsedTestDoc): Promise
     return;
   }
 
-  const result = await (testCase.when.api === "updatable" ? describeUpdatableQuery : describeQuery)({
-    sql: testCase.when.sql!,
-    dialect,
-    binds,
-    schema,
-  });
+  const result = await (testCase.when.api === "updatable" ? describeUpdatableQuery : describeQuery)(
+    {
+      sql: testCase.when.sql!,
+      dialect,
+      binds,
+      schema,
+    },
+  );
 
   if (testCase.then.sql !== undefined) {
     const actualSql = "sql" in result && typeof result.sql === "string" ? result.sql : undefined;

@@ -173,9 +173,7 @@ async function main() {
   if (!skipDocker) {
     setupDocker();
     await waitFabric();
-    console.log(
-      `Using ${fabricImage} as Fabric SQL stand-in (SQL Server ${fabricVersion()})`,
-    );
+    console.log(`Using ${fabricImage} as Fabric SQL stand-in (SQL Server ${fabricVersion()})`);
   }
 
   const build = run("npm", ["run", "build"], { cwd: process.cwd() });
@@ -248,6 +246,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

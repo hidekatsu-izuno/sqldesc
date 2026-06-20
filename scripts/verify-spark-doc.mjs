@@ -30,13 +30,7 @@ function docker(args, options) {
 }
 
 function sparkVersion() {
-  const result = docker([
-    "run",
-    "--rm",
-    sparkImage,
-    "/opt/spark/bin/spark-sql",
-    "--version",
-  ]);
+  const result = docker(["run", "--rm", sparkImage, "/opt/spark/bin/spark-sql", "--version"]);
   const match = (result.stdout || result.stderr).match(/version\s+([0-9.]+)/i);
   return match?.[1] ?? "unknown";
 }
@@ -173,6 +167,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

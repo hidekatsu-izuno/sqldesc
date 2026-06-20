@@ -107,9 +107,9 @@ describe("dialect configuration registry", () => {
         "url",
       ]);
       assert.ok(config.diagnosticRules.virtualTableArgumentNames.includes("highlight"));
-      const imports = [...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+['"]([^'"]+)['"]/gm)].map(
-        (match) => match[1],
-      );
+      const imports = [
+        ...source.matchAll(/^import\s+(?:type\s+)?[^;]+from\s+['"]([^'"]+)['"]/gm),
+      ].map((match) => match[1]);
       assert.deepStrictEqual(imports, ["../types.js"]);
       const exports = [...source.matchAll(/^export\s+/gm)];
       assert.strictEqual(exports.length, 1);

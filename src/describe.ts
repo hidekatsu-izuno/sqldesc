@@ -120,7 +120,11 @@ export async function describeQuery(input: DescribeInput): Promise<DescribeResul
     effectiveSchema,
     dialect,
   );
-  returnedDiagnostics = suppressConfiguredRowidDiagnostics(returnedDiagnostics, annotatedAst, dialect);
+  returnedDiagnostics = suppressConfiguredRowidDiagnostics(
+    returnedDiagnostics,
+    annotatedAst,
+    dialect,
+  );
   returnedDiagnostics = suppressResolvedColumnDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressResolvedSourceDiagnostics(returnedDiagnostics, allColumns);
   returnedDiagnostics = suppressCompatibleComparisonDiagnostics(
@@ -273,9 +277,7 @@ function analyzeUpdatableSelect(
 
   const table = findSchemaTable(schema, tableName, schemaName);
   if (!table) {
-    reasons.push(
-      `table ${schemaName ? `${schemaName}.` : ""}${tableName} was not found in schema`,
-    );
+    reasons.push(`table ${schemaName ? `${schemaName}.` : ""}${tableName} was not found in schema`);
     return { select, qualifier: tableQualifier(source, tableName), keyColumns: [], reasons };
   }
 
@@ -366,10 +368,7 @@ function projectedKeyNames(
   return names;
 }
 
-function isProjectedKeyExpression(
-  expression: unknown,
-  keyColumns: UpdatableKeyColumn[],
-): boolean {
+function isProjectedKeyExpression(expression: unknown, keyColumns: UpdatableKeyColumn[]): boolean {
   return Boolean(projectedKeyName(expression, keyColumns));
 }
 
@@ -5892,9 +5891,7 @@ function outputItemsFromShow(show: Record<string, unknown>, dialect = "generic")
   }
   if (subject === "databases" || subject === "schemas") {
     const configuredDatabasesColumns =
-      subject === "databases"
-        ? getDialectConfig(dialect).metadata.showDatabasesColumns
-        : undefined;
+      subject === "databases" ? getDialectConfig(dialect).metadata.showDatabasesColumns : undefined;
     if (configuredDatabasesColumns) return staticConfigColumns(configuredDatabasesColumns);
     return staticColumns([[subject === "schemas" ? "Schema" : "Database", "text"]]);
   }
@@ -8823,9 +8820,7 @@ function outputItemsFromSelectStarProfile(
   }));
 }
 
-function selectStarProfileExpression(
-  column: DialectSelectStarColumnConfig,
-): AstExpression {
+function selectStarProfileExpression(column: DialectSelectStarColumnConfig): AstExpression {
   const sourceMatch = column.source.match(/^([^.]+)\.([^.]+)$/);
   if (sourceMatch) {
     const [, tableName, columnName] = sourceMatch;

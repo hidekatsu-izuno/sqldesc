@@ -314,7 +314,7 @@ export const dialectConfig = {
     embeddedSqlTableFunction: "tsql",
     parseSqlRewrites: [
       {
-        pattern: "/^show\\s+table\\s+([\\w`\".]+)\\.([\\w`\".]+)\\s+regions\\s*;?$/i",
+        pattern: '/^show\\s+table\\s+([\\w`".]+)\\.([\\w`".]+)\\s+regions\\s*;?$/i',
         replacement: "SHOW TABLE REGIONS FROM $2",
       },
     ],

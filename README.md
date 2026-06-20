@@ -137,10 +137,9 @@ intended for maintainers and LLM agents that need to understand or extend the
 current implementation.
 
 <!--
-npm run format
+npm run fmt
 npm run build
 npm run test
-update version in README.md
 git tag vX.X.X && git push origin --tags
 npm publish --tag beta
 npm publish
